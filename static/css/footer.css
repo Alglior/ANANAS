@@ -1,0 +1,81 @@
+.footer {
+  padding-top: 2.2rem;
+  background: var(--charcoal);
+  color: #ececec;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr 1fr;
+  gap: 1.2rem;
+  padding-bottom: 1.5rem;
+}
+
+.footer-col h4,
+.footer-brand {
+  margin: 0 0 0.7rem;
+  color: #ffffff;
+}
+
+.footer-brand {
+  font-size: 1.15rem;
+  color: var(--mustard);
+}
+
+.footer-col p {
+  margin: 0.3rem 0;
+  color: #d8d8d8;
+  font-size: 0.95rem;
+}
+
+.footer-col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.footer-col a {
+  color: #f0f0f0;
+  opacity: 0.9;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.footer-col a:hover {
+  color: var(--mustard);
+  opacity: 1;
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 0.95rem 0;
+}
+
+.footer-bottom-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 0.9rem;
+}
+
+.footer-bottom-inner p {
+  margin: 0;
+  color: #d4d4d4;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: #efefef;
+}
+
+.footer-links a:hover {
+  color: var(--mustard);
+}

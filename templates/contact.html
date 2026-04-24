@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<main class="contact-page">
+  <div class="container">
+    <h1>Contact</h1>
+    <p class="contact-intro">
+      Pour toute question, suggestion ou demande d'information, contactez-nous à&nbsp;:
+    </p>
+
+    <div class="contact-card">
+      <span class="contact-email" id="email-text">contact@ananas.ovh</span>
+      <button class="btn btn-primary copy-btn" id="copy-btn" aria-label="Copier l'email">
+        Copier l'email
+      </button>
+      <div class="copy-feedback" id="copy-feedback">Email copié !</div>
+    </div>
+  </div>
+</main>
+{% endblock %}

@@ -1,0 +1,41 @@
+# ────────────────────────────────────────────
+#  Secrets & sensitive files — NEVER commit
+# ────────────────────────────────────────────
+.env
+/.env.*
+/.secret
+/.secret.*
+
+# Private keys / tokens
+*.key
+*.pem
+*.p12
+*.jwk
+secrets.json
+
+# ────────────────────────────────────────────
+#  Virtual environments & build artifacts
+# ────────────────────────────────────────────
+.venv/
+__pycache__/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ────────────────────────────────────────────
+#  IDE & editor files
+# ────────────────────────────────────────────
+.idea/
+.vscode/settings.json
+.vscode/*.json
+*.swp
+*~
+.svn/
+
+# ────────────────────────────────────────────
+#  OS junk
+# ────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini

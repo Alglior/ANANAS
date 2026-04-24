@@ -1,0 +1,121 @@
+.topbar {
+  top: 0;
+  z-index: 999999 !important;
+  border-bottom: 1px solid #dfdfdf;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+}
+
+.topbar-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.85rem;
+}
+
+.topbar-toprow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.topbar-tools {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.55rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  color: var(--forest);
+  letter-spacing: 0.2px;
+}
+
+.brand-logo {
+  width: 128px;
+  height: 128px;
+  object-fit: contain;
+  display: block;
+  margin-top: 4%;
+  margin-bottom: 4%;
+}
+
+.brand-text {
+  font-size: 1.8rem;
+}
+
+.nav {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+  font-weight: 500;
+}
+
+.nav a {
+  padding: 0.25rem 0.2rem;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.nav a:hover {
+  border-bottom-color: var(--forest);
+}
+
+.auth-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-wrapper {
+  width: min(460px, 100%);
+  position: relative;
+}
+
+.search-bar {
+  width: 100%;
+}
+
+.search-bar input {
+  width: 100%;
+  border: 1px solid var(--specs-gray);
+  border-radius: 6px;
+  padding: 0.75rem 1rem 0.75rem 2.7rem;
+  font: inherit;
+  color: var(--charcoal);
+  background: var(--white);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23228b22' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 0.85rem 50%;
+  background-size: 1rem;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.search-bar input::placeholder {
+  color: var(--specs-gray);
+}
+
+.search-bar input:focus {
+  outline: none;
+  border-color: var(--mustard);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

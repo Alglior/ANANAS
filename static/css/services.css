@@ -1,0 +1,56 @@
+.mirror-section {
+  padding: 4rem 0;
+  background: var(--light-gray);
+}
+
+.mirror-section h2 {
+  text-align: center;
+  color: var(--forest);
+  margin-bottom: 0.5rem;
+}
+
+.mirror-lead {
+  text-align: center;
+  color: var(--specs-gray);
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+.mirror-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mirror-link {
+  display: block;
+  background: var(--white);
+  border: 1px solid #ececec;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-color-soft);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.mirror-link:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-color-soft);
+  border-color: var(--mustard);
+}
+
+.mirror-name {
+  display: block;
+  font-weight: 700;
+  color: var(--charcoal);
+  font-size: 1.15rem;
+  margin-bottom: 0.35rem;
+}
+
+.mirror-desc {
+  display: block;
+  color: var(--specs-gray);
+  font-size: 1rem;
+}
