@@ -11,12 +11,23 @@
   --shadow-mustard-focus: 0 0 0 3px rgba(218, 165, 32, 0.15);
   --shadow-mustard-btn: 0 6px 18px rgba(218, 165, 32, 0.3);
   --shadow-mustard-btn-hover: 0 9px 22px rgba(218, 165, 32, 0.35);
+
+  /* Spacing tokens */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.85rem;
+  --space-lg: 1.25rem;
+  --space-xl: 2rem;
+}
+
+/* Shared hover transitions — combine with other classes */
+.transition-hover {
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 html {
   scroll-behavior: smooth;
 }
-
 * {
   box-sizing: border-box;
 }

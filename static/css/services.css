@@ -6,13 +6,12 @@
 .mirror-section h2 {
   text-align: center;
   color: var(--forest);
-  margin-bottom: 0.5rem;
 }
 
 .mirror-lead {
   text-align: center;
   color: var(--specs-gray);
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-xl);
   font-size: 0.95rem;
 }
 
@@ -32,7 +31,10 @@
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
   box-shadow: var(--shadow-color-soft);
-  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.mirror-link.transition-hover {
+  transition: border-color 0.2s ease;
 }
 
 .mirror-link:hover {

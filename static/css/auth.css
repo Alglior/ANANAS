@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 0;
+  padding: var(--space-xl) 0;
 }
 
 .auth-container {
@@ -18,7 +18,7 @@
 
 .auth-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-xl);
 }
 
 .auth-header h1 {
@@ -112,6 +112,9 @@
   background: var(--mustard);
   color: var(--charcoal);
   box-shadow: var(--shadow-mustard-btn);
+}
+
+.btn-block.transition-hover {
   transition: transform 0.15s ease, box-shadow 0.2s ease;
 }
 
@@ -152,7 +155,7 @@
 /* Succès */
 .auth-success {
   text-align: center;
-  padding: 2rem 0;
+  padding: var(--space-xl) 0;
 }
 
 .auth-success h2 {

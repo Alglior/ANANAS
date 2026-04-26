@@ -18,7 +18,11 @@
   font: inherit;
   font-weight: 700;
   white-space: nowrap;
-  transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.btn.transition-hover,
+.btn-primary.transition-hover {
+  transition: background-color 0.2s ease;
 }
 
 .btn:hover {

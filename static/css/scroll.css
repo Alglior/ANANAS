@@ -21,6 +21,9 @@
   border-radius: 50%;
   background: var(--mustard);
   box-shadow: var(--shadow-mustard-btn);
+}
+
+.scroll-down a.transition-hover {
   transition: transform 0.15s ease, box-shadow 0.2s ease;
 }
 
