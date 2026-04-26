@@ -13,14 +13,14 @@ class Config:
             with open(".secret", "r") as f:
                 for line in f:
                     if line.startswith("FLASK_SECRET_KEY="):
-                        # Safe partition instead of hardcoded index slicing
-                        self.SECRET_KEY = line.partition("=")[2].strip()
+                        _, _, key = line.partition("=")
+                        self.SECRET_KEY = key.strip()
                         break
 
     def validate(self):
         """Valider la clé et garantir sa robustesse."""
-        # Correction automatique des clés faibles (inférieures à 32 caractères)
-        if len(self.SECRET_KEY) < 32:
+        # Si aucune clé n'est trouvée ou si elle est trop courte (< 32 chars)
+        if not self.SECRET_KEY or len(self.SECRET_KEY) < 32:
             self.SECRET_KEY = _generate_secret_key()
 
         # En mode production, l'application bloque si aucune clé valide n'est trouvée
