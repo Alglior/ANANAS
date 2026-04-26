@@ -4,11 +4,11 @@ from flask_wtf import CSRFProtect
 
 
 class Config:
-    """Application configuration."""
+    """Configuration de l'application."""
     SECRET_KEY = os.environ.get("FLASK_SECRET_KEY")
 
     def __init__(self):
-        # Fallback to .secret file if no env variable is set
+        # Si aucune clé n'est configurée, lecture du fichier .secret
         if not self.SECRET_KEY and os.path.isfile(".secret"):
             with open(".secret", "r") as f:
                 for line in f:
@@ -18,12 +18,12 @@ class Config:
                         break
 
     def validate(self):
-        """Securely validate & enforce key strength."""
-        # Auto-fix weak keys (<32 chars) by generating a new one
+        """Valider la clé et garantir sa robustesse."""
+        # Correction automatique des clés faibles (inférieures à 32 caractères)
         if len(self.SECRET_KEY) < 32:
             self.SECRET_KEY = _generate_secret_key()
 
-        # In production, block completely if no valid key exists
+        # En mode production, l'application bloque si aucune clé valide n'est trouvée
         if not self.SECRET_KEY and os.environ.get("FLASK_ENV", "development") == "production":
             raise ValueError(
                 "CRITICAL: No secret key configured! Set FLASK_SECRET_KEY in your environment or provide a valid .secret file."
@@ -31,7 +31,7 @@ class Config:
 
 
 def _generate_secret_key():
-    """Generate a 32-byte hex secret key and write it to .secret."""
+    """Générer une clé secrète de 32 octets et sauvegarder dans le fichier .secret."""
     import secrets
 
     key = secrets.token_hex(32)
@@ -42,15 +42,15 @@ def _generate_secret_key():
 
 
 def create_app(app_name="ANANAS"):
-    """Application factory pattern."""
+    """Implémentation du motif 'usine' (factory) pour l'application."""
     app = Flask(__name__, template_folder="templates")
 
-    # Load configuration
+    # Chargement de la configuration
     config = Config()
     config.validate()
     app.config.update(config.__dict__)
 
-    # Enable CSRF protection globally (requires SECRET_KEY)
+    # Activation globale de la protection CSRF (nécessite une clé secrète)
     csrf = CSRFProtect(app)
 
     # ────────────────────────────────────────────
@@ -62,11 +62,11 @@ def create_app(app_name="ANANAS"):
         response.headers["X-Content-Type-Options"] = "nosniff"
         return response
 
-    # Secure cookie settings (SESSION_COOKIE_SECURE defaults to False for local HTTP)
-    app.config["SESSION_COOKIE_HTTPONLY"] = True  # Prevents JS from reading session cookie
-    app.config["SESSION_EXPIRED_SECONDS"] = 3600   # Auto-expire sessions after 1 hour
+    # Configuration des cookies sécurisés (par défaut désactivé pour le HTTP local)
+    app.config["SESSION_COOKIE_HTTPONLY"] = True  # Empêche les scripts JavaScript de lire le cookie de session
+    app.config["SESSION_EXPIRED_SECONDS"] = 3600   # Les sessions expireront automatiquement après 1 heure
 
-    # Routes definition
+    # Définition des routes
     routes = [
         {
             "rule": "/",
@@ -94,7 +94,7 @@ def create_app(app_name="ANANAS"):
         },
     ]
 
-    # Register routes dynamically
+    # Enregistrement dynamique des routes
     for route_cfg in routes:
         rule = route_cfg["rule"]
         endpoint = rule.lstrip("/") or "home"
@@ -104,7 +104,7 @@ def create_app(app_name="ANANAS"):
 
 
 def _register_view(app: Flask, rule: str, endpoint: str, cfg: dict):
-    """Register a single view function with a unique endpoint name."""
+    """Enregistrer une fonction de vue avec un nom d'extrémité (endpoint) unique."""
 
     def view_func():
         return render_template(
@@ -120,7 +120,7 @@ def _register_view(app: Flask, rule: str, endpoint: str, cfg: dict):
 #  Local dev runner
 # ────────────────────────────────────────────
 if __name__ == "__main__":
-    # In production, SECRET_KEY is usually set by environment (e.g. Heroku, AWS, Docker)
+    # En production, la clé secrète est généralement configurée via des variables d'environnement.
     debug_mode = os.environ.get("FLASK_DEBUG", "false").lower() in ("1", "true", "yes")
     app = create_app()
     app.run(debug=debug_mode)
