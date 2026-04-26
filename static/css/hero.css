@@ -39,12 +39,6 @@
   padding: 1.05rem;
 }
 
-.status-panel h2 {
-  color: var(--charcoal);
-  font-size: 1.15rem;
-  margin-bottom: 0.7rem;
-}
-
 .status-panel ul {
   margin: 0;
   padding: 0;
