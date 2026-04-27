@@ -5,7 +5,7 @@ from flask_wtf import CSRFProtect
 
 class Config:
     """Configuration de l'application."""
-    SECRET_KEY = os.environ.get("FLASK_SECRET_KEY")
+    SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", "")
 
     def __init__(self):
         # Si aucune clé n'est configurée, lecture du fichier .secret
@@ -19,15 +19,17 @@ class Config:
 
     def validate(self):
         """Valider la clé et garantir sa robustesse."""
+        is_production = os.environ.get("FLASK_ENV", "development") == "production"
+        
         # Si aucune clé n'est trouvée ou si elle est trop courte (< 32 chars)
         if not self.SECRET_KEY or len(self.SECRET_KEY) < 32:
-            self.SECRET_KEY = _generate_secret_key()
-
-        # En mode production, l'application bloque si aucune clé valide n'est trouvée
-        if not self.SECRET_KEY and os.environ.get("FLASK_ENV", "development") == "production":
-            raise ValueError(
-                "CRITICAL: No secret key configured! Set FLASK_SECRET_KEY in your environment or provide a valid .secret file."
-            )
+            if is_production:
+                raise ValueError(
+                    "CRITICAL: No secret key configured! Set FLASK_SECRET_KEY in your environment or provide a valid .secret file."
+                )
+            else:
+                # En développement, générer une nouvelle clé
+                self.SECRET_KEY = _generate_secret_key()
 
 
 def _generate_secret_key():
@@ -60,11 +62,19 @@ def create_app(app_name="ANANAS"):
     def set_security_headers(response):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Content-Security-Policy"] = "default-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; img-src 'self' data:;"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         return response
 
-    # Configuration des cookies sécurisés (par défaut désactivé pour le HTTP local)
+    # Configuration des cookies sécurisés
+    # Déterminer si on est en production
+    is_production = os.environ.get("FLASK_ENV", "development") == "production"
+    
     app.config["SESSION_COOKIE_HTTPONLY"] = True  # Empêche les scripts JavaScript de lire le cookie de session
-    app.config["SESSION_EXPIRED_SECONDS"] = 3600   # Les sessions expireront automatiquement après 1 heure
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # Protection contre les attaques CSRF par cookie
+    app.config["SESSION_COOKIE_SECURE"] = is_production  # En production seulement, force HTTPS pour les cookies
+    app.config["PERMANENT_SESSION_LIFETIME"] = 3600  # Les sessions expireront après 1 heure (clé correcte Flask)
 
     # Définition des routes
     routes = [
