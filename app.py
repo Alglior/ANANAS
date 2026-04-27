@@ -1,4 +1,7 @@
 import os
+
+SECRET_FILE = ".secret"
+
 from flask import Flask, render_template
 from flask_wtf import CSRFProtect
 
@@ -8,9 +11,9 @@ class Config:
     SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", "")
 
     def __init__(self):
-        # Si aucune clé n'est configurée, lecture du fichier .secret
-        if not self.SECRET_KEY and os.path.isfile(".secret"):
-            with open(".secret", "r") as f:
+        # Si aucune clé n'est configurée, lecture du fichier SECRET_FILE
+        if not self.SECRET_KEY and os.path.isfile(SECRET_FILE):
+            with open(SECRET_FILE, "r") as f:
                 for line in f:
                     if line.startswith("FLASK_SECRET_KEY="):
                         _, _, key = line.partition("=")
@@ -33,13 +36,13 @@ class Config:
 
 
 def _generate_secret_key():
-    """Générer une clé secrète de 32 octets et sauvegarder dans le fichier .secret."""
+    """Générer une clé secrète de 32 octets et sauvegarder dans le fichier SECRET_FILE."""
     import secrets
 
     key = secrets.token_hex(32)
-    with open(".secret", "w") as f:
+    with open(SECRET_FILE, "w") as f:
         f.write(f"FLASK_SECRET_KEY={key}\n")
-    os.chmod(".secret", 0o600)
+    os.chmod(SECRET_FILE, 0o600)
     return key
 
 
