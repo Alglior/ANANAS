@@ -68,7 +68,6 @@
   padding: 0.75rem 1rem;
   border: 1px solid #d4d4d4;
   border-radius: 8px;
-  font: inherit;
   font-size: 1rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   background: var(--light-gray);
@@ -107,7 +106,6 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font: inherit;
   font-weight: 700;
   background: var(--mustard);
   color: var(--charcoal);
