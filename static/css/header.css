@@ -14,19 +14,27 @@
   padding-bottom: 0.85rem;
 }
 
+.auth-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .topbar-toprow {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
 }
 
-.topbar-tools {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.55rem;
+.topbar-search-row {
+  padding: 0.5rem 0 0.75rem 0;
+}
+
+.search-center {
+  max-width: 700px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .brand {
@@ -69,12 +77,6 @@
   border-bottom-color: var(--forest);
 }
 
-.auth-actions {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .search-wrapper {
   width: min(460px, 100%);
   position: relative;
@@ -86,16 +88,17 @@
 
 .search-bar input {
   width: 100%;
-  border: 1px solid var(--specs-gray);
-  border-radius: 6px;
-  padding: 0.75rem 1rem 0.75rem 2.7rem;
-  font: inherit;
+  border: 2px solid var(--specs-gray);
+  border-radius: 40px;
+  padding: 1rem 1.5rem 1rem 3.5rem;
+  font-size: 0.95rem;
+  font-weight: 400;
   color: var(--charcoal);
   background: var(--white);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23228b22' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: 0.85rem 50%;
-  background-size: 1rem;
+  background-position: 1rem 50%;
+  background-size: 1.25rem;
   transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
