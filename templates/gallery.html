@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ item.title }} — Galerie{% endblock %}
+{% block meta_description %}Galerie {{ item.title }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/gallery.css') }}" />
+{% endblock %}
+
+{% block content %}
+<main class="detail-page">
+  <div class="container">
+    <section style="display:flex;align-items:center;gap:0.75rem;padding:1.5rem 0;">
+      <a href="/catalogue/item/{{ item.id }}" style="color:var(--specs-gray);text-decoration:none;font-size:0.9rem;">
+        &larr; Retour à la fiche
+      </a>
+    </section>
+
+    {% if item.gallery and item.gallery|length > 0 %}
+    <div class="gallery-full-page" id="galleryOverlay">
+      <div class="gallery-modal">
+        <div class="gallery-toolbar">
+          <button class="gallery-close-btn" type="button" aria-label="Fermer">&times;</button>
+          <span class="gallery-counter" id="galleryCounter"></span>
+          <button class="gallery-type-badge" id="galleryTypeBadge"></button>
+        </div>
+        <div class="gallery-main-area">
+          <button class="gallery-nav-btn gallery-prev" type="button">&#8249;</button>
+          <div class="gallery-content" id="galleryContent"></div>
+          <button class="gallery-nav-btn gallery-next" type="button">&#8250;</button>
+        </div>
+        <div class="gallery-thumbnails" id="galleryThumbnails"></div>
+      </div>
+    </div>
+    {% else %}
+    <p style="color:var(--specs-gray);text-align:center;padding:3rem 1rem;">Aucune image dans la galerie.</p>
+    {% endif %}
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  var __gallery_items = {{ item.gallery | default([]) | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/gallery.js') }}"></script>
+{% endblock %}

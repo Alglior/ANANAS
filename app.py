@@ -24,6 +24,71 @@ LOREM_IPSUM_FR = [
     "Données démographiques agrégées par IRIS (IR分区 d'Repartition des Iris) pour les 52 millions d'habitants. La population municipale, la population totale et les indicateurs socio-économiques sont actualisés annuellement depuis les recensements INSEE décentralisés avec un report tous les cinq ans.",
 ]
 
+_AUTHOR_NAMES = [
+    "Jean Dupont", "Marie Laurent", "Pierre Martin",
+    "Sophie Durand", "Nicolas Moreau", "Isabelle Petit",
+    "François Le Gall", "Catherine Rousseau", "Philippe Simon",
+    "Françoise Bonnet", "Jacques Blanc", "Émilie Garnier",
+    "Jean-Pierre Rivière", "Anne Charpentier", "Bernard Leroy",
+    "Nathalie Roux", "Laurent David", "Valérie Thomas",
+    "Sylvain Dumas", "Corinne Michel",
+]
+
+import hashlib
+
+def _pseudo_date(seed, start_year=2022, end_year=2025):
+    h = int(hashlib.md5(str(seed).encode()).hexdigest(), 16)
+    year_start = h % (end_year - start_year + 1) + start_year
+    month = (h >> 8) % 12 + 1
+    day = (h >> 16) % 28 + 1
+    return f"{year_start}-{month:02d}-{day:02d}"
+
+_GALLERY_IMAGES = [
+    "/static/images/gallery/map-{}.png",
+    "/static/images/gallery/carte-{}.svg",
+]
+
+def _build_gallery_item(item_id):
+    fmt = item_id % 3
+    types = {0: ["image", "csv"], 1: ["dashboard", "interactive_map"], 2: ["image", "interactive_map"]}
+    gallery = []
+    base_labels = [
+        "Vue cartographique générale",
+        "Couche SIG brute",
+        "Extraction CSV analysée",
+        "Tableau de bord thématique",
+        "Carte interactive zoomable",
+        "Données brutes visualisées",
+        "Orthophoto annotée",
+        "Rendu cartographique final",
+    ]
+    n = 7 + (item_id % 4)
+    for j in range(1, n + 1):
+        media_type = types[fmt][(j - 1) % len(types[fmt])]
+        label = base_labels[(j - 1) % len(base_labels)]
+        if media_type == "image":
+            gallery.append({"type": "image", "src": f"/static/images/gallery/map-{(item_id % 5) + 1}.svg", "label": label})
+        elif media_type == "csv":
+            csv_data = [
+                ["id", "nom", "valeur"],
+                ["1", f"Zone_{j}", str(item_id * j)],
+                ["2", f"Segment_{j}_N", str(item_id + j * 0.5)],
+                ["3", f"Segment_{j}_S", str(item_id - j)],
+                ["4", f"Nœud_{j}", str(j * 100 + item_id)],
+            ]
+            gallery.append({"type": "csv", "data": csv_data, "label": label})
+        elif media_type == "dashboard":
+            dash_data = [
+                {"metric": "Superficie (ha)", "value": f"{item_id * 127 + 43}"},
+                {"metric": "Couverts (%)", "value": f"{(item_id * 13) % 60 + 25}%"},
+                {"metric": "Points ({% raw %}{% endraw %}N)", "value": str(item_id * 847)},
+                {"metric": "Densité (/km²)", "value": f"{item_id / 3:.2f}"},
+            ]
+            gallery.append({"type": "dashboard", "metrics": dash_data, "label": label})
+        elif media_type == "interactive_map":
+            gallery.append({"type": "interactive_map", "id": f"map-gallery-{item_id}", "label": label})
+    return gallery
+
 for i in range(1, 201):
     _CATALOGUE_ITEMS.append({
         "id": i,
@@ -33,6 +98,9 @@ for i in range(1, 201):
         "size": f"{(i * 17) % 500 + 10} Mo",
         "magnet": f"magnet:?xt=urn:btih:{i:032d}",
         "image": "/static/images/logo/ANANAS.png",
+        "author": _AUTHOR_NAMES[i % len(_AUTHOR_NAMES)],
+        "created_at": _pseudo_date(i),
+        "gallery": _build_gallery_item(i),
     })
 
 def get_catalogue_page(total_page=1, per_page=ITEMS_PER_PAGE):
@@ -135,7 +203,14 @@ def create_app(app_name="ANANAS"):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Content-Security-Policy"] = "default-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; img-src 'self' data:;"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "style-src 'self' https://fonts.googleapis.com https://unpkg.com; "
+            "script-src 'self' https://unpkg.com; "
+            "font-src 'self' https://fonts.gstatic.com data:; "
+            "img-src 'self' data:; "
+            "connect-src 'self' https://unpkg.com https://*.tile.openstreetmap.org"
+        )
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         return response
 
@@ -198,6 +273,50 @@ def create_app(app_name="ANANAS"):
 
     app.add_url_rule("/catalogue", endpoint="catalogue", view_func=catalogue_view)
     app.add_url_rule("/catalogue/<int:page>", endpoint="catalogue_page", view_func=catalogue_view)
+
+    # ────────────────────────────────────────────
+    #  Favicon (silently ignore requests)
+    # ────────────────────────────────────────────
+    @app.route("/favicon.ico")
+    def favicon_route():
+        return "", 204
+
+    # Item detail route
+    def item_detail_view(item_id):
+        item = next((i for i in _CATALOGUE_ITEMS if i["id"] == item_id), None)
+        if item is None:
+            return redirect(url_for("catalogue"))
+        related_items = [
+            i for i in _CATALOGUE_ITEMS
+            if i["format"] == item["format"] and i["id"] != item_id
+        ][:3]
+        # Extract only image items from gallery for the inline gallery strip
+        img_gallery = [g for g in item.get("gallery", []) if g["type"] == "image"]
+
+        return render_template(
+            "item_detail.html",
+            title=f"A.N.A.N.A.S. | {item['title']}",
+            meta_description=item["description"][:160],
+            item=item,
+            related_items=related_items,
+            image_gallery=img_gallery,
+        )
+
+    app.add_url_rule("/catalogue/item/<int:item_id>", endpoint="item_detail", view_func=item_detail_view)
+
+    # Standalone gallery page
+    def item_gallery_view(item_id):
+        item = next((i for i in _CATALOGUE_ITEMS if i["id"] == item_id), None)
+        if item is None:
+            return redirect(url_for("catalogue"))
+        return render_template(
+            "gallery.html",
+            title=f"Galerie — {item['title']}",
+            meta_description="Galerie de " + item["title"],
+            item=item,
+        )
+
+    app.add_url_rule("/catalogue/item/<int:item_id>/gallery", endpoint="item_gallery", view_func=item_gallery_view)
 
     return app
 

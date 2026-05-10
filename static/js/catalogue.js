@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var expanded = btn.getAttribute("aria-expanded") === "true";
 
       btn.setAttribute("aria-expanded", String(!expanded));
-      btn.textContent = expanded ? "Plus" : "Moins";
+      btn.textContent = expanded ? "Moins" : "Plus";
 
       preview.hidden = !expanded;
       full.hidden = expanded;

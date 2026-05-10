@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/gallery.css') }}" />
+{% endblock %}
+
+{% block content %}
+<main class="detail-page">
+
+  <section class="detail-header">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Fil d'ariane">
+        <a href="/">Accueil</a>
+        <span class="sep">&rsaquo;</span>
+        <a href="/catalogue">Catalogue</a>
+        <span class="sep">&rsaquo;</span>
+        <span>{{ item.title }}</span>
+      </nav>
+    </div>
+  </section>
+
+  <section class="detail-body">
+    <div class="container">
+
+      <div class="product-card">
+
+        <!-- Main product image (left column) -->
+        <div class="product-gallery">
+          <img class="product-img" id="mainProductImg" src="{{ item.image }}" alt="{{ item.title }}">
+          
+          <!-- Inline image gallery strip -->
+          {% if image_gallery and image_gallery|length > 0 %}
+          <div class="inline-gallery" id="inlineGallery">
+            {% for img in image_gallery %}
+              <img src="{{ img.src }}" alt="{{ img.label }}" class="gallery-thumb-img{% if loop.first %} active{% endif %}" data-src="{{ img.src }}">
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Product details (right column) -->
+        <div class="product-details">
+
+          <h1 class="product-title">{{ item.title }}</h1>
+
+          <!-- Rating -->
+          <div class="rating-inline">
+            <span class="rating-number-inline">{{ item.rating|default(3.8) }}</span>
+            <div class="rating-stars-wrap">
+              {% for i in range(1, 6) %}
+                {% set rating = item.rating|default(3.8) %}
+                {% if i <= (rating|round(0, 'floor')) %}
+                  <span class="star filled">&#9733;</span>
+                {% elif i == (rating|round(0, 'floor') + 1) and rating - (rating|round(0, 'floor')) >= 0.5 %}
+                  <span class="star half">&#9733;</span>
+                {% else %}
+                  <span class="star">&#9733;</span>
+                {% endif %}
+              {% endfor %}
+            </div>
+            <span class="rating-count">{{ item.review_count|default('128') }} avis</span>
+
+            <form class="rate-form" method="POST" action="/catalogue/item/{{ item.id }}/rate">
+              <div class="rate-stars">
+                {% for i in range(1, 6) %}
+                <input type="radio" name="rating" value="{{ i }}" id="star-{{ item.id }}-{{ i }}">
+                <label for="star-{{ item.id }}-{{ i }}" title="{{ i }}/5">&#9733;</label>
+                {% endfor %}
+              </div>
+              <button class="btn btn-rate-submit" type="submit">Envoyer</button>
+            </form>
+          </div>
+
+          <div class="product-format-badge">
+            Format : <strong>{{ item.format }}</strong>
+          </div>
+
+          <div class="product-divider"></div>
+
+          <!-- Download box -->
+          <div class="buy-box">
+            <div class="price-row">
+              <span class="price-label">Taille du fichier</span>
+              <span class="price-value">{{ item.size }}</span>
+            </div>
+            <div class="price-row">
+              <span class="price-label">ID</span>
+              <span class="price-value mono">#{{ item.id }}</span>
+            </div>
+
+            <hr class="buy-divider">
+
+            <a href="/catalogue" class="back-link">&larr; Retour au catalogue</a>
+
+            {% if item.magnet %}
+            <div class="download-actions">
+              <button class="btn btn-download" type="button" data-magnet="{{ item.magnet }}">
+                &#9660;&nbsp;Télécharger via magnet
+              </button>
+              <button class="btn btn-copy-secondary" type="button" data-magnet="{{ item.magnet }}">
+                Copier le lien magnet
+              </button>
+            </div>
+            {% else %}
+            <p class="no-download">Lien de téléchargement non disponible</p>
+            {% endif %}
+
+          </div>
+
+          <div class="details-block"></div>
+
+          <!-- Description -->
+          <div class="product-desc-section">
+            <h3>Description</h3>
+            <p>{{ item.description }}</p>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Technical / Documentation -->
+      <section class="tech-section">
+        <div class="container">
+          <h2>Spécifications techniques</h2>
+          <dl class="tech-grid">
+            <div class="tech-item">
+              <dt>Format</dt>
+              <dd>{{ item.format }}</dd>
+            </div>
+            <div class="tech-item">
+              <dt>Taille</dt>
+              <dd>{{ item.size }}</dd>
+            </div>
+            <div class="tech-item">
+              <dt>ID</dt>
+              <dd>#{{ item.id }}</dd>
+            </div>
+            <div class="tech-item">
+              <dt>Auteur / Publieur</dt>
+              <dd>{{ item.author }}</dd>
+            </div>
+          </dl>
+
+          {% if item.magnet %}
+          <div class="tech-code-block">
+            <h3>Lien magnet</h3>
+            <code>{{ item.magnet }}</code>
+            <button class="btn btn-copy-tech" type="button" data-magnet="{{ item.magnet }}">
+              Copier le lien
+            </button>
+          </div>
+          {% endif %}
+
+        </div>
+      </section>
+
+      <!-- Réutilisation -->
+      <section class="reuse-section">
+        <div class="container">
+          <h2>Réutilisation</h2>
+          <div class="reuse-card">
+            <dl class="reuse-grid">
+              <div class="reuse-item">
+                <dt>Catégorie</dt>
+                <dd>{{ item.format }}</dd>
+              </div>
+              <div class="reuse-item">
+                <dt>Licence</dt>
+                <dd>Licence Ouverte — Licence CC-BY</dd>
+              </div>
+              <div class="reuse-item">
+                <dt>Auteur</dt>
+                <dd>{{ item.author }}</dd>
+              </div>
+              <div class="reuse-item">
+                <dt>Date de publication</dt>
+                <dd>{{ item.created_at }}</dd>
+              </div>
+            </dl>
+            <p class="reuse-note">Cette donnée publiée par {{ item.author }} peut être réutilisée librement dans vos propres projets SIG, analyses ou visualisations cartographiques. La mention « Source : A.N.A.N.A.S. » est recommandée.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Commentaires -->
+      <section class="comments-section">
+        <div class="container">
+          <h2>Commentaires</h2>
+
+          {% if item.comments and item.comments|length > 0 %}
+          <ul class="comments-list">
+            {% for comment in item.comments %}
+            <li class="comment-item">
+              <div class="comment-header">
+                <span class="comment-author">{{ comment.author }}</span>
+                <span class="comment-date">{{ comment.date }}</span>
+              </div>
+              <p class="comment-text">{{ comment.text }}</p>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="comments-empty">Aucun commentaire pour ce géodonnées.</p>
+          {% endif %}
+
+          <form class="comment-form" method="POST" action="/catalogue/item/{{ item.id }}/comment">
+            <div class="comment-form-fields">
+              <input class="comment-input" type="text" name="author" placeholder="Votre nom" required>
+            </div>
+            <div class="comment-form-textarea-wrap">
+              <textarea name="text" placeholder="Ajouter un commentaire..." required></textarea>
+            </div>
+            <div class="comment-form-actions">
+              <button class="btn btn-primary" type="submit">Publier</button>
+            </div>
+          </form>
+
+        </div>
+      </section>
+
+      {% if related_items %}
+      <aside class="detail-related">
+        <h2>Données similaires</h2>
+        <ul class="related-list">
+          {% for rel in related_items %}
+          <li>
+            <a href="/catalogue/item/{{ rel.id }}" class="related-card">
+              <div class="related-img-wrap">
+                <img src="{{ rel.image }}" alt="{{ rel.title }}">
+              </div>
+              <span class="related-title">{{ rel.title }}</span>
+              <span class="related-info">{{ rel.format }} &middot; {{ rel.size }}</span>
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </aside>
+      {% endif %}
+
+    </div>
+  </section>
+
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/gallery.js') }}"></script>
+{% endblock %}

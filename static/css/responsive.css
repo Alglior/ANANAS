@@ -79,4 +79,29 @@
   .footer-links {
     gap: 0.7rem;
   }
+
+  .product-card {
+    grid-template-columns: 1fr;
+  }
+
+  .product-gallery {
+    position: static;
+  }
+}
+
+@media (max-width: 560px) {
+  .download-actions {
+    flex-direction: column;
+  }
+
+  .btn-download,
+  .btn-copy-secondary {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .related-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

@@ -6,26 +6,32 @@
 {% block content %}
 <main class="catalogue-page">
 
-  <section class="catalogue-header">
+<section class="catalogue-header">
     <div class="container">
       <h1>Catalogue des géodonnées</h1>
       <p class="catalogue-meta">{{ total_items }}&nbsp;résultats — page {{ page }}/{{ total_pages }}</p>
     </div>
   </section>
 
-  <section class="catalogue-body">
+<section class="catalogue-body">
     <div class="container">
+      <nav class="breadcrumb" aria-label="Fil d'ariane">
+        <a href="/">Accueil</a>
+        <span class="sep">&rsaquo;</span>
+        <span>Catalogue</span>
+      </nav>
       <ul class="catalogue-list">
         {% for item in items %}
         <li>
           <hr class="catalogue-divider">
-          <div class="catalogue-item transition-hover">
+          <a href="/catalogue/item/{{ item.id }}" class="catalogue-item transition-hover catalogue-link">
             <img class="catalogue-image" src="{{ item.image }}" alt="" loading="lazy">
             <div class="catalogue-content">
               <div class="catalogue-top">
                 <span class="catalogue-title">{{ item.title }}</span>
                 <span class="catalogue-meta-tag">{{ item.format }} · {{ item.size }}</span>
               </div>
+              <p class="catalogue-author"><strong>Publié par :</strong> {{ item.author }}</p>
               <p class="catalogue-desc-preview" id="preview-{{ item.id }}">{{ item.description|truncate(140, True, '...') }}</p>
               <p class="catalogue-desc-full" id="full-{{ item.id }}" hidden>{{ item.description }}</p>
               <button
@@ -33,11 +39,12 @@
                 type="button"
                 aria-expanded="false"
                 aria-controls="preview-{{ item.id }} full-{{ item.id }}"
+                onclick="event.preventDefault(); event.stopPropagation();"
               >
                 Plus
               </button>
             </div>
-          </div>
+          </a>
         </li>
         {% endfor %}
       </ul>
