@@ -40,19 +40,29 @@
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.8rem;
   font-weight: 700;
   color: var(--forest);
   letter-spacing: 0.2px;
 }
 
+.brand-label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+}
+
+.brand-subtitle {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--specs-gray);
+}
+
 .brand-logo {
-  width: 128px;
-  height: 128px;
+  width: 100px;
+  height: 100px;
   object-fit: contain;
-  display: block;
-  margin-top: 4%;
-  margin-bottom: 4%;
 }
 
 .brand-text {
