@@ -36,9 +36,7 @@ body {
   margin: 0;
   font-family: "Ubuntu", sans-serif;
   color: var(--charcoal);
-  background: radial-gradient(circle at 12% 18%, #ffffff 0, #ffffff 15%, transparent 38%),
-    radial-gradient(circle at 92% 22%, rgba(34, 139, 34, 0.1) 0, rgba(34, 139, 34, 0.1) 20%, transparent 44%),
-    linear-gradient(180deg, #fcfcfa 0%, var(--light-gray) 100%);
+  background: var(--white);
   line-height: 1.5;
 }
 
