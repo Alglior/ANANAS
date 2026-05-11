@@ -192,6 +192,79 @@
   user-select: none;
 }
 
+/* Banderolle — horizontal banner sous breadcrumb */
+.banderolle {
+  margin-top: 1rem;
+  padding: 0;
+  background: var(--forest);
+  color: var(--white);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  width: 100%;
+  min-height: 75px;
+  display: flex;
+  align-items: center;
+}
+
+.banderolle-spacer {
+  flex: 1;
+}
+
+.btn-band {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 75px;
+  padding: 0 1.8rem;
+  text-decoration: none;
+  color: var(--white);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: filter 0.2s ease;
+}
+
+.btn-band:hover {
+  background-color: var(--forest-btn-hover);
+}
+
+.apercu-btn:hover {
+  background-color: var(--forest-active-hover);
+}
+
+.visu-btn:hover {
+  background-color: var(--forest-btn-hover);
+}
+
+.apercu-btn {
+  background: var(--forest-active);
+  color: var(--charcoal);
+  border-bottom: 3px solid var(--white);
+}
+
+.visu-btn {
+  background: var(--forest-band);
+  color: var(--white);
+  border-bottom: 3px solid transparent;
+}
+
+.donnee-btn {
+  background: transparent;
+}
+
+.btn-band:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 4px 12px rgba(218, 165, 32, 0.3);
+}
+
+.apercu-btn {
+  margin-left: 1rem;
+}
+
 /* Product card — two column like Amazon */
 .product-card {
   display: grid;

@@ -12,6 +12,12 @@
   --shadow-mustard-btn: 0 6px 18px rgba(218, 165, 32, 0.3);
   --shadow-mustard-btn-hover: 0 9px 22px rgba(218, 165, 32, 0.35);
 
+  /* Banderolle button colors */
+  --forest-band: rgba(34, 139, 34, 0.85);
+  --forest-active: #2aad2a;
+  --forest-btn-hover: #2a9f2a;
+  --forest-active-hover: #3ab83a;
+
   /* Spacing tokens */
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
