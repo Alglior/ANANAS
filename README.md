@@ -2,6 +2,8 @@
 
 Un portail de services géospatiaux basé sur des liens magnet et torrent pour le partage de données géographiques. Développé avec Flask, ce projet fournit une interface web pour accéder aux données géospatiales via des liens de téléchargement décentralisés.
 
+[Architecture →](ARCHITECTURE.md) — Vue détaillée du code, routes, sécurité et patterns architecturaux
+
 ## Fonctionnalités
 
 - Distribution de données géographiques via liens magnet
