@@ -19,9 +19,9 @@ generate_random() {
 # ──────────────────────────────────────────────
 docker_setup() {
     if [ ! -f "$ENV_FILE" ]; then
-        local pg_db=$(generate_random | head -c 32)
-        local pg_user=$(generate_random)
-        local pg_pass=$(generate_random)
+        local pg_db=$(generate_random | head -c 32)     # DB name short for safety
+        local pg_user=$(generate_random | head -c 63)   # PG username max 63 chars (NAMEDATA_LEN-1)
+        local pg_pass=$(generate_random | head -c 63)   # PG passwords also limited to ~64 in internal queries
         local flask_key=$(generate_random)
 
         cat > "$ENV_FILE" <<EOF
