@@ -284,6 +284,11 @@
   border: 1px solid #e5e5e5;
   padding: 1.25rem;
   background: var(--white);
+  transition: border-color 0.2s ease;
+}
+
+.product-img:hover {
+  border-color: var(--mustard);
 }
 
 /* Product details (right) */
