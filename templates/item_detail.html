@@ -96,7 +96,13 @@
 
           </div>
 
-          <div class="details-block"></div>
+          {% if item.tags and item.tags|length > 0 %}
+          <div class="item-tags">
+            {% for tag in item.tags %}
+              <span class="tag">{{ tag }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
 
           <!-- Description -->
           <div class="product-desc-section">

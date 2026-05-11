@@ -90,16 +90,30 @@ def _build_gallery_item(item_id):
     return gallery
 
 for i in range(1, 201):
+    format_name = ["Shapefile", "GeoJSON", "GeoPackage"][i % 3]
+    tags = []
+    if i % 5 == 0:
+        tags.extend(["topographie", "altimétrie"])
+    elif i % 4 == 0:
+        tags.extend(["hydrologie", "réseau"])
+    elif i % 3 == 0:
+        tags.extend(["occupation du sol", "classification"])
+    elif i % 7 == 0:
+        tags.extend(["administratif", "communes"])
+    else:
+        tags = ["donnée", format_name]
+
     _CATALOGUE_ITEMS.append({
         "id": i,
         "title": f"Géodonnée {i:04d}",
         "description": f"{LOREM_IPSUM_FR[i % len(LOREM_IPSUM_FR)]}",
-        "format": ["Shapefile", "GeoJSON", "GeoPackage"][i % 3],
+        "format": format_name,
         "size": f"{(i * 17) % 500 + 10} Mo",
         "magnet": f"magnet:?xt=urn:btih:{i:032d}",
         "image": "/static/images/logo/ANANAS.png",
         "author": _AUTHOR_NAMES[i % len(_AUTHOR_NAMES)],
         "created_at": _pseudo_date(i),
+        "tags": tags,
         "gallery": _build_gallery_item(i),
     })
 

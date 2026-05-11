@@ -67,6 +67,14 @@
   background: rgba(218, 165, 32, 0.16);
 }
 
+.item-tags {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .card-link {
   display: inline-block;
   margin-top: 0.4rem;
