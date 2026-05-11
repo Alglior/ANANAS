@@ -1,0 +1,33 @@
+# ──────────────────────────────────────────────
+#  A.N.A.N.A.S. — Docker Compose
+#
+#  docker compose up -d      → start all services
+#  docker compose down       → stop + remove containers
+#  docker compose logs -f    → follow logs
+# ──────────────────────────────────────────────
+
+services:
+  # ─── Flask app (built from Dockerfile) ───
+  app:
+    build: .
+    container_name: ananas_app
+    env_file: .env          # reads POSTGRES_*, FLASK_SECRET_KEY from .env
+    ports:
+      - "5000:5000"         # expose web UI on host port 5000
+    depends_on:
+      - postgres            # wait for postgres to start before starting app
+    volumes:
+      - secret_key:/app     # persist .secret file across container rebuilds
+
+  # ─── PostgreSQL (official image, no custom build) ───
+  postgres:
+    image: postgres:16-alpine
+    container_name: ananas_postgres
+    env_file: .env          # reads POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD from .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data   # persist database across restarts
+
+# ─── Named volumes (survive container deletion) ───
+volumes:
+  pg_data:       # Postgres data directory
+  secret_key:    # Flask .secret file persistence
