@@ -367,8 +367,8 @@
 
 .download-actions {
   display: flex;
-  gap: 0.75rem;
-  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
 }
 
 .btn-download {
@@ -379,14 +379,12 @@
   border-radius: 6px;
   font-size: 1rem;
   font-weight: 700;
-  cursor: pointer;
+  text-decoration: none;
   box-shadow: var(--shadow-mustard-btn);
-  transition: box-shadow 0.2s ease, transform 0.15s ease;
 }
 
 .btn-download:hover {
   box-shadow: var(--shadow-mustard-btn-hover);
-  transform: translateY(-1px);
 }
 
 .btn-copy-secondary {
@@ -818,6 +816,21 @@
   box-shadow: var(--shadow-mustard-btn);
 }
 
+.rate-form input[type="radio"] {
+  display: none;
+}
+
+.rate-form label {
+  font-size: 1.3rem;
+  color: #d5d5d5;
+  cursor: pointer;
+  transition: color 0.1s ease;
+}
+
+.rate-form label.filled {
+  color: var(--mustard);
+}
+
 .rating-stars-wrap .star.filled {
   color: var(--mustard);
 }
@@ -836,27 +849,11 @@
 .rate-form {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-}
-
-.rate-stars {
-  display: inline-flex;
   gap: 0.15rem;
 }
 
-.rate-stars input[type="radio"] {
-  display: none;
-}
-
-.rate-stars label {
-  font-size: 1.8rem;
-  color: #d5d5d5;
-  cursor: pointer;
-  transition: color 0.15s ease;
-}
-
-.rate-stars label:hover,
-.rate-stars input[type="radio"]:checked ~ label {
+.rate-form label:hover,
+.rate-form input[type="radio"]:checked ~ label {
   color: var(--mustard);
 }
 

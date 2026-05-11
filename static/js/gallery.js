@@ -206,36 +206,31 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // ── Star rating hover + selection ──
+  // ── Star rating hover + auto-submit ──
   var rateForms = document.querySelectorAll(".rate-form");
   rateForms.forEach(function (form) {
-    var stars = form.querySelectorAll(".rate-stars label");
-    var inputs = form.querySelectorAll(".rate-stars input");
+    var labels = Array.from(form.querySelectorAll("label"));
+    var inputs = Array.from(form.querySelectorAll("input"));
+    if (!labels.length) return;
 
-    stars.forEach(function (star, idx) {
-      star.addEventListener("mouseenter", function () {
-        stars.forEach(function (s, i) {
+    labels.forEach(function (label, idx) {
+      var originalColor = label.style.color || window.getComputedStyle(label).color;
+      label.addEventListener("mouseenter", function () {
+        labels.forEach(function (s, i) {
           s.style.color = i <= idx ? "#daa520" : "#d5d5d5";
         });
       });
 
-      star.addEventListener("mouseleave", function () {
-        var checkedIdx = Array.from(inputs).findIndex(function (inp) { return inp.checked; });
-        stars.forEach(function (s, i) {
-          s.style.color = checkedIdx >= 0 && i <= checkedIdx ? "#daa520" : "";
+      label.addEventListener("mouseleave", function () {
+        var checkedIdx = inputs.findIndex(function (inp) { return inp.checked; });
+        labels.forEach(function (s, i) {
+          s.style.color = "";
         });
       });
 
-      star.addEventListener("click", function () {
-        form.querySelector('[name="rating"]').value = idx + 1;
-        stars.forEach(function (s, i) {
-          if (i <= idx) {
-            s.style.color = "#daa520";
-            inputs[i].checked = true;
-          } else {
-            s.style.color = "#d5d5d5";
-          }
-        });
+      label.addEventListener("click", function () {
+        inputs[idx].checked = true;
+        form.submit();
       });
     });
   });

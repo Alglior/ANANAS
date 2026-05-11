@@ -55,29 +55,14 @@
           <!-- Rating -->
           <div class="rating-inline">
             <span class="rating-number-inline">{{ item.rating|default(3.8) }}</span>
-            <div class="rating-stars-wrap">
+            <form class="rate-form" method="POST" action="/catalogue/item/{{ item.id }}/rate">
               {% for i in range(1, 6) %}
                 {% set rating = item.rating|default(3.8) %}
-                {% if i <= (rating|round(0, 'floor')) %}
-                  <span class="star filled">&#9733;</span>
-                {% elif i == (rating|round(0, 'floor') + 1) and rating - (rating|round(0, 'floor')) >= 0.5 %}
-                  <span class="star half">&#9733;</span>
-                {% else %}
-                  <span class="star">&#9733;</span>
-                {% endif %}
-              {% endfor %}
-            </div>
-            <span class="rating-count">{{ item.review_count|default('128') }} avis</span>
-
-            <form class="rate-form" method="POST" action="/catalogue/item/{{ item.id }}/rate">
-              <div class="rate-stars">
-                {% for i in range(1, 6) %}
                 <input type="radio" name="rating" value="{{ i }}" id="star-{{ item.id }}-{{ i }}">
-                <label for="star-{{ item.id }}-{{ i }}" title="{{ i }}/5">&#9733;</label>
-                {% endfor %}
-              </div>
-              <button class="btn btn-rate-submit" type="submit">Envoyer</button>
+                <label for="star-{{ item.id }}-{{ i }}" class="{% if i <= (rating|round(0, 'floor')) %}filled{% elif i == (rating|round(0, 'floor') + 1) and rating - (rating|round(0, 'floor')) >= 0.5 %}half{% endif %}" title="{{ i }}/5">&#9733;</label>
+              {% endfor %}
             </form>
+            <span class="rating-count">{{ item.review_count|default('128') }} avis</span>
           </div>
 
           <div class="product-format-badge">
@@ -103,12 +88,7 @@
 
             {% if item.magnet %}
             <div class="download-actions">
-              <button class="btn btn-download" type="button" data-magnet="{{ item.magnet }}">
-                &#9660;&nbsp;Télécharger via magnet
-              </button>
-              <button class="btn btn-copy-secondary" type="button" data-magnet="{{ item.magnet }}">
-                Copier le lien magnet
-              </button>
+              <a href="{{ item.magnet }}" class="btn btn-download">Accès au téléchargement de la donnée</a>
             </div>
             {% else %}
             <p class="no-download">Lien de téléchargement non disponible</p>
