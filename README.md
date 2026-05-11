@@ -39,7 +39,7 @@ docker compose logs -f  # suivre les logs
 
 Cela démarre 2 conteneurs :
 - `ananas_app` — Flask en production via Gunicorn (port 5000)
-- `ananas_postgres` — PostgreSQL 16 Alpine (port 5432)
+- `ananas_postgres` — PostgreSQL 18 Alpine (port 5432)
 
 ### Mode Local (développement uniquement)
 

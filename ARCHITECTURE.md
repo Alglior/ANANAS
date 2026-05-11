@@ -15,7 +15,7 @@ L'application est déployable localement ou via Docker avec PostgreSQL, chaque m
 | Framework Web | Flask 3.1.0 (Python) |
 | Moteur de templates | Jinja2 (intégré à Flask) avec héritage de templates |
 | Serveur de production | Gunicorn 23.0.0 |
-| Base de données | PostgreSQL 16 Alpine (Docker uniquement) |
+| Base de données | PostgreSQL 18 Alpine (Docker uniquement) |
 | Configuration | python-dotenv, variables d'environnement, fichier `.secret` |
 | Sécurité | Flask-WTF, CSP headers, cookie sécurisés |
 | CSS | Vanilla CSS modulaire (variables custom `:root {}`) |
