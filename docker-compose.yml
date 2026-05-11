@@ -25,7 +25,7 @@ services:
     container_name: ananas_postgres
     env_file: .env          # reads POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD from .env
     volumes:
-      - pg_data:/var/lib/postgresql/data   # persist database across restarts
+      - pg_data:/var/lib/postgresql  # PG18 mounts at /var/lib/postgresql (not /data)
 
 # ─── Named volumes (survive container deletion) ───
 volumes:
