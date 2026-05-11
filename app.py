@@ -115,6 +115,7 @@ for i in range(1, 201):
         "created_at": _pseudo_date(i),
         "tags": tags,
         "gallery": _build_gallery_item(i),
+        "pdf_doc": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/r6.pdf",
     })
 
 def get_catalogue_page(total_page=1, per_page=ITEMS_PER_PAGE):

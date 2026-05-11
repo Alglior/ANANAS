@@ -433,6 +433,50 @@
   line-height: 1.7;
 }
 
+/* PDF documentation section */
+.pdf-doc-section {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--forest);
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.btn-pdf:hover {
+  background: #2a8c2a;
+}
+
+.btn-pdf-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: var(--forest);
+  border: 2px solid var(--forest);
+  padding: 0.7rem 1.2rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.btn-pdf-download:hover {
+  background: rgba(34, 139, 34, 0.08);
+}
+
 /* Related items */
 .detail-related {
   margin-top: 3rem;
