@@ -913,3 +913,671 @@
   font-size: 0.875rem;
   color: var(--specs-gray);
 }
+
+/* ────────────────────────────────────────────
+   Info / About section (home page)
+   ──────────────────────────────────────────── */
+.info-section {
+  padding: 5rem 0;
+}
+
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+}
+
+.info-card {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0 0 3.5rem;
+}
+
+.info-card:last-child {
+  border-bottom: none;
+}
+
+.info-card h3 {
+  color: var(--forest);
+  font-size: 1.4rem;
+  margin: 0 0 1.5rem;
+}
+
+.info-card p {
+  color: var(--charcoal);
+  line-height: 1.75;
+  max-width: 65ch;
+  margin: 0 0 1rem;
+}
+
+.info-card ul,
+.info-card ol {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+}
+
+.info-card li {
+  color: var(--charcoal);
+  line-height: 1.75;
+  margin-bottom: 0.6rem;
+  max-width: 65ch;
+}
+
+.info-card strong {
+  color: var(--forest);
+}
+
+/* ────────────────────────────────────────────
+   Peer-to-Peer & Résilience section
+   ──────────────────────────────────────────── */
+.p2p-section {
+  padding: 5rem 0;
+  background: linear-gradient(135deg, rgba(34, 139, 34, 0.04) 0%, rgba(100, 160, 200, 0.04) 100%);
+}
+
+.p2p-header {
+  text-align: center;
+  margin-bottom: 3.5rem;
+}
+
+.p2p-header h2 {
+  color: var(--forest);
+  font-size: clamp(1.6rem, 2.8vw, 2.1rem);
+  margin-bottom: 1rem;
+}
+
+.p2p-lead {
+  color: var(--charcoal);
+  font-size: 1.1rem;
+  max-width: 65ch;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.p2p-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+/* ── Diagram card ── */
+.p2p-diagram-card {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
+  padding: 2rem 2.5rem;
+}
+
+.p2p-diagram-title {
+  color: var(--charcoal);
+  font-size: 1.35rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* ── Flow diagram ── */
+.p2p-flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Server node */
+.p2p-server-node {
+  text-align: center;
+}
+
+/* Icons */
+.p2p-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 8px;
+  font-size: 1.4rem;
+}
+
+.p2p-icon-server {
+  background: var(--forest);
+  color: var(--white);
+}
+
+.p2p-icon-peer {
+  background: #2aad2a;
+  color: var(--white);
+  width: 2.8rem;
+  height: 2.8rem;
+  font-size: 1.15rem;
+}
+
+.p2p-node-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.p2p-node-desc {
+  font-size: 0.825rem;
+  color: #666;
+  margin: 0;
+}
+
+/* Arrow */
+.p2p-arrow-down {
+  display: flex;
+  justify-content: center;
+  color: #999;
+}
+
+.p2p-svg-arrow {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Peers grid */
+.p2p-peers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  text-align: center;
+}
+
+.p2p-peer-label {
+  font-size: 0.825rem;
+  color: #4a6a4a;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+/* Peers link row */
+.p2p-peers-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: #999;
+}
+
+.p2p-svg-chat {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.p2p-peers-text {
+  font-size: 1.25rem;
+  color: #999;
+}
+
+/* Result box */
+.p2p-result-box {
+  background: rgba(34, 139, 34, 0.06);
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.p2p-result-box p {
+  color: #4a6a4a;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Advantages column ── */
+.p2p-advantages {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.p2p-adv-card {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.p2p-adv-icon-wrap {
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.p2p-adv-icon-inner {
+  font-size: 1.4rem;
+}
+
+/* Icon color variants */
+.p2p-adv-icon-green { background: rgba(34, 139, 34, 0.12); }
+.p2p-adv-icon-blue { background: rgba(70, 130, 180, 0.12); }
+.p2p-adv-icon-purple { background: rgba(150, 100, 180, 0.12); }
+.p2p-adv-icon-orange { background: rgba(218, 165, 32, 0.15); }
+.p2p-adv-icon-red { background: rgba(192, 57, 43, 0.1); }
+
+.p2p-adv-content h4 {
+  color: var(--charcoal);
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem;
+}
+
+.p2p-adv-content p {
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ── Fact box (bottom) ── */
+.p2p-fact-box {
+  max-width: 60ch;
+  margin: 3.5rem auto 0;
+  text-align: center;
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
+  padding: 2rem 2.5rem;
+}
+
+.p2p-fact-title {
+  color: var(--charcoal);
+  font-size: 1.15rem;
+  margin: 0 0 0.75rem;
+}
+
+.p2p-fact-text {
+  color: #666;
+  font-size: 1rem;
+  line-height: 1.75;
+  margin: 0 0 1.25rem;
+}
+
+.p2p-fact-highlight {
+  background: rgba(34, 139, 34, 0.06);
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.p2p-fact-highlight p {
+  color: #4a6a4a;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.p2p-highlight-text {
+  color: var(--forest);
+  font-weight: 700;
+}
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .p2p-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .p2p-advantages {
+    flex-direction: column;
+  }
+}
+
+/* ────────────────────────────────────────────
+   GeoPackage Packs section
+   ──────────────────────────────────────────── */
+.gp-section {
+  padding: 5rem 0;
+  background: rgba(70, 130, 180, 0.06);
+}
+
+.gp-header {
+  text-align: center;
+  margin-bottom: 3.5rem;
+}
+
+.gp-header h2 {
+  color: var(--forest);
+  font-size: clamp(1.6rem, 2.8vw, 2.1rem);
+  margin-bottom: 1rem;
+}
+
+.gp-lead {
+  color: #666;
+  font-size: 1.1rem;
+  max-width: 65ch;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.gp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+/* ── Info card (left side) ── */
+.gp-info-card {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
+  padding: 2.5rem;
+}
+
+.gp-hero-emoji {
+  text-align: center;
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+}
+
+.gp-info-title {
+  color: var(--charcoal);
+  font-size: 1.5rem;
+  text-align: center;
+  margin: 0 0 2rem;
+}
+
+.gp-benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.gp-benefit-item {
+  color: #666;
+  font-size: 1rem;
+  line-height: 1.7;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.gp-benefit-item:last-child {
+  margin-bottom: 0;
+}
+
+.gp-check {
+  flex-shrink: 0;
+  color: var(--forest);
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin-top: 0.1rem;
+}
+
+.gp-benefit-item strong {
+  color: #4a6a4a;
+}
+
+/* ── Collections (right side) ── */
+.gp-collections {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.gp-collection-card {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem 1.75rem;
+  transition: box-shadow 0.2s ease;
+}
+
+.gp-collection-card:hover {
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.1);
+}
+
+.gp-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.gp-card-icon {
+  font-size: 1.8rem;
+  margin-right: 0.85rem;
+}
+
+.gp-card-header h4 {
+  color: var(--charcoal);
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.gp-card-desc {
+  color: #666;
+  font-size: 0.925rem;
+  line-height: 1.6;
+  margin: 0 0 0.85rem;
+}
+
+.gp-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gp-meta {
+  color: #999;
+  font-size: 0.825rem;
+}
+
+.gp-explore-link {
+  color: var(--forest);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+}
+
+.gp-explore-link:hover {
+  color: #1a6b1a;
+}
+
+/* ── CTA button ── */
+.gp-cta-wrap {
+  grid-column: 1 / -1;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.gp-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--forest);
+  color: var(--white);
+  padding: 1rem 1.75rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  box-shadow: 0 6px 18px rgba(34, 139, 34, 0.28);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gp-cta-btn:hover {
+  background: #1a7b1a;
+  box-shadow: 0 9px 22px rgba(34, 139, 34, 0.35);
+}
+
+.gp-cta-arrow {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* ────────────────────────────────────────────
+   Individual Data section
+   ──────────────────────────────────────────── */
+.di-section {
+  padding: 5rem 0;
+  background: var(--white);
+}
+
+.di-header {
+  text-align: center;
+  margin-bottom: 3.5rem;
+}
+
+.di-header h2 {
+  color: var(--forest);
+  font-size: clamp(1.6rem, 2.8vw, 2.1rem);
+  margin-bottom: 1rem;
+}
+
+.di-lead {
+  color: #666;
+  font-size: 1.1rem;
+  max-width: 65ch;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* ── Benefits row (3 cards) ── */
+.di-benefits-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+.di-benefit-card {
+  text-align: center;
+}
+
+.di-icon-circle {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+.di-icon-blue { background: rgba(70, 130, 180, 0.12); }
+.di-icon-green { background: rgba(34, 139, 34, 0.12); }
+.di-icon-purple { background: rgba(150, 100, 180, 0.12); }
+
+.di-benefit-title {
+  color: var(--charcoal);
+  font-size: 1.2rem;
+  margin: 0 0 1rem;
+}
+
+.di-benefit-text {
+  color: #666;
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 30ch;
+  margin: 0 auto;
+}
+
+/* ── Examples section ── */
+.di-examples {
+  margin-bottom: 3rem;
+}
+
+.di-examples-title {
+  color: var(--charcoal);
+  font-size: clamp(1.4rem, 2vw, 1.75rem);
+  text-align: center;
+  margin: 0 0 2rem;
+}
+
+.di-example-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.di-example-card {
+  background: var(--light-gray);
+  border-radius: 8px;
+  padding: 1.25rem;
+  transition: background-color 0.2s ease;
+}
+
+.di-example-card:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.di-example-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.di-example-icon {
+  font-size: 1.3rem;
+  margin-right: 0.6rem;
+}
+
+.di-example-name {
+  color: var(--charcoal);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.di-example-desc {
+  color: #666;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0 0 0.5rem;
+}
+
+.di-format-tag {
+  display: inline-block;
+  color: var(--forest);
+  font-size: 0.825rem;
+  font-weight: 600;
+}
+
+/* ── CTA button ── */
+.di-cta-wrap {
+  text-align: center;
+}
+
+.di-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--charcoal);
+  color: var(--white);
+  padding: 1rem 1.75rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.di-cta-btn:hover {
+  background: #4a4a4a;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+.di-cta-arrow {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .di-benefits-row {
+    grid-template-columns: 1fr;
+  }
+
+  .di-example-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

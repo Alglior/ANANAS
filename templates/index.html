@@ -10,11 +10,11 @@
   <div class="hero-overlay"></div>
   <div class="container hero-grid">
     <div class="hero-copy">
-      <p class="eyebrow">Plateforme géospatiale souveraine</p>
-      <h1>Diffusez vos géodonnées par liens magnet et torrents vérifiés</h1>
+      <p class="eyebrow">Partage de données géospatiales</p>
+      <h1>Partagez vos géodonnées avec des torrents vérifiés</h1>
       <p class="hero-lead">
-        A.N.A.N.A.S. centralise les paquets géospatiaux téléchargeables&nbsp;:
-        publication simple, contrôle d'intégrité et accès rapide aux données.
+        A.N.A.N.A.S. permet de partager et télécharger des données géographiques.
+        Vérification d'intégrité et accès rapide.
       </p>
       <div class="action-row">
         <a class="btn btn-primary transition-hover" href="#mirrors">Ouvrir le catalogue</a>
@@ -43,14 +43,333 @@
       </div>
     </aside>
   </div>
+</section>
 
-  <div class="scroll-down" id="scroll-down">
-    <a class="transition-hover" href="#mirrors" aria-label="Défiler vers le bas">
-      <span class="arrow"></span>
-    </a>
+<!-- Section Packs de Données GeoPackage -->
+<section class="gp-section" id="packs-geopackage">
+  <div class="container">
+    <div class="gp-header">
+      <h2>Packs de Données GeoPackage</h2>
+      <p class="gp-lead">
+        Découvrez nos collections thématiques de données géographiques pré-organisées au format GeoPackage, 
+        prêtes à être utilisées dans vos projets SIG.
+      </p>
+    </div>
+    
+    <div class="gp-grid">
+      <!-- Description des avantages -->
+      <div>
+        <div class="gp-info-card">
+          <div class="gp-hero-emoji">📦</div>
+          <h3 class="gp-info-title">Pourquoi les GeoPackages ?</h3>
+          <ul class="gp-benefits-list">
+            <li class="gp-benefit-item">
+              <span class="gp-check">✓</span>
+              <span><strong>Format standardisé OGC</strong> - Compatible avec tous les logiciels SIG modernes</span>
+            </li>
+            <li class="gp-benefit-item">
+              <span class="gp-check">✓</span>
+              <span><strong>Fichier unique</strong> - Toutes vos couches dans un seul fichier portable</span>
+            </li>
+            <li class="gp-benefit-item">
+              <span class="gp-check">✓</span>
+              <span><strong>Métadonnées intégrées</strong> - Descriptions, sources et historique inclus</span>
+            </li>
+            <li class="gp-benefit-item">
+              <span class="gp-check">✓</span>
+              <span><strong>Prêt à l'emploi</strong> - Styles et symbologies pré-configurés</span>
+            </li>
+            <li class="gp-benefit-item">
+              <span class="gp-check">✓</span>
+              <span><strong>Styles QML inclus</strong> - Fichiers .qml avec alias de variables lisibles (ex: temp_sup_35 = "Température supérieure à 35 °C")</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- Collections disponibles -->
+      <div class="gp-collections">
+        <div class="gp-collection-card">
+          <div class="gp-card-header">
+            <span class="gp-card-icon">🗺️</span>
+            <h4>Pack Cartographie Historique</h4>
+          </div>
+          <p class="gp-card-desc">Cartes historiques, plans anciens et évolution territoriale</p>
+          <div class="gp-card-footer">
+            <span class="gp-meta">Format: GPKG • Taille: ~250 MB</span>
+            <a href="{{ url_for('catalogue') }}?collection=Historique" class="gp-explore-link">Explorer →</a>
+          </div>
+        </div>
+        
+        <div class="gp-collection-card">
+          <div class="gp-card-header">
+            <span class="gp-card-icon">🏙️</span>
+            <h4>Pack Urbanisme & Aménagement</h4>
+          </div>
+          <p class="gp-card-desc">PLU, zonages, réseaux urbains et infrastructures</p>
+          <div class="gp-card-footer">
+            <span class="gp-meta">Format: GPKG • Taille: ~180 MB</span>
+            <a href="{{ url_for('catalogue') }}?collection=Urbanisme" class="gp-explore-link">Explorer →</a>
+          </div>
+        </div>
+        
+        <div class="gp-collection-card">
+          <div class="gp-card-header">
+            <span class="gp-card-icon">🌿</span>
+            <h4>Pack Géographie Physique</h4>
+          </div>
+          <p class="gp-card-desc">Relief, hydrographie, géologie et espaces naturels</p>
+          <div class="gp-card-footer">
+            <span class="gp-meta">Format: GPKG • Taille: ~320 MB</span>
+            <a href="{{ url_for('catalogue') }}?collection=Geographie" class="gp-explore-link">Explorer →</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="gp-cta-wrap">
+        <a href="{{ url_for('catalogue') }}" class="gp-cta-btn">
+          📦 Voir tous les packs
+          <svg class="gp-cta-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
   </div>
 </section>
 
+<!-- Section Données Individuelles -->
+<section class="di-section" id="donnees-individuelles">
+  <div class="container">
+    <div class="di-header">
+      <h2>Données Individuelles</h2>
+      <p class="di-lead">
+        Vous cherchez des données spécifiques ? Explorez notre catalogue de fichiers individuels 
+        organisés par thématique et téléchargeables séparément.
+      </p>
+    </div>
+    
+    <div class="di-benefits-row">
+      <div class="di-benefit-card">
+        <div class="di-icon-circle di-icon-blue">🎯</div>
+        <h3 class="di-benefit-title">Choix Précis</h3>
+        <p class="di-benefit-text">
+          Téléchargez uniquement les données dont vous avez besoin. 
+          Chaque fichier est disponible individuellement avec ses métadonnées complètes.
+        </p>
+      </div>
+      
+      <div class="di-benefit-card">
+        <div class="di-icon-circle di-icon-green">📦</div>
+        <h3 class="di-benefit-title">Format GeoPackage</h3>
+        <p class="di-benefit-text">
+          Toutes nos données individuelles sont au format GeoPackage standardisé, 
+          avec fichiers .qml pour les styles et alias de variables explicites 
+          (ex: "elev_max" devient "Altitude maximale en mètres").
+        </p>
+      </div>
+      
+      <div class="di-benefit-card">
+        <div class="di-icon-circle di-icon-purple">🔄</div>
+        <h3 class="di-benefit-title">Toujours à Jour</h3>
+        <p class="di-benefit-text">
+          Nos données individuelles sont régulièrement mises à jour. 
+          Accédez aux versions les plus récentes dès leur publication.
+        </p>
+      </div>
+    </div>
+    
+    <!-- Exemples de données -->
+    <div class="di-examples">
+      <h3 class="di-examples-title">Exemples de Données Disponibles</h3>
+      
+      <div class="di-example-grid">
+        <div class="di-example-card">
+          <div class="di-example-header">
+            <span class="di-example-icon">🌊</span>
+            <span class="di-example-name">Cours d'eau</span>
+          </div>
+          <p class="di-example-desc">Réseau hydrographique détaillé</p>
+          <span class="di-format-tag">GPKG</span>
+        </div>
+        
+        <div class="di-example-card">
+          <div class="di-example-header">
+            <span class="di-example-icon">🏔️</span>
+            <span class="di-example-name">Altimétrie</span>
+          </div>
+          <p class="di-example-desc">Modèles numériques de terrain</p>
+          <span class="di-format-tag">GPKG</span>
+        </div>
+        
+        <div class="di-example-card">
+          <div class="di-example-header">
+            <span class="di-example-icon">🏘️</span>
+            <span class="di-example-name">Communes</span>
+          </div>
+          <p class="di-example-desc">Limites administratives</p>
+          <span class="di-format-tag">GPKG</span>
+        </div>
+        
+        <div class="di-example-card">
+          <div class="di-example-header">
+            <span class="di-example-icon">🛣️</span>
+            <span class="di-example-name">Voirie</span>
+          </div>
+          <p class="di-example-desc">Réseau routier complet</p>
+          <span class="di-format-tag">GPKG</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="di-cta-wrap">
+      <a href="{{ url_for('catalogue') }}" class="di-cta-btn">
+        🗂️ Parcourir toutes les données
+        <svg class="di-cta-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Section Peer-to-Peer & Résilience -->
+<section class="p2p-section" id="peer-to-peer">
+  <div class="container">
+    <div class="p2p-header">
+      <h2>Réseau Peer-to-Peer Décentralisé</h2>
+      <p class="p2p-lead">
+        Grâce au protocole BitTorrent, vos données restent accessibles même si notre serveur principal 
+        rencontre des difficultés. Une approche révolutionnaire pour la continuité de service.
+      </p>
+    </div>
+    
+    <div class="p2p-grid">
+      <!-- Schéma visuel -->
+      <div class="p2p-diagram-card">
+        <h3 class="p2p-diagram-title">Comment ça marche ?</h3>
+        
+        <div class="p2p-flow">
+          <!-- Serveur central -->
+          <div class="p2p-server-node">
+            <div class="p2p-icon p2p-icon-server">🌐</div>
+            <p class="p2p-node-label">Serveur Datalynio France</p>
+            <p class="p2p-node-desc">Point d'entrée &amp; catalogue</p>
+          </div>
+          
+          <!-- Flèche vers peers -->
+          <div class="p2p-arrow-down">
+            <svg class="p2p-svg-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+          </div>
+          
+          <!-- Réseau de peers -->
+          <div class="p2p-peers-grid">
+            <div class="p2p-peer-node">
+              <div class="p2p-icon p2p-icon-peer">💻</div>
+              <p class="p2p-peer-label">Peer A</p>
+            </div>
+            <div class="p2p-peer-node">
+              <div class="p2p-icon p2p-icon-peer">🖥️</div>
+              <p class="p2p-peer-label">Peer B</p>
+            </div>
+            <div class="p2p-peer-node">
+              <div class="p2p-icon p2p-icon-peer">🖥️</div>
+              <p class="p2p-peer-label">Peer C</p>
+            </div>
+          </div>
+          
+          <!-- Connexions entre peers -->
+          <div class="p2p-peers-link">
+            <svg class="p2p-svg-chat" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+            <span class="p2p-peers-text">↔</span>
+            <svg class="p2p-svg-chat" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+          </div>
+          
+          <div class="p2p-result-box">
+            <p>
+              <strong>Résultat :</strong> Les données se partagent directement entre utilisateurs, 
+              créant un réseau décentralisé et résilient.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Avantages -->
+      <div class="p2p-advantages">
+        <div class="p2p-adv-card">
+          <div class="p2p-adv-icon-wrap p2p-adv-icon-green">
+            <span class="p2p-adv-icon-inner">🛡️</span>
+          </div>
+          <div class="p2p-adv-content">
+            <h4>Haute Disponibilité</h4>
+            <p>Même si le serveur Datalynio France est temporairement indisponible, les données restent accessibles via le réseau peer-to-peer.</p>
+          </div>
+        </div>
+        
+        <div class="p2p-adv-card">
+          <div class="p2p-adv-icon-wrap p2p-adv-icon-blue">
+            <span class="p2p-adv-icon-inner">⚡</span>
+          </div>
+          <div class="p2p-adv-content">
+            <h4>Téléchargements Rapides</h4>
+            <p>Plus il y a d'utilisateurs, plus les téléchargements sont rapides. Chaque peer contribue à la vitesse globale du réseau.</p>
+          </div>
+        </div>
+        
+        <div class="p2p-adv-card">
+          <div class="p2p-adv-icon-wrap p2p-adv-icon-purple">
+            <span class="p2p-adv-icon-inner">🌍</span>
+          </div>
+          <div class="p2p-adv-content">
+            <h4>Décentralisation</h4>
+            <p>Aucun point de défaillance unique. Les données sont distribuées sur l'ensemble du réseau d'utilisateurs actifs.</p>
+          </div>
+        </div>
+        
+        <div class="p2p-adv-card">
+          <div class="p2p-adv-icon-wrap p2p-adv-icon-orange">
+            <span class="p2p-adv-icon-inner">💰</span>
+          </div>
+          <div class="p2p-adv-content">
+            <h4>Économique</h4>
+            <p>Réduction des coûts de bande passante pour le serveur, permettant un service gratuit et durable.</p>
+          </div>
+        </div>
+        
+        <div class="p2p-adv-card">
+          <div class="p2p-adv-icon-wrap p2p-adv-icon-red">
+            <span class="p2p-adv-icon-inner">🔗</span>
+          </div>
+          <div class="p2p-adv-content">
+            <h4>Sites Miroirs &amp; Liens Magnet</h4>
+            <p>Sites miroirs de sauvegarde et banques de liens magnet pour un accès garanti aux données, même en cas de censure.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="p2p-fact-box">
+      <h4 class="p2p-fact-title">💡 Le saviez-vous ?</h4>
+      <p class="p2p-fact-text">
+        Une fois qu'un fichier est téléchargé par plusieurs utilisateurs, il devient pratiquement 
+        <strong>indestructible</strong>. Même si tous nos serveurs tombaient en panne, 
+        la communauté d'utilisateurs pourrait continuer à partager les données entre eux !
+      </p>
+      <div class="p2p-fact-highlight">
+        <p>
+          <strong>📡 Résilience maximale :</strong> Sites miroirs automatiques + banques de liens magnet 
+          + réseau peer-to-peer = <span class="p2p-highlight-text">Accès garanti aux données</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
 <section class="mirror-section" id="mirrors">
   <div class="container">
     <h2>Sites miroirs</h2>
