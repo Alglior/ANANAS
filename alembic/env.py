@@ -24,15 +24,20 @@ def run_migrations_offline():
         context.run_migrations()
 
 def run_migrations_online():
-    from flask_app import create_app, db
+    from app import create_app, db
+    import models  # register all model classes in db.metadata
     app = create_app()
     with app.app_context():
-        context.configure(
-            connection=db.get_engine(),
-            target_metadata=db.metadata,
-        )
-        with context.begin_transaction():
-            context.run_migrations()
+        connection = db.get_engine().connect()
+        try:
+            context.configure(
+                connection=connection,
+                target_metadata=db.metadata,
+            )
+            with context.begin_transaction():
+                context.run_migrations()
+        finally:
+            connection.close()
 
 if context.is_offline_mode():
     run_migrations_offline()
