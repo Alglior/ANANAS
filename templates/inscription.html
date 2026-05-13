@@ -13,6 +13,7 @@
       </div>
 
       <form class="auth-form" id="inscriptionForm" action="/inscription" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div class="form-row">
           <div class="form-group">
             <label for="nom">Nom</label>

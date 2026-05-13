@@ -20,12 +20,27 @@
   <body>
     {% include 'partials/header.html' %}
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container" role="alert">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
     {% block content %}{% endblock %}
 
     {% include 'partials/footer.html' %}
 
     <script src="{{ url_for('static', filename='js/utils/clipboard.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/catalogue.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/gallery/inlineGallery.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/gallery/imageModal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/gallery/copyMagnet.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/gallery/starRating.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     {% block extra_scripts %}{% endblock %}
   </body>

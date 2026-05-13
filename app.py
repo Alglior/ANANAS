@@ -160,9 +160,10 @@ def _build_page_numbers(current, total):
 
 class Config:
     """Configuration de l'application."""
-    SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", "")
 
     def __init__(self):
+        self.SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", "")
+
         # Si aucune clé n'est configurée, lecture du fichier SECRET_FILE
         if not self.SECRET_KEY and os.path.isfile(SECRET_FILE):
             with open(SECRET_FILE, "r") as f:
@@ -175,7 +176,7 @@ class Config:
     def validate(self):
         """Valider la clé et garantir sa robustesse."""
         is_production = os.environ.get("FLASK_ENV", "development") == "production"
-        
+
         # Si aucune clé n'est trouvée ou si elle est trop courte (< 32 chars)
         if not self.SECRET_KEY or len(self.SECRET_KEY) < 32:
             if is_production:
@@ -185,17 +186,6 @@ class Config:
             else:
                 # En développement, générer une nouvelle clé
                 self.SECRET_KEY = _generate_secret_key()
-
-
-def _generate_secret_key():
-    """Générer une clé secrète de 32 octets et sauvegarder dans le fichier SECRET_FILE."""
-    import secrets
-
-    key = secrets.token_hex(32)
-    with open(SECRET_FILE, "w") as f:
-        f.write(f"FLASK_SECRET_KEY={key}\n")
-    os.chmod(SECRET_FILE, 0o600)
-    return key
 
 
 def create_app(app_name="ANANAS"):

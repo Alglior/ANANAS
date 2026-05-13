@@ -25,7 +25,7 @@
         <li>
           <hr class="catalogue-divider">
           <a href="/catalogue/item/{{ item.id }}" class="catalogue-item transition-hover catalogue-link">
-            <img class="catalogue-image" src="{{ item.image }}" alt="" loading="lazy">
+            <img class="catalogue-image" src="{{ item.image }}" alt="{{ item.title }}" loading="lazy">
             <div class="catalogue-content">
               <div class="catalogue-top">
                 <span class="catalogue-title">{{ item.title }}</span>

@@ -17,12 +17,11 @@
         <span>{{ item.title }}</span>
       </nav>
 
-      <div class="banderolle">
-        <div class="banderolle-spacer"></div>
-        <a href="#" class="btn-band apercu-btn">Aperçu</a>
-        <a href="#" class="btn-band donnee-btn">Donnée</a>
-        <a href="#" class="btn-band visu-btn">Visualisation</a>
-      </div>
+      <nav class="detail-tabs" aria-label="Actions sur la donnée">
+        <a href="#" class="tab-btn active">Aperçu</a>
+        <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn">Données</a>
+        <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Visualisation</a>
+      </nav>
     </div>
   </section>
 
@@ -125,102 +124,97 @@
 
       <!-- Technical / Documentation -->
       <section class="tech-section">
-        <div class="container">
-          <h2>Spécifications techniques</h2>
-          <dl class="tech-grid">
-            <div class="tech-item">
-              <dt>Format</dt>
-              <dd>{{ item.format }}</dd>
-            </div>
-            <div class="tech-item">
-              <dt>Taille</dt>
-              <dd>{{ item.size }}</dd>
-            </div>
-            <div class="tech-item">
-              <dt>ID</dt>
-              <dd>#{{ item.id }}</dd>
-            </div>
-            <div class="tech-item">
-              <dt>Auteur / Publieur</dt>
-              <dd>{{ item.author }}</dd>
-            </div>
-          </dl>
-
-          {% if item.magnet %}
-          <div class="tech-code-block">
-            <h3>Lien magnet</h3>
-            <code>{{ item.magnet }}</code>
-            <button class="btn btn-copy-tech" type="button" data-magnet="{{ item.magnet }}">
-              Copier le lien
-            </button>
+        <h2>Spécifications techniques</h2>
+        <dl class="tech-grid">
+          <div class="tech-item">
+            <dt>Format</dt>
+            <dd>{{ item.format }}</dd>
           </div>
-          {% endif %}
+          <div class="tech-item">
+            <dt>Taille</dt>
+            <dd>{{ item.size }}</dd>
+          </div>
+          <div class="tech-item">
+            <dt>ID</dt>
+            <dd>#{{ item.id }}</dd>
+          </div>
+          <div class="tech-item">
+            <dt>Auteur / Publieur</dt>
+            <dd>{{ item.author }}</dd>
+          </div>
+        </dl>
 
+        {% if item.magnet %}
+        <div class="tech-code-block">
+          <h3>Lien magnet</h3>
+          <code>{{ item.magnet }}</code>
+          <button class="btn btn-copy-tech" type="button" data-magnet="{{ item.magnet }}">
+            Copier le lien
+          </button>
         </div>
+        {% endif %}
+
       </section>
 
       <!-- Réutilisation -->
       <section class="reuse-section">
-        <div class="container">
-          <h2>Réutilisation</h2>
-          <div class="reuse-card">
-            <dl class="reuse-grid">
-              <div class="reuse-item">
-                <dt>Catégorie</dt>
-                <dd>{{ item.format }}</dd>
-              </div>
-              <div class="reuse-item">
-                <dt>Licence</dt>
-                <dd>Licence Ouverte — Licence CC-BY</dd>
-              </div>
-              <div class="reuse-item">
-                <dt>Auteur</dt>
-                <dd>{{ item.author }}</dd>
-              </div>
-              <div class="reuse-item">
-                <dt>Date de publication</dt>
-                <dd>{{ item.created_at }}</dd>
-              </div>
-            </dl>
-            <p class="reuse-note">Cette donnée publiée par {{ item.author }} peut être réutilisée librement dans vos propres projets SIG, analyses ou visualisations cartographiques. La mention « Source : A.N.A.N.A.S. » est recommandée.</p>
-          </div>
+        <h2>Réutilisation</h2>
+        <div class="reuse-card">
+          <dl class="reuse-grid">
+            <div class="reuse-item">
+              <dt>Catégorie</dt>
+              <dd>{{ item.format }}</dd>
+            </div>
+            <div class="reuse-item">
+              <dt>Licence</dt>
+              <dd>Licence Ouverte — Licence CC-BY</dd>
+            </div>
+            <div class="reuse-item">
+              <dt>Auteur</dt>
+              <dd>{{ item.author }}</dd>
+            </div>
+            <div class="reuse-item">
+              <dt>Date de publication</dt>
+              <dd>{{ item.created_at }}</dd>
+            </div>
+          </dl>
+          <p class="reuse-note">Cette donnée publiée par {{ item.author }} peut être réutilisée librement dans vos propres projets SIG, analyses ou visualisations cartographiques. La mention « Source : A.N.A.N.A.S. » est recommandée.</p>
         </div>
       </section>
 
       <!-- Commentaires -->
       <section class="comments-section">
-        <div class="container">
-          <h2>Commentaires</h2>
+        <h2>Commentaires</h2>
 
-          {% if item.comments and item.comments|length > 0 %}
-          <ul class="comments-list">
-            {% for comment in item.comments %}
-            <li class="comment-item">
-              <div class="comment-header">
-                <span class="comment-author">{{ comment.author }}</span>
-                <span class="comment-date">{{ comment.date }}</span>
-              </div>
-              <p class="comment-text">{{ comment.text }}</p>
-            </li>
-            {% endfor %}
-          </ul>
-          {% else %}
-          <p class="comments-empty">Aucun commentaire pour ce géodonnées.</p>
-          {% endif %}
+        {% if item.comments and item.comments|length > 0 %}
+        <ul class="comments-list">
+          {% for comment in item.comments %}
+          <li class="comment-item">
+            <div class="comment-header">
+              <span class="comment-author">{{ comment.author }}</span>
+              <span class="comment-date">{{ comment.date }}</span>
+            </div>
+            <p class="comment-text">{{ comment.text }}</p>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="comments-empty">Aucun commentaire pour ce géodonnées.</p>
+        {% endif %}
 
-          <form class="comment-form" method="POST" action="/catalogue/item/{{ item.id }}/comment">
-            <div class="comment-form-fields">
-              <input class="comment-input" type="text" name="author" placeholder="Votre nom" required>
-            </div>
-            <div class="comment-form-textarea-wrap">
-              <textarea name="text" placeholder="Ajouter un commentaire..." required></textarea>
-            </div>
-            <div class="comment-form-actions">
-              <button class="btn btn-primary" type="submit">Publier</button>
-            </div>
-          </form>
+        <form class="comment-form" method="POST" action="/catalogue/item/{{ item.id }}/comment">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="comment-form-fields">
+            <input class="comment-input" type="text" name="author" placeholder="Votre nom" required>
+          </div>
+          <div class="comment-form-textarea-wrap">
+            <textarea name="text" placeholder="Ajouter un commentaire..." required></textarea>
+          </div>
+          <div class="comment-form-actions">
+            <button class="btn btn-primary" type="submit">Publier</button>
+          </div>
+        </form>
 
-        </div>
       </section>
 
       {% if related_items %}
@@ -246,19 +240,15 @@
   </section>
 
 </main>
-<!-- Image modal gallery -->
 <div class="image-modal" id="imageModal">
   <div class="modal-backdrop"></div>
-
-  <div class="modal-content white-box">      
+  <div class="modal-content white-box">
     <button class="modal-close" aria-label="Fermer">&#10005;</button>
     <div class="modal-left">
-
       <button class="modal-nav modal-prev" aria-label="Précédent">&#8249;</button>
       <img class="modal-img" src="" alt="">
       <button class="modal-nav modal-next" aria-label="Suivant">&#8250;</button>
     </div>
-
     <div class="modal-thumbnails">
       {% if image_gallery and image_gallery|length > 0 %}
         {% for img in image_gallery %}
@@ -269,7 +259,6 @@
       {% endif %}
     </div>
   </div>
-
 </div>
 
 {% endblock %}

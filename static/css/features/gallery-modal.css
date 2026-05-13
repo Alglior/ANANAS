@@ -141,3 +141,8 @@
 
 .modal-thumb:hover { opacity: 1; }
 .modal-thumb.active { opacity: 1; border-color: var(--mustard); }
+
+
+.gallery-backbar { display: flex; align-items: center; padding: 1.5rem 0; }
+.gallery-back-link { color: var(--specs-gray); text-decoration: none; font-size: 0.9rem; }
+.gallery-empty { color: var(--specs-gray); text-align: center; padding: 3rem 1rem; }
