@@ -60,7 +60,7 @@
       <!-- Description des avantages -->
       <div>
         <div class="gp-info-card">
-          <div class="gp-hero-emoji">📦</div>
+          <div class="gp-hero-icon-wrap"><span class="gp-hero-icon">📦</span></div>
           <h3 class="gp-info-title">Pourquoi les GeoPackages ?</h3>
           <ul class="gp-benefits-list">
             <li class="gp-benefit-item">
@@ -151,7 +151,7 @@
     
     <div class="di-benefits-row">
       <div class="di-benefit-card">
-        <div class="di-icon-circle di-icon-blue">🎯</div>
+        <div class="di-icon-circle di-icon-gold">🎯</div>
         <h3 class="di-benefit-title">Choix Précis</h3>
         <p class="di-benefit-text">
           Téléchargez uniquement les données dont vous avez besoin. 
@@ -370,6 +370,95 @@
     </div>
   </div>
 </section>
+
+<!-- Section Comment télécharger avec Magnet Torrent -->
+<section class="magnet-section" id="magnet-torrent">
+  <div class="container">
+    <div class="magnet-header">
+      <h2>Télécharger avec Magnet Torrent</h2>
+      <p class="magnet-lead">
+        Pour télécharger un fichier depuis un lien magnet, vous avez besoin d'un client BitTorrent. 
+        Voici comment procéder, étape par étape.
+      </p>
+    </div>
+    
+    <div class="magnet-grid">
+      <!-- Étapes -->
+      <div class="magnet-steps">
+        <h3 class="magnet-steps-title">Étapes pour télécharger</h3>
+        
+        <div class="magnet-step-card">
+          <span class="magnet-step-number">1</span>
+          <div class="magnet-step-content">
+            <h4 class="magnet-step-heading">Installez un client BitTorrent</h4>
+            <p class="magnet-step-desc">
+              Téléchargez et installez un lecteur torrent gratuit comme 
+              <a href="https://www.qbittorrent.org/" target="_blank" rel="noopener">qBittorrent</a>, 
+              <a href="https://www.libtorrent.org/" target="_blank" rel="noopener">LibreTorrent</a> 
+              (mobile), ou Transmission. Ces clients sont open-source et sans publicité.
+            </p>
+          </div>
+        </div>
+        
+        <div class="magnet-step-card">
+          <span class="magnet-step-number">2</span>
+          <div class="magnet-step-content">
+            <h4 class="magnet-step-heading">Copiez le lien magnet</h4>
+            <p class="magnet-step-desc">
+              Sur notre plateforme, chaque fichier possède un lien magnet unique qui commence par 
+              <code>magnet:?xt=urn:btih:</code>. Cliquez sur le bouton "Copier" à côté du lien pour 
+              le copier dans votre presse-papier.
+            </p>
+          </div>
+        </div>
+        
+        <div class="magnet-step-card">
+          <span class="magnet-step-number">3</span>
+          <div class="magnet-step-content">
+            <h4 class="magnet-step-heading">Ajoutez le lien dans votre client</h4>
+            <p class="magnet-step-desc">
+              Ouvrez votre client BitTorrent, puis collez le lien magnet via 
+              <strong>Fichier → Ajouter un torrent magnétique</strong> ou glissez le lien directement 
+              dans la fenêtre de l'application. Le téléchargement démarre automatiquement.
+            </p>
+          </div>
+        </div>
+        
+        <div class="magnet-step-card">
+          <span class="magnet-step-number">4</span>
+          <div class="magnet-step-content">
+            <h4 class="magnet-step-heading">Choisissez le dossier de sauvegarde</h4>
+            <p class="magnet-step-desc">
+              Sélectionnez l'emplacement où vous souhaitez stocker les données sur votre disque. 
+              Une fois le téléchargement terminé, vérifiez l'intégrité du fichier pour garantir 
+              son authenticité.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Exemple + Info -->
+      <div class="magnet-side">
+        <div class="magnet-example-card">
+          <h3 class="magnet-example-title">Exemple de lien magnet</h3>
+          <p class="magnet-example-desc">
+            Un lien magnet ressemble à ceci (exemplaire raccourci) :
+          </p>
+          <code class="magnet-code">
+            magnet:?xt=urn:btih:a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2&dn=Donnees_Cartes_GeoPackage&tr=https://tracker.ananas.org/announce
+          </code>
+          <div class="magnet-example-note">
+            <p>
+              <strong>📌 Note :</strong> Le lien complet est toujours plus long. 
+              Seule la partie <code>xt</code> (identifiant unique du fichier) est indispensable pour le partage.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="mirror-section" id="mirrors">
   <div class="container">
     <h2>Sites miroirs</h2>
