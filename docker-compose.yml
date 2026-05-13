@@ -17,7 +17,7 @@ services:
     depends_on:
       - postgres            # wait for postgres to start before starting app
     volumes:
-      - secret_key:/app     # persist .secret file across container rebuilds
+      - secret_key:/app/.secret   # persist .secret file across container rebuilds
 
   # ─── PostgreSQL (official image, no custom build) ───
   postgres:

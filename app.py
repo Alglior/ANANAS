@@ -4,6 +4,11 @@ SECRET_FILE = ".secret"
 
 from flask import Flask, render_template, redirect, url_for
 from flask_wtf import CSRFProtect
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
+db = SQLAlchemy()
+migrate = Migrate()
 
 # ────────────────────────────────────────────
 #  Catalogue Items (mock data — replace with DB)
@@ -293,6 +298,27 @@ def create_app(app_name="ANANAS"):
 
     # Activation globale de la protection CSRF (nécessite une clé secrète)
     csrf = CSRFProtect(app)
+
+    # ────────────────────────────────────────────
+    #  Database setup
+    # ────────────────────────────────────────────
+    db_uri = os.environ.get("SQLALCHEMY_DATABASE_URI", "")
+    if not db_uri:
+        pg_user = os.environ.get("POSTGRES_USER", "ananas_user")
+        pg_pass = os.environ.get("POSTGRES_PASSWORD", "password")
+        pg_host = os.environ.get("POSTGRES_HOST", "postgres")
+        pg_db = os.environ.get("POSTGRES_DB", "ananas")
+        db_uri = f"postgresql+psycopg2://{pg_user}:{pg_pass}@{pg_host}:5432/{pg_db}"
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    db.init_app(app)
+    migrate.init_app(app, db=db)
+
+    @app.route("/health")
+    def health_check():
+        return {"status": "ok"}
 
     # ────────────────────────────────────────────
     #  Security Headers & Cookie Settings
