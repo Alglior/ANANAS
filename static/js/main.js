@@ -2,80 +2,107 @@
  * A.N.A.N.A.S. — Script principal
  * Gérer la recherche, la copie d'email et les validations communes aux formulaires.
  */
+var MainModule = (function () {
 
-document.addEventListener("DOMContentLoaded", () => {
-  initSearch();
-  initCopyBtn();
-  validatePasswordMatch();
-});
+  /* -------------------------------------------------------------------------- */
+  /* Toast notification (non-blocking feedback)                               */
+  /* -------------------------------------------------------------------------- */
 
-/* -------------------------------------------------------------------------- */
-/* Search                                                                   */
-/* -------------------------------------------------------------------------- */
+  function showToast(message) {
+    const toast = document.createElement("div");
+    toast.className = "toast-notification";
+    toast.textContent = message;
+    toast.style.cssText = "position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:12px 24px;background:#333;color:#fff;border-radius:8px;font-size:14px;z-index:10000;opacity:0;transition:opacity .3s;pointer-events:none;";
+    document.body.appendChild(toast);
+    requestAnimationFrame(function () {
+      toast.style.opacity = "1";
+    });
+    setTimeout(function () {
+      toast.style.opacity = "0";
+      setTimeout(function () {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+      }, 300);
+    }, 2500);
+  }
 
-function initSearch() {
-  const form = document.querySelector(".search-bar");
-  const input = document.getElementById("site-search");
+  /* -------------------------------------------------------------------------- */
+  /* Search                                                                   */
+  /* -------------------------------------------------------------------------- */
 
-  if (!form || !input) return;
+  function initSearch() {
+    const form = document.querySelector(".search-bar");
+    const input = document.getElementById("site-search");
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const term = input.value.trim();
-    if (term) {
-      alert("Recherche lancée pour : " + term);
-    }
-  });
-}
+    if (!form || !input) return;
 
-/* -------------------------------------------------------------------------- */
-/* Copy email                                                               */
-/* -------------------------------------------------------------------------- */
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const term = input.value.trim();
+      if (term) {
+        showToast("Recherche : " + term);
+      }
+    });
+  }
 
-function initCopyBtn() {
-  const btn = document.getElementById("copy-btn");
-  const feedback = document.getElementById("copy-feedback");
-  const emailEl = document.getElementById("email-text");
+  /* -------------------------------------------------------------------------- */
+  /* Copy email                                                               */
+  /* -------------------------------------------------------------------------- */
 
-  if (!btn || !emailEl) return;
+  function initCopyBtn() {
+    const btn = document.getElementById("copy-btn");
+    const feedback = document.getElementById("copy-feedback");
+    const emailEl = document.getElementById("email-text");
 
-  btn.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(emailEl.textContent.trim());
-      btn.classList.add("copied");
-      btn.textContent = "✓ Copié";
-      feedback.style.opacity = "1";
+    if (!btn || !emailEl) return;
 
-      setTimeout(() => {
-        btn.classList.remove("copied");
-        btn.textContent = "Copier l'email";
-        feedback.style.opacity = "0";
-      }, 2000);
-    } catch {
-      btn.classList.add("error");
-      setTimeout(() => btn.classList.remove("error"), 1500);
-    }
-  });
-}
+    btn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(emailEl.textContent.trim());
+        btn.classList.add("copied");
+        btn.textContent = "✓ Copié";
+        if (feedback) feedback.style.opacity = "1";
 
-/* -------------------------------------------------------------------------- */
-/* Password match validation (inscription)                                  */
-/* -------------------------------------------------------------------------- */
+        setTimeout(() => {
+          btn.classList.remove("copied");
+          btn.textContent = "Copier l'email";
+          if (feedback) feedback.style.opacity = "0";
+        }, 2000);
+      } catch {
+        btn.classList.add("error");
+        setTimeout(() => btn.classList.remove("error"), 1500);
+      }
+    });
+  }
 
-function validatePasswordMatch() {
-  const pw = document.getElementById("password");
-  const confirm = document.getElementById("password_confirm");
+  /* -------------------------------------------------------------------------- */
+  /* Password match validation (inscription)                                  */
+  /* -------------------------------------------------------------------------- */
 
-  if (!pw || !confirm) return;
+  function validatePasswordMatch() {
+    const pw = document.getElementById("password");
+    const confirm = document.getElementById("password_confirm");
 
-  confirm.addEventListener("input", () => {
-    const group = confirm.closest(".form-group");
-    if (pw.value !== confirm.value) {
-      group.classList.add("has-error");
-      confirm.setCustomValidity("Les mots de passe ne correspondent pas.");
-    } else {
-      group.classList.remove("has-error");
-      confirm.setCustomValidity("");
-    }
-  });
-}
+    if (!pw || !confirm) return;
+
+    confirm.addEventListener("input", () => {
+      const group = confirm.closest(".form-group");
+      if (pw.value !== confirm.value) {
+        group.classList.add("has-error");
+        confirm.setCustomValidity("Les mots de passe ne correspondent pas.");
+      } else {
+        group.classList.remove("has-error");
+        confirm.setCustomValidity("");
+      }
+    });
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /* Public API                                                               */
+  /* -------------------------------------------------------------------------- */
+
+  return {
+    initSearch: initSearch,
+    initCopyBtn: initCopyBtn,
+    validatePasswordMatch: validatePasswordMatch
+  };
+})();

@@ -24,7 +24,9 @@
 
     {% include 'partials/footer.html' %}
 
+    <script src="{{ url_for('static', filename='js/utils/clipboard.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     {% block extra_scripts %}{% endblock %}
   </body>
 </html>

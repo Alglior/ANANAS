@@ -1,0 +1,56 @@
+.status-panel,
+.service-card,
+.contact-card {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
+}
+
+.contact-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2.5rem 3rem;
+  position: relative;
+}
+
+.contact-page {
+  padding: 5rem 0 6rem;
+}
+
+.contact-page h1 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.contact-page .contact-intro {
+  text-align: center;
+  color: var(--text-secondary);
+  max-width: 50ch;
+  margin: 0 auto 3rem;
+  line-height: 1.7;
+}
+
+.copy-btn {
+  position: relative;
+}
+
+.copy-feedback {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  color: var(--forest);
+  font-weight: 600;
+  font-size: 0.95rem;
+  position: absolute;
+  bottom: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--white);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  white-space: nowrap;
+}

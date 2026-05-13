@@ -43,8 +43,8 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid #ededed;
-  border-bottom: 1px solid #ededed;
+  border-top: 1px solid var(--border-lighter);
+  border-bottom: 1px solid var(--border-lighter);
 }
 
 .status-panel li {
@@ -57,7 +57,7 @@
 }
 
 .status-panel .label {
-  color: #5f5f5f;
+  color: var(--text-label);
 }
 
 .alert-box {

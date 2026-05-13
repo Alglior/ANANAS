@@ -5,7 +5,6 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="{{ url_for('static', filename='css/gallery.css') }}" />
 {% endblock %}
 
 {% block content %}
@@ -45,5 +44,4 @@
 <script>
   var __gallery_items = {{ item.gallery | default([]) | tojson }};
 </script>
-<script src="{{ url_for('static', filename='js/gallery.js') }}"></script>
 {% endblock %}

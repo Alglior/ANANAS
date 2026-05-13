@@ -105,3 +105,41 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ── Gallery Modal Responsive ── */
+@media (max-width: 992px) {
+  .modal-thumbnails { width: 180px; grid-auto-rows: 64px; }
+}
+
+@media (max-width: 768px) {
+  .modal-content { flex-direction: column; padding: 10px; max-width: 96vw; max-height: calc(100vh - 40px); }
+  .white-box { flex-direction: column-reverse; }
+  .modal-left { min-width: auto; padding: 8px; }
+  .modal-thumbnails { width: 100%; grid-template-columns: repeat(6, 1fr); grid-auto-rows: 48px; overflow-x: auto; overflow-y: visible; padding: 8px 6px; }
+  .modal-nav { width: 40px; height: 40px; font-size: 1.4rem; }
+  .modal-prev { left: 8px; }
+  .modal-next { right: 8px; }
+  .modal-close { top: 6px; right: 6px; width: 34px; height: 34px; }
+}
+
+/* ── P2P Responsive ── */
+@media (max-width: 860px) {
+  .p2p-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .p2p-advantages {
+    flex-direction: column;
+  }
+}
+
+/* ── DI Responsive ── */
+@media (max-width: 860px) {
+  .di-benefits-row {
+    grid-template-columns: 1fr;
+  }
+
+  .di-example-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -1,0 +1,71 @@
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1px;
+  background: var(--border-light);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.tech-item {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem;
+  background: var(--white);
+}
+
+.tech-item dt {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--specs-gray);
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+}
+
+.tech-item dd {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin: 0;
+}
+
+.tech-code-block {
+  background: var(--light-gray);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.tech-code-block h3 {
+  font-size: 1rem;
+  color: var(--charcoal);
+  margin: 0 0 0.75rem;
+}
+
+.tech-code-block code {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--charcoal);
+  word-break: break-all;
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+
+.btn-copy-tech {
+  display: inline-block;
+  border-width: 2px;
+  padding: 0.65rem 1.4rem;
+  cursor: pointer;
+}
+
+.btn-copy-tech:hover {
+  background: rgba(34, 139, 34, 0.08);
+}
+
+.btn-copy-tech.copied {
+  background: var(--forest) !important;
+  color: var(--white) !important;
+}

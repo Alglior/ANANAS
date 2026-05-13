@@ -66,7 +66,7 @@
 .form-group input[type="email"],
 .form-group input[type="password"] {
   padding: 0.75rem 1rem;
-  border: 1px solid #d4d4d4;
+  border: 1px solid var(--border-auth);
   border-radius: 8px;
   font-size: 1rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -140,13 +140,13 @@
 
 /* Erreurs de formulaire */
 .form-group.has-error > input {
-  border-color: #c0392b;
+  border-color: var(--error-red);
   box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.12);
 }
 
 .form-error {
   font-size: 0.8rem;
-  color: #c0392b;
+  color: var(--error-red);
   font-weight: 500;
 }
 

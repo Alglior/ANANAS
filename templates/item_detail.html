@@ -2,9 +2,7 @@
 
 {% block title %}{{ title }}{% endblock %}
 {% block meta_description %}{{ meta_description }}{% endblock %}
-{% block extra_head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/gallery.css') }}" />
-{% endblock %}
+
 
 {% block content %}
 <main class="detail-page">
@@ -274,8 +272,4 @@
 
 </div>
 
-{% endblock %}
-
-{% block extra_scripts %}
-<script src="{{ url_for('static', filename='js/gallery.js') }}"></script>
 {% endblock %}

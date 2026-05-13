@@ -1,0 +1,85 @@
+/* Inline rating (inside product details, right after title) */
+.rating-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.rating-number-inline {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.rating-stars-wrap .star {
+  font-size: 1.3rem;
+  color: var(--border-color);
+}
+
+.rating-stars-wrap .star.filled {
+  color: var(--mustard);
+}
+
+.rating-stars-wrap .star.half {
+  position: relative;
+  color: var(--border-color);
+}
+
+.rating-count {
+  font-size: 0.9rem;
+  color: var(--specs-gray);
+}
+
+/* Interactive star rating */
+.rate-form {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.rate-form label:hover,
+.rate-form input[type="radio"]:checked ~ label {
+  color: var(--mustard);
+}
+
+.rate-form input[type="radio"] {
+  display: none;
+}
+
+.rate-form label {
+  font-size: 1.3rem;
+  color: var(--border-color);
+  cursor: pointer;
+  transition: color 0.1s ease;
+}
+
+.rate-form label.filled {
+  color: var(--mustard);
+}
+
+.rate-stars {
+  display: inline-flex;
+  gap: 0.15rem;
+}
+
+.btn-rate-submit {
+  background: var(--mustard);
+  color: var(--charcoal);
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-rate-submit:hover {
+  box-shadow: var(--shadow-mustard-btn);
+}
+
+.rate-submit-label {
+  font-size: 0.875rem;
+  color: var(--specs-gray);
+}

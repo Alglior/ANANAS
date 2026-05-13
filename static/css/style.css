@@ -1,7 +1,15 @@
 @import url("./base.css");
+@import url("./primitives/buttons.css");
+@import url("./primitives/cards.css");
+@import url("./primitives/badges.css");
 @import url("./header.css");
 @import url("./hero.css");
-@import url("./components.css");
+@import url("./features/product.css");
+@import url("./features/gallery-modal.css");
+@import url("./features/technical.css");
+@import url("./features/ratings.css");
+@import url("./features/comments.css");
+@import url("./features/sections.css");
 @import url("./auth.css");
 @import url("./services.css");
 @import url("./footer.css");

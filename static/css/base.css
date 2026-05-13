@@ -1,10 +1,42 @@
 :root {
+  /* Brand colors */
   --forest: #228b22;
   --charcoal: #333333;
   --mustard: #daa520;
   --light-gray: #f5f5f5;
   --specs-gray: #888888;
   --white: #ffffff;
+
+  /* Text colors */
+  --text-secondary: #666666;
+  --text-muted: #999999;
+  --text-green-accent: #4a6a4a;
+  --text-label: #5f5f5f;
+  --text-footer: #ececec;
+  --text-footer-link: #f0f0f0;
+  --text-footer-muted: #d8d8d8;
+  --text-footer-dimmed: #efefef;
+  --text-footer-subtle: #d4d4d4;
+
+  /* Border colors */
+  --border-color: #e0e0e0;
+  --border-light: #e8e8e8;
+  --border-lighter: #ededed;
+  --border-header: #dfdfdf;
+  --border-product-img: #e5e5e5;
+  --border-auth: #d4d4d4;
+  --border-pagination: #dddddd;
+
+  /* Surface backgrounds */
+  --surface-gray: #f0f0f0;
+  --surface-catalogue-thumb: #f0f0f0;
+
+  /* Interactive colors */
+  --error-red: #c0392b;
+  --hover-forest: #2a8c2a;
+  --hover-forest-dark: #1a7b1a;
+  --hover-forest-darker: #1a6b1a;
+  --hover-charcoal: #4a4a4a;
 
   /* Shadow color tokens */
   --shadow-color-soft: rgba(0, 0, 0, 0.06);
@@ -24,6 +56,9 @@
   --space-md: 0.85rem;
   --space-lg: 1.25rem;
   --space-xl: 2rem;
+
+  /* Typography */
+  --mono: "Ubuntu Mono", "DejaVu Sans Mono", monospace;
 }
 
 /* Shared hover transitions — combine with other classes */
@@ -80,5 +115,5 @@ h3 {
 }
 
 .mono {
-  font-family: "Ubuntu Mono", "DejaVu Sans Mono", monospace;
+  font-family: var(--mono);
 }
