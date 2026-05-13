@@ -36,7 +36,18 @@
 
     <nav class="nav nav-bottom" aria-label="Navigation principale">
       <a href="/">Accueil</a>
-      <a href="/catalogue">Catalogue</a>
+
+      <div class="catalogue-dropdown-wrapper">
+        <button class="dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
+          Catalogue &#9662;
+        </button>
+        <div class="catalogue-dropdown" id="catalogueDropdown">
+          <a href="/catalogue/donnees" class="dropdown-item">Géodonnées</a>
+          <a href="/catalogue/cartes" class="dropdown-item">Cartes</a>
+          <a href="/catalogue/applications" class="dropdown-item">Applications</a>
+        </div>
+      </div>
+
       <a href="/contact">Contact</a>
     </nav>
   </div>

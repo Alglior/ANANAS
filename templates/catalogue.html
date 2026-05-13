@@ -3,12 +3,19 @@
 {% block title %}{{ title }}{% endblock %}
 {% block meta_description %}{{ meta_description }}{% endblock %}
 
+{% set catalogue_titles = {
+  "donnees": "Catalogue des géodonnées",
+  "cartes": "Catalogue des cartes",
+  "applications": "Catalogue d'applications"
+} %}
+{% set catalogue_name = catalogue_titles.get(catalogue_type, "Catalogue des géodonnées") %}
+
 {% block content %}
 <main class="catalogue-page">
 
 <section class="catalogue-header">
     <div class="container">
-      <h1>Catalogue des géodonnées</h1>
+      <h1>{{ catalogue_name }}</h1>
       <p class="catalogue-meta">{{ total_items }}&nbsp;résultats — page {{ page }}/{{ total_pages }}</p>
     </div>
   </section>
@@ -18,7 +25,7 @@
       <nav class="breadcrumb" aria-label="Fil d'ariane">
         <a href="/">Accueil</a>
         <span class="sep">&rsaquo;</span>
-        <span>Catalogue</span>
+        <span>{{ catalogue_name }}</span>
       </nav>
       <ul class="catalogue-list">
         {% for item in items %}
@@ -52,7 +59,7 @@
       {% if total_pages > 1 %}
       <nav class="pagination" aria-label="Pagination du catalogue">
         {% if page > 1 %}
-          <a class="btn btn-outline transition-hover pagination-prev" href="/catalogue/{{ page - 1 }}">&#9664;&nbsp;Précédent</a>
+          <a class="btn btn-outline transition-hover pagination-prev" href="/catalogue/{{ catalogue_type or 'donnees' }}/{{ page - 1 }}">&#9664;&nbsp;Précédent</a>
         {% else %}
           <span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>
         {% endif %}
@@ -64,13 +71,13 @@
             {% elif p == page %}
               <span class="pagination-link active">{{ p }}</span>
             {% else %}
-              <a class="pagination-link" href="/catalogue/{{ p }}">{{ p }}</a>
+              <a class="pagination-link" href="/catalogue/{{ catalogue_type or 'donnees' }}/{{ p }}">{{ p }}</a>
             {% endif %}
           {% endfor %}
         </div>
 
         {% if page < total_pages %}
-          <a class="btn btn-outline transition-hover pagination-next" href="/catalogue/{{ page + 1 }}">Suivant&nbsp;&#9668;</a>
+          <a class="btn btn-outline transition-hover pagination-next" href="/catalogue/{{ catalogue_type or 'donnees' }}/{{ page + 1 }}">Suivant&nbsp;&#9668;</a>
         {% else %}
           <span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9668;</span>
         {% endif %}

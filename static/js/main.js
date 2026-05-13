@@ -97,12 +97,40 @@ var MainModule = (function () {
   }
 
   /* -------------------------------------------------------------------------- */
+  /* Catalogue dropdown toggle                                                 */
+  /* -------------------------------------------------------------------------- */
+
+  function initDropdown() {
+    const toggle = document.querySelector(".dropdown-toggle");
+    const menu = document.getElementById("catalogueDropdown");
+
+    if (!toggle || !menu) return;
+
+    function open() { menu.classList.add("open"); toggle.setAttribute("aria-expanded", "true"); }
+    function close() { menu.classList.remove("open"); toggle.setAttribute("aria-expanded", "false"); }
+
+    toggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      menu.classList.contains("open") ? close() : open();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!menu.contains(e.target) && !toggle.contains(e.target)) close();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && menu.classList.contains("open")) close();
+    });
+  }
+
+  /* -------------------------------------------------------------------------- */
   /* Public API                                                               */
   /* -------------------------------------------------------------------------- */
 
   return {
     initSearch: initSearch,
     initCopyBtn: initCopyBtn,
-    validatePasswordMatch: validatePasswordMatch
+    validatePasswordMatch: validatePasswordMatch,
+    initDropdown: initDropdown
   };
 })();

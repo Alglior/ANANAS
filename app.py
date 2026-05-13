@@ -118,18 +118,112 @@ for i in range(1, 201):
         "pdf_doc": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/r6.pdf",
     })
 
-def get_catalogue_page(total_page=1, per_page=ITEMS_PER_PAGE):
+_CARTES_ITEMS = []
+_MAP_FORMATS = ["Carte raster", "Carte vectorielle", "SIG interactif", "Orthophoto"]
+_MAP_TITLES = [
+    "Carte bathymétrique des fonds marins",
+    "Atlas géologique du territoire national",
+    "Carte d'aléa sismique régionale",
+    "Couverture orthophotographique aérienne",
+    "Carte topographique au 1:25000",
+    "Map des zones de protection environnementale",
+    "Relevé cartographique LiDAR haute résolution",
+    "Carte géomorphologique structurale",
+    "Couche SIG administrative régionale",
+    "Mosaïque satellite multispectrale",
+]
+
+for i in range(1, 201):
+    format_name = _MAP_FORMATS[i % len(_MAP_FORMATS)]
+    title = f"{_MAP_TITLES[i % len(_MAP_TITLES)]} — Secteur {i:04d}"
+    tags = []
+    if i % 5 == 0:
+        tags.extend(["cartographie", "topographie"])
+    elif i % 4 == 0:
+        tags.extend(["SIG", "vectoriel"])
+    elif i % 3 == 0:
+        tags.extend(["raster", "satellite"])
+    else:
+        tags = ["carte", format_name]
+
+    _CARTES_ITEMS.append({
+        "id": i,
+        "title": title,
+        "description": f"{LOREM_IPSUM_FR[i % len(LOREM_IPSUM_FR)]}",
+        "format": format_name,
+        "size": f"{(i * 17) % 500 + 10} Mo",
+        "magnet": f"magnet:?xt=urn:btih:{i:032d}",
+        "image": "/static/images/logo/ANANAS.png",
+        "author": _AUTHOR_NAMES[i % len(_AUTHOR_NAMES)],
+        "created_at": _pseudo_date(i + 500),
+        "tags": tags,
+        "gallery": _build_gallery_item(i),
+        "pdf_doc": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/r6.pdf",
+    })
+
+_APPS_ITEMS = []
+_APP_TYPES = ["Web App", "Dashboard", "Microservice", "API REST"]
+_APP_NAMES = [
+    "Visualiseur cartographique en ligne",
+    "Application de traitement SIG batch",
+    "Portail d'échange de données géographiques",
+    "Système de gestion des alertes environnementales",
+    "Outil d'analyse spatiale multi-couches",
+    "Plateforme de modélisation hydologique",
+    "API de géocodage et reverse-geocodage",
+    "Dashboard de surveillance territoriale",
+    "Application mobile de collecte terrain",
+    "Système de publication cartographique web",
+]
+
+for i in range(1, 201):
+    app_type = _APP_TYPES[i % len(_APP_TYPES)]
+    name = f"{_APP_NAMES[i % len(_APP_NAMES)]} — v{i // 10 + 1}.{i % 10}"
+    tags = []
+    if i % 5 == 0:
+        tags.extend(["web", "visualisation"])
+    elif i % 4 == 0:
+        tags.extend(["api", "service"])
+    elif i % 3 == 0:
+        tags.extend(["dashboard", "analytique"])
+    else:
+        tags = ["application", app_type]
+
+    _APPS_ITEMS.append({
+        "id": i,
+        "title": name,
+        "description": f"{LOREM_IPSUM_FR[i % len(LOREM_IPSUM_FR)]}",
+        "format": app_type,
+        "size": f"{(i * 17) % 500 + 10} Mo",
+        "magnet": f"magnet:?xt=urn:btih:{i:032d}",
+        "image": "/static/images/logo/ANANAS.png",
+        "author": _AUTHOR_NAMES[i % len(_AUTHOR_NAMES)],
+        "created_at": _pseudo_date(i + 1000),
+        "tags": tags,
+        "gallery": _build_gallery_item(i),
+        "pdf_doc": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/r6.pdf",
+    })
+
+_ALL_CATALOGUES = {
+    "donnees": _CATALOGUE_ITEMS,
+    "cartes": _CARTES_ITEMS,
+    "applications": _APPS_ITEMS,
+}
+
+
+def get_catalogue_page(total_page=1, per_page=ITEMS_PER_PAGE, catalogue="donnees"):
     """Retourne la page `total_page` d'items (1-indexed)."""
-    items = _CATALOGUE_ITEMS[(total_page - 1) * per_page: total_page * per_page]
+    items_list = _ALL_CATALOGUES[catalogue]
+    items = items_list[(total_page - 1) * per_page: total_page * per_page]
     if not items:
         return None
-    total_pages = (len(_CATALOGUE_ITEMS) + per_page - 1) // per_page
+    total_pages = (len(items_list) + per_page - 1) // per_page
     page_numbers = _build_page_numbers(total_page, total_pages)
     return {
         "items": items,
         "page": total_page,
         "per_page": per_page,
-        "total_items": len(_CATALOGUE_ITEMS),
+        "total_items": len(items_list),
         "total_pages": total_pages,
         "page_numbers": page_numbers,
     }
@@ -262,22 +356,47 @@ def create_app(app_name="ANANAS"):
         endpoint = rule.lstrip("/") or "home"
         _register_view(app, rule, endpoint, route_cfg)
 
-    # Catalogue route (supports pagination via <int:page>)
-    def catalogue_view(page=1):
+    # Catalogue routes (donnees, cartes, applications)
+    _CATALOGUE_META = {
+        "donnees": {
+            "title_prefix": "Catalogue des géodonnées",
+            "meta": "Parcourez le catalogue complet des géodonnées A.N.A.N.A.S.",
+        },
+        "cartes": {
+            "title_prefix": "Catalogue des cartes",
+            "meta": "Explorez la collection de cartes et produits cartographiques A.N.A.N.A.S.",
+        },
+        "applications": {
+            "title_prefix": "Catalogue d'applications",
+            "meta": "Découvrez les applications et services web géospatiaux A.N.A.N.A.S.",
+        },
+    }
+
+    def catalogue_view(catalogue="donnees", page=1):
+        if catalogue not in _ALL_CATALOGUES:
+            return redirect(url_for("catalogue"))
         if page < 1:
-            return redirect(url_for("catalogue", page=1))
-        data = get_catalogue_page(page)
+            return redirect(url_for("catalogue", catalogue=catalogue, page=1))
+        meta = _CATALOGUE_META[catalogue]
+        data = get_catalogue_page(page, catalogue=catalogue)
         if data is None:
-            return redirect(url_for("catalogue", page=1))
+            return redirect(url_for("catalogue", catalogue=catalogue, page=1))
         return render_template(
             "catalogue.html",
-            title=f"A.N.A.N.A.S. | Catalogue — Page {page}",
-            meta_description="Parcourez le catalogue complet des géodonnées A.N.A.N.A.S.",
+            title=f"A.N.A.N.A.S. | {meta['title_prefix']} — Page {page}",
+            meta_description=meta["meta"],
+            catalogue_type=catalogue,
             **data,
         )
 
     app.add_url_rule("/catalogue", endpoint="catalogue", view_func=catalogue_view)
-    app.add_url_rule("/catalogue/<int:page>", endpoint="catalogue_page", view_func=catalogue_view)
+    app.add_url_rule("/catalogue/donnees", endpoint="catalogue_donnees", view_func=catalogue_view)
+    app.add_url_rule("/catalogue/cartes", endpoint="catalogue_cartes", view_func=catalogue_view)
+    app.add_url_rule("/catalogue/applications", endpoint="catalogue_apps", view_func=catalogue_view)
+    app.add_url_rule("/catalogue/<int:page>", endpoint="catalogue_page", view_func=lambda page=1: catalogue_view(page=page))
+    app.add_url_rule("/catalogue/donnees/<int:page>", endpoint="catalogue_donnees_page", view_func=lambda catalogue="donnees", page=1: catalogue_view(catalogue=catalogue, page=page))
+    app.add_url_rule("/catalogue/cartes/<int:page>", endpoint="catalogue_cartes_page", view_func=lambda catalogue="cartes", page=1: catalogue_view(catalogue=catalogue, page=page))
+    app.add_url_rule("/catalogue/applications/<int:page>", endpoint="catalogue_apps_page", view_func=lambda catalogue="applications", page=1: catalogue_view(catalogue=catalogue, page=page))
 
     # ────────────────────────────────────────────
     #  Favicon (silently ignore requests)
@@ -288,13 +407,21 @@ def create_app(app_name="ANANAS"):
 
     # Item detail route
     def item_detail_view(item_id):
-        item = next((i for i in _CATALOGUE_ITEMS if i["id"] == item_id), None)
+        item = None
+        for items in _ALL_CATALOGUES.values():
+            found = next((i for i in items if i["id"] == item_id), None)
+            if found:
+                item = found
+                break
         if item is None:
             return redirect(url_for("catalogue"))
-        related_items = [
-            i for i in _CATALOGUE_ITEMS
-            if i["format"] == item["format"] and i["id"] != item_id
-        ][:3]
+        related_items = []
+        for catalog_items in _ALL_CATALOGUES.values():
+            related_items.extend(
+                i for i in catalog_items
+                if i["format"] == item["format"] and i["id"] != item_id
+            )
+        related_items = related_items[:3]
         # Extract only image items from gallery for the inline gallery strip
         img_gallery = [g for g in item.get("gallery", []) if g["type"] == "image"]
 
@@ -311,7 +438,12 @@ def create_app(app_name="ANANAS"):
 
     # Standalone gallery page
     def item_gallery_view(item_id):
-        item = next((i for i in _CATALOGUE_ITEMS if i["id"] == item_id), None)
+        item = None
+        for items in _ALL_CATALOGUES.values():
+            found = next((i for i in items if i["id"] == item_id), None)
+            if found:
+                item = found
+                break
         if item is None:
             return redirect(url_for("catalogue"))
         return render_template(

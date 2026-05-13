@@ -1,6 +1,7 @@
 .topbar {
   top: 0;
-  z-index: 999999 !important;
+  position: relative;
+  z-index: 100;
   border-bottom: 1px solid var(--border-header);
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(8px);
@@ -131,4 +132,57 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.catalogue-dropdown-wrapper {
+  position: relative;
+}
+
+.dropdown-toggle {
+  background: none;
+  border: none;
+  font-weight: 500;
+  padding: 0.25rem 0.2rem;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.dropdown-toggle:hover {
+  border-bottom-color: var(--forest);
+}
+
+.catalogue-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 0.25rem;
+  min-width: 160px;
+  background: var(--white);
+  border: 1px solid var(--border-header);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 0.35rem 0;
+  z-index: 10000;
+}
+
+.catalogue-dropdown.open {
+  display: block;
+}
+
+.dropdown-item {
+  display: block;
+  padding: 0.5rem 1.2rem;
+  text-decoration: none;
+  color: inherit;
+  font-size: 0.92rem;
+  transition: background-color 0.15s ease;
+}
+
+.dropdown-item:hover {
+  background-color: var(--lightest-gray);
 }
