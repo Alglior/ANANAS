@@ -1,7 +1,10 @@
 import os
 import datetime as dt
 import json
+import re
 from functools import wraps
+from pathlib import Path
+from werkzeug.utils import secure_filename
 
 SECRET_FILE = ".secret"
 
@@ -19,6 +22,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import CSRFProtect
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from utils.security import sanitize_html, validate_external_url
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -153,6 +159,13 @@ def create_app(app_name="ANANAS"):
     # Activation globale de la protection CSRF (nécessite une clé secrète)
     csrf = CSRFProtect(app)
 
+    # Rate limiting pour prévenir le brute-force sur les routes d'authentification
+    limiter = Limiter(
+        app=app,
+        key_func=get_remote_address,
+        default_limits=["100 per hour"]
+    )
+
     # ────────────────────────────────────────────
     #  Database setup
     # ────────────────────────────────────────────
@@ -182,6 +195,7 @@ def create_app(app_name="ANANAS"):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             "style-src 'self' https://fonts.googleapis.com https://unpkg.com; "
@@ -248,14 +262,15 @@ def create_app(app_name="ANANAS"):
 
     type_map = {"donnees": "geodonnee", "cartes": "carte", "applications": "application"}
 
-    def catalogue_view(catalogue="donnees", page=1):
-        if catalogue not in type_map:
-            return redirect(url_for("catalogue"))
-
+    def catalogue_view():
+        catalogue = request.args.get("catalogue", "donnees")
         try:
-            page = int(request.args.get("page", page))
+            page = int(request.args.get("page", 1))
         except (ValueError, TypeError):
             page = 1
+
+        if catalogue not in type_map:
+            return redirect(url_for("catalogue"))
 
         if page < 1:
             return redirect(url_for("catalogue", catalogue=catalogue, page=1))
@@ -265,12 +280,43 @@ def create_app(app_name="ANANAS"):
         format_param = request.args.get("format", "")
 
         meta = _CATALOGUE_META[catalogue]
-        data = get_catalogue_page(page, catalogue=catalogue, filter_verified=filter_verified, org_slug=org_slug)
-        if data is None:
-            return redirect(url_for("catalogue", catalogue=catalogue, page=1))
+        from models import Item, Organization
+
+        type_map_local = {
+            "donnees": "geodonnee",
+            "cartes": "carte",
+            "applications": "application"
+        }
+        item_type = type_map_local[catalogue]
+
+        query = Item.query.filter_by(type=item_type)
+        if org_slug:
+            org = Organization.query.filter_by(slug=org_slug).first()
+            if org:
+                query = query.filter_by(organization_id=org.id)
+        if filter_verified:
+            query = query.filter_by(verification_status="verified")
+
+        total_items = query.count()
+        total_pages = max((total_items + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE, 1)
+
+        if page > total_pages:
+            return redirect(url_for("catalogue", catalogue=catalogue, page=total_pages))
+
+        items = query.offset((page - 1) * per_page).limit(per_page).all()
+        result_items = [item.to_dict() for item in items]
+        page_numbers = _build_page_numbers(page, total_pages)
+
         if format_param == "json":
             from flask import jsonify
-            return jsonify(data)
+            return jsonify({
+                "items": result_items,
+                "page": page,
+                "per_page": per_page,
+                "total_items": total_items,
+                "total_pages": total_pages,
+                "page_numbers": page_numbers,
+            })
         return render_template(
             "catalogue.html",
             title=f"A.N.A.N.A.S. | {meta['title_prefix']} — Page {page}",
@@ -278,17 +324,16 @@ def create_app(app_name="ANANAS"):
             catalogue_type=catalogue,
             filter_verified=filter_verified,
             org_slug=org_slug,
-            **data,
+            items=result_items,
+            page=page,
+            per_page=per_page,
+            total_items=total_items,
+            total_pages=total_pages,
+            page_numbers=page_numbers,
         )
 
-    app.add_url_rule("/catalogue", endpoint="catalogue", view_func=lambda page=1: catalogue_view(page=page))
-    app.add_url_rule("/catalogue/donnees", endpoint="catalogue_donnees", view_func=lambda page=1: catalogue_view(page=page))
-    app.add_url_rule("/catalogue/cartes", endpoint="catalogue_cartes", view_func=lambda catalogue="cartes", page=1: catalogue_view(catalogue=catalogue, page=page))
-    app.add_url_rule("/catalogue/applications", endpoint="catalogue_apps", view_func=lambda catalogue="applications", page=1: catalogue_view(catalogue=catalogue, page=page))
-    app.add_url_rule("/catalogue/<int:page>", endpoint="catalogue_page", view_func=lambda page=1: catalogue_view(page=page))
-    app.add_url_rule("/catalogue/donnees/<int:page>", endpoint="catalogue_donnees_page", view_func=lambda catalogue="donnees", page=1: catalogue_view(catalogue=catalogue, page=page))
-    app.add_url_rule("/catalogue/cartes/<int:page>", endpoint="catalogue_cartes_page", view_func=lambda catalogue="cartes", page=1: catalogue_view(catalogue=catalogue, page=page))
-    app.add_url_rule("/catalogue/applications/<int:page>", endpoint="catalogue_apps_page", view_func=lambda catalogue="applications", page=1: catalogue_view(catalogue=catalogue, page=page))
+    app.add_url_rule("/catalogue", endpoint="catalogue", view_func=catalogue_view)
+    app.add_url_rule("/catalogue/<int:page>", endpoint="catalogue_page", view_func=lambda: catalogue_view())
 
     # ────────────────────────────────────────────
     #  Favicon (silently ignore requests)
@@ -357,6 +402,7 @@ def create_app(app_name="ANANAS"):
     #  Auth POST handlers (connexion / inscription)
     # ────────────────────────────────────────────
     @app.route("/connexion", methods=["POST"])
+    @limiter.limit("5 per hour")
     def connexion_post():
         email = request.form.get("email", "").strip()
         password = request.form.get("password", "")
@@ -374,6 +420,7 @@ def create_app(app_name="ANANAS"):
         return render_template("connexion.html", error="Identifiants incorrects"), 401
 
     @app.route("/inscription", methods=["POST"])
+    @limiter.limit("3 per hour")
     def inscription_post():
         prenom = request.form.get("prenom", "").strip()
         nom = request.form.get("nom", "").strip()
@@ -391,7 +438,7 @@ def create_app(app_name="ANANAS"):
             prenom=prenom,
             nom=nom,
             email=email,
-            password_hash=generate_password_hash(password),
+            password_hash=generate_password_hash(password, method="scrypt"),
             is_active=True,
             banned=False,
         )
@@ -438,7 +485,7 @@ def create_app(app_name="ANANAS"):
         current_user = get_current_user()
         item = Item.query.get_or_404(item_id)
         author_name = request.form.get("author", "").strip() or (f"{current_user.prenom} {current_user.nom}" if current_user else "")
-        content = request.form.get("text", "").strip()
+        content = sanitize_html(request.form.get("text", ""))
 
         if not content:
             return redirect(url_for("item_detail", item_id=item_id))
@@ -837,6 +884,107 @@ def create_app(app_name="ANANAS"):
             status=status_filter,
             pending_count=pending_count,
         )
+
+    # ────────────────────────────────────────────
+    #  Upload chunk endpoint (Phase 9 + 10)
+    # ────────────────────────────────────────────
+    ALLOWED_EXTENSIONS = {"csv", "shp", "geojson", "gpkg", "json", "xml"}
+
+    def is_allowed_file(filename):
+        if not filename or "." not in filename:
+            return False
+        ext = filename.rsplit(".", 1)[1].lower()
+        return ext in ALLOWED_EXTENSIONS
+
+    @app.route("/api/upload/chunk", methods=["POST"])
+    @login_required
+    def upload_chunk():
+        from models import DataChunk, UserUpload
+
+        current_user = get_current_user()
+        file = request.files.get("file")
+        parent_item_id = request.form.get("parent_item_id")
+        chunk_name = request.form.get("chunk_name", "").strip()
+
+        if not file or not chunk_name:
+            return jsonify({"error": "Fichier et nom requis"}), 400
+
+        if not is_allowed_file(file.filename):
+            return jsonify({"error": "Format de fichier non autorisé"}), 400
+
+        safe_name = secure_filename(file.filename)
+        upload_path = os.path.join("/uploads", str(current_user.id), safe_name)
+        os.makedirs(os.path.dirname(upload_path), exist_ok=True)
+        file.save(upload_path)
+
+        file_size = os.path.getsize(upload_path)
+        original_format = Path(file.filename).suffix.lstrip(".")
+
+        upload = UserUpload(
+            owner_user_id=current_user.id,
+            parent_item_id=parent_item_id,
+            file_name=safe_name,
+            file_size_bytes=file_size,
+            mime_type=file.content_type,
+            original_format=original_format,
+            processing_status="queued",
+        )
+        db.session.add(upload)
+        db.session.commit()
+
+        chunk = DataChunk(
+            parent_item_id=parent_item_id,
+            name=chunk_name[:200],
+            owner_user_id=current_user.id,
+            upload_status="pending",
+            data_url=f"/uploads/{upload.id}/{safe_name}",
+            metadata_json={"original_file": safe_name},
+        )
+        db.session.add(chunk)
+        db.session.commit()
+
+        upload.chunk_id = chunk.id
+        db.session.commit()
+
+        return jsonify({"status": "queued", "upload_id": upload.id})
+
+    # ────────────────────────────────────────────
+    #  Visualization link endpoint (Phase 9 + 10)
+    # ────────────────────────────────────────────
+    @app.route("/api/items/<int:item_id>/viz-links", methods=["POST"])
+    @login_required
+    def add_viz_link(item_id):
+        from models import Item, VisualizationLink
+
+        current_user = get_current_user()
+        item = Item.query.get_or_404(item_id)
+
+        data = request.get_json(silent=True) or {}
+        name = data.get("name", "").strip()
+        url = data.get("url", "").strip()
+        link_type = data.get("link_type", "external")
+
+        if not name or not url:
+            return jsonify({"error": "Nom et URL requis"}), 400
+
+        if link_type not in ("external", "internal", "embed", "widget"):
+            return jsonify({"error": "Type de lien invalide"}), 400
+
+        if not validate_external_url(url):
+            return jsonify({"error": "URL invalide ou non sécurisée"}), 400
+
+        link = VisualizationLink(
+            parent_item_id=item_id,
+            name=name[:200],
+            url=url,
+            owner_user_id=current_user.id,
+            link_type=link_type,
+            display_order=data.get("display_order", 0),
+        )
+        db.session.add(link)
+        db.session.commit()
+
+        return jsonify({"status": "created", "id": link.id})
 
     # ────────────────────────────────────────────
     #  Logout route
