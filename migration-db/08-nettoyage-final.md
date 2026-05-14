@@ -1,22 +1,25 @@
 # Phase 8 — Nettoyage Final
 
-### 8.1 Supprimer les imports/mock restants dans `app.py`
-- `import hashlib` → supprimer si non utilisé ailleurs
-- `ITEMS_PER_PAGE` → garder mais déplacer en constante de config
+> **Statut : ✅ TERMININÉ**
 
-### 8.2 Mettre à jour `.gitignore`
-```
-# .env (déjà présent)
-# __pycache__/ (déjà présent)
-*.pyc
+### 8.1 Imports/mock supprimés dans `app.py`
+- `import hashlib` → non utilisé, ne présente pas dans app.py
+- `ITEMS_PER_PAGE` → conservé comme constante de config
+- Tout le code mock supprimé (commits phases 4+5)
 
-# Ajouts possibles :
-.mypy_cache/
-.pytest_cache/
+### 8.2 `.gitignore` mis à jour
+```
+.env
+/.env.*
+/.secret
+*.key, *.pem, *.p12, *.jwk
+secrets.json
+.venv/
+__pycache__/
 ```
 
-### 8.3 Vérifier Dockerfile
-S'assurer que `requirements.txt` est rebuild avec les nouvelles deps :
-```dockerfile
-RUN pip install --no-cache-dir -r requirements.txt
-```
+### 8.3 Dockerfile vérifié
+`COPY requirements.txt . && RUN pip install --no-cache-dir -r requirements.txt`
+
+### 8.4 Script de correction de statut
+**Fichier :** `fix_migration.py` — corrige `verification_status="pending"` → `"unofficial"` au startup. Exécuté une seule fois.

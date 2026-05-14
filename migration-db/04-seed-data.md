@@ -1,7 +1,22 @@
 # Phase 4 — Seed Data (Peuplement de la BDD)
 
-### 4.1 Extraire le générateur mock existant
-**Fichier :** `scripts/seed_data.py` (nouveau)
+> **Statut : ✅ TERMININÉ** — Commit `0e02ea9` — "feat: seed data script + fix catalogue routes and ID collisions (Phase 4)"
+
+### 4.1 Script de seed data créé
+**Fichier :** `scripts/seed_data.py` — génère 600 items via SQLAlchemy ORM :
+- 200 items donnees (`type='geodonnee'`)
+- 200 items cartes (`type='carte'`)
+- 200 items applications (`type='application'`)
+- Pour chaque item : création des tags et gallery items associés
+
+### 4.2 Exécution du seed
+```bash
+# Via docker
+docker compose exec app python scripts/seed_data.py
+
+# Ou en local
+python scripts/seed_data.py
+```
 
 Créer un script Python qui :
 1. Lit les constantes mock actuelles de `app.py` (`LOREM_IPSUM_FR`, `_AUTHOR_NAMES`, etc.)

@@ -1,6 +1,62 @@
 # Phase 10 — Sécurité & Prévention des Failles
 
-### 10.1 Protection contre les injections SQL (primary defense)
+> **Statut : ⚠️ PARTIELLEMENT TERMINÉ** — Commit `3a51d96` — "feat: add security hardening (rate limiting, headers, HTML sanitization) and refactor catalogue routes". Certaines protections sont implémentées mais pas toutes.
+
+### 10.1 Protection SQL injections ✅
+SQLAlchemy ORM utilisé pour toutes les requêtes. Requêtes parameterized via `text()` quand SQL brut nécessaire.
+
+### 10.2 CSRF protection ✅
+Flask-WTF CSRFProtect configuré dans `app.py`. Tokens ajoutés automatiquement aux formulaires.
+
+### 10.3 XSS Protection ⚠️
+Jinja2 auto-escape actif pour toutes les variables templates. Bibliothèques de sanitation HTML à ajouter :
+- [ ] **bleach** ajouté dans code mais pas encore dans `requirements.txt` — à ajouter (`bleach>=6.0`)
+- Fonction `sanitize_input()` définie mais usage partiel (commentaires/chunks)
+
+### 10.4 Authentification & Sessions ✅
+- Hashing scrypt via `werkzeug.security.generate_password_hash` / `check_password_hash`
+- Decorateur `login_required` implémenté avec check de ban en session
+
+### 10.5 Protection des inputs ⚠️
+- Validation WTForms partielle : LoginForm, RegisterForm partiellement définis
+- Regex pour prenom/nom `[a-zA-Zéèêëçàùû]` implémentés
+- Validation email stricte configurée
+- [ ] **Validation URL stricte** (`javascript:`, `data:` bloqués) — partielle
+
+### 10.6 Path Traversal ⚠️
+- `secure_filename()` de werkzeug défini mais non implémenté dans le handler d'upload
+- ALLOWED_EXTENSIONS configuré pour csv, shp, geojson, gpkg, json, xml
+- [ ] **À implémenter** : utilisation effective de `secure_filename()` dans `/api/upload/chunk`
+
+### 10.7 Protection URL visualisation ✅
+Validation stricte des URLs externes avec `urlparse` — bloquer `javascript:`, `data:`, `vbscript:`, URLs sans protocole, `@` pour anti-phishing.
+
+### 10.8 Rate Limiting ⚠️
+- [ ] **Flask-Limiter** ajouté dans le code mais pas dans `requirements.txt` — à ajouter (`Flask-Limiter>=3.0`)
+- Configuration partiale : `@limiter.limit("5 per hour")` sur `/connexion`
+
+### 10.9 Headers HTTP sécurité ✅
+Headers configurés via `@app.after_request` :
+- `X-Frame-Options: DENY`
+- `X-Content-Type-Options: nosniff`
+- `X-XSS-Protection: 1; mode=block`
+- `Strict-Transport-Security: max-age=31536000; includeSubDomains`
+- `Content-Security-Policy` configuré
+
+### 10.10 Protection de la base de données ✅
+- SQLAlchemy ORM garanti (pas de f-string SQL brut)
+- Transactions explicites avec try/except/rollback implémentées
+- Permissions fichiers : `.secret` (600), `.env` (750) configurées
+- Variables sensibles dans `.env` + `docker-compose.yml` — jamais en dur
+
+### Résumé des éléments restants à implémenter :
+
+| Élément | Statut | Fichier cible |
+|---------|--------|---------------|
+| bleach dans `requirements.txt` | ❌ À ajouter | `requirements.txt` |
+| secure_filename() dans upload chunk | ❌ À implémenter | `app.py` |
+| Validation URL stricte regex complète | ⚠️ Partielle | `app.py` |
+| Flask-Limiter dans `requirements.txt` | ❌ À ajouter | `requirements.txt` |
 
 **SQLAlchemy ORM est la première ligne de défense.** Tous les requêtes passent par l'ORM qui fait l'escaping automatique :
 

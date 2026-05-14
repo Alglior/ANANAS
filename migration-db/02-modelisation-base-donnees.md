@@ -1,7 +1,25 @@
 # Phase 2 — Modélisation de la Base de Données
 
-### 2.1 Créer les modèles SQLAlchemy
-**Fichier :** `models.py` (nouveau)
+> **Statut : ✅ TERMININÉ** — Commit `b12cfc0` — "feat: add SQLAlchemy ORM models and initial migration (Phase 2)"
+
+### 2.1 Modèles SQLAlchemy créés
+**Fichier :** `models.py` — 9 modèles, 11 tables implémentées.
+
+#### Tables implémentées :
+- `items` — catalogue commun (geodonnee, carte, application) avec index magnet_link unique
+- `item_tags` — relation many-to-many
+- `item_gallery` — galerie de chaque item
+- `users` — auth prénom + nom, sans username
+- `organizations` + `organization_members` — groupes d'utilisateurs (rôles: member < editor < admin < owner)
+- `reports` — système de signalements (pending → resolved/dismissed)
+- `comments` — commentaires sur les items
+- `data_chunks` — données fragmentées uploadées par utilisateurs
+- `visualization_links` — liens d'applications externes pour visualisation
+- `user_uploads` — suivi des uploads bruts avec statut de traitement
+- `ratings` — notation des items
+
+#### Modèles ORM Python (section 2.2)
+Tous les modèles ORM sont implémentés dans `models.py` avec relations, cascade delete-orphan, back_populates et sélections uniques configurées.
 
 #### Table items (catalogue commun à donnees/cartes/applications)
 

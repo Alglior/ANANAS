@@ -1,6 +1,22 @@
 # Phase 9 — Upload de Chunks & Liens de Visualisation
 
-### 9.1 Endpoint : Upload d'un fragment de données (`/api/upload/chunk`)
+> **Statut : ✅ TERMININÉ** (avec limitations) — Endpoints implémentés, modèles actifs. Worker Celery en stub (non implémenté dans le code).
+
+### 9.1 Endpoint `/api/upload/chunk` implémenté
+- POST multipart/form-data avec `file`, `parent_item_id`, `chunk_name`
+- Crée entrée `UserUpload` (status `"queued"`) et `DataChunk` (status `"pending"`)
+- Stockage local `/uploads/` ou S3 configurable
+
+### 9.2 Endpoint `/api/items/<id>/viz-links` implémenté
+- POST avec `name`, `url`, `link_type` (`external`, `embed`, `widget`)
+- Affichage dans la section Visualisation de l'item detail
+
+### 9.3 Templates mis à jour
+- Onglet Données : affichage des items `is_published=True` + chunks uploadés (filter type='geodonnee' OR type='user_chunk')
+- Onglet Visualisation : boucle `{% for link in item.visualization_links %}` dans `item_detail.html`
+
+### 9.4 Worker Celery/RQ — EN STUB
+**Fichier :** `workers/processing.py` — Stub présent mais worker non implémenté. Le traitement réel (conversion, validation, metadata, magnet link) est à finaliser.
 
 Un utilisateur upload une partie des données → elle apparaît dans l'onglet "Données".
 

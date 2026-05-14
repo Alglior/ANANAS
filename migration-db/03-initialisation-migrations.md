@@ -1,27 +1,15 @@
 # Phase 3 — Initialisation & Migrations
 
-### 3.1 Initialiser Flask-SQLAlchemy dans `app.py`
-**Fichier :** `app.py` (modifier les lignes 1-7)
+> **Statut : ✅ TERMININÉ** — Commit `5941843` — "feat: add DB initialization and seed script (Phase 3)"
 
-Remplacer le début de `create_app()` :
-```python
-from flask_sqlalchemy import SQLAlchemy
-db = SQLAlchemy()
+### 3.1 Flask-SQLAlchemy initialisé dans `app.py`
+Configuration de `create_app()` avec SQLAlchemy, Config, CSRF configurée.
 
-def create_app(app_name="ANANAS"):
-    app = Flask(__name__)
-    config = Config()
-    config.validate()
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///ananas.db")
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    db.init_app(app)
-    csrf.init_app(app)
-    ...
-```
+### 3.2 Migration Alembic initiale créée
+**Fichier :** `alembic/versions/fa99e124f96c_initial_schema.py`
+- Révision racine (pas de down_revision)
+- Crée toutes les tables depuis zéro : users, organizations, organization_members, items, item_tags, item_gallery, comments, ratings, data_chunks, user_uploads, visualization_links, reports
 
-### 3.2 Créer le script de migration initiale
-**Fichier :** `scripts/init_db.py` (nouveau, exécuté une seule fois)
-
-Ce script :
-1. Crée les tables si elles n'existent pas (`db.create_all()`)
-2. Insère les données seed via des inserts batch (voir Phase 4)
+### 3.3 Scripts d'initialisation
+**Fichier :** `scripts/init_db.py` — initialisation automatique des tables
+**Fichier :** `alembic/env.py` — runner de migrations (mode online/offline)

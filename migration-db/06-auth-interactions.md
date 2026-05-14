@@ -1,7 +1,46 @@
 # Phase 6 — Fonctionnalités Auth & Interactions
 
-### 6.1 Ajouter les handlers POST pour `/connexion` et `/inscription`
-**Fichier :** `app.py` (routes additions). Auth par prénom + nom, pas de username.
+> **Statut : ✅ TERMININÉ** — Commit `a28d09f` — "feat: add model defaults, JSON export, and test suite (Phase 6)"
+
+### 6.1 Handlers POST `/connexion` et `/inscription` implémentés
+**Fichier :** `app.py` — Authentification par prénom + nom (pas de username). Hashing scrypt via werkzeug. Vérification `is_active` et `banned` lors de la connexion.
+
+### 6.2 Affichage du statut de vérification dans les templates
+- Badge `🏛️ Données vérifiées` pour items `verified` (confiance officielle)
+- Badge `⚠️ Données non officielles` pour items `unofficial` (visibles mais non vérifiés)
+- CSS différencié : `.badge-verified` (vert), `.badge-unofficial` (gris), `.badge-rejected` (rouge, opacity 0.7)
+- Page détail avec mention du niveau de confiance et nom du vérificateur
+- Lien de filtrage avancé "Données vérifiées uniquement" dans la navbar
+
+### 6.3 Endpoints rating et commentaire
+Endpoints pour `/catalogue/item/<id>/rate` et `/catalogue/item/<id>/comment` implémentés.
+
+### 6.4 Endpoint de vérification (`/api/items/<id>/verify`)
+Protégé par `@login_required`. Roles admin/reviewer seuls. Status : `verified`, `unofficial`, `rejected`. Notes optionnelles du vérificateur.
+
+### 6.5 Organisations / Groupes d'utilisateurs implémentés
+- POST `/api/organizations` — créer une organisation (rôle owner auto)
+- POST `/api/organizations/<slug>/join` — rejoindre
+- POST `/api/organizations/<slug>/leave` — quitter (sauf owner)
+- POST `/api/organizations/<slug>/members/<user_id>/role` — modifier rôle (admin/owner seuls)
+- Template organisation_detail.html : membres, données de l'organisation
+- Affichage du nom d'organisation dans le catalogue (`Prénom Nom — Organisation`)
+
+### 6.6 Gestion des bans implémentée
+- POST `/api/users/<id>/ban` — bannir/débannir (admin uniquement)
+- GET `/api/users/banned` — liste des utilisateurs bannis (admin)
+- Template admin users.html : tableau avec statut et action
+- Check de ban dans le handler de connexion et dans `login_required`
+- Message affiché : "Votre compte a été désactivé"
+
+### 6.7 Système de signalements implémenté
+- POST `/api/reports` — créer un signalement (user ou content). Protection anti auto-signalement
+- GET `/api/admin/reports` — liste filtrée par status/type (admin)
+- POST `/api/admin/reports/<id>/resolve` — clôturer (`resolved` / `dismissed`)
+- Modal de signalement dans item_detail.html avec formulaire JS
+- Template admin reports.html : tableau avec filtres et actions (résoudre/non-fondé)
+- Badge de signalement sur profil utilisateur (nombre en attente)
+- Message anti auto-signalement
 
 ```python
 @app.route("/connexion", methods=["POST"])

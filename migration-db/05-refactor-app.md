@@ -1,7 +1,24 @@
 # Phase 5 — Refactorisation de `app.py` (Remplacement du Mock par DB)
 
-### 5.1 Remplacer `get_catalogue_page()`
-**Fichier :** `app.py`, lignes 214-229 → supprimées et remplacées par :
+> **Statut : ✅ TERMININÉ** — Commit `9b012d4` — "refactor app.py - replace mock data with DB queries + fix catalogue links"
+
+### 5.1 `get_catalogue_page()` refactorisé
+**Fichier :** `app.py` — requêtes SQLAlchemy avec filtres par type, organisation, statut vérification. Pagination via offset/limit. Conversion ORM→dict via `to_dict()`.
+
+### 5.2 Méthode `to_dict()` sur le modèle `Item`
+**Fichier :** `models.py` — conversion complète compatible templates Jinja : inclut organization_name, organization_slug, verification_status, is_official_verified, verifier_nom, verified_at, verification_notes, gallery dict.
+
+### 5.3 Routes refactorisées
+- `item_detail_view()` → requête Item.query.get_or_404(), related_items via DB, image_gallery filtrée par media_type
+- `item_gallery_view()` → item depuis DB via get_or_404()
+
+### 5.4 Code mock supprimé du module-level
+- Constantes et générateurs mock (`_CATALOGUE_ITEMS`, `LOREM_IPSUM_FR`, `_build_gallery_item`, etc.) supprimés
+- `_ALL_CATALOGUES` supprimé, remplacé par mapping direct
+- `_build_page_numbers` conservé si réutilisé
+
+### 5.5 `catalogue_view()` mis à jour
+Référence au mapping direct des types au lieu de `_ALL_CATALOGUES`.
 
 ```python
 def get_catalogue_page(total_page=1, per_page=ITEMS_PER_PAGE, catalogue="donnees", filter_verified=False, org_slug=None):
