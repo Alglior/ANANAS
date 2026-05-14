@@ -270,10 +270,10 @@ def create_app(app_name="ANANAS"):
             page = 1
 
         if catalogue not in type_map:
-            return redirect(url_for("catalogue"))
+            return redirect("/catalogue/donnees")
 
         if page < 1:
-            return redirect(url_for("catalogue", catalogue=catalogue, page=1))
+            return redirect(f"/catalogue/{catalogue}")
 
         filter_verified = request.args.get("verified") == "1"
         org_slug = request.args.get("org")
@@ -301,7 +301,98 @@ def create_app(app_name="ANANAS"):
         total_pages = max((total_items + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE, 1)
 
         if page > total_pages:
-            return redirect(url_for("catalogue", catalogue=catalogue, page=total_pages))
+          return redirect(f"/catalogue/{catalogue}/{total_pages}")
+
+        items = query.offset((page - 1) * ITEMS_PER_PAGE).limit(ITEMS_PER_PAGE).all()
+        result_items = [item.to_dict() for item in items]
+        page_numbers = _build_page_numbers(page, total_pages)
+
+        if format_param == "json":
+            from flask import jsonify
+            return jsonify({
+                "items": result_items,
+                "page": page,
+                "per_page": ITEMS_PER_PAGE,
+                "total_items": total_items,
+                "total_pages": total_pages,
+                "page_numbers": page_numbers,
+            })
+        return render_template(
+            "catalogue.html",
+            title=f"A.N.A.N.A.S. | {meta['title_prefix']} — Page {page}",
+            meta_description=meta["meta"],
+            catalogue_type=catalogue,
+            filter_verified=filter_verified,
+         org_slug=org_slug,
+            items=result_items,
+            page=page,
+            per_page=ITEMS_PER_PAGE,
+            total_items=total_items,
+            total_pages=total_pages,
+            page_numbers=page_numbers,
+        )
+
+    app.add_url_rule("/catalogue", endpoint="catalogue", view_func=catalogue_view)
+
+    from werkzeug.routing import BaseConverter
+
+    class CatalogueTypeConverter(BaseConverter):
+        def to_url(self, value):
+            return value
+
+        def to_python(self, value):
+            valid_types = ["donnees", "cartes", "applications"]
+            if value not in valid_types:
+                raise ValueError()
+            return value
+
+    app.url_map.converters["catalogue_type"] = CatalogueTypeConverter
+
+    @app.route("/catalogue/<catalogue_type>")
+    @app.route("/catalogue/<catalogue_type>/<int:page>")
+    def catalogue_type_view(catalogue_type, page=1):
+        from flask import request, url_for
+        old_args = request.args.copy()
+        old_args.setlist("catalogue", [catalogue_type])
+        old_args.setlist("page", [str(page)])
+        # We need to pass catalogue_type and page into catalogue_view
+        # Since catalogue_view reads from args, temporarily replace args
+        original_args = request.args
+        new_args = request.args.copy()
+        new_args.pop("catalogue", None)
+        new_args.pop("page", None)
+        new_args.update(old_args)
+        request._method = request.method
+        # Just compute directly instead of calling catalogue_view (which reads from args)
+        type_map = {"donnees": "geodonnee", "cartes": "carte", "applications": "application"}
+        catalogue = catalogue_type
+        per_page = ITEMS_PER_PAGE
+
+        if page < 1:
+            return redirect(f"/catalogue/{catalogue_type}")
+
+        filter_verified = request.args.get("verified") == "1"
+        org_slug = request.args.get("org")
+        format_param = request.args.get("format", "")
+
+        meta = _CATALOGUE_META[catalogue]
+        from models import Item, Organization
+
+        item_type = type_map[catalogue]
+
+        query = Item.query.filter_by(type=item_type)
+        if org_slug:
+            org = Organization.query.filter_by(slug=org_slug).first()
+            if org:
+                query = query.filter_by(organization_id=org.id)
+        if filter_verified:
+            query = query.filter_by(verification_status="verified")
+
+        total_items = query.count()
+        total_pages = max((total_items + per_page - 1) // per_page, 1)
+
+        if page > total_pages:
+            return redirect(f"/catalogue/{catalogue_type}/{total_pages}")
 
         items = query.offset((page - 1) * per_page).limit(per_page).all()
         result_items = [item.to_dict() for item in items]
@@ -332,8 +423,48 @@ def create_app(app_name="ANANAS"):
             page_numbers=page_numbers,
         )
 
-    app.add_url_rule("/catalogue", endpoint="catalogue", view_func=catalogue_view)
-    app.add_url_rule("/catalogue/<int:page>", endpoint="catalogue_page", view_func=lambda: catalogue_view())
+    @app.route("/catalogue/<catalogue_type>/<int:page>/json")
+    def catalogue_type_json_view(catalogue_type, page):
+        from flask import jsonify, request, url_for, redirect
+        type_map = {"donnees": "geodonnee", "cartes": "carte", "applications": "application"}
+        catalogue = catalogue_type
+        per_page = 20
+
+        if catalogue not in type_map:
+            return redirect(url_for("catalogue"))
+
+        filter_verified = request.args.get("verified") == "1"
+        org_slug = request.args.get("org")
+
+        meta = _CATALOGUE_META[catalogue]
+        from models import Item, Organization
+
+        item_type = type_map[catalogue]
+
+        query = Item.query.filter_by(type=item_type)
+        if org_slug:
+            org = Organization.query.filter_by(slug=org_slug).first()
+            if org:
+                query = query.filter_by(organization_id=org.id)
+        if filter_verified:
+            query = query.filter_by(verification_status="verified")
+
+        total_items = query.count()
+        total_pages = max((total_items + per_page - 1) // per_page, 1)
+        page = min(page, total_pages) or 1
+
+        items = query.offset((page - 1) * per_page).limit(per_page).all()
+        result_items = [item.to_dict() for item in items]
+        page_numbers = _build_page_numbers(page, total_pages)
+
+        return jsonify({
+            "items": result_items,
+            "page": page,
+            "per_page": per_page,
+            "total_items": total_items,
+            "total_pages": total_pages,
+            "page_numbers": page_numbers,
+        })
 
     # ────────────────────────────────────────────
     #  Favicon (silently ignore requests)
