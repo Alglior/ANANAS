@@ -32,6 +32,51 @@ class Item(db.Model):
     verifier = relationship("User", foreign_keys=[verifier_user_id])
     organization = relationship("Organization")
 
+    def to_dict(self):
+        catalogue_map = {
+            "geodonnee": "/catalogue/donnees",
+            "carte": "/catalogue/cartes",
+            "application": "/catalogue/applications",
+        }
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "format": self.format_type,
+            "size": f"{self.size_mb} Mo" if self.size_mb else "",
+            "magnet": self.magnet_link,
+            "image": self.image_path,
+            "author": self.author_name,
+            "organization_id": self.organization_id,
+            "organization_name": self.organization.name if self.organization else None,
+            "organization_slug": self.organization.slug if self.organization else None,
+            "created_at": self.created_at.strftime("%Y-%m-%d"),
+            "tags": [t.tag for t in self.tags],
+            "gallery": self._build_gallery_dict(),
+            "pdf_doc": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/r6.pdf",
+            "verification_status": self.verification_status,
+            "is_official_verified": self.verification_status == "verified",
+            "verifier_nom": f"{self.verifier.prenom} {self.verifier.nom}" if self.verifier else None,
+            "verified_at": self.verified_at.strftime("%Y-%m-%d") if self.verified_at else None,
+            "verification_notes": self.verification_notes,
+            "catalogue_link": catalogue_map.get(self.type, "/catalogue"),
+        }
+
+    def _build_gallery_dict(self):
+        result = []
+        for g in self.gallery_items:
+            entry = {"type": g.media_type, "label": g.label}
+            if g.src:
+                entry["src"] = g.src
+            if g.data_json:
+                if isinstance(g.data_json, dict):
+                    if g.media_type == "csv":
+                        entry["data"] = g.data_json.get("rows", [])
+                    elif g.media_type == "dashboard":
+                        entry["metrics"] = g.data_json.get("metrics", [])
+            result.append(entry)
+        return result
+
 
 class ItemTag(db.Model):
     __tablename__ = "item_tags"

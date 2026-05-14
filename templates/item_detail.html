@@ -12,7 +12,7 @@
       <nav class="breadcrumb" aria-label="Fil d'ariane">
         <a href="/">Accueil</a>
         <span class="sep">&rsaquo;</span>
-        <a href="/catalogue">Catalogue</a>
+        <a href="{{ item.catalogue_link }}">Catalogue</a>
         <span class="sep">&rsaquo;</span>
         <span>{{ item.title }}</span>
       </nav>
@@ -81,7 +81,7 @@
 
             <hr class="buy-divider">
 
-            <a href="/catalogue" class="back-link">&larr; Retour au catalogue</a>
+            <a href="{{ item.catalogue_link }}" class="back-link">&larr; Retour au catalogue</a>
 
             {% if item.magnet %}
             <div class="download-actions">
