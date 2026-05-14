@@ -95,6 +95,7 @@ def _build_gallery_item(item_id):
     return gallery
 
 for i in range(1, 201):
+    actual_id = i
     format_name = ["Shapefile", "GeoJSON", "GeoPackage"][i % 3]
     tags = []
     if i % 5 == 0:
@@ -109,7 +110,7 @@ for i in range(1, 201):
         tags = ["donnée", format_name]
 
     _CATALOGUE_ITEMS.append({
-        "id": i,
+        "id": actual_id,
         "title": f"Géodonnée {i:04d}",
         "description": f"{LOREM_IPSUM_FR[i % len(LOREM_IPSUM_FR)]}",
         "format": format_name,
@@ -139,6 +140,7 @@ _MAP_TITLES = [
 ]
 
 for i in range(1, 201):
+    actual_id = i + 200
     format_name = _MAP_FORMATS[i % len(_MAP_FORMATS)]
     title = f"{_MAP_TITLES[i % len(_MAP_TITLES)]} — Secteur {i:04d}"
     tags = []
@@ -152,12 +154,12 @@ for i in range(1, 201):
         tags = ["carte", format_name]
 
     _CARTES_ITEMS.append({
-        "id": i,
+        "id": actual_id,
         "title": title,
         "description": f"{LOREM_IPSUM_FR[i % len(LOREM_IPSUM_FR)]}",
         "format": format_name,
         "size": f"{(i * 17) % 500 + 10} Mo",
-        "magnet": f"magnet:?xt=urn:btih:{i:032d}",
+        "magnet": f"magnet:?xt=urn:btih:{actual_id:032d}",
         "image": "/static/images/logo/ANANAS.png",
         "author": _AUTHOR_NAMES[i % len(_AUTHOR_NAMES)],
         "created_at": _pseudo_date(i + 500),
@@ -182,6 +184,7 @@ _APP_NAMES = [
 ]
 
 for i in range(1, 201):
+    actual_id = i + 400
     app_type = _APP_TYPES[i % len(_APP_TYPES)]
     name = f"{_APP_NAMES[i % len(_APP_NAMES)]} — v{i // 10 + 1}.{i % 10}"
     tags = []
@@ -195,12 +198,12 @@ for i in range(1, 201):
         tags = ["application", app_type]
 
     _APPS_ITEMS.append({
-        "id": i,
+        "id": actual_id,
         "title": name,
         "description": f"{LOREM_IPSUM_FR[i % len(LOREM_IPSUM_FR)]}",
         "format": app_type,
         "size": f"{(i * 17) % 500 + 10} Mo",
-        "magnet": f"magnet:?xt=urn:btih:{i:032d}",
+        "magnet": f"magnet:?xt=urn:btih:{actual_id:032d}",
         "image": "/static/images/logo/ANANAS.png",
         "author": _AUTHOR_NAMES[i % len(_AUTHOR_NAMES)],
         "created_at": _pseudo_date(i + 1000),
@@ -415,10 +418,10 @@ def create_app(app_name="ANANAS"):
             **data,
         )
 
-    app.add_url_rule("/catalogue", endpoint="catalogue", view_func=catalogue_view)
-    app.add_url_rule("/catalogue/donnees", endpoint="catalogue_donnees", view_func=catalogue_view)
-    app.add_url_rule("/catalogue/cartes", endpoint="catalogue_cartes", view_func=catalogue_view)
-    app.add_url_rule("/catalogue/applications", endpoint="catalogue_apps", view_func=catalogue_view)
+    app.add_url_rule("/catalogue", endpoint="catalogue", view_func=lambda page=1: catalogue_view(page=page))
+    app.add_url_rule("/catalogue/donnees", endpoint="catalogue_donnees", view_func=lambda page=1: catalogue_view(page=page))
+    app.add_url_rule("/catalogue/cartes", endpoint="catalogue_cartes", view_func=lambda catalogue="cartes", page=1: catalogue_view(catalogue=catalogue, page=page))
+    app.add_url_rule("/catalogue/applications", endpoint="catalogue_apps", view_func=lambda catalogue="applications", page=1: catalogue_view(catalogue=catalogue, page=page))
     app.add_url_rule("/catalogue/<int:page>", endpoint="catalogue_page", view_func=lambda page=1: catalogue_view(page=page))
     app.add_url_rule("/catalogue/donnees/<int:page>", endpoint="catalogue_donnees_page", view_func=lambda catalogue="donnees", page=1: catalogue_view(catalogue=catalogue, page=page))
     app.add_url_rule("/catalogue/cartes/<int:page>", endpoint="catalogue_cartes_page", view_func=lambda catalogue="cartes", page=1: catalogue_view(catalogue=catalogue, page=page))
