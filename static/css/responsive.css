@@ -122,17 +122,6 @@
   .modal-close { top: 6px; right: 6px; width: 34px; height: 34px; }
 }
 
-/* ── P2P Responsive ── */
-@media (max-width: 860px) {
-  .p2p-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .p2p-advantages {
-    flex-direction: column;
-  }
-}
-
 /* ── DI Responsive ── */
 @media (max-width: 860px) {
   .di-benefits-row {

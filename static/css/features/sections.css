@@ -135,13 +135,6 @@
   line-height: 1.7;
 }
 
-.p2p-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  align-items: start;
-}
-
 /* ── Advantages Timeline ── */
 .p2p-advantages {
   position: relative;
