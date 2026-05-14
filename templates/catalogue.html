@@ -28,13 +28,21 @@
         <span>{{ catalogue_name }}</span>
       </nav>
 
-      <nav class="filters" aria-label="Filtres de vérification">
-        <a href="/catalogue/{{ catalogue_type or 'donnees' }}"{% if not filter_verified and not filter_unofficial and not org_slug %} class="active"{% endif %}>Toutes les données</a>
-        <span class="separator">|</span>
-        <a href="/catalogue/{{ catalogue_type or 'donnees' }}?verified=1"{% if filter_verified %} class="active"{% endif %}>Données vérifiées</a>
-        <span class="separator">|</span>
-        <a href="/catalogue/{{ catalogue_type or 'donnees' }}?unofficial=1"{% if filter_unofficial %} class="active"{% endif %}>Données non officielles</a>
-      </nav>
+     <nav class="filters" aria-label="Filtres de vérification">
+         <div class="filter-left">
+           <a href="{{ url_all }}"{% if not filter_verified and not filter_unofficial %} class="active"{% endif %}>Toutes les données</a>
+           <span class="separator">|</span>
+           <a href="{{ url_verified }}"{% if filter_verified %} class="active"{% endif %}>Données vérifiées</a>
+           <span class="separator">|</span>
+           <a href="{{ url_unofficial }}"{% if filter_unofficial %} class="active"{% endif %}>Données non officielles</a>
+         </div>
+         <div class="filter-right">
+           <a{% if filter_format == 'pack' %} class="active"{% endif %} href="{{ url_pack }}">Packs</a>
+           <span class="separator">|</span>
+           <a{% if filter_format == 'individual' %} class="active"{% endif %} href="{{ url_ind }}">Individuelles</a>
+         </div>
+       </nav>
+
 
       <ul class="catalogue-list">
         {% for item in items %}
@@ -45,6 +53,11 @@
             <div class="catalogue-content">
               <div class="catalogue-top">
                 <span class="catalogue-title">{{ item.title }}</span>
+                {% if item.data_format_level == "pack" %}
+                <span class="badge badge-pack">Pack complet — fichier unique</span>
+                {% else %}
+                <span class="badge badge-individual">Données individuelles</span>
+                {% endif %}
                 {% if item.is_official_verified %}
                   <span class="badge badge-verified" title="Données vérifiées et approuvées par A.N.A.N.A.S.">Données vérifiées</span>
                 {% else %}

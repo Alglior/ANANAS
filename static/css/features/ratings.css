@@ -151,6 +151,17 @@
     font-size: 0.9rem;
 }
 
+.filter-left,
+.filter-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-right {
+    margin-left: auto;
+}
+
 .filters a {
     color: var(--charcoal);
     text-decoration: none;

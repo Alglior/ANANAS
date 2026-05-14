@@ -21,6 +21,7 @@ class Item(db.Model):
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
     is_published: Mapped[bool] = mapped_column(default=True)
     verification_status: Mapped[str] = mapped_column(default="unofficial")
+    data_format_level: Mapped[str] = mapped_column(default="individual")
     verifier_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     verified_at: Mapped[datetime.datetime | None]
     verification_notes: Mapped[str | None]
@@ -72,6 +73,8 @@ class Item(db.Model):
             "report_type": self.type.replace("geodonnee", "geodonnee").replace("carte", "carte").replace("application", "application"),
             "rating": self._get_rating_avg(),
             "review_count": len(self.ratings),
+            "data_format_level": self.data_format_level,
+            "download_levels": [{"name": c.name, "size_mb": c.size_mb, "magnet": c.magnet_link} for c in DataChunk.query.filter_by(parent_item_id=self.id).all()] if self.data_format_level == "individual" else None,
         }
 
     def _get_rating_avg(self):

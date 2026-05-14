@@ -35,3 +35,25 @@
   color: var(--forest);
   border-bottom-color: var(--forest);
 }
+
+/* Data format badges */
+.badge-pack,
+.badge-individual {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.badge-pack {
+  color: var(--forest);
+  background: rgba(34, 139, 34, 0.11);
+  border: 1px solid rgba(34, 139, 34, 0.35);
+}
+
+.badge-individual {
+  color: var(--forest);
+  background: transparent;
+  border: 1px solid var(--border-color);
+}

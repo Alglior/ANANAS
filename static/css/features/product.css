@@ -444,3 +444,53 @@
   border: 2px solid var(--forest, #2d5a27);
   border-bottom-color: #fff;
 }
+
+.download-levels-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.4rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.download-levels-list li {
+  font-weight: 400;
+  font-size: 0.825rem;
+  color: var(--charcoal);
+}
+
+.level-link {
+  color: #7b3fa0;
+  text-decoration: none;
+  font-size: 0.825rem;
+}
+
+.level-link:hover {
+  text-decoration: underline;
+  color: #6a3090;
+}
+
+/* Item detail badge overrides — same color as primitives, block layout for lists */
+.product-details .badge-pack,
+.product-details .badge-individual {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.product-details .badge-pack {
+  background: rgba(34, 139, 34, 0.11);
+  border: 1px solid rgba(34, 139, 34, 0.35);
+}
+
+.product-details .badge-individual {
+  background: transparent;
+  border: 1px solid var(--border-color);
+}
+
+

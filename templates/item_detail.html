@@ -89,6 +89,29 @@
             Format : <strong>{{ item.format }}</strong>
           </div>
 
+          {% if item.data_format_level == "pack" %}
+          <div class="badge badge-pack">
+            Pack complet — fichier unique
+          </div>
+          {% elif item.data_format_level == "individual" and item.download_levels and item.download_levels|length > 0 %}
+          <div class="badge badge-individual">
+            <span>Données individuelles</span>
+            <ul class="download-levels-list">
+              {% for level in item.download_levels %}
+              <li>
+                <a href="{{ level.magnet }}" class="level-link">
+                  {{ level.name }}{% if level.size_mb %} ({{ level.size_mb }} Mo){% endif %}
+                </a>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% elif item.data_format_level == "individual" %}
+          <div class="badge badge-individual">
+            Données individuelles
+          </div>
+          {% endif %}
+
           <div class="product-divider"></div>
 
           <!-- Download box -->

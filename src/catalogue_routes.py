@@ -48,6 +48,7 @@ def _do_catalogue(catalogue_type, page, per_page=30):
 
     filter_verified = request.args.get("verified") == "1"
     filter_unofficial = request.args.get("unofficial") == "1"
+    filter_format = request.args.get("format_level", "")
     org_slug = request.args.get("org")
     format_param = request.args.get("format", "")
 
@@ -64,6 +65,8 @@ def _do_catalogue(catalogue_type, page, per_page=30):
         query = query.filter_by(verification_status="verified")
     elif filter_unofficial:
         query = query.filter(Item.verification_status != "verified")
+    if filter_format:
+        query = query.filter_by(data_format_level=filter_format)
 
     total_items = query.count()
     total_pages = max((total_items + per_page - 1) // per_page, 1)
@@ -74,13 +77,39 @@ def _do_catalogue(catalogue_type, page, per_page=30):
     from src.shared import _build_page_numbers
     page_numbers = _build_page_numbers(page, total_pages)
 
+    base = "/catalogue/" + catalogue
+    # Pre-build all filter URLs combining left+right params
+    def _build_url(base, include_verif=False, include_unofficial=False, include_format=None):
+        parts = []
+        if include_verif:
+            parts.append("verified=1")
+        elif include_unofficial:
+            parts.append("unofficial=1")
+        if include_format:
+            parts.append("format_level=" + include_format)
+        if org_slug:
+            parts.append("org=" + org_slug)
+        return base + ("?" + "&".join(parts) if parts else "")
+
+    url_all = base
+    url_verified = _build_url(base, include_verif=True, include_format=filter_format or None)
+    url_unofficial = _build_url(base, include_unofficial=True, include_format=filter_format or None)
+    url_pack = _build_url(base, include_verif=filter_verified, include_unofficial=filter_unofficial, include_format="pack")
+    url_ind = _build_url(base, include_verif=filter_verified, include_unofficial=filter_unofficial, include_format="individual")
+
     data = {
         "title": f"A.N.A.N.A.S. | {meta['title_prefix']} — Page {page}",
         "meta_description": meta["meta"],
         "catalogue_type": catalogue,
         "filter_verified": filter_verified,
         "filter_unofficial": filter_unofficial,
+        "filter_format": filter_format,
         "org_slug": org_slug,
+        "url_all": url_all,
+        "url_verified": url_verified,
+        "url_unofficial": url_unofficial,
+        "url_pack": url_pack,
+        "url_ind": url_ind,
         "items": result_items,
         "page": page,
         "per_page": per_page,
@@ -130,9 +159,11 @@ def catalogue_json_view(catalogue_type, page):
     catalogue = catalogue_type
     filter_verified = request.args.get("verified") == "1"
     filter_unofficial = request.args.get("unofficial") == "1"
+    filter_format = request.args.get("format_level", "")
     org_slug = request.args.get("org")
 
     meta = _CATALOGUE_META[catalogue]
+    base = "/catalogue/" + catalogue
     query = Item.query.filter_by(type=item_type, is_published=True)
     if org_slug:
         org = Organization.query.filter_by(slug=org_slug).first()
@@ -142,6 +173,8 @@ def catalogue_json_view(catalogue_type, page):
         query = query.filter_by(verification_status="verified")
     elif filter_unofficial:
         query = query.filter(Item.verification_status != "verified")
+    if filter_format:
+        query = query.filter_by(data_format_level=filter_format)
 
     items = query.offset((page - 1) * per_page).limit(per_page).all()
     result_items = [item.to_dict() for item in items]

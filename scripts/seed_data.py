@@ -6,7 +6,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app, db
-from models import Item, ItemTag, ItemGallery
+from models import Item, ItemTag, ItemGallery, DataChunk
 
 
 LOREM_IPSUM_FR = [
@@ -113,6 +113,62 @@ def _get_tags(category, i):
         return tags, app_type
 
 
+ZOOM_LEVELS = [1, 2, 4, 8, 16]
+BAND_NAMES = ["Lambert II étendu", "Lambert III", "WGS84/UTM32"]
+CHUNK_FORMATS = ["GeoTIFF", "NTF", "Shapefile zip", "GeoPackage", "E00"]
+
+SYSTEM_USER_ID = None
+
+
+def _ensure_system_user():
+    global SYSTEM_USER_ID
+    from models import User
+    if not SYSTEM_USER_ID:
+        try:
+            from werkzeug.security import generate_password_hash
+        except ImportError:
+            generate_password_hash = lambda x: x
+        user = User(
+            prenom="Système", nom="ANANAS",
+            email="system@ananas.local",
+            password_hash=generate_password_hash("system"),
+            is_active=True, banned=False, is_admin=True
+        )
+        db.session.add(user)
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            existing = db.session.execute(
+                db.select(User).filter(User.email == "system@ananas.local")
+            ).scalar_one_or_none()
+            if existing:
+                SYSTEM_USER_ID = existing.id
+                return
+        SYSTEM_USER_ID = user.id
+
+
+def _build_chunks(item_id, pack_title):
+    _ensure_system_user()
+    n_chunks = 3 + (item_id % 4)
+    chunks = []
+    for j in range(n_chunks):
+        lvl = ZOOM_LEVELS[j % len(ZOOM_LEVELS)]
+        band = BAND_NAMES[(j * item_id) % len(BAND_NAMES)]
+        fmt = CHUNK_FORMATS[j % len(CHUNK_FORMATS)]
+        chunk = DataChunk(
+            parent_item_id=item_id,
+            name=f"{pack_title}_L{lvl}_{band}",
+            format_type=fmt,
+            size_mb=(item_id * 13 + j * 47) % 800 + 50,
+            magnet_link=f"magnet:?xt=urn:btih:{item_id:032d}chunk{j:03d}",
+            upload_status="ready",
+            owner_user_id=SYSTEM_USER_ID,
+        )
+        chunks.append(chunk)
+    return chunks
+
+
 def _build_gallery(item_id):
     fmt = item_id % 3
     types = {0: ["image", "csv"], 1: ["dashboard", "interactive_map"], 2: ["image", "interactive_map"]}
@@ -154,10 +210,10 @@ def _build_gallery(item_id):
     return gallery
 
 
-def seed_items(category, count, type_val, title_fn, format_fn, id_offset=0):
-    items_created = 0
+def seed_items(category, count, type_val, title_fn, format_fn, is_pack=False):
+    item_records = []
+    gallery_idx = 1
     for i in range(1, count + 1):
-        actual_id = i + id_offset
         tags, fmt = format_fn(i)
         title = title_fn(i)
         author_idx = i % len(AUTHOR_NAMES)
@@ -167,19 +223,31 @@ def seed_items(category, count, type_val, title_fn, format_fn, id_offset=0):
             title=title,
             description=LOREM_IPSUM_FR[i % len(LOREM_IPSUM_FR)],
             format_type=fmt if isinstance(fmt, str) else fmt[0] if isinstance(fmt, list) else "unknown",
-            size_mb=(i * 17) % 500 + 10,
-            magnet_link=f"magnet:?xt=urn:btih:{actual_id:032d}",
+            size_mb=(i * 17) % 500 + 10 if not is_pack else (i * 43) % 2000 + 500,
+            magnet_link=f"magnet:?xt=urn:btih:{i:032d}",
             image_path="/static/images/logo/ANANAS.png",
             author_name=AUTHOR_NAMES[author_idx],
             created_at=_pseudo_date(i),
         )
+        if is_pack:
+            item.data_format_level = "pack"
         db.session.add(item)
-        db.session.flush()
+        item_records.append({"item": item, "title": title, "tags": tags})
 
-        for tag in tags:
-            db.session.add(ItemTag(item_id=item.id, tag=tag))
+    db.session.commit()
 
-        gallery = _build_gallery(actual_id)
+    for idx, rec in enumerate(item_records):
+        item = rec["item"]
+        for tag_str in (rec["tags"] if isinstance(rec["tags"], list) else []):
+            db.session.add(ItemTag(item_id=item.id, tag=tag_str))
+
+        if is_pack:
+            chunks = _build_chunks(item.id, rec["title"])
+            for chunk in chunks:
+                db.session.add(chunk)
+
+        gallery = _build_gallery(gallery_idx)
+        gallery_idx += 1
         for g in gallery:
             gallery_entry = ItemGallery(
                 item_id=item.id,
@@ -190,13 +258,9 @@ def seed_items(category, count, type_val, title_fn, format_fn, id_offset=0):
             )
             db.session.add(gallery_entry)
 
-        items_created += 1
-        if items_created % 50 == 0:
-            db.session.commit()
-            print(f"  Seed {category}: {min(items_created, count)} items committed")
-
+    items_created = len(item_records)
     db.session.commit()
-    print(f"  Seed {category}: {items_created} items done")
+    print(f"  Seed {category}: {items_created} items done (ids={min(r['item'].id for r in item_records)}-{max(r['item'].id for r in item_records)})")
 
 
 def seed_all():
@@ -225,12 +289,34 @@ def seed_all():
 
         print("Seeding sample data...\n")
 
+        PACK_TITLES = [
+            "Pack Regional Hauts-de-France",
+            "Pack Metropolitan France LIDAR",
+            "Pack Donnees OpenStreetMap FR",
+            "Pack Orthophoto Raster 25cm",
+            "Pack BD ALTI Completa",
+            "Pack SIG Administrative Entieres",
+            "Pack Hydrographie SANDRE Global",
+            "Pack Occupation Sol CORINE",
+            "Pack Pédologie Reference France",
+            "Pack Catastral Property Parcels",
+        ]
+
         seed_items(
             category="donnees",
-            count=200,
+            count=100,
             type_val="geodonnee",
             title_fn=lambda i: f"Géodonnée {i:04d}",
             format_fn=lambda i: _get_tags("donnees", i),
+        )
+
+        seed_items(
+            category="donnees packs",
+            count=25,
+            type_val="geodonnee",
+            title_fn=lambda i: PACK_TITLES[(i - 1) % len(PACK_TITLES)],
+            format_fn=lambda i: _get_tags("donnees", i + 50),
+            is_pack=True,
         )
 
         seed_items(
@@ -239,7 +325,6 @@ def seed_all():
             type_val="carte",
             title_fn=lambda i: f"{MAP_TITLES[i % len(MAP_TITLES)]} — Secteur {i:04d}",
             format_fn=lambda i: _get_tags("cartes", i),
-            id_offset=200,
         )
 
         seed_items(
@@ -248,11 +333,12 @@ def seed_all():
             type_val="application",
             title_fn=lambda i: f"{APP_NAMES[i % len(APP_NAMES)]} — v{i // 10 + 1}.{i % 10}",
             format_fn=lambda i: _get_tags("applications", i),
-            id_offset=400,
         )
 
         total = db.session.execute(func.count(Item.id)).scalar()
-        print(f"\nDone. Total items in database: {total}")
+        stmt = db.select(db.func.count()).where(Item.data_format_level == "pack")
+        packs = db.session.execute(stmt).scalar()
+        print(f"\nDone. Total items: {total}, Packs: {packs}")
 
 
 if __name__ == "__main__":
