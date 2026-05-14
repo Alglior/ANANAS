@@ -95,9 +95,9 @@
         </div>
 
         {% if page < total_pages %}
-          <a class="btn btn-outline transition-hover pagination-next" href="/catalogue/{{ catalogue_type or 'donnees' }}/{{ page + 1 }}">Suivant&nbsp;&#9668;</a>
+          <a class="btn btn-outline transition-hover pagination-next" href="/catalogue/{{ catalogue_type or 'donnees' }}/{{ page + 1 }}">Suivant&nbsp;&#9658;</a>
         {% else %}
-          <span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9668;</span>
+          <span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>
         {% endif %}
       </nav>
       {% endif %}
