@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<main class="admin-page">
+  <section class="admin-section">
+    <div class="container">
+      <h1>Administration — Utilisateurs</h1>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.prenom }} {{ user.nom }}</td>
+            <td>{{ user.email }}</td>
+            <td>
+              {% if user.banned %}
+                <span class="badge badge-rejected">Banni</span>
+              {% elif not user.is_active %}
+                <span class="badge badge-pending">Inactif</span>
+              {% else %}
+                <span class="badge badge-verified">Actif</span>
+              {% endif %}
+            </td>
+            <td>
+              <form action="/api/users/{{ user.id }}/ban" method="POST" style="display:inline;">
+                <input type="hidden" name="action" value="{% if user.banned %}unban{% else %}ban{% endif %}">
+                <button type="submit">
+                  {% if user.banned %}Débannir{% else %}Bannir{% endif %}
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+{% endblock %}

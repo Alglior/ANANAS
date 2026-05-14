@@ -28,6 +28,27 @@
   <section class="detail-body">
     <div class="container">
 
+      <!-- Verification info -->
+      {% if current_user %}
+      <div class="verification-info">
+        {% if item.is_official_verified %}
+            <div class="verified-seal">
+                Données vérifiées et approuvées par A.N.A.N.A.S.
+                <br>Par {{ item.verifier_nom }} le {{ item.verified_at|default("N/A") }}
+            </div>
+        {% elif item.verification_status == 'rejected' %}
+            <div class="warning-rejected">
+                Ces données n'ont pas été approuvées par A.N.A.N.A.S.
+                {% if item.verification_notes %}<br>Raison : {{ item.verification_notes }}{% endif %}
+            </div>
+        {% else %}
+            <div class="unofficial-info">
+                Données non officielles - Accès accessible mais les données n'ont pas été vérifiées par A.N.A.N.A.S.
+            </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
       <div class="product-card">
 
         <!-- Main product image (left column) -->
@@ -52,6 +73,7 @@
           <!-- Rating -->
           <div class="rating-inline">
             <span class="rating-number-inline">{{ item.rating|default(3.8) }}</span>
+            {% if current_user %}
             <form class="rate-form" method="POST" action="/catalogue/item/{{ item.id }}/rate">
               {% for i in range(1, 6) %}
                 {% set rating = item.rating|default(3.8) %}
@@ -59,6 +81,7 @@
                 <label for="star-{{ item.id }}-{{ i }}" class="{% if i <= (rating|round(0, 'floor')) %}filled{% elif i == (rating|round(0, 'floor') + 1) and rating - (rating|round(0, 'floor')) >= 0.5 %}half{% endif %}" title="{{ i }}/5">&#9733;</label>
               {% endfor %}
             </form>
+            {% endif %}
             <span class="rating-count">{{ item.review_count|default('128') }} avis</span>
           </div>
 
@@ -140,7 +163,7 @@
           </div>
           <div class="tech-item">
             <dt>Auteur / Publieur</dt>
-            <dd>{{ item.author }}</dd>
+            <dd>{{ item.author }}{% if item.organization_name %} — {{ item.organization_name }}{% endif %}</dd>
           </div>
         </dl>
 
@@ -171,18 +194,18 @@
             </div>
             <div class="reuse-item">
               <dt>Auteur</dt>
-              <dd>{{ item.author }}</dd>
+              <dd>{{ item.author }}{% if item.organization_name %} — {{ item.organization_name }}{% endif %}</dd>
             </div>
             <div class="reuse-item">
               <dt>Date de publication</dt>
               <dd>{{ item.created_at }}</dd>
             </div>
           </dl>
-          <p class="reuse-note">Cette donnée publiée par {{ item.author }} peut être réutilisée librement dans vos propres projets SIG, analyses ou visualisations cartographiques. La mention « Source : A.N.A.N.A.S. » est recommandée.</p>
+          <p class="reuse-note">Cette donnée publiée par {{ item.author }}{% if item.organization_name %} — {{ item.organization_name }}{% endif %} peut être réutilisée librement dans vos propres projets SIG, analyses ou visualisations cartographiques. La mention « Source : A.N.A.N.A.S. » est recommandée.</p>
         </div>
       </section>
 
-      <!-- Commentaires -->
+      <!-- Comments -->
       <section class="comments-section">
         <h2>Commentaires</h2>
 
@@ -191,10 +214,10 @@
           {% for comment in item.comments %}
           <li class="comment-item">
             <div class="comment-header">
-              <span class="comment-author">{{ comment.author }}</span>
-              <span class="comment-date">{{ comment.date }}</span>
+              <span class="comment-author">{{ comment.author_name }}</span>
+              <span class="comment-date">{{ comment.created_at.strftime('%d/%m/%Y') if comment.created_at else '' }}</span>
             </div>
-            <p class="comment-text">{{ comment.text }}</p>
+            <p class="comment-text">{{ comment.content }}</p>
           </li>
           {% endfor %}
         </ul>
@@ -202,10 +225,11 @@
         <p class="comments-empty">Aucun commentaire pour ce géodonnées.</p>
         {% endif %}
 
+        {% if current_user %}
         <form class="comment-form" method="POST" action="/catalogue/item/{{ item.id }}/comment">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           <div class="comment-form-fields">
-            <input class="comment-input" type="text" name="author" placeholder="Votre nom" required>
+            <input class="comment-input" type="text" name="author" value="{{ current_user.prenom }} {{ current_user.nom }}" readonly>
           </div>
           <div class="comment-form-textarea-wrap">
             <textarea name="text" placeholder="Ajouter un commentaire..." required></textarea>
@@ -214,8 +238,61 @@
             <button class="btn btn-primary" type="submit">Publier</button>
           </div>
         </form>
+        {% else %}
+        <p class="comment-notice"><a href="/connexion">Connectez-vous</a> pour ajouter un commentaire.</p>
+        {% endif %}
 
       </section>
+
+      <!-- Report section -->
+      {% if current_user %}
+      <section class="report-section">
+        <button id="open-report-modal" onclick="document.getElementById('reportModal').style.display='block'">
+          🚩 Signaler ce contenu
+        </button>
+
+        <div id="reportModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+          <div style="max-width:400px; margin:100px auto; padding:20px; background:white; border-radius:8px;">
+            <h3>Signaler ce contenu</h3>
+            <form id="reportForm" onsubmit="submitReport(event)">
+              <select name="reason" required>
+                <option value="">-- Raison --</option>
+                <option value="spam">Spam</option>
+                <option value="fake_data">Fake data / Données frauduleuses</option>
+                <option value="other">Autre</option>
+              </select>
+              <textarea name="description" placeholder="Détails (optionnel)"></textarea>
+              <div style="display:flex; gap:10px; margin-top:10px;">
+                <button type="submit">Envoyer le signalement</button>
+                <button type="button" onclick="document.getElementById('reportModal').style.display='none'">Annuler</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <script>
+        function submitReport(e) {
+            e.preventDefault();
+            const form = document.getElementById('reportForm');
+            const data = {};
+            for (let [key, val] of new FormData(form).entries()) {
+                data[key] = val;
+            }
+            data.target_type = "{{ item.report_type or 'geodonnee' }}";
+            data.target_id = {{ item.id }};
+
+            fetch("/api/reports", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(data)
+            }).then(r => r.json()).then(res => {
+                alert("Signalement envoyé avec succès. Merci pour votre vigilance.");
+                document.getElementById('reportModal').style.display = 'none';
+            });
+        }
+        </script>
+      </section>
+      {% endif %}
 
       {% if related_items %}
       <aside class="detail-related">

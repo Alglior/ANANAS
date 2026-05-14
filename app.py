@@ -1,5 +1,21 @@
 import os
-from flask import Flask, render_template, redirect, url_for
+import datetime as dt
+import json
+from functools import wraps
+
+SECRET_FILE = ".secret"
+
+from flask import (
+    Flask,
+    render_template,
+    redirect,
+    url_for,
+    request,
+    session,
+    jsonify,
+    flash,
+)
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import CSRFProtect
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -8,6 +24,29 @@ db = SQLAlchemy()
 migrate = Migrate()
 
 ITEMS_PER_PAGE = 30
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user_id" not in session:
+            return redirect(url_for("connexion_page"))
+        from models import User
+
+        current_user = User.query.get(session["user_id"])
+        if current_user and (current_user.banned or not current_user.is_active):
+            session.clear()
+            return redirect(url_for("connexion_page", error="banned"))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def get_current_user():
+    from models import User
+
+    if "user_id" not in session:
+        return None
+    return User.query.get(session["user_id"])
 
 
 def get_catalogue_page(total_page=1, per_page=ITEMS_PER_PAGE, catalogue="donnees", filter_verified=False, org_slug=None):
@@ -154,6 +193,11 @@ def create_app(app_name="ANANAS"):
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         return response
 
+    @app.context_processor
+    def inject_user():
+        cu = get_current_user()
+        return {"current_user": cu}
+
     # Configuration des cookies sécurisés
     # Déterminer si on est en production
     is_production = os.environ.get("FLASK_ENV", "development") == "production"
@@ -171,18 +215,7 @@ def create_app(app_name="ANANAS"):
             "title": "A.N.A.N.A.S. | Accueil",
             "meta": "Portail géoservices basé sur des liens magnet et torrents.",
         },
-        {
-            "rule": "/connexion",
-            "template": "connexion.html",
-            "title": "A.N.A.N.A.S. | Connexion",
-            "meta": "Connectez-vous à votre compte A.N.A.N.A.S. pour publier et télécharger des géodonnées.",
-        },
-        {
-            "rule": "/inscription",
-            "template": "inscription.html",
-            "title": "A.N.A.N.A.S. | Inscription",
-            "meta": "Créer un compte A.N.A.N.A.S. pour publier et télécharger des géodonnées.",
-        },
+ 
         {
             "rule": "/contact",
             "template": "contact.html",
@@ -220,8 +253,12 @@ def create_app(app_name="ANANAS"):
             return redirect(url_for("catalogue"))
         if page < 1:
             return redirect(url_for("catalogue", catalogue=catalogue, page=1))
+
+        filter_verified = request.args.get("verified") == "1"
+        org_slug = request.args.get("org")
+
         meta = _CATALOGUE_META[catalogue]
-        data = get_catalogue_page(page, catalogue=catalogue)
+        data = get_catalogue_page(page, catalogue=catalogue, filter_verified=filter_verified, org_slug=org_slug)
         if data is None:
             return redirect(url_for("catalogue", catalogue=catalogue, page=1))
         return render_template(
@@ -229,6 +266,8 @@ def create_app(app_name="ANANAS"):
             title=f"A.N.A.N.A.S. | {meta['title_prefix']} — Page {page}",
             meta_description=meta["meta"],
             catalogue_type=catalogue,
+            filter_verified=filter_verified,
+            org_slug=org_slug,
             **data,
         )
 
@@ -259,6 +298,8 @@ def create_app(app_name="ANANAS"):
 
         img_gallery = [g for g in item.gallery_items if g.media_type == "image"]
 
+        current_user = get_current_user()
+
         return render_template(
             "item_detail.html",
             title=f"A.N.A.N.A.S. | {item.title}",
@@ -266,6 +307,7 @@ def create_app(app_name="ANANAS"):
             item=item.to_dict(),
             related_items=[ri.to_dict() for ri in related_items],
             image_gallery=img_gallery,
+            current_user=current_user,
         )
 
     app.add_url_rule("/catalogue/item/<int:item_id>", endpoint="item_detail", view_func=item_detail_view)
@@ -281,6 +323,518 @@ def create_app(app_name="ANANAS"):
         )
 
     app.add_url_rule("/catalogue/item/<int:item_id>/gallery", endpoint="item_gallery", view_func=item_gallery_view)
+
+  # ────────────────────────────────────────────
+    #  Auth GET routes (connexion / inscription pages)
+    # ────────────────────────────────────────────
+    @app.route("/connexion")
+    def connexion_page():
+        return render_template(
+            "connexion.html",
+            title="A.N.A.N.A.S. | Connexion",
+            meta_description="Connectez-vous à votre compte A.N.A.N.A.S.",
+        )
+
+    @app.route("/inscription")
+    def inscription_page():
+        return render_template(
+            "inscription.html",
+            title="A.N.A.N.A.S. | Inscription",
+            meta_description="Créer un compte A.N.A.N.A.S.",
+        )
+
+    # ────────────────────────────────────────────
+    #  Auth POST handlers (connexion / inscription)
+    # ────────────────────────────────────────────
+    @app.route("/connexion", methods=["POST"])
+    def connexion_post():
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+
+        from models import User
+
+        user = User.query.filter_by(email=email).first()
+        if user and check_password_hash(user.password_hash, password) and user.is_active and not user.banned:
+            session["user_id"] = user.id
+            return redirect(url_for("home"))
+
+        if user and (not user.is_active or user.banned):
+            return render_template("connexion.html", error="banned"), 401
+
+        return render_template("connexion.html", error="Identifiants incorrects"), 401
+
+    @app.route("/inscription", methods=["POST"])
+    def inscription_post():
+        prenom = request.form.get("prenom", "").strip()
+        nom = request.form.get("nom", "").strip()
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+
+        from models import User
+
+        if User.query.filter_by(email=email).first():
+            return render_template(
+                "inscription.html", error="Un compte avec cet e-mail existe déjà"
+            ), 400
+
+        user = User(
+            prenom=prenom,
+            nom=nom,
+            email=email,
+            password_hash=generate_password_hash(password),
+            is_active=True,
+            banned=False,
+        )
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for("connexion_page"))
+
+    # ────────────────────────────────────────────
+    #  Rating endpoint
+    # ────────────────────────────────────────────
+    @app.route("/catalogue/item/<int:item_id>/rate", methods=["POST"])
+    def rate_item(item_id):
+        from models import Item, Rating
+
+        item = Item.query.get_or_404(item_id)
+        rating_value = request.form.get("rating")
+
+        if not rating_value or not rating_value.isdigit():
+            return redirect(url_for("item_detail", item_id=item_id))
+
+        rating = int(rating_value)
+        existing = Rating.query.filter_by(item_id=item_id).first()
+        if existing:
+            existing.rating = rating
+        else:
+            new_rating = Rating(item_id=item_id, rating=rating)
+            db.session.add(new_rating)
+
+        # Update average on item
+        ratings = Rating.query.filter_by(item_id=item_id).all()
+        avg = sum(r.rating for r in ratings) / len(ratings) if ratings else 0
+        item.format_type = getattr(item, "_rating_avg", None) or 0  # store avg inline
+
+        db.session.commit()
+        return redirect(url_for("item_detail", item_id=item_id))
+
+    # ────────────────────────────────────────────
+    #  Comment endpoint
+    # ────────────────────────────────────────────
+    @app.route("/catalogue/item/<int:item_id>/comment", methods=["POST"])
+    def add_comment(item_id):
+        from models import Item, Comment
+
+        current_user = get_current_user()
+        item = Item.query.get_or_404(item_id)
+        author_name = request.form.get("author", "").strip() or (f"{current_user.prenom} {current_user.nom}" if current_user else "")
+        content = request.form.get("text", "").strip()
+
+        if not content:
+            return redirect(url_for("item_detail", item_id=item_id))
+
+        comment = Comment(
+            item_id=item_id,
+            author_name=author_name,
+            content=content,
+        )
+        db.session.add(comment)
+        db.session.commit()
+
+        return redirect(url_for("item_detail", item_id=item_id))
+
+    # ────────────────────────────────────────────
+    #  Verification endpoint (admin/reviewer only)
+    # ────────────────────────────────────────────
+    @app.route("/api/items/<int:item_id>/verify", methods=["POST"])
+    @login_required
+    def verify_item(item_id):
+        from models import Item
+
+        current_user = get_current_user()
+        data = request.get_json(silent=True) or {}
+        status = data.get("status", "")
+
+        if status not in ("verified", "unofficial", "rejected"):
+            return jsonify({"error": "Statut invalide"}), 400
+
+        item = Item.query.get_or_404(item_id)
+
+        item.verification_status = status
+        item.verifier_user_id = current_user.id
+        item.verified_at = dt.datetime.now if status == "verified" else None
+        item.verification_notes = data.get("notes")
+
+        db.session.commit()
+
+        return jsonify({
+            "status": "updated",
+            "item_id": item_id,
+            "new_status": status,
+        })
+
+    # ────────────────────────────────────────────
+    #  Organization endpoints
+    # ────────────────────────────────────────────
+    @app.route("/api/organizations", methods=["POST"])
+    @login_required
+    def create_organization():
+        from models import Organization, OrganizationMember
+
+        current_user = get_current_user()
+        data = request.get_json(silent=True) or {}
+        name = data.get("name", "")
+
+        if not name:
+            return jsonify({"error": "Le nom est requis"}), 400
+
+        org = Organization(
+            name=name,
+            slug=name.lower().replace(" ", "-"),
+            description=data.get("description", ""),
+            created_by=current_user.id,
+            is_active=True,
+        )
+        db.session.add(org)
+        db.session.flush()
+
+        member = OrganizationMember(
+            user_id=current_user.id,
+            organization_id=org.id,
+            role="owner",
+        )
+        db.session.add(member)
+        db.session.commit()
+
+        return jsonify({"id": org.id, "slug": org.slug})
+
+    @app.route("/api/organizations/<slug>/join", methods=["POST"])
+    @login_required
+    def join_organization(slug):
+        from models import Organization, OrganizationMember
+
+        current_user = get_current_user()
+        org = Organization.query.filter_by(slug=slug).first_or_404()
+
+        existing = OrganizationMember.query.filter_by(
+            user_id=current_user.id, organization_id=org.id
+        ).first()
+        if existing:
+            return jsonify({"error": "Déjà membre"}), 409
+
+        member = OrganizationMember(
+            user_id=current_user.id,
+            organization_id=org.id,
+            role="member",
+        )
+        db.session.add(member)
+        db.session.commit()
+
+        return jsonify({"status": "joined"})
+
+    @app.route("/api/organizations/<slug>/leave", methods=["POST"])
+    @login_required
+    def leave_organization(slug):
+        from models import Organization, OrganizationMember
+
+        current_user = get_current_user()
+        org = Organization.query.filter_by(slug=slug).first_or_404()
+
+        member = OrganizationMember.query.filter_by(
+            user_id=current_user.id, organization_id=org.id
+        ).first()
+        if member and member.role != "owner":
+            db.session.delete(member)
+            db.session.commit()
+
+        return jsonify({"status": "left"})
+
+    @app.route("/api/organizations/<slug>/members/<int:user_id>/role", methods=["POST"])
+    @login_required
+    def update_member_role(slug, user_id):
+        from models import Organization, OrganizationMember
+
+        current_user = get_current_user()
+        org = Organization.query.filter_by(slug=slug).first_or_404()
+
+        member = OrganizationMember.query.filter_by(
+            user_id=current_user.id, organization_id=org.id
+        ).first()
+        if not member or member.role not in ("admin", "owner"):
+            return jsonify({"error": "Non autorisé"}), 403
+
+        data = request.get_json(silent=True) or {}
+        target_member = OrganizationMember.query.filter_by(
+            user_id=user_id, organization_id=org.id
+        ).first_or_404()
+
+        target_member.role = data.get("role", "member")
+        db.session.commit()
+
+        return jsonify({"status": "updated", "role": data.get("role")})
+
+    # ────────────────────────────────────────────
+    #  Organization detail page
+    # ────────────────────────────────────────────
+    def organization_detail_view(slug):
+        from models import Organization, Item
+
+        org = Organization.query.filter_by(slug=slug).first_or_404()
+        items = (
+            Item.query.filter_by(organization_id=org.id, is_published=True)
+            .limit(ITEMS_PER_PAGE)
+            .all()
+        )
+        return render_template(
+            "organization_detail.html",
+            title=f"{org.name} — A.N.A.N.A.S.",
+            meta_description=org.description or org.name,
+            org=org,
+            items=[i.to_dict() for i in items],
+        )
+
+    @app.route("/organizations/<slug>/items")
+    def organization_items(slug):
+        from models import Organization, Item
+
+        org = Organization.query.filter_by(slug=slug).first_or_404()
+        filter_verified = request.args.get("verified") == "1"
+        items = (
+            Item.query.filter_by(organization_id=org.id, is_published=True)
+        )
+        if filter_verified:
+            items = items.filter_by(verification_status="verified")
+        items = items.limit(ITEMS_PER_PAGE).all()
+        return render_template(
+            "organization_detail.html",
+            title=f"{org.name} — A.N.A.N.A.S. | Données",
+            meta_description=org.description or org.name,
+            org=org,
+            items=[i.to_dict() for i in items],
+        )
+
+    app.add_url_rule(
+        "/organizations/<slug>", endpoint="organization_detail", view_func=organization_detail_view
+    )
+
+    # ────────────────────────────────────────────
+    #  Ban / Unban endpoints
+    # ────────────────────────────────────────────
+    @app.route("/api/users/<int:user_id>/ban", methods=["POST"])
+    @login_required
+    def ban_user(user_id):
+        from models import User
+
+        current_user = get_current_user()
+        if not hasattr(current_user, "is_admin"):
+            return jsonify({"error": "Non autorisé"}), 403
+
+        target_user = User.query.get_or_404(user_id)
+        data = request.get_json(silent=True) or {}
+        action = data.get("action", "")
+
+        if action not in ("ban", "unban"):
+            return jsonify({"error": "Action invalide"}), 400
+
+        target_user.banned = (action == "ban")
+        db.session.commit()
+
+        return jsonify({
+            "status": "updated",
+            "user_id": user_id,
+            "action": action,
+        })
+
+    @app.route("/api/users/banned", methods=["GET"])
+    @login_required
+    def list_banned_users():
+        from models import User
+
+        current_user = get_current_user()
+        if not hasattr(current_user, "is_admin"):
+            return jsonify({"error": "Non autorisé"}), 403
+
+        banned = User.query.filter_by(banned=True).all()
+        return jsonify([
+            {
+                "id": u.id,
+                "prenom": u.prenom,
+                "nom": u.nom,
+                "email": u.email,
+                "created_at": u.created_at.isoformat() if hasattr(u, "created_at") else None,
+                "banned": u.banned,
+            }
+            for u in banned
+        ])
+
+    # ────────────────────────────────────────────
+    #  Report system endpoints
+    # ────────────────────────────────────────────
+    @app.route("/api/reports", methods=["POST"])
+    @login_required
+    def create_report():
+        from models import User, Item, Report
+
+        current_user = get_current_user()
+        data = request.get_json(silent=True) or {}
+
+        target_type = data.get("target_type")
+        target_id = data.get("target_id")
+        reason = data.get("reason")
+        description = data.get("description", "")
+
+        if not target_type or not target_id or not reason:
+            return jsonify({"error": "target_type, target_id et reason sont requis"}), 400
+
+        if reason not in ("spam", "fake_data", "other"):
+            return jsonify({"error": "Raison invalide"}), 400
+
+        report = Report(
+            reporter_id=current_user.id,
+            report_type=f"item_{target_type}" if target_type != "user" else "user",
+            reason=reason,
+            description=description,
+            status="pending",
+        )
+
+        if target_type == "user":
+            reported_user = User.query.get(target_id)
+            if not reported_user:
+                return jsonify({"error": "Utilisateur introuvable"}), 404
+            if reported_user.id == current_user.id:
+                return jsonify({"error": "Impossible de se signaler soi-même"}), 400
+            report.reported_user_id = reported_user.id
+        else:
+            item_type_map = {"geodonnee": "geodonnee", "carte": "carte", "application": "application"}
+            if target_type not in item_type_map:
+                return jsonify({"error": "Type de contenu invalide"}), 400
+            item = Item.query.filter_by(id=target_id, type=item_type_map[target_type]).first()
+            if not item:
+                return jsonify({"error": "Contenu introuvable"}), 404
+            report.target_item_id = target_id
+
+        db.session.add(report)
+        db.session.commit()
+
+        return jsonify({"status": "created", "report_id": report.id})
+
+    @app.route("/api/admin/reports", methods=["GET"])
+    @login_required
+    def list_reports():
+        from models import Report
+
+        current_user = get_current_user()
+        if not hasattr(current_user, "is_admin"):
+            return jsonify({"error": "Non autorisé"}), 403
+
+        status_filter = request.args.get("status", "all")
+        report_type = request.args.get("type", "all")
+
+        query = Report.query
+        if status_filter != "all":
+            query = query.filter_by(status=status_filter)
+        if report_type != "all":
+            query = query.filter_by(report_type=report_type)
+
+        reports = query.order_by(Report.created_at.desc()).all()
+        return jsonify([
+            {
+                "id": r.id,
+                "reporter": {"id": r.reporter.id, "name": str(r.reporter)} if r.reporter else None,
+                "reported_user": {"id": r.reported_user.id, "name": str(r.reported_user)} if r.reported_user else None,
+                "target_item_id": r.target_item_id,
+                "report_type": r.report_type,
+                "reason": r.reason,
+                "description": r.description,
+                "status": r.status,
+                "reviewed_by": {"id": r.reviewed_by.id, "name": str(r.reviewed_by)} if r.reviewed_by else None,
+                "reviewed_at": r.reviewed_at.isoformat() if hasattr(r, "reviewed_at") and r.reviewed_at else None,
+                "created_at": r.created_at.isoformat(),
+            }
+            for r in reports
+        ])
+
+    @app.route("/api/admin/reports/<int:report_id>/resolve", methods=["POST"])
+    @login_required
+    def resolve_report(report_id):
+        from models import Report
+
+        current_user = get_current_user()
+        if not hasattr(current_user, "is_admin"):
+            return jsonify({"error": "Non autorisé"}), 403
+
+        report = Report.query.get_or_404(report_id)
+        data = request.get_json(silent=True) or {}
+        new_status = data.get("status", "")
+
+        if new_status not in ("resolved", "dismissed"):
+            return jsonify({"error": "Statut invalide"}), 400
+
+        report.status = new_status
+        report.reviewed_by = current_user.id
+        report.reviewed_at = dt.datetime.now()
+
+        db.session.commit()
+
+        return jsonify({"status": "updated", "report_id": report.id})
+
+    # ────────────────────────────────────────────
+    #  Admin pages
+    # ────────────────────────────────────────────
+    @app.route("/admin/users")
+    @login_required
+    def admin_users():
+        from models import User
+
+        current_user = get_current_user()
+        if not hasattr(current_user, "is_admin"):
+            return jsonify({"error": "Non autorisé"}), 403
+
+        users = User.query.all()
+        return render_template(
+            "admin/users.html",
+            title="Administration — Utilisateurs",
+            meta_description="Liste des utilisateurs",
+            users=users,
+        )
+
+    @app.route("/admin/reports")
+    @login_required
+    def admin_reports():
+        from models import Report
+
+        current_user = get_current_user()
+        if not hasattr(current_user, "is_admin"):
+            return jsonify({"error": "Non autorisé"}), 403
+
+        status_filter = request.args.get("status", "all")
+        report_type = request.args.get("type", "all")
+
+        query = Report.query
+        if status_filter != "all":
+            query = query.filter_by(status=status_filter)
+        if report_type != "all":
+            query = query.filter_by(report_type=report_type)
+
+        reports = query.order_by(Report.created_at.desc()).all()
+        pending_count = Report.query.filter_by(status="pending").count()
+
+        return render_template(
+            "admin/reports.html",
+            title="Administration — Signalements",
+            meta_description="Liste des signalements",
+            reports=reports,
+            status=status_filter,
+            pending_count=pending_count,
+        )
+
+    # ────────────────────────────────────────────
+    #  Logout route
+    # ────────────────────────────────────────────
+    @app.route("/logout")
+    def logout():
+        session.clear()
+        return redirect(url_for("home"))
 
     return app
 

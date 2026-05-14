@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<main class="admin-page">
+  <section class="admin-section">
+    <div class="container">
+      <h1>Administration — Signalements ({{ reports | length }})</h1>
+
+      <nav style="margin-bottom:20px;">
+        <a href="/admin/reports?status=all&type=all" {% if status == 'all' %}class="active"{% endif %}>Tous</a>
+        <a href="/admin/reports?status=pending&type=all">En attente ({{ pending_count }})</a>
+      </nav>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Signaleur</th>
+            <th>Cible</th>
+            <th>Type</th>
+            <th>Raison</th>
+            <th>Statut</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for report in reports %}
+          <tr>
+            <td>{{ report.id }}</td>
+            <td>{{ report.reporter.prenom }} {{ report.reporter.nom if report.reporter else '(anonyme)' }}</td>
+            {% if report.target_item %}
+                <td><a href="/catalogue/item/{{ report.target_item_id }}">{{ report.target_item.title[:40] if report.target_item and report.target_item.title else '#' }}</a></td>
+            {% elif report.reported_user %}
+                <td>{{ report.reported_user.prenom }} {{ report.reported_user.nom }}</td>
+            {% else %}
+                <td>Inconnu</td>
+            {% endif %}
+            <td>{{ report.report_type }}</td>
+            <td>{{ report.reason }}</td>
+            <td>
+              {% if report.status == 'pending' %}
+                  <span class="badge badge-pending">En attente</span>
+              {% elif report.status == 'resolved' %}
+                  <span class="badge badge-verified">Résolu</span>
+              {% elif report.status == 'dismissed' %}
+                  <span class="badge badge-rejected">Non fondé</span>
+              {% else %}
+                  {{ report.status }}
+              {% endif %}
+            </td>
+            <td>{{ report.created_at.strftime('%d/%m/%Y') }}</td>
+            <td>
+              {% if report.status == 'pending' %}
+                  <form action="/api/admin/reports/{{ report.id }}/resolve" method="POST" style="display:inline;">
+                      <input type="hidden" name="status" value="resolved">
+                      <button type="submit" style="background:#28a745; color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer;">Résoudre</button>
+                  </form>
+                  <form action="/api/admin/reports/{{ report.id }}/resolve" method="POST" style="display:inline;">
+                      <input type="hidden" name="status" value="dismissed">
+                      <button type="submit" style="background:#6c757d; color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer;">Non fondé</button>
+                  </form>
+              {% else %}
+                  —
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+{% endblock %}

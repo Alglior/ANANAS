@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN chown -R appuser:appuser /app \
+RUN ln -sf alembic migrations && chown -R appuser:appuser /app \
     && chmod 755 /app
 
 USER appuser
@@ -19,4 +19,4 @@ ENV FLASK_ENV=production
 
 EXPOSE 5000
 
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "--workers", "3", "--timeout", "30", "app:create_app()"]
+CMD ["sh", "-c", "flask db upgrade && python fix_migration.py && gunicorn -b 0.0.0.0:5000 --workers 3 --timeout 30 'app:create_app()'"]

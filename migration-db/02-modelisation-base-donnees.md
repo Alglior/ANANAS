@@ -19,7 +19,7 @@ CREATE TABLE items (
     organization_id  INTEGER REFERENCES organizations(id),  -- orga qui publie la donnée (optionnel)
     created_at      TIMESTAMP DEFAULT NOW(),
     is_published    BOOLEAN DEFAULT TRUE,
-    verification_status  VARCHAR(20) DEFAULT 'pending',  -- pending (données visibles mais pas vérifiées), verified (confiance officielle)
+    verification_status  VARCHAR(20) DEFAULT 'unofficial',  -- unofficial (non officielles), verified (confiance officielle), rejected (rejeté)
     verifier_user_id INTEGER REFERENCES users(id),       -- utilisateur qui a vérifié
     verified_at     TIMESTAMP,                           -- date de vérification
     verification_notes TEXT,                             -- notes du vérificateur
@@ -260,7 +260,7 @@ class Item(db.Model):
     organization_id: Mapped[int | None] = mapped_column(ForeignKey("organizations.id"))
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
     is_published: Mapped[bool] = mapped_column(default=True)
-    verification_status: Mapped[str] = mapped_column(default="pending")
+    verification_status: Mapped[str] = mapped_column(default="unofficial")
     verifier_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     verified_at: Mapped[datetime | None]
     verification_notes: Mapped[str | None]

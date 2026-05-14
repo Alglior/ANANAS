@@ -79,7 +79,157 @@
   box-shadow: var(--shadow-mustard-btn);
 }
 
-.rate-submit-label {
-  font-size: 0.875rem;
-  color: var(--specs-gray);
+/* Verification badges */
+.badge-verified {
+    background: #28a745;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    display: inline-block;
+}
+
+.badge-unofficial {
+    background: #6c757d;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    display: inline-block;
+}
+
+.badge-rejected {
+    background: #dc3545;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    display: inline-block;
+    opacity: 0.7;
+}
+
+/* Verification info section */
+.verification-info {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.verified-seal {
+    background: #d4edda;
+    color: #155724;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    border-left: 4px solid #28a745;
+}
+
+.warning-rejected {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    border-left: 4px solid #dc3545;
+}
+
+.unofficial-info {
+    background: #e2e3e5;
+    color: #383d41;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    border-left: 4px solid #6c757d;
+}
+
+/* Filters nav */
+.filters {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+}
+
+.filters a {
+    color: var(--charcoal);
+    text-decoration: none;
+    padding: 4px 12px;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.filters a.active,
+.filters a:hover {
+    background: var(--mustard);
+    color: var(--charcoal);
+}
+
+.filters .separator {
+    color: var(--border-color);
+    font-size: 1rem;
+}
+
+/* Report section */
+.report-section {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.report-section button {
+    background: none;
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--charcoal);
+    transition: background 0.2s ease;
+}
+
+.report-section button:hover {
+    background: #fff3cd;
+}
+
+.modal form select,
+.modal form textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-family: inherit;
+}
+
+.modal form textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+/* Organization info */
+.catalogue-org {
+    font-size: 0.85rem;
+    color: var(--specs-gray);
+    margin-top: 4px;
+}
+
+.catalogue-org a {
+    color: var(--primary-blue);
+    text-decoration: none;
+}
+
+.catalogue-org a:hover {
+    text-decoration: underline;
+}
+
+/* Comment notice */
+.comment-notice {
+    font-size: 0.9rem;
+    color: var(--specs-gray);
+    margin-top: 1rem;
+}
+
+.comment-notice a {
+    color: var(--primary-blue);
 }

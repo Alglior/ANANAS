@@ -27,6 +27,15 @@
         <span class="sep">&rsaquo;</span>
         <span>{{ catalogue_name }}</span>
       </nav>
+
+      {% if current_user %}
+      <nav class="filters" aria-label="Filtres de vérification">
+        <a href="/catalogue/{{ catalogue_type or 'donnees' }}"{% if not filter_verified and not org_slug %} class="active"{% endif %}>Toutes les données</a>
+        <span class="separator">|</span>
+        <a href="/catalogue/{{ catalogue_type or 'donnees' }}?verified=1"{% if filter_verified %} class="active"{% endif %}>Données vérifiées uniquement</a>
+      </nav>
+      {% endif %}
+
       <ul class="catalogue-list">
         {% for item in items %}
         <li>
@@ -36,9 +45,18 @@
             <div class="catalogue-content">
               <div class="catalogue-top">
                 <span class="catalogue-title">{{ item.title }}</span>
-                <span class="catalogue-meta-tag">{{ item.format }} · {{ item.size }}</span>
+                {% if item.is_official_verified %}
+                  <span class="badge badge-verified" title="Données vérifiées et approuvées par A.N.A.N.A.S.">Données vérifiées</span>
+                {% else %}
+                  <span class="badge badge-unofficial" title="Données non officielles - Accès accessible mais non vérifié par A.N.A.N.A.S.">Données non officielles</span>
+                {% endif %}
               </div>
               <p class="catalogue-author"><strong>Publié par :</strong> {{ item.author }}</p>
+              {% if item.organization_name %}
+              <p class="catalogue-org">
+                <a href="/organizations/{{ item.organization_slug }}">{{ item.organization_name }}</a>
+              </p>
+              {% endif %}
               <p class="catalogue-desc-preview" id="preview-{{ item.id }}">{{ item.description|truncate(140, True, '...') }}</p>
               <p class="catalogue-desc-full" id="full-{{ item.id }}" hidden>{{ item.description }}</p>
               <button
@@ -88,5 +106,4 @@
   </section>
 
 </main>
-
 {% endblock %}

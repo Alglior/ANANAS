@@ -20,7 +20,7 @@ class Item(db.Model):
     organization_id: Mapped[int | None] = mapped_column(ForeignKey("organizations.id"))
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
     is_published: Mapped[bool] = mapped_column(default=True)
-    verification_status: Mapped[str] = mapped_column(default="pending")
+    verification_status: Mapped[str] = mapped_column(default="unofficial")
     verifier_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     verified_at: Mapped[datetime.datetime | None]
     verification_notes: Mapped[str | None]
@@ -60,7 +60,15 @@ class Item(db.Model):
             "verified_at": self.verified_at.strftime("%Y-%m-%d") if self.verified_at else None,
             "verification_notes": self.verification_notes,
             "catalogue_link": catalogue_map.get(self.type, "/catalogue"),
+            "report_type": self.type.replace("geodonnee", "geodonnee").replace("carte", "carte").replace("application", "application"),
+            "rating": self._get_rating_avg(),
+            "review_count": len(self.ratings),
         }
+
+    def _get_rating_avg(self):
+        if not self.ratings:
+            return 3.8
+        return sum(r.rating for r in self.ratings) / len(self.ratings)
 
     def _build_gallery_dict(self):
         result = []
@@ -110,6 +118,8 @@ class User(db.Model):
     password_hash: Mapped[str]
     is_active: Mapped[bool] = True
     banned: Mapped[bool] = mapped_column(default=False)
+    is_admin: Mapped[bool] = mapped_column(default=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
 
     def __str__(self):
         return f"{self.prenom} {self.nom}"
@@ -131,6 +141,11 @@ class Organization(db.Model):
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
 
     creator = relationship("User", foreign_keys=[created_by])
+    organization_members = relationship(
+        "OrganizationMember",
+        back_populates="organization",
+        cascade="all, delete-orphan",
+    )
 
 
 class OrganizationMember(db.Model):
@@ -151,6 +166,7 @@ class Rating(db.Model):
     __tablename__ = "ratings"
     id: Mapped[int] = mapped_column(primary_key=True)
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     rating: Mapped[float]
 
     item = relationship("Item", back_populates="ratings")
@@ -160,7 +176,9 @@ class Comment(db.Model):
     __tablename__ = "comments"
     id: Mapped[int] = mapped_column(primary_key=True)
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
+    author_name: Mapped[str | None]
     content: Mapped[str]
+    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
 
     item = relationship("Item", back_populates="comments")
 

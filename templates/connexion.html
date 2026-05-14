@@ -12,6 +12,18 @@
         <p>Accédez à votre espace pour publier et télécharger des géodonnées vérifiées.</p>
       </div>
 
+      {% if error == "banned" %}
+      <div class="alert alert-danger">
+        Votre compte a été désactivé. Contactez l'administration pour plus d'informations.
+      </div>
+      {% endif %}
+
+      {% if error %}
+      <div class="alert alert-danger">
+        {{ error }}
+      </div>
+      {% endif %}
+
       <form class="auth-form" id="connexionForm" action="/connexion" method="POST">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div class="form-group">
@@ -20,14 +32,13 @@
             type="email"
             id="email"
             name="email"
-            placeholder="exemple@domaine.com"
+            placeholder="votre@email.com"
             required
-            autocomplete="email"
+            autocomplete="username"
           />
         </div>
 
         <div class="form-group">
-          <label for="password">Mot de passe</label>
           <input
             type="password"
             id="password"

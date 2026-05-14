@@ -39,11 +39,11 @@ def inscription_post():
 
 ### Affichage du statut de vérification dans les templates
 
-**Rappel : la vérification ne concerne QUE la confiance officielle, PAS la modération.** Tous les items `pending` restent pleinement visibles et accessibles sur le site. Le seul statut qui masque un item serait `rejected` (cas très rare pour non-conformité aux standards du site).
+**Rappel : la vérification ne concerne QUE la confiance officielle, PAS la modération.** Tous les items `unofficial` restent pleinement visibles et accessibles sur le site. Le seul statut qui masque un item serait `rejected` (cas très rare pour non-conformité aux standards du site).
 
-Les deux états normaux sont :
+Les états normaux sont :
 - `verified` → données **approuvées officiellement** par A.N.A.N.A.S. (= confiance officielle, badge 🏛️)
-- `pending` → données **visibles et accessibles**, simplement pas encore vérifiées par le site (badge neutre ou absent)
+- `unofficial` → données **non officielles**, visibles et accessibles mais non vérifiées par A.N.A.N.A.S. (badge ⚠️)
 
 #### Catalogue (catalogue.html) : seuls les données `verified` reçoivent un badge de confiance officielle
 
@@ -56,7 +56,7 @@ Les deux états normaux sont :
             <span class="badge badge-verified" title="Données vérifiées et approuvées par A.N.A.N.A.S.">🏛️ Données vérifiées</span>
         {% else %}
             <!-- Données visibles mais non encore vérifiées → aucune différence visuelle particulière -->
-            <span class="badge badge-pending" title="Données accessibles sur le site, non encore vérifiées par A.N.A.N.A.S.">📋 Données non vérifiées</span>
+            <span class="badge badge-unofficial" title="Données non officielles - Accès accessible mais non vérifié par A.N.A.N.A.S.">⚠️ Données non officielles</span>
         {% endif %}
 
         <h3>{{ item.title }}</h3>
@@ -78,9 +78,9 @@ Les deux états normaux sont :
     display: inline-block;
 }
 
-.badge-pending {
-    background: #ffc107;
-    color: #333;
+.badge-unofficial {
+    background: #6c757d;
+    color: white;
     padding: 4px 10px;
     border-radius: 4px;
     font-size: 0.8em;
@@ -114,8 +114,8 @@ Les deux états normaux sont :
             {% if item.verification_notes %}<br>Raison : {{ item.verification_notes }}{% endif %}
         </div>
     {% else %}
-        <div class="pending-info">
-            ℹ️ Ces données sont accessibles mais n'ont pas encore été vérifiées par A.N.A.N.A.S.
+        <div class="unofficial-info">
+            ⚠️ Données non officielles - Accès accessible mais les données n'ont pas été vérifiées par A.N.A.N.A.S.
         </div>
     {% endif %}
 </div>
@@ -157,7 +157,7 @@ def add_comment(item_id):
 
 ### 6.4 Endpoint de vérification
 
-Un utilisateur autorisé (admin ou reviewer) peut marquer un item comme `verified`, `pending` ou `rejected`.
+Un utilisateur autorisé (admin ou reviewer) peut marquer un item comme `verified`, `unofficial` ou `rejected`.
 
 ```python
 @app.route("/api/items/<int:item_id>/verify", methods=["POST"])
@@ -168,16 +168,16 @@ def verify_item(item_id):
     Seul les utilisateurs avec rôle 'admin' ou 'reviewer' peuvent utiliser cette route.
     """
     data = request.json
-    status = data.get("status")  # "verified" | "pending" | "rejected"
+    status = data.get("status")  # "verified" | "unofficial" | "rejected"
 
-    if status not in ("verified", "pending", "rejected"):
+    if status not in ("verified", "unofficial", "rejected"):
         return jsonify({"error": "Statut invalide"}), 400
 
     item = Item.query.get_or_404(item_id)
 
     item.verification_status = status
     item.verifier_user_id = current_user.id
-    item.verified_at = datetime.now if status in ("verified", "pending") else None
+    item.verified_at = datetime.now if status == "verified" else None
     item.verification_notes = data.get("notes")  # notes optionnelles du vérificateur
     db.session.commit()
 
@@ -273,7 +273,7 @@ def update_member_role(slug, user_id):
         {% if item.is_official_verified %}
             <span class="badge badge-verified" title="Données vérifiées et approuvées par A.N.A.N.A.S.">🏛️ Données vérifiées</span>
         {% else %}
-            <span class="badge badge-pending" title="Données visibles, en attente de vérification par A.N.A.N.A.S.">📋 En attente</span>
+            <span class="badge badge-unofficial" title="Données non officielles - Accès accessible mais non vérifié par A.N.A.N.A.S.">⚠️ Données non officielles</span>
         {% endif %}
 
         <h3>{{ item.title }}</h3>
