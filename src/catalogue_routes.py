@@ -1,5 +1,6 @@
 from flask import Blueprint, request, render_template, redirect, url_for
 from werkzeug.routing import BaseConverter
+from models import Organization
 
 _CATALOGUE_META = {
     "donnees": {
@@ -46,6 +47,7 @@ def _do_catalogue(catalogue_type, page, per_page=30):
         return redirect(url_for("catalogue.catalogue_index"))
 
     filter_verified = request.args.get("verified") == "1"
+    filter_unofficial = request.args.get("unofficial") == "1"
     org_slug = request.args.get("org")
     format_param = request.args.get("format", "")
 
@@ -60,6 +62,8 @@ def _do_catalogue(catalogue_type, page, per_page=30):
             query = query.filter_by(organization_id=org.id)
     if filter_verified:
         query = query.filter_by(verification_status="verified")
+    elif filter_unofficial:
+        query = query.filter(Item.verification_status != "verified")
 
     total_items = query.count()
     total_pages = max((total_items + per_page - 1) // per_page, 1)
@@ -75,6 +79,7 @@ def _do_catalogue(catalogue_type, page, per_page=30):
         "meta_description": meta["meta"],
         "catalogue_type": catalogue,
         "filter_verified": filter_verified,
+        "filter_unofficial": filter_unofficial,
         "org_slug": org_slug,
         "items": result_items,
         "page": page,
@@ -118,22 +123,25 @@ def catalogue_json_view(catalogue_type, page):
 
     per_page = 20
     item_type = type_map[catalogue_type]
-    total_items = Item.query.filter_by(type=item_type).count()
+    total_items = Item.query.filter_by(type=item_type, is_published=True).count()
     total_pages = max((total_items + per_page - 1) // per_page, 1)
     page = min(max(page, 1), total_pages) or 1
 
     catalogue = catalogue_type
     filter_verified = request.args.get("verified") == "1"
+    filter_unofficial = request.args.get("unofficial") == "1"
     org_slug = request.args.get("org")
 
     meta = _CATALOGUE_META[catalogue]
-    query = Item.query.filter_by(type=item_type)
+    query = Item.query.filter_by(type=item_type, is_published=True)
     if org_slug:
         org = Organization.query.filter_by(slug=org_slug).first()
         if org:
             query = query.filter_by(organization_id=org.id)
     if filter_verified:
         query = query.filter_by(verification_status="verified")
+    elif filter_unofficial:
+        query = query.filter(Item.verification_status != "verified")
 
     items = query.offset((page - 1) * per_page).limit(per_page).all()
     result_items = [item.to_dict() for item in items]

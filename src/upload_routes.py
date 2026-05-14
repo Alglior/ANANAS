@@ -5,6 +5,7 @@ from flask import Blueprint, request, jsonify
 from werkzeug.utils import secure_filename
 from app import db
 from src.shared import login_required, get_current_user
+from utils.security import validate_file_magic
 
 bp = Blueprint("upload", __name__)
 
@@ -34,7 +35,13 @@ def upload_chunk():
     if not is_allowed_file(file.filename):
         return jsonify({"error": "Format de fichier non autorisé"}), 400
 
-    safe_name = secure_filename(file.filename)
+    file_data = file.read()
+    magic_ok, magic_msg = validate_file_magic(file_data, ALLOWED_EXTENSIONS)
+    if not magic_ok:
+        file.seek(0)
+        return jsonify({"error": f"Contenu du fichier invalide: {magic_msg}"}), 400
+
+    file.seek(0)
     upload_path = os.path.join("/uploads", str(current_user.id), safe_name)
     os.makedirs(os.path.dirname(upload_path), exist_ok=True)
     file.save(upload_path)

@@ -23,8 +23,26 @@ def create_app(app_name="ANANAS"):
     config.validate()
     app.config.update(config.__dict__)
 
-    # Activation globale de la protection CSRF (nécessite une clé secrète)
+    # Protection CSRF: formulaires HTML protégés, routes /api/* exemptées (X-CSRF-Token header requis)
     csrf = CSRFProtect(app)
+
+    # Patch Flask-WTF pour exempter les routes /api/* et /health du contrôle CSRF automatique
+    _original_protect = csrf.protect
+    def _patched_protect():
+        from flask import request as req
+        if '/api/' in req.path or req.path == '/health':
+            return  # bypass CSRF pour API et health
+        return _original_protect()
+    csrf.protect = _patched_protect
+
+    @app.before_request
+    def check_csrf_header():
+        """Exiger un token X-CSRF-Token pour les requêtes JSON API"""
+        if request.method in ("POST", "PUT", "PATCH", "DELETE"):
+            content_type = request.content_type or ""
+            if "/api/" in request.path and "application/json" in content_type:
+                if not request.headers.get("X-CSRF-Token"):
+                    return jsonify({"error": "Token CSRF requis pour les requêtes API"}), 422
 
     # Rate limiting pour prévenir le brute-force sur les routes d'authentification
     limiter = Limiter(
@@ -42,7 +60,10 @@ def create_app(app_name="ANANAS"):
         pg_pass = os.environ.get("POSTGRES_PASSWORD", "password")
         pg_host = os.environ.get("POSTGRES_HOST", "postgres")
         pg_db = os.environ.get("POSTGRES_DB", "ananas")
-        db_uri = f"postgresql+psycopg2://{pg_user}:{pg_pass}@{pg_host}:5432/{pg_db}"
+        db_uri = f"postgresql+psycopg2://{pg_user}:{pg_pass}@{pg_host}:5432/{pg_db}?sslmode=prefer"
+    elif "sslmode" not in db_uri:
+        separator = "&" if "?" in db_uri else "?"
+        db_uri = f"{db_uri}{separator}sslmode=prefer"
 
     app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -54,6 +75,25 @@ def create_app(app_name="ANANAS"):
     def health_check():
         return {"status": "ok"}
 
+    @app.route("/connexion", methods=["POST"])
+    @limiter.limit("5 per hour")
+    def connexion_post():
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+
+        from models import User
+        from werkzeug.security import check_password_hash
+
+        user = User.query.filter_by(email=email).first()
+        if user and check_password_hash(user.password_hash, password) and user.is_active and not user.banned:
+            session["user_id"] = user.id
+            return redirect(url_for("home"))
+
+        if user and (not user.is_active or user.banned):
+            return render_template("connexion.html", error="banned"), 401
+
+        return render_template("connexion.html", error="Identifiants incorrects"), 401
+
     # ────────────────────────────────────────────
     #  Security Headers & Cookie Settings
     # ────────────────────────────────────────────
@@ -61,7 +101,6 @@ def create_app(app_name="ANANAS"):
     def set_security_headers(response):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
@@ -73,6 +112,8 @@ def create_app(app_name="ANANAS"):
         )
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         return response
+
+
 
     @app.context_processor
     def inject_user():
@@ -86,7 +127,8 @@ def create_app(app_name="ANANAS"):
     app.config["SESSION_COOKIE_HTTPONLY"] = True  # Empêche les scripts JavaScript de lire le cookie de session
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # Protection contre les attaques CSRF par cookie
     app.config["SESSION_COOKIE_SECURE"] = is_production  # En production seulement, force HTTPS pour les cookies
-    app.config["PERMANENT_SESSION_LIFETIME"] = 3600  # Les sessions expireront après 1 heure (clé correcte Flask)
+    app.config["PERMANENT_SESSION_LIFETIME"] = 1800  # Les sessions expireront après 30 minutes
+    app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # Limite de 10 Mo pour les uploads (Max-Content-Length)
 
     # Définition des routes statiques
     routes = [

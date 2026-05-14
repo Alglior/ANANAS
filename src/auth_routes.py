@@ -1,8 +1,25 @@
+import re
+
 from flask import Blueprint, request, render_template, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
 
 bp = Blueprint("auth", __name__)
+
+
+def validate_password_strength(password: str) -> tuple[bool, list[str]]:
+    errors = []
+    if len(password) < 8:
+        errors.append("Le mot de passe doit contenir au moins 8 caractères")
+    if not re.search(r"[A-Z]", password):
+        errors.append("Le mot de passe doit contenir au moins une majuscule")
+    if not re.search(r"[a-z]", password):
+        errors.append("Le mot de passe doit contenir au moins une minuscule")
+    if not re.search(r"\d", password):
+        errors.append("Le mot de passe doit contenir au moins un chiffre")
+    if not re.search(r"[!@#$%^&*()_+\-={}\[\];':\"\\|,.<>/?~`]", password):
+        errors.append("Le mot de passe doit contenir au moins un caractère spécial (!@#$%^&*...)")
+    return len(errors) == 0, errors
 
 
 @bp.route("/connexion")
@@ -23,24 +40,6 @@ def inscription_page():
     )
 
 
-@bp.route("/connexion", methods=["POST"])
-def connexion_post():
-    email = request.form.get("email", "").strip()
-    password = request.form.get("password", "")
-
-    from models import User
-
-    user = User.query.filter_by(email=email).first()
-    if user and check_password_hash(user.password_hash, password) and user.is_active and not user.banned:
-        session["user_id"] = user.id
-        return redirect(url_for("home"))
-
-    if user and (not user.is_active or user.banned):
-        return render_template("connexion.html", error="banned"), 401
-
-    return render_template("connexion.html", error="Identifiants incorrects"), 401
-
-
 @bp.route("/inscription", methods=["POST"])
 def inscription_post():
     prenom = request.form.get("prenom", "").strip()
@@ -50,9 +49,13 @@ def inscription_post():
 
     from models import User
 
+    strength_ok, strength_errors = validate_password_strength(password)
+    if not strength_ok:
+        return render_template("inscription.html", form_errors=strength_errors, password=password, email=email, prenom=prenom, nom=nom), 400
+
     if User.query.filter_by(email=email).first():
         return render_template(
-            "inscription.html", error="Un compte avec cet e-mail existe déjà"
+            "inscription.html", error="Un compte avec cet e-mail existe déjà", password=password, email=email, prenom=prenom, nom=nom
         ), 400
 
     user = User(

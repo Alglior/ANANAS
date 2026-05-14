@@ -28,13 +28,13 @@
         <span>{{ catalogue_name }}</span>
       </nav>
 
-      {% if current_user %}
       <nav class="filters" aria-label="Filtres de vérification">
-        <a href="/catalogue/{{ catalogue_type or 'donnees' }}"{% if not filter_verified and not org_slug %} class="active"{% endif %}>Toutes les données</a>
+        <a href="/catalogue/{{ catalogue_type or 'donnees' }}"{% if not filter_verified and not filter_unofficial and not org_slug %} class="active"{% endif %}>Toutes les données</a>
         <span class="separator">|</span>
-        <a href="/catalogue/{{ catalogue_type or 'donnees' }}?verified=1"{% if filter_verified %} class="active"{% endif %}>Données vérifiées uniquement</a>
+        <a href="/catalogue/{{ catalogue_type or 'donnees' }}?verified=1"{% if filter_verified %} class="active"{% endif %}>Données vérifiées</a>
+        <span class="separator">|</span>
+        <a href="/catalogue/{{ catalogue_type or 'donnees' }}?unofficial=1"{% if filter_unofficial %} class="active"{% endif %}>Données non officielles</a>
       </nav>
-      {% endif %}
 
       <ul class="catalogue-list">
         {% for item in items %}

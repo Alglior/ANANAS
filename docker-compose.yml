@@ -15,17 +15,30 @@ services:
     ports:
       - "5000:5000"         # expose web UI on host port 5000
     depends_on:
-      - postgres            # wait for postgres to start before starting app
+      postgres:
+        condition: service_healthy  # attend que PostgreSQL soit prêt (pas juste le container démarré)
     volumes:
       - secret_key:/app/.secret   # persist .secret file across container rebuilds
 
-  # ─── PostgreSQL (official image, no custom build) ───
+# ─── PostgreSQL (official image, no custom build) ───
   postgres:
     image: postgres:18-alpine
     container_name: ananas_postgres
     env_file: .env          # reads POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD from .env
+ 
+    command: >
+      postgres
+      -c max_connections=50
+      -c log_min_duration_statement=1000
+      -c log_connections=on
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     volumes:
-      - pg_data:/var/lib/postgresql  # PG18 mounts at /var/lib/postgresql (not /data)
+      - pg_data:/var/lib/postgresql
 
 # ─── Named volumes (survive container deletion) ───
 volumes:

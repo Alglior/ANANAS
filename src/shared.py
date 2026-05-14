@@ -18,14 +18,14 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if "user_id" not in session:
-            return redirect(url_for("connexion_page"))
+            return redirect(url_for("auth.connexion_page"))
         from models import User
 
         db = _get_db()
         current_user = db.session.get(User, session["user_id"])
         if current_user and (current_user.banned or not current_user.is_active):
             session.clear()
-            return redirect(url_for("connexion_page", error="banned"))
+            return redirect(url_for("auth.connexion_page", error="banned"))
         return f(*args, **kwargs)
     return decorated_function
 

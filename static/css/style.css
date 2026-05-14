@@ -14,3 +14,34 @@
 @import url("./services.css");
 @import url("./footer.css");
 @import url("./responsive.css");
+
+/* ────────────────────────────────────────────
+   Error messages (inscription / connexion)
+   ──────────────────────────────────────────── */
+.error-box {
+  background: #ffe6e6;
+  border: 1px solid #dc3545;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.error-message {
+  color: #a71d2a;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.error-list {
+  color: #842029;
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+  list-style-type: disc;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.error-list li {
+  margin-bottom: 0.2rem;
+}

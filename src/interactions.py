@@ -73,7 +73,7 @@ def verify_item(item_id):
 
     item.verification_status = status
     item.verifier_user_id = current_user.id
-    item.verified_at = dt.datetime.now if status == "verified" else None
+    item.verified_at = dt.datetime.now() if status == "verified" else None
     item.verification_notes = data.get("notes")
 
     db.session.commit()

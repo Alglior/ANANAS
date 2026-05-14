@@ -217,11 +217,7 @@ def seed_all():
         print(f"Items before seeding: {before}\n")
 
         if before > 0:
-            response = input("Database already has items. Re-seed? (yes/no): ").strip().lower()
-            if response != "yes":
-                print("Aborted.")
-                return
-            print("Clearing existing data...\n")
+            print(f"Clearing existing {before} items...")
             db.session.execute(db.table("item_gallery").delete())
             db.session.execute(db.table("item_tags").delete())
             db.session.execute(db.table("items").delete())

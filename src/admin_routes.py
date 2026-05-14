@@ -13,7 +13,7 @@ def ban_user(user_id):
     from models import User
 
     current_user = get_current_user()
-    if not hasattr(current_user, "is_admin"):
+    if not current_user.is_admin:
         return jsonify({"error": "Non autorisé"}), 403
 
     target_user = User.query.get_or_404(user_id)
@@ -39,7 +39,7 @@ def list_banned_users():
     from models import User
 
     current_user = get_current_user()
-    if not hasattr(current_user, "is_admin"):
+    if not current_user.is_admin:
         return jsonify({"error": "Non autorisé"}), 403
 
     banned = User.query.filter_by(banned=True).all()
@@ -111,7 +111,7 @@ def list_reports():
     from models import Report
 
     current_user = get_current_user()
-    if not hasattr(current_user, "is_admin"):
+    if not current_user.is_admin:
         return jsonify({"error": "Non autorisé"}), 403
 
     status_filter = request.args.get("status", "all")
@@ -148,7 +148,7 @@ def resolve_report(report_id):
     from models import Report
 
     current_user = get_current_user()
-    if not hasattr(current_user, "is_admin"):
+    if not current_user.is_admin:
         return jsonify({"error": "Non autorisé"}), 403
 
     report = Report.query.get_or_404(report_id)
@@ -173,7 +173,7 @@ def admin_users():
     from models import User
 
     current_user = get_current_user()
-    if not hasattr(current_user, "is_admin"):
+    if not current_user.is_admin:
         return jsonify({"error": "Non autorisé"}), 403
 
     users = User.query.all()
@@ -191,7 +191,7 @@ def admin_reports():
     from models import Report
 
     current_user = get_current_user()
-    if not hasattr(current_user, "is_admin"):
+    if not current_user.is_admin:
         return jsonify({"error": "Non autorisé"}), 403
 
     status_filter = request.args.get("status", "all")
