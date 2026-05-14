@@ -58,7 +58,6 @@
       <a href="/contact">Contact</a>
 
       {% if current_user %}
-      <span class="separator">|</span>
       {% set user_orgs = current_user.organizations | selectattr('is_active', 'equalto', True) | list %}
       {% for org_member in user_orgs %}
       <a href="/organizations/{{ org_member.organization.slug }}">

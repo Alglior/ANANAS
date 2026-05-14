@@ -142,170 +142,85 @@
   align-items: start;
 }
 
-/* ── Diagram card ── */
-.p2p-diagram-card {
-  background: var(--white);
-  border-radius: 12px;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
-  padding: 2rem 2.5rem;
-}
-
-.p2p-diagram-title {
-  color: var(--charcoal);
-  font-size: 1.35rem;
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-/* ── Flow diagram ── */
-.p2p-flow {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-/* Server node */
-.p2p-server-node {
-  text-align: center;
-}
-
-/* Icons */
-.p2p-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 8px;
-  font-size: 1.4rem;
-}
-
-.p2p-icon-server {
-  background: var(--forest);
-  color: var(--white);
-}
-
-.p2p-icon-peer {
-  background: var(--forest-active);
-  color: var(--white);
-  width: 2.8rem;
-  height: 2.8rem;
-  font-size: 1.15rem;
-}
-
-.p2p-node-label {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--charcoal);
-  margin-top: 0.75rem;
-  margin-bottom: 0.25rem;
-}
-
-.p2p-node-desc {
-  font-size: 0.825rem;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-/* Arrow */
-.p2p-arrow-down {
-  display: flex;
-  justify-content: center;
-  color: var(--text-muted);
-}
-
-.p2p-svg-arrow {
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
-/* Peers grid */
-.p2p-peers-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  text-align: center;
-}
-
-.p2p-peer-label {
-  font-size: 0.825rem;
-  color: var(--text-green-accent);
-  margin-top: 0.5rem;
-  margin-bottom: 0;
-}
-
-/* Peers link row */
-.p2p-peers-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  color: var(--text-muted);
-}
-
-.p2p-svg-chat {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.p2p-peers-text {
-  font-size: 1.25rem;
-  color: var(--text-muted);
-}
-
-/* Result box */
-.p2p-result-box {
-  background: rgba(34, 139, 34, 0.06);
-  padding: 1rem 1.25rem;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.p2p-result-box p {
-  color: var(--text-green-accent);
-  font-size: 0.9rem;
-  line-height: 1.65;
-  margin: 0;
-}
-
-/* ── Advantages column ── */
+/* ── Advantages Timeline ── */
 .p2p-advantages {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 2.5rem;
+  padding: 2rem 0;
+}
+
+.p2p-advantages::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 3px;
+  background: var(--forest);
+  border-radius: 2px;
+  transform: translateX(-50%);
+}
+
+.p2p-timeline-item {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.p2p-timeline-dot {
+  position: absolute;
+  left: 50%;
+  top: 1.75rem;
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  background: var(--forest);
+  border: 3px solid var(--white);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  box-shadow: 0 0 0 3px rgba(34, 130, 80, 0.2);
+}
+
+.p2p-timeline-item .p2p-adv-card {
+  width: calc(50% - 1rem);
+}
+
+.p2p-timeline-item.p2p-left {
+  justify-content: flex-start;
+}
+
+.p2p-timeline-item.p2p-left .p2p-timeline-dot {
+  left: calc(50% - 1rem);
+}
+
+.p2p-timeline-item.p2p-left .p2p-adv-card {
+  margin-right: 2rem;
+  text-align: right;
+}
+
+.p2p-timeline-item.p2p-right {
+  justify-content: flex-end;
+}
+
+.p2p-timeline-item.p2p-right .p2p-timeline-dot {
+  left: calc(50% + 1rem);
+}
+
+.p2p-timeline-item.p2p-right .p2p-adv-card {
+  margin-left: 2rem;
+  text-align: left;
 }
 
 .p2p-adv-card {
   background: var(--white);
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
-  padding: 1.5rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+  padding: 2rem;
 }
-
-.p2p-adv-icon-wrap {
-  flex-shrink: 0;
-  width: 3rem;
-  height: 3rem;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.p2p-adv-icon-inner {
-  font-size: 1.4rem;
-}
-
-/* Icon color variants */
-.p2p-adv-icon-green { background: rgba(34, 139, 34, 0.12); }
-.p2p-adv-icon-blue { background: rgba(70, 130, 180, 0.12); }
-.p2p-adv-icon-purple { background: rgba(150, 100, 180, 0.12); }
-.p2p-adv-icon-orange { background: rgba(218, 165, 32, 0.15); }
-.p2p-adv-icon-red { background: rgba(192, 57, 43, 0.1); }
 
 .p2p-adv-content h4 {
   color: var(--charcoal);
@@ -318,6 +233,30 @@
   font-size: 0.95rem;
   line-height: 1.7;
   margin: 0;
+}
+
+@media (max-width: 768px) {
+  .p2p-advantages::before {
+    left: 1rem;
+  }
+
+  .p2p-timeline-item {
+    justify-content: flex-end !important;
+    align-items: flex-start;
+    padding-left: 2.5rem;
+  }
+
+  .p2p-timeline-item.p2p-left .p2p-adv-card,
+  .p2p-timeline-item.p2p-right .p2p-adv-card {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    text-align: left;
+  }
+
+  .p2p-timeline-dot {
+    left: 1rem !important;
+  }
 }
 
 /* ── Fact box (bottom) ── */
@@ -404,65 +343,10 @@
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
   padding: 2.5rem;
 }
-
-.gp-hero-emoji {
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-/* ── Branded emoji icon containers ── */
-.gp-hero-icon-wrap {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 5.5rem;
-  height: 5.5rem;
-  border-radius: 50%;
-  background: rgba(218, 165, 32, 0.15);
-  margin: 0 auto;
-}
-
-.gp-hero-icon {
-  font-size: 2.5rem;
-}
-
-/* ── GP card icons with gold/mustard brand color ── */
-.gp-card-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.8rem;
-  height: 2.8rem;
-  border-radius: 8px;
-  font-size: 1.5rem;
-  margin-right: 0.85rem;
-  background: rgba(218, 165, 32, 0.12);
-  flex-shrink: 0;
-}
-
 .gp-card-header {
   display: flex;
   align-items: center;
   margin-bottom: 0.75rem;
-}
-
-/* ── DI example icons with brand-colored backgrounds ── */
-.di-example-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 8px;
-  font-size: 1.3rem;
-  margin-right: 0.6rem;
-  background: rgba(34, 139, 34, 0.1);
-  flex-shrink: 0;
-}
-
-/* ── DI gold icon variant ── */
-.di-icon-gold {
-  background: rgba(218, 165, 32, 0.12) !important;
 }
 
 .gp-info-title {
@@ -527,11 +411,6 @@
   display: flex;
   align-items: center;
   margin-bottom: 0.75rem;
-}
-
-.gp-card-icon {
-  font-size: 1.8rem;
-  margin-right: 0.85rem;
 }
 
 .gp-card-header h4 {
@@ -638,21 +517,6 @@
 .di-benefit-card {
   text-align: center;
 }
-
-.di-icon-circle {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-}
-
-.di-icon-blue { background: rgba(70, 130, 180, 0.12); }
-.di-icon-green { background: rgba(34, 139, 34, 0.12); }
-.di-icon-purple { background: rgba(150, 100, 180, 0.12); }
 
 .di-benefit-title {
   color: var(--charcoal);
