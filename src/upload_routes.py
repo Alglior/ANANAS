@@ -1,0 +1,109 @@
+import os
+from pathlib import Path
+
+from flask import Blueprint, request, jsonify
+from werkzeug.utils import secure_filename
+from app import db
+from src.shared import login_required, get_current_user
+
+bp = Blueprint("upload", __name__)
+
+ALLOWED_EXTENSIONS = {"csv", "shp", "geojson", "gpkg", "json", "xml"}
+
+
+def is_allowed_file(filename):
+    if not filename or "." not in filename:
+        return False
+    ext = filename.rsplit(".", 1)[1].lower()
+    return ext in ALLOWED_EXTENSIONS
+
+
+@bp.route("/api/upload/chunk", methods=["POST"])
+@login_required
+def upload_chunk():
+    from models import DataChunk, UserUpload
+
+    current_user = get_current_user()
+    file = request.files.get("file")
+    parent_item_id = request.form.get("parent_item_id")
+    chunk_name = request.form.get("chunk_name", "").strip()
+
+    if not file or not chunk_name:
+        return jsonify({"error": "Fichier et nom requis"}), 400
+
+    if not is_allowed_file(file.filename):
+        return jsonify({"error": "Format de fichier non autorisé"}), 400
+
+    safe_name = secure_filename(file.filename)
+    upload_path = os.path.join("/uploads", str(current_user.id), safe_name)
+    os.makedirs(os.path.dirname(upload_path), exist_ok=True)
+    file.save(upload_path)
+
+    file_size = os.getsize(upload_path)
+    original_format = Path(file.filename).suffix.lstrip(".")
+
+    upload = UserUpload(
+        owner_user_id=current_user.id,
+        parent_item_id=parent_item_id,
+        file_name=safe_name,
+        file_size_bytes=file_size,
+        mime_type=file.content_type,
+        original_format=original_format,
+        processing_status="queued",
+    )
+    db.session.add(upload)
+    db.session.commit()
+
+    chunk = DataChunk(
+        parent_item_id=parent_item_id,
+        name=chunk_name[:200],
+        owner_user_id=current_user.id,
+        upload_status="pending",
+        data_url=f"/uploads/{upload.id}/{safe_name}",
+        metadata_json={"original_file": safe_name},
+    )
+    db.session.add(chunk)
+    db.session.commit()
+
+    upload.chunk_id = chunk.id
+    db.session.commit()
+
+    return jsonify({"status": "queued", "upload_id": upload.id})
+
+
+@bp.route("/api/items/<int:item_id>/viz-links", methods=["POST"])
+@login_required
+def add_viz_link(item_id):
+    from models import Item, VisualizationLink
+
+    current_user = get_current_user()
+    item = Item.query.get_or_404(item_id)
+
+    data = request.get_json(silent=True) or {}
+    name = data.get("name", "").strip()
+    url = data.get("url", "").strip()
+    link_type = data.get("link_type", "external")
+
+    if not name or not url:
+        return jsonify({"error": "Nom et URL requis"}), 400
+
+    if link_type not in ("external", "internal", "embed", "widget"):
+        return jsonify({"error": "Type de lien invalide"}), 400
+
+    from app import validate_external_url
+
+    if not validate_external_url(url):
+        return jsonify({"error": "URL invalide ou non sécurisée"}), 400
+
+    link = VisualizationLink(
+        parent_item_id=item_id,
+        name=name[:200],
+        url=url,
+        owner_user_id=current_user.id,
+        link_type=link_type,
+        display_order=data.get("display_order", 0),
+    )
+    db.session.add(link)
+    db.session.commit()
+
+    return jsonify({"status": "created", "id": link.id})
