@@ -25,6 +25,15 @@ class Item(db.Model):
     verified_at: Mapped[datetime.datetime | None]
     verification_notes: Mapped[str | None]
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.is_published is None:
+            self.is_published = True
+        if self.verification_status is None:
+            self.verification_status = "unofficial"
+        if self.created_at is None:
+            self.created_at = datetime.datetime.now()
+
     tags = relationship("ItemTag", back_populates="item", cascade="all, delete-orphan")
     gallery_items = relationship("ItemGallery", back_populates="item", cascade="all, delete-orphan")
     ratings = relationship("Rating", back_populates="item", cascade="all, delete-orphan")
@@ -50,13 +59,13 @@ class Item(db.Model):
             "organization_id": self.organization_id,
             "organization_name": self.organization.name if self.organization else None,
             "organization_slug": self.organization.slug if self.organization else None,
-            "created_at": self.created_at.strftime("%Y-%m-%d"),
+            "created_at": self.created_at.strftime("%Y-%m-%d") if self.created_at else "",
             "tags": [t.tag for t in self.tags],
             "gallery": self._build_gallery_dict(),
             "pdf_doc": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/r6.pdf",
             "verification_status": self.verification_status,
             "is_official_verified": self.verification_status == "verified",
-            "verifier_nom": f"{self.verifier.prenom} {self.verifier.nom}" if self.verifier else None,
+            "verifier_nom": f"{self.verifier.prenom} {self.verifier.nom}" if (self.verifier and getattr(self.verifier, "prenom", None)) else None,
             "verified_at": self.verified_at.strftime("%Y-%m-%d") if self.verified_at else None,
             "verification_notes": self.verification_notes,
             "catalogue_link": catalogue_map.get(self.type, "/catalogue"),
@@ -116,10 +125,18 @@ class User(db.Model):
     nom: Mapped[str]
     email: Mapped[str] = mapped_column(unique=True)
     password_hash: Mapped[str]
-    is_active: Mapped[bool] = True
-    banned: Mapped[bool] = mapped_column(default=False)
-    is_admin: Mapped[bool] = mapped_column(default=False)
-    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
+    is_active: Mapped[bool]
+    banned: Mapped[bool]
+    is_admin: Mapped[bool]
+    created_at: Mapped[datetime.datetime]
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.is_active = True if getattr(self, "is_active", None) is None else self.is_active
+        self.banned = False if getattr(self, "banned", None) is None else bool(self.banned)
+        self.is_admin = False if getattr(self, "is_admin", None) is None else bool(self.is_admin)
+        if self.created_at is None:
+            self.created_at = datetime.datetime.now()
 
     def __str__(self):
         return f"{self.prenom} {self.nom}"
@@ -140,6 +157,13 @@ class Organization(db.Model):
     is_active: Mapped[bool] = True
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.is_active is None or self.is_active is False:
+            self.is_active = True
+        if self.created_at is None:
+            self.created_at = datetime.datetime.now()
+
     creator = relationship("User", foreign_keys=[created_by])
     organization_members = relationship(
         "OrganizationMember",
@@ -157,6 +181,15 @@ class OrganizationMember(db.Model):
     role: Mapped[str] = mapped_column(default="member")  # member, editor, admin, owner
     joined_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
     is_active: Mapped[bool] = True
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.role is None or not self.role:
+            self.role = "member"
+        if self.is_active is None:
+            self.is_active = True
+        if self.joined_at is None:
+            self.joined_at = datetime.datetime.now()
 
     user = relationship("User", back_populates="organizations")
     organization = relationship("Organization")
@@ -180,6 +213,11 @@ class Comment(db.Model):
     content: Mapped[str]
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.created_at is None:
+            self.created_at = datetime.datetime.now()
+
     item = relationship("Item", back_populates="comments")
 
 
@@ -201,6 +239,18 @@ class DataChunk(db.Model):
     metadata_json: Mapped[dict | None] = mapped_column(JSON, server_default="{}")
     is_published: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.upload_status is None:
+            self.upload_status = "pending"
+        if self.visibility is None:
+            self.visibility = "public"
+        if self.is_published is None:
+            self.is_published = False
+        if self.created_at is None:
+            self.created_at = datetime.datetime.now()
+
     published_at: Mapped[datetime.datetime | None]
 
     owner = relationship("User", back_populates="data_chunks")
@@ -243,6 +293,15 @@ class VisualizationLink(db.Model):
     is_active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.link_type is None:
+            self.link_type = "external"
+        if self.is_active is None:
+            self.is_active = True
+        if self.created_at is None:
+            self.created_at = datetime.datetime.now()
+
     item = relationship("Item", back_populates="visualization_links")
 
 
@@ -261,9 +320,9 @@ class Report(db.Model):
     reviewed_at: Mapped[datetime.datetime | None]
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
 
-    reporter = relationship("User", foreign_keys=[reporter_id])
-    reported_user = relationship("User", foreign_keys=[reported_user_id])
-    target_item = relationship("Item")
+    reporter = relationship("User", foreign_keys=[reporter_id], overlaps="made_reports,reports_by")
+    reported_user = relationship("User", foreign_keys=[reported_user_id], overlaps="reported_reports,reports_made_against_me")
+    target_item = relationship("Item", overlaps="reported_items,reports")
     reviewer = relationship("User", foreign_keys=[reviewed_by])
 
 

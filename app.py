@@ -33,7 +33,7 @@ def login_required(f):
             return redirect(url_for("connexion_page"))
         from models import User
 
-        current_user = User.query.get(session["user_id"])
+        current_user = db.session.get(User, session["user_id"])
         if current_user and (current_user.banned or not current_user.is_active):
             session.clear()
             return redirect(url_for("connexion_page", error="banned"))
@@ -46,7 +46,7 @@ def get_current_user():
 
     if "user_id" not in session:
         return None
-    return User.query.get(session["user_id"])
+    return db.session.get(User, session["user_id"])
 
 
 def get_catalogue_page(total_page=1, per_page=ITEMS_PER_PAGE, catalogue="donnees", filter_verified=False, org_slug=None):
@@ -251,16 +251,26 @@ def create_app(app_name="ANANAS"):
     def catalogue_view(catalogue="donnees", page=1):
         if catalogue not in type_map:
             return redirect(url_for("catalogue"))
+
+        try:
+            page = int(request.args.get("page", page))
+        except (ValueError, TypeError):
+            page = 1
+
         if page < 1:
             return redirect(url_for("catalogue", catalogue=catalogue, page=1))
 
         filter_verified = request.args.get("verified") == "1"
         org_slug = request.args.get("org")
+        format_param = request.args.get("format", "")
 
         meta = _CATALOGUE_META[catalogue]
         data = get_catalogue_page(page, catalogue=catalogue, filter_verified=filter_verified, org_slug=org_slug)
         if data is None:
             return redirect(url_for("catalogue", catalogue=catalogue, page=1))
+        if format_param == "json":
+            from flask import jsonify
+            return jsonify(data)
         return render_template(
             "catalogue.html",
             title=f"A.N.A.N.A.S. | {meta['title_prefix']} — Page {page}",
@@ -698,7 +708,7 @@ def create_app(app_name="ANANAS"):
         )
 
         if target_type == "user":
-            reported_user = User.query.get(target_id)
+            reported_user = db.session.get(User, target_id)
             if not reported_user:
                 return jsonify({"error": "Utilisateur introuvable"}), 404
             if reported_user.id == current_user.id:
