@@ -9,7 +9,12 @@
 @import url("./features/technical.css");
 @import url("./features/ratings.css");
 @import url("./features/comments.css");
-@import url("./features/sections.css");
+@import url("./features/sections/reuse.css");
+@import url("./features/sections/info.css");
+@import url("./features/sections/p2p.css");
+@import url("./features/sections/geopackage.css");
+@import url("./features/sections/individual-data.css");
+@import url("./features/sections/magnet.css");
 @import url("./auth.css");
 @import url("./services.css");
 @import url("./footer.css");

@@ -200,7 +200,12 @@ Approche **modulaire** avec separation en deux sous-répertoires :
 - `badges.css` — Badges et tags visuels
 
 ### Features (`static/css/features/`)
-- `sections.css` — Sections de page (hero, hero-status, etc.)
+- `sections/reuse.css` — Section réutilisation (`.reuse-section`, `.reuse-card`, etc.)
+- `sections/info.css` — Section informations (`.info-section`, `.info-card`, etc.)
+- `sections/p2p.css` — Section P2P & résilience (timeline, avantages)
+- `sections/geopackage.css` — Section GeoPackage Packs (collections, CTA)
+- `sections/individual-data.css` — Section données individuelles (avantages, exemples)
+- `sections/magnet.css` — Section Magnet/Torrent (étapes, liens magnétiques)
 - `product.css` — Cards produit du catalogue
 - `gallery-modal.css` — Galerie fullscreen, navigation images
 - `ratings.css` — étoiles de notation (star rating)
