@@ -24,11 +24,17 @@ docker_setup() {
         local pg_pass=$(generate_random | head -c 63)   # PG passwords also limited to ~64 in internal queries
         local flask_key=$(generate_random)
 
+        local admin_pass=$(python3 -c "import secrets; print(secrets.token_urlsafe(24))")
+
         cat > "$ENV_FILE" <<EOF
 # ─── Postgres (generated automatically — SAVE THESE!) ───
 POSTGRES_DB=${pg_db}
 POSTGRES_USER=${pg_user}
 POSTGRES_PASSWORD=${pg_pass}
+
+# ─── Admin Account ───
+ADMIN_EMAIL=system@ananas.local
+ADMIN_PASSWORD=${admin_pass}
 
 # ─── Flask ───
 FLASK_SECRET_KEY=${flask_key}
@@ -41,6 +47,8 @@ EOF
         printf "POSTGRES_DB         : %s\n" "${pg_db}"
         printf "POSTGRES_USER       : %s\n" "${pg_user}"
         printf "POSTGRES_PASSWORD   : %s\n" "${pg_pass}"
+        printf "ADMIN_EMAIL         : %s\n" "system@ananas.local"
+        printf "ADMIN_PASSWORD      : %s\n" "${admin_pass}"
         printf "FLASK_SECRET_KEY    : %s\n" "${flask_key}"
         echo "=============================================="
     else

@@ -128,10 +128,11 @@ def _ensure_system_user():
             from werkzeug.security import generate_password_hash
         except ImportError:
             generate_password_hash = lambda x: x
+        admin_password = os.environ.get("ADMIN_PASSWORD", "system")
         user = User(
             prenom="Système", nom="ANANAS",
             email="system@ananas.local",
-            password_hash=generate_password_hash("system"),
+            password_hash=generate_password_hash(admin_password),
             is_active=True, banned=False, is_admin=True
         )
         db.session.add(user)
