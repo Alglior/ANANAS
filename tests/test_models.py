@@ -51,7 +51,7 @@ class TestItemModel:
         item = Item(type="application", title="Unrated", description="Desc", format_type="web", size_mb=30, magnet_link="magnet:?xt=unrated")
         item.ratings = []
         avg = item._get_rating_avg()
-        assert avg == 3.8
+        assert avg == 0
 
     def test_item_gallery_build(self):
         from models import Item, ItemGallery

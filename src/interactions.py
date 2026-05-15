@@ -14,21 +14,31 @@ def rate_item(item_id):
 
     item = Item.query.get_or_404(item_id)
     rating_value = request.form.get("rating")
+    import logging
+    current_user = get_current_user()
+    logging.warning(f"[RATE] item_id={item_id} raw_rating='{rating_value}' user_id={current_user.id if current_user else None}")
 
     if not rating_value or not rating_value.isdigit():
         return redirect(url_for("items.item_detail_view", item_id=item_id))
 
     rating = int(rating_value)
     existing = Rating.query.filter_by(item_id=item_id).first()
-    if existing:
+    
+    if current_user:
+        existing = Rating.query.filter_by(item_id=item_id, user_id=current_user.id).first()
+        logging.warning(f"[RATE] found_existing={bool(existing)} new_rating={rating}")
+        if existing:
+            existing.rating = rating
+        else:
+            new_rating = Rating(item_id=item_id, user_id=current_user.id, rating=rating)
+            db.session.add(new_rating)
+    elif existing:
         existing.rating = rating
-    else:
-        new_rating = Rating(item_id=item_id, rating=rating)
-        db.session.add(new_rating)
+    elif not existing and not current_user:
+        return redirect(url_for("items.item_detail_view", item_id=item_id))
 
     ratings = Rating.query.filter_by(item_id=item_id).all()
-    avg = sum(r.rating for r in ratings) / len(ratings) if ratings else 0
-    item.format_type = getattr(item, "_rating_avg", None) or 0
+    logging.warning(f"[RATE] all_ratings={[(r.id, r.user_id, r.rating) for r in ratings]}")
 
     db.session.commit()
     return redirect(url_for("items.item_detail_view", item_id=item_id))

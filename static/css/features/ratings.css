@@ -40,7 +40,7 @@
 }
 
 .rate-form label:hover,
-.rate-form input[type="radio"]:checked ~ label {
+.rate-form input[type="radio"]:checked ~ label:not(.filled) {
   color: var(--mustard);
 }
 
@@ -55,7 +55,8 @@
   transition: color 0.1s ease;
 }
 
-.rate-form label.filled {
+.rate-form label.filled,
+.rate-form input[type="radio"]:checked ~ label.filled {
   color: var(--mustard);
 }
 

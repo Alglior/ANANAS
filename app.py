@@ -104,8 +104,8 @@ def create_app(app_name="ANANAS"):
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "style-src 'self' https://fonts.googleapis.com https://unpkg.com; "
-            "script-src 'self' https://unpkg.com; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
+            "script-src 'self' 'unsafe-inline' https://unpkg.com; "
             "font-src 'self' https://fonts.gstatic.com data:; "
             "img-src 'self' data:; "
             "connect-src 'self' https://unpkg.com https://*.tile.openstreetmap.org"

@@ -72,11 +72,12 @@
 
           <!-- Rating -->
           <div class="rating-inline">
-            <span class="rating-number-inline">{{ item.rating|default(3.8) }}</span>
+            <span class="rating-number-inline">{{ item.rating|default(0) }}</span>
             {% if current_user %}
             <form class="rate-form" method="POST" action="/catalogue/item/{{ item.id }}/rate">
+               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               {% for i in range(1, 6) %}
-                {% set rating = item.rating|default(3.8) %}
+                {% set rating = item.rating|default(0) %}
                 <input type="radio" name="rating" value="{{ i }}" id="star-{{ item.id }}-{{ i }}">
                 <label for="star-{{ item.id }}-{{ i }}" class="{% if i <= (rating|round(0, 'floor')) %}filled{% elif i == (rating|round(0, 'floor') + 1) and rating - (rating|round(0, 'floor')) >= 0.5 %}half{% endif %}" title="{{ i }}/5">&#9733;</label>
               {% endfor %}
@@ -337,4 +338,12 @@
   </div>
 </div>
 
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    StarRatingModule.init();
+  });
+</script>
 {% endblock %}
