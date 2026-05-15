@@ -12,4 +12,5 @@ document.addEventListener("DOMContentLoaded", function () {
   ImageModalModule.init();
   CopyMagnetModule.init();
   StarRatingModule.init();
+  ReportModalModule.init();
 });

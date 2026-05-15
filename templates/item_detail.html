@@ -270,14 +270,12 @@
       <!-- Report section -->
       {% if current_user %}
       <section class="report-section">
-        <button id="open-report-modal" onclick="document.getElementById('reportModal').style.display='block'">
-          🚩 Signaler ce contenu
-        </button>
+        <button id="open-report-modal">🚩 Signaler ce contenu</button>
 
-        <div id="reportModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
-          <div style="max-width:400px; margin:100px auto; padding:20px; background:white; border-radius:8px;">
+        <div id="reportModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;" data-target-type="{{ item.report_type or 'geodonnee' }}" data-target-id="{{ item.id }}">
+          <div class="modal-box">
             <h3>Signaler ce contenu</h3>
-            <form id="reportForm" onsubmit="submitReport(event)">
+            <form id="reportForm">
               <select name="reason" required>
                 <option value="">-- Raison --</option>
                 <option value="spam">Spam</option>
@@ -285,35 +283,13 @@
                 <option value="other">Autre</option>
               </select>
               <textarea name="description" placeholder="Détails (optionnel)"></textarea>
-              <div style="display:flex; gap:10px; margin-top:10px;">
+              <div class="modal-actions">
                 <button type="submit">Envoyer le signalement</button>
-                <button type="button" onclick="document.getElementById('reportModal').style.display='none'">Annuler</button>
+                <button type="button" class="modal-cancel">Annuler</button>
               </div>
             </form>
           </div>
         </div>
-
-        <script>
-        function submitReport(e) {
-            e.preventDefault();
-            const form = document.getElementById('reportForm');
-            const data = {};
-            for (let [key, val] of new FormData(form).entries()) {
-                data[key] = val;
-            }
-            data.target_type = "{{ item.report_type or 'geodonnee' }}";
-            data.target_id = {{ item.id }};
-
-            fetch("/api/reports", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(data)
-            }).then(r => r.json()).then(res => {
-                alert("Signalement envoyé avec succès. Merci pour votre vigilance.");
-                document.getElementById('reportModal').style.display = 'none';
-            });
-        }
-        </script>
       </section>
       {% endif %}
 
