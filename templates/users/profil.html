@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<main>
+  <section class="profil-page">
+    <div class="container profil-container">
+      <div class="profil-header">
+        <h1>Mon profil</h1>
+        <p>Gérez vos informations personnelles et suivez vos contributions.</p>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="profil-layout">
+        <aside class="profil-sidebar">
+          <div class="profil-card profil-stats">
+            <h3>Mes contributions</h3>
+            <div class="stats-grid">
+              <div class="stat-item stat-rating">
+                <span class="stat-value">{{ rating_count }}</span>
+                <span class="stat-label">Note{{ 's' if rating_count != 1 else '' }}</span>
+              </div>
+              <div class="stat-item stat-activity">
+                <a href="/activite" class="stat-link">Voir mon activité</a>
+              </div>
+            </div>
+          </div>
+
+          {% if org_memberships %}
+          <div class="profil-card profil-orgs">
+            <h3>Mes organisations</h3>
+            <ul class="org-list">
+              {% for m in org_memberships %}
+              <li class="org-item">
+                <a href="/organizations/{{ m.organization.slug }}" class="org-link">
+                  <span class="org-name">{{ m.organization.name }}</span>
+                  <span class="org-role">{{ m.role | capitalize }}</span>
+                </a>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% else %}
+          <div class="profil-card profil-orgs-empty">
+            <h3>Mes organisations</h3>
+            <p class="empty-hint">Aucune organisation membre.</p>
+          </div>
+          {% endif %}
+
+          <div class="profil-card profil-uploads">
+            <h3>Mes données publiées</h3>
+            {% if data_chunks or uploaded_items %}
+              {% if data_chunks %}
+              <div class="uploads-section">
+                <p class="section-label">Fichiers téléversés ({{ data_chunks | length }})</p>
+                <ul class="upload-list">
+                  {% for chunk in data_chunks %}
+                  <li class="upload-item">
+                    <span class="upload-name">{{ chunk[0].name }}</span>
+                    <span class="upload-meta">
+                      <span class="upload-status status-{{ chunk[0].upload_status }}">{{ chunk[0].upload_status }}</span>
+                      {% if chunk[1] %}<span>{{ chunk[1] }}</span>{% endif %}
+                    </span>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
+              {% endif %}
+
+              {% if uploaded_items %}
+              <div class="uploads-section">
+                <p class="section-label">Items publiés ({{ uploaded_items | length }})</p>
+                <ul class="upload-list">
+                  {% for item in uploaded_items %}
+                  <li class="upload-item">
+                    <a href="/catalogue/item/{{ item.id }}" class="upload-link">
+                      <span class="upload-name">{{ item.title }}</span>
+                      <span class="upload-meta">
+                        <span class="badge badge-{{ item.type }}">{{ item.type }}</span>
+                        <span class="upload-date">{{ item.created_at.strftime('%d/%m/%Y') }}</span>
+                      </span>
+                    </a>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
+              {% endif %}
+            {% else %}
+              <p class="empty-hint">Aucune donnée publiée pour le moment.</p>
+              <a href="/upload" class="btn btn-primary btn-sm upload-empty-cta">Publier des données</a>
+            {% endif %}
+          </div>
+        </aside>
+
+        <section class="profil-main">
+          <div class="profil-card">
+            <h2>Informations personnelles</h2>
+            <form class="profil-form" id="profileForm">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="prenom">Prénom</label>
+                  <input type="text" id="prenom" name="prenom" value="{{ user.prenom }}" required />
+                </div>
+                <div class="form-group">
+                  <label for="nom">Nom</label>
+                  <input type="text" id="nom" name="nom" value="{{ user.nom }}" required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="email">Adresse e-mail</label>
+                <input type="email" id="email" name="email" value="{{ user.email }}" required />
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary transition-hover">Sauvegarder</button>
+                <span class="form-status" id="profileStatus"></span>
+              </div>
+            </form>
+          </div>
+
+          <div class="profil-card">
+            <h2>Mot de passe</h2>
+            <form class="password-form" id="passwordForm">
+              <div class="form-group">
+                <label for="current_password">Mot de passe actuel</label>
+                <input type="password" id="current_password" name="current_password" placeholder="Entrez votre mot de passe actuel" required />
+              </div>
+
+              <div class="form-group">
+                <label for="new_password">Nouveau mot de passe</label>
+                <input type="password" id="new_password" name="new_password" placeholder="Nouveau mot de passe" required />
+                <ul class="password-requirements">
+                  <li id="req-length" class="req-item">8+ caractères</li>
+                  <li id="req-upper" class="req-item">Une majuscule</li>
+                  <li id="req-lower" class="req-item">Une minuscule</li>
+                  <li id="req-digit" class="req-item">Un chiffre</li>
+                  <li id="req-special" class="req-item">Un caractère spécial</li>
+                </ul>
+              </div>
+
+              <div class="form-group">
+                <label for="confirm_password">Confirmer le nouveau mot de passe</label>
+                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirmez le nouveau mot de passe" required />
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary transition-hover">Modifier le mot de passe</button>
+                <span class="form-status" id="passwordStatus"></span>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const profileForm = document.getElementById('profileForm');
+  const profileStatus = document.getElementById('profileStatus');
+  const passwordForm = document.getElementById('passwordForm');
+  const passwordStatus = document.getElementById('passwordStatus');
+  const newPassInput = document.getElementById('new_password');
+
+  if (profileForm) {
+    profileForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      profileStatus.textContent = 'Sauvegarde...';
+      profileStatus.className = 'form-status';
+
+      const formData = {
+        prenom: document.getElementById('prenom').value,
+        nom: document.getElementById('nom').value,
+        email: document.getElementById('email').value,
+      };
+
+      try {
+        const csrfToken = '{{ csrf_token() }}';
+        const response = await fetch('/api/users/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken,
+          },
+          body: JSON.stringify(formData),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          profileStatus.textContent = 'Profil sauvegardé !';
+          profileStatus.className = 'form-status form-success';
+        } else {
+          profileStatus.textContent = data.error || 'Erreur lors de la sauvegarde';
+          profileStatus.className = 'form-status form-error';
+        }
+      } catch (err) {
+        profileStatus.textContent = 'Erreur réseau';
+        profileStatus.className = 'form-status form-error';
+      }
+    });
+  }
+
+  if (passwordForm) {
+    passwordForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const newPw = document.getElementById('new_password').value;
+      const confirmPw = document.getElementById('confirm_password').value;
+
+      if (newPw !== confirmPw) {
+        passwordStatus.textContent = 'Les mots de passe ne correspondent pas';
+        passwordStatus.className = 'form-status form-error';
+        return;
+      }
+
+      passwordStatus.textContent = 'Modification...';
+      passwordStatus.className = 'form-status';
+
+      const formData = {
+        current_password: document.getElementById('current_password').value,
+        new_password: newPw,
+      };
+
+      try {
+        const csrfToken = '{{ csrf_token() }}';
+        const response = await fetch('/api/users/change-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken,
+          },
+          body: JSON.stringify(formData),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          passwordStatus.textContent = 'Mot de passe modifié !';
+          passwordStatus.className = 'form-status form-success';
+          document.getElementById('current_password').value = '';
+          document.getElementById('new_password').value = '';
+          document.getElementById('confirm_password').value = '';
+        } else {
+          passwordStatus.textContent = data.error || (data.details ? data.details.join('; ') : 'Erreur');
+          passwordStatus.className = 'form-status form-error';
+        }
+      } catch (err) {
+        passwordStatus.textContent = 'Erreur réseau';
+        passwordStatus.className = 'form-status form-error';
+      }
+    });
+
+    if (newPassInput) {
+      newPassInput.addEventListener('input', function() {
+        const val = this.value;
+        toggleReq('req-length', val.length >= 8);
+        toggleReq('req-upper', /[A-Z]/.test(val));
+        toggleReq('req-lower', /[a-z]/.test(val));
+        toggleReq('req-digit', /\d/.test(val));
+        toggleReq('req-special', /[!@#$%^&*()_+\-={}\[\];':\"\\|,.<>\/?~`]/.test(val));
+      });
+    }
+
+    function toggleReq(id, met) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.toggle('req-met', met);
+      }
+    }
+  }
+});
+</script>
+{% endblock %}

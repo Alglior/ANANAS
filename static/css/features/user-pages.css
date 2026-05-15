@@ -1,0 +1,517 @@
+.user-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-dropdown-wrapper {
+  position: relative;
+}
+
+.user-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 200px;
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0;
+  z-index: 100;
+}
+
+.user-dropdown.open {
+  display: block;
+}
+
+.user-dropdown .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  color: var(--charcoal);
+  transition: background 0.15s ease;
+}
+
+.user-dropdown .dropdown-item:hover {
+  background: var(--surface-gray);
+}
+
+.user-dropdown .dropdown-divider {
+  height: 1px;
+  background: var(--border-light);
+  margin: 0.3rem 0;
+}
+
+.user-nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--light-gray);
+  transition: background 0.15s ease;
+}
+
+.user-nav-icon:hover {
+  background: var(--mustard);
+}
+
+/* ==========================================
+   Profile page styles
+   ========================================== */
+
+.profil-page {
+  padding: var(--space-xl) 0;
+}
+
+.profil-container {
+  max-width: 1100px;
+}
+
+.profil-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.profil-header h1 {
+  color: var(--forest);
+  margin-bottom: 0.5rem;
+}
+
+.profil-header p {
+  color: var(--specs-gray);
+  font-size: 1rem;
+}
+
+.profil-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .profil-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.profil-card {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.profil-card h2,
+.profil-card h3 {
+  color: var(--forest);
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+/* Stats sidebar */
+.stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--surface-gray);
+  border-radius: 8px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--mustard);
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.stat-link {
+  color: var(--forest);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* Organizations */
+.org-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.org-item {
+  margin-bottom: 0.5rem;
+}
+
+.org-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  background: var(--surface-gray);
+  border-radius: 8px;
+  color: var(--charcoal);
+  transition: background 0.15s ease;
+}
+
+.org-link:hover {
+  background: var(--light-gray);
+}
+
+.org-name {
+  font-weight: 600;
+}
+
+.org-role {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.empty-hint {
+  color: var(--specs-gray);
+  font-size: 0.9rem;
+  margin: 0.5rem 0 0;
+}
+
+/* Uploads section */
+.profil-uploads {
+  margin-top: 0;
+}
+
+.uploads-section {
+  margin-bottom: 1rem;
+}
+
+.section-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 0.75rem;
+}
+
+.upload-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.upload-item {
+  padding: 0.5rem 0.6rem;
+  background: var(--surface-gray);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.upload-link {
+  text-decoration: none;
+  color: inherit;
+  display: contents;
+}
+
+.upload-name {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--charcoal);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-link:hover .upload-name {
+  color: var(--forest);
+}
+
+.upload-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.upload-date {
+  font-family: var(--mono);
+}
+
+.status-pending {
+  color: var(--mustard);
+}
+
+.status-processing {
+  color: var(--forest);
+}
+
+.status-completed {
+  color: var(--forest);
+}
+
+.upload-empty-cta {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  padding: 0.4rem 1rem;
+}
+
+/* Forms */
+.profil-form .form-row,
+.password-form .form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.profil-form .form-group,
+.password-form .form-group {
+  margin-bottom: 1rem;
+  flex: 1;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.form-status {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.form-success {
+  color: var(--forest) !important;
+  font-weight: 600;
+}
+
+.form-error {
+  color: var(--error-red) !important;
+  font-weight: 600;
+}
+
+/* Password requirements */
+.password-requirements {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.req-item {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 0.25rem 0.5rem;
+  background: var(--surface-gray);
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.req-item.req-met {
+  color: var(--forest);
+  background: rgba(34, 139, 34, 0.1);
+}
+
+/* ==========================================
+   Activity page styles
+   ========================================== */
+
+.activite-page {
+  padding: var(--space-xl) 0;
+}
+
+.activite-container {
+  max-width: 900px;
+}
+
+.activite-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.activite-header h1 {
+  color: var(--forest);
+  margin-bottom: 0.5rem;
+}
+
+.activite-header p {
+  color: var(--specs-gray);
+  font-size: 1rem;
+}
+
+/* Tabs */
+.activite-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border-light);
+  margin-bottom: 1.5rem;
+}
+
+.tab-btn {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tab-btn:hover {
+  color: var(--forest);
+  background: var(--surface-gray);
+}
+
+.tab-btn.tab-active {
+  color: var(--forest);
+  border-bottom-color: var(--mustard);
+}
+
+/* Tab panels */
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.tab-panel-active {
+  display: block;
+}
+
+/* Activity list */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.activity-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  transition: box-shadow 0.15s ease;
+}
+
+.activity-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.activity-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rating-badge {
+  background: rgba(218, 165, 32, 0.15);
+  color: var(--mustard);
+}
+
+.comment-badge {
+  background: rgba(34, 139, 34, 0.15);
+  color: var(--forest);
+}
+
+.activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.3rem;
+}
+
+.activity-title a {
+  color: var(--forest);
+}
+
+.activity-title a:hover {
+  color: var(--mustard);
+}
+
+.activity-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.rating-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  font-size: 1.1rem;
+}
+
+.star.filled {
+  color: var(--mustard);
+}
+
+.star.empty {
+  color: var(--border-light);
+}
+
+.activity-text {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0.3rem 0;
+  line-height: 1.5;
+}
+
+.activity-date {
+  color: var(--specs-gray);
+  font-size: 0.85rem;
+}
+
+/* Empty state */
+.activity-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: var(--surface-gray);
+  border-radius: 8px;
+}
+
+.activity-empty p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}

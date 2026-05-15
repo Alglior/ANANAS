@@ -183,6 +183,111 @@
   transition: background-color 0.15s ease;
 }
 
+.user-dropdown-wrapper {
+  position: relative;
+}
+
+.user-dropdown-toggle {
+  background: none;
+  border: 1px solid var(--border-header);
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  color: var(--charcoal);
+  font-size: 0.95rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 36px;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.user-dropdown-toggle:hover {
+  background-color: var(--surface-gray);
+  border-color: var(--border-color);
+}
+
+.user-greeting {
+  font-weight: 500;
+  color: var(--charcoal);
+  font-size: 0.95rem;
+}
+
+.btn-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--forest);
+  border-radius: 6px;
+  color: var(--forest);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  height: 36px;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.btn-upload:hover {
+  background: var(--forest);
+  color: var(--white);
+}
+
+.btn-upload svg {
+  flex-shrink: 0;
+}
+
+.dropdown-arrow {
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+}
+
+.dropdown-arrow.rotated {
+  transform: rotate(180deg);
+}
+
+.user-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 200px;
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 0.35rem 0;
+  z-index: 10000;
+}
+
+.user-dropdown.open {
+  display: block;
+}
+
+.user-dropdown .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 1rem;
+  text-decoration: none;
+  color: inherit;
+  font-size: 0.92rem;
+  transition: background-color 0.15s ease;
+}
+
+.user-dropdown .dropdown-item:hover {
+  background-color: var(--lightest-gray);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border-light);
+  margin: 0.3rem 0;
+}
+
 .dropdown-item:hover {
   background-color: var(--lightest-gray);
 }

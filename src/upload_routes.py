@@ -25,62 +25,43 @@ def upload_chunk():
     from models import DataChunk, UserUpload, Item
 
     current_user = get_current_user()
-    file = request.files.get("file")
+    data_text = request.form.get("data_text", "").strip()
     parent_item_id = request.form.get("parent_item_id")
-    chunk_name = request.form.get("chunk_name", "").strip()
     data_format_level = request.form.get("data_format_level", "individual")
     zoom_level = request.form.get("zoom_level", "").strip()
 
-    if not file or not chunk_name:
-        return jsonify({"error": "Fichier et nom requis"}), 400
+    if not data_text:
+        return jsonify({"error": "Données requises"}), 400
 
     if data_format_level not in ("pack", "individual"):
         return jsonify({"error": "data_format_level doit être 'pack' ou 'individual'"}), 400
 
-    if not is_allowed_file(file.filename):
-        return jsonify({"error": "Format de fichier non autorisé"}), 400
+    lines = [line for line in data_text.split('\n')[:50] if line.strip()]
 
-    safe_name = secure_filename(file.filename)
-    file_data = file.read()
-    magic_ok, magic_msg = validate_file_magic(file_data, ALLOWED_EXTENSIONS)
-    if not magic_ok:
-        file.seek(0)
-        return jsonify({"error": f"Contenu du fichier invalide: {magic_msg}"}), 400
-
-    file.seek(0)
-    upload_path = os.path.join("/uploads", str(current_user.id), safe_name)
-    os.makedirs(os.path.dirname(upload_path), exist_ok=True)
-    file.save(upload_path)
-
-    file_size = os.getsize(upload_path)
-    original_format = Path(file.filename).suffix.lstrip(".")
-
-    if parent_item_id:
-        item = Item.query.get(parent_item_id)
-        if item:
-            item.data_format_level = data_format_level
+    metadata = {
+        "preview_rows": lines,
+        "column_count": len(lines[0].split(',')) if lines else 0,
+        "zoom_level": zoom_level,
+    }
 
     upload = UserUpload(
         owner_user_id=current_user.id,
         parent_item_id=parent_item_id,
-        file_name=safe_name,
-        file_size_bytes=file_size,
-        mime_type=file.content_type,
-        original_format=original_format,
+        file_name="preview",
+        file_size_bytes=len(data_text.encode('utf-8')),
+        mime_type="text/csv",
+        original_format="csv",
         processing_status="queued",
     )
     db.session.add(upload)
-
-    metadata = {"original_file": safe_name}
-    if data_format_level == "individual" and zoom_level:
-        metadata["zoom_level"] = zoom_level
+    db.session.flush()
 
     chunk = DataChunk(
         parent_item_id=parent_item_id,
-        name=chunk_name[:200],
+        name=f"chunk_{upload.id}",
         owner_user_id=current_user.id,
         upload_status="pending",
-        data_url=f"/uploads/{upload.id}/{safe_name}",
+        size_mb=len(data_text.encode('utf-8')) // (1024 * 1024),
         metadata_json=metadata,
     )
     db.session.add(chunk)
@@ -89,10 +70,7 @@ def upload_chunk():
     upload.chunk_id = chunk.id
     db.session.commit()
 
-    if parent_item_id:
-        db.session.commit()
-
-    return jsonify({"status": "queued", "upload_id": upload.id})
+    return jsonify({"status": "queued", "upload_id": upload.id, "chunk_id": chunk.id})
 
 
 @bp.route("/api/items", methods=["POST"])

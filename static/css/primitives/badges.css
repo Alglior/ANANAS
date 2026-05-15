@@ -57,3 +57,48 @@
   background: transparent;
   border: 1px solid var(--border-color);
 }
+
+/* Item type badges */
+.badge-geodonnee {
+  color: var(--forest);
+  background: rgba(34, 139, 34, 0.11);
+  border: 1px solid rgba(34, 139, 34, 0.35);
+}
+
+.badge-carte {
+  color: #2d8cff;
+  background: rgba(45, 140, 255, 0.11);
+  border: 1px solid rgba(45, 140, 255, 0.35);
+}
+
+.badge-application {
+  color: var(--mustard);
+  background: rgba(218, 165, 32, 0.11);
+  border: 1px solid rgba(218, 165, 32, 0.35);
+}
+
+.badge-service {
+  color: #9b59b6;
+  background: rgba(155, 89, 182, 0.11);
+  border: 1px solid rgba(155, 89, 182, 0.35);
+}
+
+.status-queued {
+  color: var(--mustard);
+}
+
+.status-pending {
+  color: var(--mustard);
+}
+
+.status-processing {
+  color: #2d8cff;
+}
+
+.status-completed {
+  color: var(--forest);
+}
+
+.status-failed {
+  color: var(--error-red);
+}

@@ -124,6 +124,44 @@ var MainModule = (function () {
   }
 
   /* -------------------------------------------------------------------------- */
+  /* User dropdown toggle                                                      */
+  /* -------------------------------------------------------------------------- */
+
+  function initUserDropdown() {
+    const wrapper = document.getElementById("userDropdownWrapper");
+    const toggle = wrapper ? wrapper.querySelector(".user-dropdown-toggle") : null;
+    const menu = document.getElementById("userDropdown");
+
+    if (!toggle || !menu) return;
+
+    function open() {
+      menu.classList.add("open");
+      toggle.setAttribute("aria-expanded", "true");
+      const arrow = toggle.querySelector(".dropdown-arrow");
+      if (arrow) arrow.classList.add("rotated");
+    }
+    function close() {
+      menu.classList.remove("open");
+      toggle.setAttribute("aria-expanded", "false");
+      const arrow = toggle.querySelector(".dropdown-arrow");
+      if (arrow) arrow.classList.remove("rotated");
+    }
+
+    toggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      menu.classList.contains("open") ? close() : open();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!menu.contains(e.target) && !toggle.contains(e.target)) close();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && menu.classList.contains("open")) close();
+    });
+  }
+
+  /* -------------------------------------------------------------------------- */
   /* Public API                                                               */
   /* -------------------------------------------------------------------------- */
 
@@ -131,6 +169,7 @@ var MainModule = (function () {
     initSearch: initSearch,
     initCopyBtn: initCopyBtn,
     validatePasswordMatch: validatePasswordMatch,
-    initDropdown: initDropdown
+    initDropdown: initDropdown,
+    initUserDropdown: initUserDropdown
   };
 })();

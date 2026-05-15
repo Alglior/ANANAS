@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block extra_head %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/features/upload-page.css') }}" />
+{% endblock %}
+
+{% block content %}
+<main>
+  <section class="upload-page">
+    <div class="container upload-container">
+      <div class="upload-header">
+        <h1>Publier des données</h1>
+        <p>Téléversez vos fichiers géospatiaux sur A.N.A.N.A.S.</p>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form class="upload-form" id="uploadForm">
+        <div class="upload-section">
+          <h2>Informations de l'item</h2>
+          <div class="form-group">
+            <label for="title" class="label-with-help">Titre <span class="help-icon" data-tooltip="Nom affiché publiquement dans le catalogue des données. C'est le titre qui sera visible par les utilisateurs finaux.">?</span></label>
+            <input type="text" id="title" name="title" placeholder="Ex: Réseau electrique Alger Centre" required />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="type" class="label-with-help">Type <span class="help-icon" data-tooltip="Catégorie principale du contenu : un jeu de données brutes, une carte numérisée, une application">?</span></label>
+              <select id="type" name="type">
+                <option value="geodonnee">Géodonnées</option>
+                <option value="carte">Carte</option>
+                <option value="application">Application</option>
+                <option value="service">Service</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="format_type" class="label-with-help">Format du fichier <span class="help-icon" data-tooltip="Le format technique du fichier principal que vous téléversez. Cela permet d'adapter l'indexation dans le catalogue.">?</span></label>
+              <select id="format_type" name="format_type">
+                <option value="csv">CSV</option>
+                <option value="shp">Shapefile (.shp)</option>
+                <option value="geojson">GeoJSON</option>
+                <option value="gpkg">GeoPackage (.gpkg)</option>
+                <option value="xml">XML</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="data_format_level" class="label-with-help">Niveau de granularité <span class="help-icon" data-tooltip="Pack = un seul lien Magnet pour tous les fichiers du jeu. Individuel = plusieurs liens Magnets, un par fichier, avec un niveau d'indexation précis pour chacun.">?</span></label>
+            <select id="data_format_level" name="data_format_level">
+              <option value="pack">Pack (tous les fichiers)</option>
+              <option value="individual">Fichier individuel</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="description" class="label-with-help">Description <span class="help-icon" data-tooltip="Décrivez le contenu, la méthode de collecte, les conditions d'utilisation. Cette description sera visible publiquement dans la fiche catalogue de l'item.">?</span></label>
+            <textarea id="description" name="description" rows="3" placeholder="Décrivez brièvement vos données..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="organization_id" class="label-with-help">Organisation <span class="help-icon" data-tooltip="Groupe auquel appartient cette publication. Les métadonnées seront associées à l'organisation sélectionnée. Laissez vide pour une publication personnelle.">?</span></label>
+            <select id="organization_id" name="organization_id">
+              <option value="">-- Aucun --</option>
+              {% set user_orgs = current_user.organizations | selectattr('is_active', 'equalto', True) | list %}
+              {% for m in user_orgs %}
+              <option value="{{ m.organization.id }}">{{ m.organization.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="upload-section">
+          <h2>Données</h2>
+          <div class="form-group data-input-group">
+            <label class="label-with-help">Coller vos données <span class="help-icon" data-tooltip="Copiez-collez votre tableau ici (format CSV : virgules ou tabs). Seules les 50 premières lignes seront conservées pour l'aperçu dans le catalogue.">?</span></label>
+            <div class="form-hint">Les 50 premières lignes seront utilisées uniquement pour prévisualiser la table dans le catalogue</div>
+            <textarea id="data_input" name="data_input" rows="10" placeholder="Collez votre tableau ici (format CSV) :&#10;colonne1,colonne2,colonne3&#10;valeur1,valeur2,valeur3&#10;valeur4,valeur5,valeur6"></textarea>
+            <div class="data-input-footer">
+              <span class="data-line-count" id="dataLineCount">0 ligne(s) / 50 max</span>
+              <span class="data-truncate-note">Seules les 50 premières lignes seront conservées</span>
+            </div>
+          </div>
+
+          <div id="magnetSection">
+            <div class="form-group" id="packMagnetGroup">
+              <label for="magnet_link" class="label-with-help">Lien Magnet <span class="help-icon" data-tooltip="Liens torrent qui pointent vers vos fichiers complets. Un lien sera téléversé, décodé et distribué par nos nœuds de stockage géo-distribués.">?</span></label>
+              <input type="text" id="magnet_link" name="magnet_link" placeholder="magnet:?xt=urn:btih:..." required />
+            </div>
+
+            <div id="individualMagnetGroup" class="hidden-section">
+              <div class="form-group">
+                <button type="button" class="btn btn-outline mt-10" id="addMagnetBtn">
+                  + Ajouter un lien Magnet
+                </button>
+              </div>
+              <div id="magnetEntries"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="upload-section">
+          <h2>Lien de visualisation (optionnel)</h2>
+          <div class="form-row viz-links-row">
+            <div class="form-group">
+              <label for="viz_name" class="label-with-help">Nom <span class="help-icon" data-tooltip="Nom court pour identifier ce lien de visualisation (ex : 'MapView', 'Dashboard QGIS').">?</span></label>
+              <input type="text" id="viz_name" name="viz_name" placeholder="Ex: MapView Interactive" />
+            </div>
+            <div class="form-group">
+              <label for="viz_url" class="label-with-help">URL <span class="help-icon" data-tooltip="L'adresse web du service de visualisation (WMS, WFS, Mapbox, Leaflet, etc.). L'URL doit être publiquement accessible.">?</span></label>
+              <input type="url" id="viz_url" name="viz_url" placeholder="https://..." />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions upload-actions">
+          <button type="submit" class="btn btn-primary transition-hover" id="uploadBtn">
+            Publier les données
+          </button>
+          <span class="form-status" id="uploadStatus"></span>
+        </div>
+
+        <div class="upload-progress hidden-section" id="uploadProgress">
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+          <p class="progress-text" id="progressText">Téléversement en cours...</p>
+        </div>
+      </form>
+
+      {% if current_user.uploads %}
+      <div class="upload-history-section">
+        <h2>Mes téléversements récents</h2>
+        <ul class="upload-history-list">
+          {% for upload in current_user.uploads | sort(attribute='created_at', reverse=True) %}
+          <li class="upload-history-item">
+            {% if upload.parent_item_id %}
+            <a href="/catalogue/item/{{ upload.parent_item_id }}" class="upload-history-link">
+            {% else %}
+            <a class="upload-history-link disabled-link">
+            {% endif %}{{ upload.file_name }}</a>
+            <span class="upload-history-meta">
+              <span class="badge status-{{ upload.processing_status }}">{{ upload.processing_status }}</span>
+              {{ upload.created_at.strftime('%d/%m/%Y %H:%M') }}
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+{% endblock %}

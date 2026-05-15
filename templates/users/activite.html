@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<main>
+  <section class="activite-page">
+    <div class="container activite-container">
+      <div class="activite-header">
+        <h1>Mon activité</h1>
+        <p>Consultez l'historique de vos notes et commentaires.</p>
+      </div>
+
+      <div class="activite-tabs">
+        <button class="tab-btn tab-active" data-tab="ratings">Notes ({{ ratings | length }})</button>
+        <button class="tab-btn" data-tab="comments">Commentaires ({{ comments | length }})</button>
+      </div>
+
+      <div class="activite-content">
+        <section class="tab-panel tab-panel-active" id="panel-ratings">
+          {% if ratings %}
+            <div class="activity-list">
+              {% for r in ratings %}
+              <div class="activity-item activity-item-rating">
+                <div class="activity-icon rating-badge">{{ r[2] | replace('geodonnee', 'Geo') | replace('carte', 'Carte') | replace('application', 'App') }}</div>
+                <div class="activity-content">
+                  <h3 class="activity-title">
+                    <a href="/catalogue/item/{{ r[0].item_id }}">{{ r[1] }}</a>
+                  </h3>
+                  <div class="activity-meta">
+                    <span class="rating-stars">
+                      {% for i in range(5) %}
+                        {% if i < r[0].rating | int %}
+                          <span class="star filled">&#9733;</span>
+                        {% else %}
+                          <span class="star empty">&#9734;</span>
+                        {% endif %}
+                      {% endfor %}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="activity-empty">
+              <p>Vous n'avez pas encore noté de données.</p>
+              <a href="/catalogue/donnees" class="btn btn-primary">Parcourir le catalogue</a>
+            </div>
+          {% endif %}
+        </section>
+
+        <section class="tab-panel" id="panel-comments">
+          {% if comments %}
+            <div class="activity-list">
+              {% for c in comments %}
+              <div class="activity-item activity-item-comment">
+                <div class="activity-icon comment-badge">{{ c[2] | replace('geodonnee', 'Geo') | replace('carte', 'Carte') | replace('application', 'App') }}</div>
+                <div class="activity-content">
+                  <h3 class="activity-title">
+                    <a href="/catalogue/item/{{ c[0].item_id }}">{{ c[1] }}</a>
+                  </h3>
+                  <p class="activity-text">{{ c[0].content[:200] }}{% if c[0].content | length > 200 %}...{% endif %}</p>
+                  <div class="activity-meta">
+                    <span class="activity-date">{{ c[0].created_at.strftime('%d/%m/%Y') }}</span>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="activity-empty">
+              <p>Vous n'avez pas encore publié de commentaire.</p>
+              <a href="/catalogue/donnees" class="btn btn-primary">Parcourir le catalogue</a>
+            </div>
+          {% endif %}
+        </section>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const tabs = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  tabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      tabs.forEach(function(t) { t.classList.remove('tab-active'); });
+      panels.forEach(function(p) { p.classList.remove('tab-panel-active'); });
+
+      tab.classList.add('tab-active');
+      const panelId = 'panel-' + tab.getAttribute('data-tab');
+      document.getElementById(panelId).classList.add('tab-panel-active');
+    });
+  });
+});
+</script>
+{% endblock %}

@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
   MainModule.initCopyBtn();
   MainModule.validatePasswordMatch();
   MainModule.initDropdown();
+  MainModule.initUserDropdown();
   CatalogueModule.init();
   InlineGalleryModule.init();
   ImageModalModule.init();
