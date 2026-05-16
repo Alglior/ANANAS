@@ -211,3 +211,81 @@
   gap: 4px;
 }
 
+/* ── Admin table styles (consistent across all sections) ── */
+
+.admin-page table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 0.925rem;
+}
+
+.admin-page table thead tr {
+  background: var(--surface-gray);
+}
+
+.admin-page table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  color: var(--forest);
+  border-bottom: 2px solid var(--border-light);
+  white-space: nowrap;
+}
+
+.admin-page table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+
+.admin-page table tbody tr:hover {
+  background: rgba(34, 139, 34, 0.03);
+}
+
+.admin-page table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Admin title headings */
+.admin-page h1 {
+  font-size: 1.5rem;
+  color: var(--forest);
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Moderation tables inside panels */
+.mod-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.925rem;
+}
+
+.mod-panel table thead tr {
+  background: var(--surface-gray);
+}
+
+.mod-panel table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  color: var(--forest);
+  border-bottom: 2px solid var(--border-light);
+  white-space: nowrap;
+}
+
+.mod-panel table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+
+.mod-panel table tbody tr:hover {
+  background: rgba(34, 139, 34, 0.03);
+}
+
+.mod-panel table tbody tr:last-child td {
+  border-bottom: none;
+}
+

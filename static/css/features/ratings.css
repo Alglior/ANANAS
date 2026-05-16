@@ -95,6 +95,15 @@
     display: inline-block;
 }
 
+.badge-pending {
+    background: var(--color-warning);
+    color: var(--charcoal);
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    display: inline-block;
+}
+
 .badge-unofficial {
     background: var(--color-muted);
     color: var(--white);
