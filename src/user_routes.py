@@ -14,7 +14,8 @@ from utils.security import sanitize_html, validate_file_magic
 
 bp = Blueprint("users", __name__)
 
-ALLOWED_EXTENSIONS = {"csv", "shp", "geojson", "gpkg", "json", "xml"}
+ALLOWED_EXTENSIONS = {"csv", "shp", "geojson", "json", "xml"}
+
 
 
 def is_allowed_file(filename):
@@ -228,8 +229,6 @@ def upload_file():
         parent_item_id=parent_item_id,
         name=f"chunk_{upload.id}",
         owner_user_id=current_user.id,
-        upload_status="pending",
-        size_mb=len(data_text.encode('utf-8')) // (1024 * 1024),
         metadata_json=metadata,
     )
     db.session.add(chunk)
@@ -294,7 +293,6 @@ def create_upload_item():
     preview_chunk = DataChunk.query.filter_by(
         owner_user_id=current_user.id,
         parent_item_id=None,
-        upload_status="pending",
     ).order_by(DataChunk.created_at.desc()).first()
     if preview_chunk:
         preview_chunk.parent_item_id = item.id
@@ -317,9 +315,7 @@ def create_upload_item():
                     parent_item_id=item.id,
                     name=f"chunk_{item.id}_{i}",
                     owner_user_id=current_user.id,
-                    upload_status="pending",
                     magnet_link=mag[:500],
-                    size_mb=1,
                     metadata_json={"zoom_level": zlm},
                 )
                 db.session.add(chunk)

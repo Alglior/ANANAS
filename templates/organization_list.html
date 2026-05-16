@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<main class="org-page">
+  <section class="org-header">
+    <div class="container">
+      <h1>{{ "Toutes les organisations" }}</h1>
+      {% if organizations %}
+      <div class="org-list">
+        {% for org in organizations %}
+        <a href="/organizations/{{ org.slug }}" class="org-card">
+          {% if org.logo_url %}
+          <img class="org-logo" src="{{ org.logo_url }}" alt="{{ org.name }} logo">
+          {% endif %}
+          <div class="org-card-info">
+            <span class="org-card-name">{{ org.name }}</span>
+            <p class="org-card-desc">{{ org.description or 'Aucune description.' }}</p>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p>Aucune organisation disponible.</p>
+      {% endif %}
+    </div>
+  </section>
+</main>
+{% endblock %}

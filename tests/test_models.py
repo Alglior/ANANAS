@@ -11,13 +11,11 @@ class TestItemModel:
             title="Test Item",
             description="Desc",
             format_type="geojson",
-            size_mb=100,
             magnet_link="magnet:?xt=test",
         )
         d = item.to_dict()
         assert d["title"] == "Test Item"
         assert d["format"] == "geojson"
-        assert d["size"] == "100 Mo"
         assert d["catalogue_link"] == "/catalogue/donnees"
 
     def test_item_to_dict_with_org(self):
@@ -27,8 +25,7 @@ class TestItemModel:
             type="geodonnee",
             title="Item Org",
             description="Desc",
-            format_type="shapefile",
-            size_mb=200,
+           format_type="shapefile",
             magnet_link="magnet:?xt=test2",
             organization_id=org.id,
         )
@@ -39,7 +36,7 @@ class TestItemModel:
 
     def test_item_rating_average(self):
         from models import Item, Rating
-        item = Item(type="carte", title="Rated", description="Desc", format_type="tif", size_mb=50, magnet_link="magnet:?xt=rated")
+       item = Item(type="carte", title="Rated", description="Desc", format_type="tif", magnet_link="magnet:?xt=rated")
         r1 = Rating(item_id=item.id, rating=4.0)
         r2 = Rating(item_id=item.id, rating=6.0)
         item.ratings = [r1, r2]
@@ -48,14 +45,14 @@ class TestItemModel:
 
     def test_item_rating_no_ratings(self):
         from models import Item
-        item = Item(type="application", title="Unrated", description="Desc", format_type="web", size_mb=30, magnet_link="magnet:?xt=unrated")
+       item = Item(type="application", title="Unrated", description="Desc", format_type="web", magnet_link="magnet:?xt=unrated")
         item.ratings = []
         avg = item._get_rating_avg()
         assert avg == 0
 
     def test_item_gallery_build(self):
         from models import Item, ItemGallery
-        item = Item(type="geodonnee", title="Gallery Item", description="Desc", format_type="zip", size_mb=10, magnet_link="magnet:?xt=gal")
+       item = Item(type="geodonnee", title="Gallery Item", description="Desc", format_type="zip", magnet_link="magnet:?xt=gal")
         g1 = ItemGallery(item_id=item.id, media_type="image", src="/img/1.png", label="Label 1")
         g2 = ItemGallery(item_id=item.id, media_type="csv", data_json={"rows": [{"a": 1}]}, label="CSV 1")
         item.gallery_items = [g1, g2]
@@ -69,7 +66,7 @@ class TestItemModel:
     def test_item_verification_status(self):
         from models import Item, User
         user = User(prenom="Verif", nom="Admin", email="verif@test.com", password_hash="pbkdf2:sha256:260000$xxx$yyy", is_active=True)
-        item = Item(type="carte", title="Verified Item", description="Desc", format_type="map", size_mb=40, magnet_link="magnet:?xt=verif")
+       item = Item(type="carte", title="Verified Item", description="Desc", format_type="map", magnet_link="magnet:?xt=verif")
         item.verification_status = "verified"
         item.verifier_user_id = user.id
         item.verified_at = datetime.datetime.now()
@@ -82,7 +79,7 @@ class TestItemModel:
     def test_item_type_mapping(self):
         from models import Item
         for item_type, expected_link in [("geodonnee", "/catalogue/donnees"), ("carte", "/catalogue/cartes"), ("application", "/catalogue/applications")]:
-            item = Item(type=item_type, title="Map Test", description="Desc", format_type="x", size_mb=1, magnet_link="magnet:?xt=map")
+   item = Item(type=item_type, title="Map Test", description="Desc", format_type="x", magnet_link="magnet:?xt=map")
             assert item.to_dict()["catalogue_link"] == expected_link
 
 
@@ -101,7 +98,7 @@ class TestUserModel:
 class TestTagModel:
     def test_item_tags(self):
         from models import Item, ItemTag
-        item = Item(type="geodonnee", title="Tagged", description="Desc", format_type="shp", size_mb=10, magnet_link="magnet:?xt=tags")
+        item = Item(type="geodonnee", title="Tagged", description="Desc", format_type="shp", magnet_link="magnet:?xt=tags")
         tag1 = ItemTag(item_id=item.id, tag="tag-alpha")
         tag2 = ItemTag(item_id=item.id, tag="tag-beta")
         item.tags = [tag1, tag2]
@@ -133,6 +130,5 @@ class TestVisualizationLinkModel:
 class TestDataChunkModel:
     def test_chunk_defaults(self):
         from models import DataChunk
-        c = DataChunk(name="Test Chunk", owner_user_id=1, upload_status="pending")
-        assert c.upload_status == "pending"
+        c = DataChunk(name="Test Chunk", owner_user_id=1)
         assert c.is_published is False

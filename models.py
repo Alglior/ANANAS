@@ -13,7 +13,6 @@ class Item(db.Model):
     title: Mapped[str]
     description: Mapped[str]
     format_type: Mapped[str | None]
-    size_mb: Mapped[int | None]
     magnet_link: Mapped[str]
     image_path: Mapped[str] = mapped_column(default="/static/images/logo/ANANAS.png")
     author_name: Mapped[str | None]
@@ -53,7 +52,6 @@ class Item(db.Model):
             "title": self.title,
             "description": self.description,
             "format": self.format_type,
-            "size": f"{self.size_mb} Mo" if self.size_mb else "",
             "magnet": self.magnet_link,
             "image": self.image_path,
             "author": self.author_name,
@@ -74,7 +72,7 @@ class Item(db.Model):
             "rating": self._get_rating_avg(),
             "review_count": len(self.ratings),
             "data_format_level": self.data_format_level,
-            "download_levels": [{"name": c.name, "size_mb": c.size_mb, "magnet": c.magnet_link} for c in DataChunk.query.filter_by(parent_item_id=self.id, visibility="public").all()] if self.data_format_level == "individual" else None,
+            "download_levels": [{"name": c.name, "magnet": c.magnet_link} for c in DataChunk.query.filter_by(parent_item_id=self.id, visibility="public").all()] if self.data_format_level == "individual" else None,
         }
 
     def _get_rating_avg(self):
@@ -234,10 +232,8 @@ class DataChunk(db.Model):
     owner_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     description: Mapped[str | None]
     format_type: Mapped[str | None]
-    size_mb: Mapped[int | None]
     magnet_link: Mapped[str | None]
     organization_id: Mapped[int | None] = mapped_column(ForeignKey("organizations.id"))
-    upload_status: Mapped[str] = mapped_column(default="pending")
     visibility: Mapped[str] = mapped_column(default="public")
     data_url: Mapped[str | None]
     metadata_json: Mapped[dict | None] = mapped_column(JSON, server_default="{}")
@@ -246,8 +242,6 @@ class DataChunk(db.Model):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        if self.upload_status is None:
-            self.upload_status = "pending"
         if self.visibility is None:
             self.visibility = "public"
         if self.is_published is None:
@@ -262,11 +256,9 @@ class DataChunk(db.Model):
             "id": self.id,
             "name": self.name,
             "description": self.description,
-            "size_mb": self.size_mb,
             "format_type": self.format_type,
             "magnet_link": self.magnet_link,
             "data_url": self.data_url,
-            "upload_status": self.upload_status,
             "visibility": self.visibility,
             "metadata_json": self.metadata_json or {},
             "created_at": self.created_at.strftime("%Y-%m-%d") if self.created_at else "",

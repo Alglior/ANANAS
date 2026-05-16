@@ -158,14 +158,13 @@ def _build_chunks(item_id, pack_title):
         band = BAND_NAMES[(j * item_id) % len(BAND_NAMES)]
         fmt = CHUNK_FORMATS[j % len(CHUNK_FORMATS)]
         chunk = DataChunk(
-            parent_item_id=item_id,
-            name=f"{pack_title}_L{lvl}_{band}",
-            format_type=fmt,
-            size_mb=(item_id * 13 + j * 47) % 800 + 50,
-            magnet_link=f"magnet:?xt=urn:btih:{item_id:032d}chunk{j:03d}",
-            upload_status="ready",
-            owner_user_id=SYSTEM_USER_ID,
-        )
+             parent_item_id=item_id,
+             name=f"{pack_title}_L{lvl}_{band}",
+             format_type=fmt,
+             magnet_link=f"magnet:?xt=urn:btih:{item_id:032d}chunk{j:03d}",
+             owner_user_id=SYSTEM_USER_ID,
+         )
+
         chunks.append(chunk)
     return chunks
 
@@ -224,7 +223,6 @@ def seed_items(category, count, type_val, title_fn, format_fn, is_pack=False):
             title=title,
             description=LOREM_IPSUM_FR[i % len(LOREM_IPSUM_FR)],
             format_type=fmt if isinstance(fmt, str) else fmt[0] if isinstance(fmt, list) else "unknown",
-            size_mb=(i * 17) % 500 + 10 if not is_pack else (i * 43) % 2000 + 500,
             magnet_link=f"magnet:?xt=urn:btih:{i:032d}",
             image_path="/static/images/logo/ANANAS.png",
             author_name=AUTHOR_NAMES[author_idx],

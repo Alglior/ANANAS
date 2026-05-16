@@ -9,7 +9,8 @@ from utils.security import sanitize_html, validate_file_magic
 
 bp = Blueprint("upload", __name__)
 
-ALLOWED_EXTENSIONS = {"csv", "shp", "geojson", "gpkg", "json", "xml"}
+ALLOWED_EXTENSIONS = {"csv", "shp", "geojson", "json", "xml"}
+
 
 
 def is_allowed_file(filename):
@@ -60,8 +61,6 @@ def upload_chunk():
         parent_item_id=parent_item_id,
         name=f"chunk_{upload.id}",
         owner_user_id=current_user.id,
-        upload_status="pending",
-        size_mb=len(data_text.encode('utf-8')) // (1024 * 1024),
         metadata_json=metadata,
     )
     db.session.add(chunk)

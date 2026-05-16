@@ -20,95 +20,7 @@
         {% endif %}
       {% endwith %}
 
-      <div class="profile-layout">
-        <aside class="profile-sidebar">
-          <div class="profile-card profile-stats">
-            <h3>Mes contributions</h3>
-            <div class="stats-grid">
-              <div class="stat-item stat-rating">
-                <span class="stat-value">{{ rating_count }}</span>
-                <span class="stat-label">Note{{ 's' if rating_count != 1 else '' }}</span>
-              </div>
-              <div class="stat-item stat-activity">
-                <a href="/activite" class="stat-link">Voir mon activité</a>
-              </div>
-            </div>
-          </div>
-
-          {% if current_user and current_user.is_admin %}
-          <div class="profile-card admin-card">
-            <h3>Panel d'administration</h3>
-            <a href="/admin/users" class="btn btn-primary admin-link">Accéder au panel admin</a>
-          </div>
-          {% endif %}
-
-          {% if org_memberships %}
-          <div class="profile-card profile-orgs">
-            <h3>Mes organisations</h3>
-            <ul class="org-list">
-              {% for m in org_memberships %}
-              <li class="org-item">
-                <a href="/organizations/{{ m.organization.slug }}" class="org-link">
-                  <span class="org-name">{{ m.organization.name }}</span>
-                  <span class="org-role">{{ m.role | capitalize }}</span>
-                </a>
-              </li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% else %}
-          <div class="profile-card profile-orgs-empty">
-            <h3>Mes organisations</h3>
-            <p class="empty-hint">Aucune organisation membre.</p>
-          </div>
-          {% endif %}
-
-          <div class="profile-card profile-uploads">
-            <h3>Mes données publiées</h3>
-            {% if data_chunks or uploaded_items %}
-              {% if data_chunks %}
-              <div class="uploads-section">
-                <p class="section-label">Fichiers téléversés ({{ data_chunks | length }})</p>
-                <ul class="upload-list">
-                  {% for chunk in data_chunks %}
-                  <li class="upload-item">
-                    <span class="upload-name">{{ chunk[0].name }}</span>
-                    <span class="upload-meta">
-                      <span class="upload-status status-{{ chunk[0].upload_status }}">{{ chunk[0].upload_status }}</span>
-                      {% if chunk[1] %}<span>{{ chunk[1] }}</span>{% endif %}
-                    </span>
-                  </li>
-                  {% endfor %}
-                </ul>
-              </div>
-              {% endif %}
-
-              {% if uploaded_items %}
-              <div class="uploads-section">
-                <p class="section-label">Items publiés ({{ uploaded_items | length }})</p>
-                <ul class="upload-list">
-                  {% for item in uploaded_items %}
-                  <li class="upload-item">
-                    <a href="/catalogue/item/{{ item.id }}" class="upload-link">
-                      <span class="upload-name">{{ item.title }}</span>
-                      <span class="upload-meta">
-                        <span class="badge badge-{{ item.type }}">{{ item.type }}</span>
-                        <span class="upload-date">{{ item.created_at.strftime('%d/%m/%Y') }}</span>
-                      </span>
-                    </a>
-                  </li>
-                  {% endfor %}
-                </ul>
-              </div>
-              {% endif %}
-            {% else %}
-              <p class="empty-hint">Aucune donnée publiée pour le moment.</p>
-              <a href="/upload" class="btn btn-primary btn-sm upload-empty-cta">Publier des données</a>
-            {% endif %}
-          </div>
-        </aside>
-
-        <section class="profile-main">
+     <section class="profile-main">
           <div class="profile-card">
             <h2>Informations personnelles</h2>
             <form class="profile-form" id="profileForm">
@@ -167,7 +79,6 @@
             </form>
           </div>
         </section>
-      </div>
     </div>
   </section>
 </main>

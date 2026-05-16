@@ -268,9 +268,7 @@
 }
 
 .user-dropdown .dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
+  display: block;
   padding: 0.55rem 1rem;
   text-decoration: none;
   color: inherit;

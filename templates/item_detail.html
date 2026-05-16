@@ -102,11 +102,9 @@
         <section class="data-extractions-section">
           <div class="extractions-grid">
             {% for chunk in data_chunks %}
-            {% set has_preview = chunk.upload_status == 'pending' and chunk.metadata_json and chunk.metadata_json.get('preview_rows') %}
-            <div class="extraction-card{% if has_preview %} has-preview{% endif %}">
-              {% if has_preview %}
+            <div class="extraction-card{% if chunk.metadata_json and chunk.metadata_json.get('preview_rows') %} has-preview{% endif %}">
+              {% if chunk.metadata_json and chunk.metadata_json.get('preview_rows') %}
               <div class="extraction-header">
-                {% if chunk.size_mb %}<span class="data-size">{{ chunk.size_mb }} Mo</span>{% endif %}
               </div>
               {% if chunk.metadata_json.get('column_count', 0) > 0 %}
               <div class="data-table-wrapper">
@@ -138,7 +136,6 @@
               {% endif %}
               {% else %}
               <div class="extraction-header">
-                {% if chunk.size_mb %}<span class="data-size">{{ chunk.size_mb }} Mo</span>{% endif %}
               </div>
               <dl class="chunk-details">
                 {% if chunk.format_type %}
@@ -258,7 +255,7 @@
               {% for level in item.download_levels %}
               <li>
                 <a href="{{ level.magnet }}" class="level-link">
-                  {{ level.name }}{% if level.size_mb %} ({{ level.size_mb }} Mo){% endif %}
+                  {{ level.name }}
                 </a>
               </li>
               {% endfor %}

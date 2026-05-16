@@ -327,3 +327,53 @@
 .member-card span {
   font-weight: 600;
 }
+
+.org-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.org-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface-gray);
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.org-card:hover {
+  background: var(--lightest-gray);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.org-card .org-logo {
+  max-width: 48px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.org-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.org-card-name {
+  font-weight: 600;
+  color: var(--forest);
+}
+
+.org-card-desc {
+  margin: 0;
+  color: var(--charcoal);
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

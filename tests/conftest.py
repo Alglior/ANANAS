@@ -54,7 +54,6 @@ def seeded(client):
             title=f"Item {i}",
             description=f"Description de l'item {i}",
             format_type=f"format-{i % 3}",
-            size_mb=50 + i,
             magnet_link=f"magnet:?xt=urn:btih:{i:040x}",
             author_name=f"Author {i}",
             organization_id=org.id if i % 2 == 0 else None,

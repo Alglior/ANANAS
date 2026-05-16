@@ -143,7 +143,7 @@ docker compose exec postgres psql -U $POSTGRES_USER -d $POSTGRES_DB  # accéder 
 | **Clé secrète** | Minimum 32 caractères ; auto-générée si absente ; erreur fatale en production |
 | **Rate limiting** | 5 req/heure sur `/connexion`, 100/heure par défaut (Flask-Limiter) |
 | **Sanitisation HTML** | `bleach.clean()` sur les contenus utilisateur |
-| **Validation uploads** | Magic bytes + whitelist extensions (csv, shp, geojson, gpkg, json, xml) |
+| **Validation uploads** | Magic bytes + whitelist extensions (csv, shp, geojson, json, xml) |
 | **Permissions fichier** | `.secret` et `.env` en `0o600` (lecture/écriture propriétaire uniquement) |
 | **Max upload** | 10 Mo (`MAX_CONTENT_LENGTH`) |
 

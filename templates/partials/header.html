@@ -24,14 +24,21 @@
             {{ current_user.prenom }} {{ current_user.nom }}
           </button>
           <div class="user-dropdown" id="userDropdown">
-            <a href="/profil" class="dropdown-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-              Mon profil
+            <a href="/profil" class="dropdown-item">Mon profil</a>
+            <a href="/activite" class="dropdown-item">Mon activité</a>
+            {% if current_user.is_admin %}
+            <a href="/admin/users" class="dropdown-item">Panneau d'administration</a>
+            {% endif %}
+            {% set user_orgs = current_user.organizations | selectattr('is_active', 'equalto', True) | list %}
+            {% if user_orgs|length > 0 %}
+            {% for org_member in user_orgs %}
+            <a href="/organizations/{{ org_member.organization.slug }}" class="dropdown-item">
+              {{ org_member.organization.name }}
             </a>
-            <a href="/activite" class="dropdown-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-              Mon activité
-            </a>
+            {% endfor %}
+            {% else %}
+            <a href="/organizations" class="dropdown-item">Organisations</a>
+            {% endif %}
             <div class="dropdown-divider"></div>
             <a href="/logout" class="dropdown-item">Déconnexion</a>
           </div>

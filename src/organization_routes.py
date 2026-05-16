@@ -121,6 +121,21 @@ def update_member_role(slug, user_id):
     return jsonify({"status": "updated", "role": data.get("role")})
 
 
+@bp.route("/organizations")
+def organization_list_view():
+    from models import Organization
+
+    orgs = Organization.query.filter_by(is_active=True).order_by(
+        Organization.created_at.desc()
+    ).all()
+    return render_template(
+        "organization_list.html",
+        title="Toutes les organisations — A.N.A.N.A.S.",
+        meta_description="Parcourez toutes les organisations de la plateforme.",
+        organizations=orgs,
+    )
+
+
 @bp.route("/organizations/<slug>/items")
 def organization_items_view(slug):
     from models import Organization, Item
