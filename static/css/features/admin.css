@@ -162,11 +162,21 @@
 }
 
 .mod-panel {
+  width: 100%;
+  align-self: center;
   background: var(--white);
   border: 1px solid var(--border-light);
   border-radius: 8px;
   padding: 1.5rem;
 }
+
+.mod-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.925rem;
+}
+
+/* ── Card layout (table → cards) — applies at all sizes ── */
 
 .mod-panel h2 {
   margin-top: 0;
@@ -175,12 +185,90 @@
   color: var(--forest);
 }
 
-.type-badge {
-  display: inline-block;
-  padding: 0.15rem 0.5rem;
+/* Hide header rows */
+.mod-panel thead,
+.admin-page thead {
+  display: none;
+}
+
+/* Block layout for tables and rows */
+.mod-panel table,
+.admin-page table,
+.mod-panel tbody,
+.admin-page tbody,
+.mod-panel tr,
+.admin-page tr {
+  display: block;
+}
+
+.mod-panel tr,
+.admin-page tr {
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
-  font-size: 0.78rem;
+}
+
+/* Each cell becomes a flex row */
+.mod-panel td,
+.admin-page td {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-light);
+  text-align: right;
+  font-size: 0.925rem;
+  white-space: normal;
+}
+
+.mod-panel td::before,
+.admin-page td::before {
+  content: attr(data-label);
   font-weight: 600;
+  color: var(--text-secondary);
+  text-align: left;
+  flex: 0 0 auto;
+  margin-right: 1rem;
+}
+
+.mod-panel td:last-child,
+.admin-page td:last-child {
+  border-bottom: none;
+  justify-content: flex-end;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Action buttons in card footer */
+.admin-actions-cell {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+/* Type badge sizing */
+.type-badge {
+  font-size: 0.78rem;
+  padding: 0.15rem 0.5rem;
+}
+
+/* Badge inside card cells */
+.mod-panel td .badge,
+.admin-page td .badge {
+  font-size: 0.72rem;
+  padding: 0.15rem 0.4rem;
+}
+
+/* Loading/empty cells */
+.loading-cell,
+.empty-cell {
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+.mod-panel td:nth-child(3)::before {
+  min-width: 60px;
 }
 
 .type-geodonnee {
@@ -196,13 +284,6 @@
 .type-application {
   background: var(--surface-warning-light);
   color: var(--color-warning-dark);
-}
-
-.loading-cell,
-.empty-cell {
-  text-align: center;
-  padding: 2rem;
-  color: var(--text-secondary);
 }
 
 .btn-danger-row {
@@ -230,7 +311,6 @@
   font-weight: 700;
   color: var(--forest);
   border-bottom: 2px solid var(--border-light);
-  white-space: nowrap;
 }
 
 .admin-page table td {
@@ -255,37 +335,173 @@
   margin-bottom: 0.5rem;
 }
 
-/* Moderation tables inside panels */
-.mod-panel table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.925rem;
+/* Clickable item link in moderation tables */
+.admin-item-link {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.15s ease;
 }
 
-.mod-panel table thead tr {
-  background: var(--surface-gray);
-}
-
-.mod-panel table th {
-  text-align: left;
-  padding: 0.75rem 1rem;
-  font-weight: 700;
+.admin-item-link:hover {
   color: var(--forest);
-  border-bottom: 2px solid var(--border-light);
-  white-space: nowrap;
+  text-decoration: underline;
 }
 
-.mod-panel table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border-light);
-  vertical-align: middle;
+/* View button as link in action cell */
+.mod-panel table a.btn-green,
+.admin-page table a.btn-green {
+  background: var(--forest);
+  color: var(--white);
+  text-decoration: none;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
 }
 
-.mod-panel table tbody tr:hover {
-  background: rgba(34, 139, 34, 0.03);
+.btn-green:hover {
+  opacity: 0.85;
 }
 
-.mod-panel table tbody tr:last-child td {
-  border-bottom: none;
+/* Verification button */
+.btn-verify {
+  background: var(--color-success);
+  color: var(--white);
+}
+
+.btn-verify:hover {
+  opacity: 0.85;
+}
+
+/* Unverify button */
+.btn-unverify {
+  background: var(--color-muted);
+  color: var(--white);
+}
+
+.btn-unverify:hover {
+  opacity: 0.85;
+}
+
+/* ── Responsive (mobile — card-specific overrides) ── */
+
+@media (max-width: 599px) {
+
+  /* General layout */
+  .admin-page {
+    padding: var(--space-md) 0;
+  }
+
+  .admin-section {
+    min-height: auto;
+  }
+
+  .container {
+    padding-left: var(--space-sm);
+    padding-right: var(--space-sm);
+  }
+
+  /* Navigation */
+  .admin-nav {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .admin-nav a {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+    flex: 1 1 auto;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* Heading */
+  .admin-page h1 {
+    font-size: 1.2rem;
+    margin-top: 0.75rem;
+  }
+
+  /* Filter bar */
+  .admin-filters {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .admin-filters button,
+  .admin-filters a {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.82rem;
+  }
+
+  /* Moderation panel */
+  .mod-panel {
+    padding: var(--space-md) var(--space-sm);
+  }
+
+  .mod-panel h2 {
+    font-size: 1.05rem;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Admin buttons */
+  .admin-btn-action {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.8rem;
+    margin: 2px;
+  }
+
+  /* Loading/empty cells — tighter on mobile */
+  .loading-cell,
+  .empty-cell {
+    padding: 1.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  /* Slightly smaller cards */
+  .mod-panel td,
+  .admin-page td {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.82rem;
+  }
+
+  /* Card footer buttons on very small screens */
+  .admin-actions-cell {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    justify-content: flex-end;
+  }
+
+  /* Type badge — smaller */
+  .type-badge {
+    font-size: 0.72rem;
+    padding: 0.12rem 0.4rem;
+  }
+}
+
+/* Small phones (< 480px) */
+@media (max-width: 480px) {
+  .admin-nav a {
+    flex: 1 1 45%;
+    font-size: 0.8rem;
+    padding: 0.35rem 0.4rem;
+  }
+
+  .mod-panel,
+  .admin-page {
+    padding-left: var(--space-xs);
+    padding-right: var(--space-xs);
+  }
+
+  .admin-btn-action {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.76rem;
+  }
+
+  .mod-panel td,
+  .admin-page td {
+    font-size: 0.78rem;
+    padding: 0.4rem var(--space-xs);
+  }
 }
 

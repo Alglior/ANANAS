@@ -16,13 +16,13 @@
     } else {
       tbody.innerHTML = data.map(c => `
         <tr>
-          <td>${c.id}</td>
-          <td>${c.author_name || '(anonyme)'}</td>
-          <td>${escapeHtml(c.content).substring(0, 80)}${c.content && c.content.length > 80 ? '...' : ''}</td>
-          <td><a href="/catalogue/item/${c.item_id}">${c.item_title || '#'}</a></td>
-          <td>${c.item_type || '-'}</td>
-          <td>${c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '-'}</td>
-          <td>
+          <td data-label="ID">${c.id}</td>
+          <td data-label="Auteur">${c.author_name || '(anonyme)'}</td>
+          <td data-label="Contenu">${escapeHtml(c.content).substring(0, 80)}${c.content && c.content.length > 80 ? '...' : ''}</td>
+          <td data-label="Article"><a href="/catalogue/item/${c.item_id}">${c.item_title || '#'}</a></td>
+          <td data-label="Type">${c.item_type || '-'}</td>
+          <td data-label="Date">${c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '-'}</td>
+          <td data-label="Action">
             <form class="admin-form-inline" data-delete-comment="${c.id}" method="post">
               <button type="submit" class="admin-btn-action btn-danger">Supprimer</button>
             </form>
@@ -54,18 +54,24 @@
         } else {
           actions.push(`<button type="button" class="admin-btn-action admin-btn-resolve" data-toggle-publish="${it.id}" data-published="true">Publier</button>`);
         }
+        actions.push(`<a href="/catalogue/item/${it.id}" class="admin-btn-action btn-green">Voir données</a>`);
+        if (it.verification_status === 'verified') {
+          actions.push(`<button type="button" class="admin-btn-action btn-unverify" data-unverify-item="${it.id}">Révoquer</button>`);
+        } else {
+          actions.push(`<button type="button" class="admin-btn-action btn-verify" data-verify-item="${it.id}">Vérifier</button>`);
+        }
         actions.push(`<button type="button" class="admin-btn-action btn-danger" data-delete-item="${it.id}">Supprimer</button>`);
-        return `
+     return `
           <tr>
-            <td>${it.id}</td>
-            <td><span class="type-badge type-${it.type}">${it.type.charAt(0).toUpperCase() + it.type.slice(1)}</span></td>
-            <td>${escapeHtml(it.title).substring(0, 40)}${it.title.length > 40 ? '...' : ''}</td>
-            <td>${it.author_name || '-'}</td>
-            <td>${statusBadge}</td>
-            <td>${verBadge}</td>
-            <td>${it.comment_count || 0}</td>
-            <td>${it.created_at ? new Date(it.created_at).toLocaleDateString('fr-FR') : '-'}</td>
-            <td><div class="admin-actions-cell">${actions.join('')}</div></td>
+            <td data-label="ID">${it.id}</td>
+            <td data-label="Type"><span class="type-badge type-${it.type}">${it.type.charAt(0).toUpperCase() + it.type.slice(1)}</span></td>
+            <td data-label="Titre"><a href="/catalogue/item/${it.id}" class="admin-item-link">${escapeHtml(it.title).substring(0, 40)}${it.title.length > 40 ? '...' : ''}</a></td>
+            <td data-label="Auteur">${it.author_name || '-'}</td>
+            <td data-label="Publié">${statusBadge}</td>
+            <td data-label="Vérification">${verBadge}</td>
+            <td data-label="Commentaires">${it.comment_count || 0}</td>
+            <td data-label="Date">${it.created_at ? new Date(it.created_at).toLocaleDateString('fr-FR') : '-'}</td>
+            <td data-label="Action"><div class="admin-actions-cell">${actions.join('')}</div></td>
           </tr>
         `;
       }).join('');
@@ -87,13 +93,13 @@
     } else {
       tbody.innerHTML = data.map(c => `
         <tr>
-          <td>${c.id}</td>
-          <td>${c.author_name || '(anonyme)'}</td>
-          <td>${escapeHtml(c.content).substring(0, 80)}${c.content && c.content.length > 80 ? '...' : ''}</td>
-          <td><a href="/catalogue/item/${c.item_id}">${c.item_title || '#'}</a></td>
-          <td>${c.item_type || '-'}</td>
-          <td>${c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '-'}</td>
-          <td>
+          <td data-label="ID">${c.id}</td>
+          <td data-label="Auteur">${c.author_name || '(anonyme)'}</td>
+          <td data-label="Contenu">${escapeHtml(c.content).substring(0, 80)}${c.content && c.content.length > 80 ? '...' : ''}</td>
+          <td data-label="Article"><a href="/catalogue/item/${c.item_id}">${c.item_title || '#'}</a></td>
+          <td data-label="Type">${c.item_type || '-'}</td>
+          <td data-label="Date">${c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '-'}</td>
+          <td data-label="Action">
             <form class="admin-form-inline" data-delete-comment="${c.id}" method="post">
               <button type="submit" class="admin-btn-action btn-danger">Supprimer</button>
             </form>
@@ -126,18 +132,24 @@
         } else {
           actions.push(`<button type="button" class="admin-btn-action admin-btn-resolve" data-toggle-publish="${it.id}" data-published="true">Publier</button>`);
         }
+        actions.push(`<a href="/catalogue/item/${it.id}" class="admin-btn-action btn-green">Voir données</a>`);
+        if (it.verification_status === 'verified') {
+          actions.push(`<button type="button" class="admin-btn-action btn-unverify" data-unverify-item="${it.id}">Révoquer</button>`);
+        } else {
+          actions.push(`<button type="button" class="admin-btn-action btn-verify" data-verify-item="${it.id}">Vérifier</button>`);
+        }
         actions.push(`<button type="button" class="admin-btn-action btn-danger" data-delete-item="${it.id}">Supprimer</button>`);
         return `
           <tr>
-            <td>${it.id}</td>
-            <td><span class="type-badge type-${it.type}">${it.type.charAt(0).toUpperCase() + it.type.slice(1)}</span></td>
-            <td>${escapeHtml(it.title).substring(0, 40)}${it.title.length > 40 ? '...' : ''}</td>
-            <td>${it.author_name || '-'}</td>
-            <td>${statusBadge}</td>
-            <td>${verBadge}</td>
-            <td>${it.comment_count || 0}</td>
-            <td>${it.created_at ? new Date(it.created_at).toLocaleDateString('fr-FR') : '-'}</td>
-            <td><div class="admin-actions-cell">${actions.join('')}</div></td>
+            <td data-label="ID">${it.id}</td>
+            <td data-label="Type"><span class="type-badge type-${it.type}">${it.type.charAt(0).toUpperCase() + it.type.slice(1)}</span></td>
+            <td data-label="Titre"><a href="/catalogue/item/${it.id}" class="admin-item-link">${escapeHtml(it.title).substring(0, 40)}${it.title.length > 40 ? '...' : ''}</a></td>
+            <td data-label="Auteur">${it.author_name || '-'}</td>
+            <td data-label="Publié">${statusBadge}</td>
+            <td data-label="Vérification">${verBadge}</td>
+            <td data-label="Commentaires">${it.comment_count || 0}</td>
+            <td data-label="Date">${it.created_at ? new Date(it.created_at).toLocaleDateString('fr-FR') : '-'}</td>
+            <td data-label="Action"><div class="admin-actions-cell">${actions.join('')}</div></td>
           </tr>
         `;
       }).join('');
@@ -163,6 +175,24 @@
     const published = btn.dataset.published === 'true';
     const endpoint = published ? '/api/admin/items/' + itemId + '/publish' : '/api/admin/items/' + itemId + '/unpublish';
     fetch(endpoint, { method: 'POST' })
+      .then(r => { if (r.ok) window.location.reload(); });
+  });
+
+  // Event delegation for verify button
+  document.getElementById('items-tbody').addEventListener('click', function (e) {
+    const btn = e.target.closest('button[data-verify-item]');
+    if (!btn) return;
+    const itemId = parseInt(btn.dataset.verifyItem);
+    fetch('/api/admin/items/' + itemId + '/verify', { method: 'POST' })
+      .then(r => { if (r.ok) window.location.reload(); });
+  });
+
+  // Event delegation for unverify button
+  document.getElementById('items-tbody').addEventListener('click', function (e) {
+    const btn = e.target.closest('button[data-unverify-item]');
+    if (!btn) return;
+    const itemId = parseInt(btn.dataset.unverifyItem);
+    fetch('/api/admin/items/' + itemId + '/unverify', { method: 'POST' })
       .then(r => { if (r.ok) window.location.reload(); });
   });
 

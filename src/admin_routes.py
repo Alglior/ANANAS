@@ -403,6 +403,42 @@ def publish_item(item_id):
     return jsonify({"status": "updated", "item_id": item_id, "is_published": True})
 
 
+@bp.route("/api/admin/items/<int:item_id>/verify", methods=["POST"])
+@login_required
+def verify_item(item_id):
+    from models import Item
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    item = Item.query.get_or_404(item_id)
+    item.verification_status = 'verified'
+    item.verifier_user_id = current_user.id
+    item.verified_at = db.func.now()
+    db.session.commit()
+    _log_audit("item_verified", "item", item_id, {"title": item.title})
+    return jsonify({"status": "updated", "item_id": item_id, "verification_status": "verified"})
+
+
+@bp.route("/api/admin/items/<int:item_id>/unverify", methods=["POST"])
+@login_required
+def unverify_item(item_id):
+    from models import Item
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    item = Item.query.get_or_404(item_id)
+    item.verification_status = 'unofficial'
+    item.verifier_user_id = None
+    item.verified_at = None
+    db.session.commit()
+    _log_audit("item_unverified", "item", item_id, {"title": item.title})
+    return jsonify({"status": "updated", "item_id": item_id, "verification_status": "unofficial"})
+
+
 @bp.route("/api/admin/audit")
 @login_required
 def admin_audit_log():
