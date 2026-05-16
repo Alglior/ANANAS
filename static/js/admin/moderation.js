@@ -227,6 +227,17 @@
     });
   });
 
+  // Tab switching for moderation panels
+  document.querySelectorAll('.mod-tab').forEach(tab => {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.mod-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      const tabName = this.dataset.tab;
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById('tab-' + tabName).classList.add('active');
+    });
+  });
+
   loadComments();
   loadItems();
 })();

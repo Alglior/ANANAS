@@ -153,7 +153,47 @@
   opacity: 0.85;
 }
 
+/* ── Moderation tab styles ── */
+
+.mod-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.mod-tab {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.mod-tab:hover {
+  background: var(--surface-gray);
+  color: var(--forest);
+}
+
+.mod-tab.active {
+  color: var(--forest);
+  border-bottom: 2px solid var(--forest);
+  font-weight: 700;
+}
+
 /* ── Moderation panel styles ── */
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
 
 .moderation-section {
   display: flex;
@@ -543,6 +583,20 @@
   .admin-filters a {
     padding: 0.4rem 0.7rem;
     font-size: 0.82rem;
+  }
+
+  /* Moderation tabs */
+  .mod-tabs {
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .mod-tab {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    flex: 1 1 45%;
+    text-align: center;
+    white-space: nowrap;
   }
 
   /* Moderation panel */

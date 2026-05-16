@@ -15,9 +15,15 @@
       </nav>
       <h1>Administration — Modération</h1>
 
+      <!-- Tab navigation -->
+      <div class="mod-tabs">
+        <button type="button" class="mod-tab active" data-tab="comments">Commentaires</button>
+        <button type="button" class="mod-tab" data-tab="items">Cartes, Applications &amp; Données</button>
+      </div>
+
       <div class="moderation-section">
         <!-- Comments Moderation -->
-        <div class="mod-panel mod-panel-comments">
+        <div class="mod-panel mod-panel-comments tab-content active" id="tab-comments">
           <h2>Commentaires</h2>
           <div class="admin-filters" id="comment-filters">
             <button type="button" data-type="all" class="active active-filter" data-target="comments-tbody">Tous</button>
@@ -45,7 +51,7 @@
         </div>
 
         <!-- Items Moderation -->
-        <div class="mod-panel mod-panel-items">
+        <div class="mod-panel mod-panel-items tab-content" id="tab-items">
           <h2>Cartes, Applications &amp; Données</h2>
           <div class="admin-filters" id="item-filters">
             <button type="button" data-type="all" class="active active-filter" data-target="items-tbody">Tous</button>
