@@ -179,7 +179,7 @@
 
 /* ── Card layout (table → cards) — applies at all sizes ── */
 
-.mod-panel h2 {
+.admin-page .mod-panel h2 {
   margin-top: 0;
   margin-bottom: 1rem;
   font-size: 1.2rem;
@@ -187,71 +187,120 @@
 }
 
 /* Hide header rows in mod panels */
-.mod-panel thead,
-.moderation-section .mod-panel-comments thead,
-.moderation-section .mod-panel-items thead {
-  display: none !important;
+.admin-page .mod-panel thead,
+.admin-page .moderation-section .mod-panel-comments thead,
+.admin-page .moderation-section .mod-panel-items thead {
+  display: none;
 }
 
-/* ── Card layout — guarantee block rendering for both panels ── */
-
-#comments-table,
-#items-table,
-.moderation-section .mod-panel-comments table,
-.moderation-section .mod-panel-items table {
+/* Card container block rendering for both comment and item tables */
+.admin-page #comments-table,
+.admin-page #items-table,
+.admin-page .moderation-section .mod-panel-comments table,
+.admin-page .moderation-section .mod-panel-items table {
   display: block;
-  border-collapse: separate !important;
+  border-collapse: separate;
   border-spacing: 0;
 }
 
-#comments-tbody,
-#items-tbody {
-  display: block !important;
+.admin-page #comments-tbody,
+.admin-page #items-tbody {
+  display: block;
 }
 
-.moderation-section .mod-panel-comments tr,
-.moderation-section .mod-panel-items tr {
-  display: block !important;
-  margin-bottom: 0.75rem !important;
-  border: 1px solid var(--border-light) !important;
-  border-radius: var(--radius-sm) !important;
+/* Card rows — comment panel */
+.admin-page .moderation-section .mod-panel-comments tr,
+.admin-page .moderation-section .mod-panel-items tr {
+  display: block;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
 }
 
-.moderation-section .mod-panel-comments td,
-.moderation-section .mod-panel-items td {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  padding: 0.75rem 1rem !important;
-  border-bottom: 1px solid var(--border-light) !important;
-  text-align: right !important;
-  font-size: 0.925rem !important;
-  white-space: normal !important;
+/* Card cells — comment panel */
+.admin-page .moderation-section .mod-panel-comments td,
+.admin-page .moderation-section .mod-panel-items td {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-light);
+  text-align: right;
+  font-size: 0.925rem;
+  white-space: normal;
 }
 
-.moderation-section .mod-panel-comments td::before,
-.moderation-section .mod-panel-items td::before {
-  content: attr(data-label) !important;
-  font-weight: 600 !important;
-  color: var(--text-secondary) !important;
-  text-align: left !important;
-  flex: 0 0 auto !important;
-  margin-right: 1rem !important;
+/* Card cell labels via data-label */
+.admin-page .moderation-section .mod-panel-comments td::before,
+.admin-page .moderation-section .mod-panel-items td::before {
+  content: attr(data-label);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: left;
+  flex: 0 0 auto;
+  margin-right: 1rem;
 }
 
-.moderation-section .mod-panel-comments td:last-child,
-.moderation-section .mod-panel-items td:last-child {
-  border-bottom: none !important;
-  justify-content: flex-end !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
+/* Card cell last-child (footer with action buttons) */
+.admin-page .moderation-section .mod-panel-comments td:last-child,
+.admin-page .moderation-section .mod-panel-items td:last-child {
+  border-bottom: none;
+  justify-content: flex-end;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 /* Action buttons in card footer */
-.admin-actions-cell {
-  display: flex !important;
+.admin-page .admin-actions-cell {
   flex-wrap: wrap;
   gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+/* Card rows — main comment/item tables (same styling as panel cards) */
+.admin-page #comments-table tr,
+.admin-page #items-table tr {
+  display: block;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.admin-page #comments-table tr:last-child,
+.admin-page #items-table tr:last-child {
+  margin-bottom: 0;
+  box-shadow: none;
+}
+
+/* Card cells — main comment/item tables */
+.admin-page #comments-table td,
+.admin-page #items-table td {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-light);
+  text-align: right;
+  font-size: 0.925rem;
+  white-space: normal;
+}
+
+/* Card cell labels via data-label (main tables) */
+.admin-page #comments-table td::before,
+.admin-page #items-table td::before {
+  content: attr(data-label);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: left;
+  flex: 0 0 auto;
+  margin-right: 1rem;
+}
+
+.admin-page #comments-table td:last-child,
+.admin-page #items-table td:last-child {
+  border-bottom: none;
   justify-content: flex-end;
 }
 
@@ -275,55 +324,9 @@
   color: var(--text-secondary);
 }
 
-.moderation-section .mod-panel-comments td:nth-child(3)::before,
-.moderation-section .mod-panel-items td:nth-child(3)::before {
+.admin-page .moderation-section .mod-panel-comments td:nth-child(3)::before,
+.admin-page .moderation-section .mod-panel-items td:nth-child(3)::before {
   min-width: 60px;
-}
-
-/* ── Force card layout — absolute priority selectors ── */
-
-#comments-table tr,
-#items-table tr {
-  display: block !important;
-  margin-bottom: 0.75rem !important;
-  border: 1px solid var(--border-light) !important;
-  border-radius: var(--radius-sm) !important;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-}
-
-#comments-table tr:last-child,
-#items-table tr:last-child {
-  margin-bottom: 0;
-  box-shadow: none;
-}
-
-#comments-table td,
-#items-table td {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  padding: 0.75rem 1rem !important;
-  border-bottom: 1px solid var(--border-light) !important;
-  text-align: right !important;
-  font-size: 0.925rem !important;
-  white-space: normal !important;
-}
-
-#comments-table td::before,
-#items-table td::before {
-  content: attr(data-label) !important;
-  font-weight: 600 !important;
-  color: var(--text-secondary) !important;
-  text-align: left !important;
-  flex: 0 0 auto !important;
-  margin-right: 1rem !important;
-}
-
-#comments-table td:last-child,
-#items-table td:last-child {
-  border-bottom: none !important;
-  justify-content: flex-end !important;
 }
 
 .type-geodonnee {
@@ -515,16 +518,15 @@
     font-size: 0.85rem;
   }
 
-  /* Slightly smaller cards */
-  .moderation-section .mod-panel-comments td,
-  .moderation-section .mod-panel-items td {
-    padding: 0.5rem 0.6rem !important;
-    font-size: 0.82rem !important;
+  /* Slightly smaller card cells */
+  .admin-page .moderation-section .mod-panel-comments td,
+  .admin-page .moderation-section .mod-panel-items td {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.82rem;
   }
 
   /* Card footer buttons on very small screens */
-  .admin-actions-cell {
-    display: flex !important;
+  .admin-page .admin-actions-cell {
     flex-wrap: wrap;
     gap: 0.4rem;
     justify-content: flex-end;
@@ -556,15 +558,14 @@
     font-size: 0.76rem;
   }
 
-  .moderation-section .mod-panel-comments td,
-  .moderation-section .mod-panel-items td {
-    font-size: 0.78rem !important;
-    padding: 0.4rem var(--space-xs) !important;
+  .admin-page .moderation-section .mod-panel-comments td,
+  .admin-page .moderation-section .mod-panel-items td {
+    font-size: 0.78rem;
+    padding: 0.4rem var(--space-xs);
   }
 
-  .admin-page td {
+  .admin-page table td {
     font-size: 0.78rem;
     padding: 0.4rem var(--space-xs);
   }
 }
-
