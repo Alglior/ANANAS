@@ -172,7 +172,8 @@
 
 .mod-panel table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.925rem;
 }
 
@@ -185,58 +186,65 @@
   color: var(--forest);
 }
 
-/* Hide header rows */
+/* Hide header rows in mod panels */
 .mod-panel thead,
-.admin-page thead {
-  display: none;
+.moderation-section .mod-panel-comments thead,
+.moderation-section .mod-panel-items thead {
+  display: none !important;
 }
 
-/* Block layout for tables and rows */
-.mod-panel table,
-.admin-page table,
-.mod-panel tbody,
-.admin-page tbody,
-.mod-panel tr,
-.admin-page tr {
+/* ── Card layout — guarantee block rendering for both panels ── */
+
+#comments-table,
+#items-table,
+.moderation-section .mod-panel-comments table,
+.moderation-section .mod-panel-items table {
   display: block;
+  border-collapse: separate !important;
+  border-spacing: 0;
 }
 
-.mod-panel tr,
-.admin-page tr {
-  margin-bottom: 0.75rem;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-sm);
+#comments-tbody,
+#items-tbody {
+  display: block !important;
 }
 
-/* Each cell becomes a flex row */
-.mod-panel td,
-.admin-page td {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border-light);
-  text-align: right;
-  font-size: 0.925rem;
-  white-space: normal;
+.moderation-section .mod-panel-comments tr,
+.moderation-section .mod-panel-items tr {
+  display: block !important;
+  margin-bottom: 0.75rem !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: var(--radius-sm) !important;
 }
 
-.mod-panel td::before,
-.admin-page td::before {
-  content: attr(data-label);
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-align: left;
-  flex: 0 0 auto;
-  margin-right: 1rem;
+.moderation-section .mod-panel-comments td,
+.moderation-section .mod-panel-items td {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 0.75rem 1rem !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  text-align: right !important;
+  font-size: 0.925rem !important;
+  white-space: normal !important;
 }
 
-.mod-panel td:last-child,
-.admin-page td:last-child {
-  border-bottom: none;
-  justify-content: flex-end;
-  padding-top: 0;
-  padding-bottom: 0;
+.moderation-section .mod-panel-comments td::before,
+.moderation-section .mod-panel-items td::before {
+  content: attr(data-label) !important;
+  font-weight: 600 !important;
+  color: var(--text-secondary) !important;
+  text-align: left !important;
+  flex: 0 0 auto !important;
+  margin-right: 1rem !important;
+}
+
+.moderation-section .mod-panel-comments td:last-child,
+.moderation-section .mod-panel-items td:last-child {
+  border-bottom: none !important;
+  justify-content: flex-end !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 /* Action buttons in card footer */
@@ -254,8 +262,8 @@
 }
 
 /* Badge inside card cells */
-.mod-panel td .badge,
-.admin-page td .badge {
+.moderation-section .mod-panel-comments .badge,
+.moderation-section .mod-panel-items .badge {
   font-size: 0.72rem;
   padding: 0.15rem 0.4rem;
 }
@@ -267,8 +275,55 @@
   color: var(--text-secondary);
 }
 
-.mod-panel td:nth-child(3)::before {
+.moderation-section .mod-panel-comments td:nth-child(3)::before,
+.moderation-section .mod-panel-items td:nth-child(3)::before {
   min-width: 60px;
+}
+
+/* ── Force card layout — absolute priority selectors ── */
+
+#comments-table tr,
+#items-table tr {
+  display: block !important;
+  margin-bottom: 0.75rem !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: var(--radius-sm) !important;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+#comments-table tr:last-child,
+#items-table tr:last-child {
+  margin-bottom: 0;
+  box-shadow: none;
+}
+
+#comments-table td,
+#items-table td {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 0.75rem 1rem !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  text-align: right !important;
+  font-size: 0.925rem !important;
+  white-space: normal !important;
+}
+
+#comments-table td::before,
+#items-table td::before {
+  content: attr(data-label) !important;
+  font-weight: 600 !important;
+  color: var(--text-secondary) !important;
+  text-align: left !important;
+  flex: 0 0 auto !important;
+  margin-right: 1rem !important;
+}
+
+#comments-table td:last-child,
+#items-table td:last-child {
+  border-bottom: none !important;
+  justify-content: flex-end !important;
 }
 
 .type-geodonnee {
@@ -348,7 +403,8 @@
 }
 
 /* View button as link in action cell */
-.mod-panel table a.btn-green,
+.moderation-section .mod-panel-comments a.btn-green,
+.moderation-section .mod-panel-items a.btn-green,
 .admin-page table a.btn-green {
   background: var(--forest);
   color: var(--white);
@@ -434,11 +490,13 @@
   }
 
   /* Moderation panel */
-  .mod-panel {
+  .moderation-section .mod-panel-comments,
+  .moderation-section .mod-panel-items {
     padding: var(--space-md) var(--space-sm);
   }
 
-  .mod-panel h2 {
+  .moderation-section .mod-panel-comments h2,
+  .moderation-section .mod-panel-items h2 {
     font-size: 1.05rem;
     margin-bottom: 0.75rem;
   }
@@ -458,10 +516,10 @@
   }
 
   /* Slightly smaller cards */
-  .mod-panel td,
-  .admin-page td {
-    padding: 0.5rem 0.6rem;
-    font-size: 0.82rem;
+  .moderation-section .mod-panel-comments td,
+  .moderation-section .mod-panel-items td {
+    padding: 0.5rem 0.6rem !important;
+    font-size: 0.82rem !important;
   }
 
   /* Card footer buttons on very small screens */
@@ -498,7 +556,12 @@
     font-size: 0.76rem;
   }
 
-  .mod-panel td,
+  .moderation-section .mod-panel-comments td,
+  .moderation-section .mod-panel-items td {
+    font-size: 0.78rem !important;
+    padding: 0.4rem var(--space-xs) !important;
+  }
+
   .admin-page td {
     font-size: 0.78rem;
     padding: 0.4rem var(--space-xs);
