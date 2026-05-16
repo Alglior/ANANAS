@@ -23,20 +23,20 @@
     return map[action] || action;
   }
 
-  function actionColor(action) {
-    const colors = {
-      'ban': '#dc3545',
-      'unban': '#0d6efd',
-      'comment_deleted': '#dc3545',
-      'item_deleted': '#dc3545',
-      'item_published': '#198754',
-      'item_unpublished': '#6c757d',
-      'item_verified': '#198754',
-      'item_unverified': '#ffc107',
-      'report_resolved': '#198754',
-      'report_dismissed': '#6c757d',
+  function actionBadgeClass(action) {
+    const cls = {
+      'ban': 'audit-badge-ban',
+      'unban': 'audit-badge-unban',
+      'comment_deleted': 'audit-badge-comment_deleted',
+      'item_deleted': 'audit-badge-item_deleted',
+      'item_published': 'audit-badge-item_published',
+      'item_unpublished': 'audit-badge-item_unpublished',
+      'item_verified': 'audit-badge-item_verified',
+      'item_unverified': 'audit-badge-item_unverified',
+      'report_resolved': 'audit-badge-report_resolved',
+      'report_dismissed': 'audit-badge-report_dismissed',
     };
-    return colors[action] || '#6c757d';
+    return cls[action] || 'audit-badge-ban';
   }
 
   function targetLabel(entry) {
@@ -63,7 +63,7 @@
         <tr>
           <td data-label="Date">${new Date(e.created_at).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
           <td data-label="Admin">${e.admin && e.admin.name ? escapeHtml(e.admin.name) : '(inconnu)'}</td>
-          <td data-label="Action"><span class="badge" style="background:${actionColor(e.action_type)};color:#fff;">${escapeHtml(actionBadgeLabel(e.action_type))}</span></td>
+          <td data-label="Action"><span class="badge ${actionBadgeClass(e.action_type)}">${escapeHtml(actionBadgeLabel(e.action_type))}</span></td>
           <td data-label="Cible">${escapeHtml(targetLabel(e))}</td>
         </tr>
       `).join('');

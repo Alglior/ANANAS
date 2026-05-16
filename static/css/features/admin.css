@@ -317,6 +317,59 @@
   padding: 0.15rem 0.4rem;
 }
 
+/* Audit badges — site chartre */
+.audit-badge-ban,
+.audit-badge-unban,
+.audit-badge-comment_deleted,
+.audit-badge-item_deleted,
+.audit-badge-item_published,
+.audit-badge-item_unpublished,
+.audit-badge-item_verified,
+.audit-badge-item_unverified,
+.audit-badge-report_resolved,
+.audit-badge-report_dismissed {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.audit-badge-ban,
+.audit-badge-comment_deleted,
+.audit-badge-item_deleted {
+  color: var(--color-danger);
+  background: rgba(220, 53, 69, 0.11);
+  border: 1px solid rgba(220, 53, 69, 0.35);
+}
+
+.audit-badge-unban {
+  color: var(--color-blue);
+  background: rgba(45, 140, 255, 0.11);
+  border: 1px solid rgba(45, 140, 255, 0.35);
+}
+
+.audit-badge-item_published,
+.audit-badge-item_verified,
+.audit-badge-report_resolved {
+  color: var(--forest);
+  background: rgba(34, 139, 34, 0.11);
+  border: 1px solid rgba(34, 139, 34, 0.35);
+}
+
+.audit-badge-item_unpublished,
+.audit-badge-report_dismissed {
+  color: var(--color-muted);
+  background: rgba(108, 117, 125, 0.11);
+  border: 1px solid rgba(108, 117, 125, 0.35);
+}
+
+.audit-badge-item_unverified {
+  color: var(--mustard);
+  background: rgba(218, 165, 32, 0.11);
+  border: 1px solid rgba(218, 165, 32, 0.35);
+}
+
 /* Loading/empty cells */
 .loading-cell,
 .empty-cell {
