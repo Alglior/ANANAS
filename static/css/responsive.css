@@ -87,6 +87,10 @@
   .product-gallery {
     position: static;
   }
+
+  .product-details {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 @media (max-width: 560px) {
@@ -108,14 +112,14 @@
 
 /* ── Gallery Modal Responsive ── */
 @media (max-width: 992px) {
-  .modal-thumbnails { width: 180px; grid-auto-rows: 64px; }
+  .modal-thumbnails { grid-template-columns: repeat(3, auto); }
 }
 
 @media (max-width: 768px) {
   .modal-content { flex-direction: column; padding: 10px; max-width: 96vw; max-height: calc(100vh - 40px); }
   .white-box { flex-direction: column-reverse; }
   .modal-left { min-width: auto; padding: 8px; }
-  .modal-thumbnails { width: 100%; grid-template-columns: repeat(6, 1fr); grid-auto-rows: 48px; overflow-x: auto; overflow-y: visible; padding: 8px 6px; }
+  .modal-thumbnails { grid-template-columns: repeat(3, auto); overflow-x: auto; padding: 8px 6px; }
   .modal-nav { width: 40px; height: 40px; font-size: 1.4rem; }
   .modal-prev { left: 8px; }
   .modal-next { right: 8px; }
