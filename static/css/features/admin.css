@@ -87,21 +87,27 @@
   padding-bottom: 0.5rem;
 }
 
-.admin-filters a {
+.admin-filters a,
+.admin-filters button {
   text-decoration: none;
   color: var(--text-secondary);
   font-weight: 600;
   padding: 0.5rem 1rem;
   border-radius: 4px;
   transition: all 0.15s ease;
+  border: none;
+  background: transparent;
+  cursor: pointer;
 }
 
-.admin-filters a:hover {
+.admin-filters a:hover,
+.admin-filters button:hover {
   background: var(--surface-gray);
   color: var(--forest);
 }
 
-.admin-filters a.active {
+.admin-filters a.active,
+.admin-filters button.active {
   color: var(--forest);
   border-bottom: 2px solid var(--forest);
   font-weight: 700;

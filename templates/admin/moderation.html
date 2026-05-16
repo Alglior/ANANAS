@@ -19,9 +19,9 @@
         <div class="mod-panel">
           <h2>Commentaires</h2>
           <div class="admin-filters" id="comment-filters">
-            <a href="javascript:void(0)" data-type="all" class="active">Tous</a>
-            <a href="javascript:void(0)" data-type="recent" data-days="7">7 derniers jours</a>
-            <a href="javascript:void(0)" data-type="old">Anciens</a>
+            <button type="button" data-type="all" class="active active-filter" data-target="comments-tbody">Tous</button>
+            <button type="button" data-type="recent" data-days="7" class="filter-btn" data-target="comments-tbody">7 derniers jours</button>
+            <button type="button" data-type="old" class="filter-btn" data-target="comments-tbody">Anciens</button>
           </div>
           <table id="comments-table">
             <thead>
@@ -45,10 +45,10 @@
         <div class="mod-panel">
           <h2>Cartes, Applications &amp; Données</h2>
           <div class="admin-filters" id="item-filters">
-            <a href="/catalogue" data-type="all" class="active">Tous</a>
-            <a href="/catalogue/donnees" data-type="geodonnee">Données</a>
-            <a href="/catalogue/cartes" data-type="carte">Cartes</a>
-            <a href="/catalogue/applications" data-type="application">Applications</a>
+            <button type="button" data-type="all" class="active active-filter" data-target="items-tbody">Tous</button>
+            <button type="button" data-type="geodonnee" class="filter-btn" data-target="items-tbody">Données</button>
+            <button type="button" data-type="carte" class="filter-btn" data-target="items-tbody">Cartes</button>
+            <button type="button" data-type="application" class="filter-btn" data-target="items-tbody">Applications</button>
           </div>
           <table id="items-table">
             <thead>

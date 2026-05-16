@@ -23,8 +23,8 @@
           <td>${c.item_type || '-'}</td>
           <td>${c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '-'}</td>
           <td>
-            <form class="admin-form-inline" onsubmit="return confirmSuppression(this)">
-              <button type="submit" class="admin-btn-action btn-danger" data-delete="/api/admin/comments/${c.id}">Supprimer</button>
+            <form class="admin-form-inline" data-delete-comment="${c.id}" method="post">
+              <button type="submit" class="admin-btn-action btn-danger">Supprimer</button>
             </form>
           </td>
         </tr>
@@ -50,11 +50,11 @@
           : '<span class="badge badge-pending">Non vérifié</span>';
         const actions = [];
         if (it.is_published) {
-          actions.push(`<button type="button" class="admin-btn-action admin-btn-dismiss" onclick="togglePublish(${it.id}, false)">Masquer</button>`);
+          actions.push(`<button type="button" class="admin-btn-action admin-btn-dismiss" data-toggle-publish="${it.id}" data-published="false">Masquer</button>`);
         } else {
-          actions.push(`<button type="button" class="admin-btn-action admin-btn-resolve" onclick="togglePublish(${it.id}, true)">Publier</button>`);
+          actions.push(`<button type="button" class="admin-btn-action admin-btn-resolve" data-toggle-publish="${it.id}" data-published="true">Publier</button>`);
         }
-        actions.push(`<button type="button" class="admin-btn-action btn-danger" onclick="deleteItem(${it.id}, '${escapeHtml(it.title)}')">Supprimer</button>`);
+        actions.push(`<button type="button" class="admin-btn-action btn-danger" data-delete-item="${it.id}">Supprimer</button>`);
         return `
           <tr>
             <td>${it.id}</td>
@@ -94,8 +94,8 @@
           <td>${c.item_type || '-'}</td>
           <td>${c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '-'}</td>
           <td>
-            <form class="admin-form-inline" onsubmit="return confirmSuppression(this)">
-              <button type="submit" class="admin-btn-action btn-danger" data-delete="/api/admin/comments/${c.id}">Supprimer</button>
+            <form class="admin-form-inline" data-delete-comment="${c.id}" method="post">
+              <button type="submit" class="admin-btn-action btn-danger">Supprimer</button>
             </form>
           </td>
         </tr>
@@ -122,11 +122,11 @@
           : '<span class="badge badge-pending">Non vérifié</span>';
         const actions = [];
         if (it.is_published) {
-          actions.push(`<button type="button" class="admin-btn-action admin-btn-dismiss" onclick="togglePublish(${it.id}, false)">Masquer</button>`);
+          actions.push(`<button type="button" class="admin-btn-action admin-btn-dismiss" data-toggle-publish="${it.id}" data-published="false">Masquer</button>`);
         } else {
-          actions.push(`<button type="button" class="admin-btn-action admin-btn-resolve" onclick="togglePublish(${it.id}, true)">Publier</button>`);
+          actions.push(`<button type="button" class="admin-btn-action admin-btn-resolve" data-toggle-publish="${it.id}" data-published="true">Publier</button>`);
         }
-        actions.push(`<button type="button" class="admin-btn-action btn-danger" onclick="deleteItem(${it.id}, '${escapeHtml(it.title)}')">Supprimer</button>`);
+        actions.push(`<button type="button" class="admin-btn-action btn-danger" data-delete-item="${it.id}">Supprimer</button>`);
         return `
           <tr>
             <td>${it.id}</td>
@@ -144,35 +144,53 @@
     }
   }
 
-  window.confirmSuppression = function (form) {
-    return confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action est irréversible.');
-  };
+  // Event delegation for comment deletion forms
+  document.getElementById('comments-tbody').addEventListener('submit', function (e) {
+    const form = e.target.closest('form[data-delete-comment]');
+    if (!form) return;
+    e.preventDefault();
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action est irréversible.')) return;
+    const endpoint = '/api/admin/comments/' + form.dataset.deleteComment;
+    fetch(endpoint, { method: 'DELETE' })
+      .then(r => { if (r.ok) window.location.reload(); });
+  });
 
-  window.togglePublish = function (itemId, published) {
+  // Event delegation for publish/unpublish toggles
+  document.getElementById('items-tbody').addEventListener('click', function (e) {
+    const btn = e.target.closest('button[data-toggle-publish]');
+    if (!btn) return;
+    const itemId = parseInt(btn.dataset.togglePublish);
+    const published = btn.dataset.published === 'true';
     const endpoint = published ? '/api/admin/items/' + itemId + '/publish' : '/api/admin/items/' + itemId + '/unpublish';
     fetch(endpoint, { method: 'POST' })
       .then(r => { if (r.ok) window.location.reload(); });
-  };
+  });
 
-  window.deleteItem = function (itemId, title) {
-    const msg = `Êtes-vous sûr de vouloir supprimer cet élément "${title}" ? Cette action est irréversible et supprimera aussi les commentaires, notes et galeries associés.`;
+  // Event delegation for item deletion
+  document.getElementById('items-tbody').addEventListener('click', function (e) {
+    const btn = e.target.closest('button[data-delete-item]');
+    if (!btn) return;
+    const itemId = parseInt(btn.dataset.deleteItem);
+    const msg = 'Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible et supprimera aussi les commentaires, notes et galeries associés.';
     if (!confirm(msg)) return;
     fetch('/api/admin/items/' + itemId, { method: 'DELETE' })
       .then(r => { if (r.ok) window.location.reload(); });
-  };
+  });
 
-  document.querySelectorAll('#comment-filters a').forEach(btn => {
+  // Filter buttons for comments
+  document.querySelectorAll('#comment-filters button').forEach(btn => {
     btn.addEventListener('click', function () {
-      document.querySelectorAll('#comment-filters a').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#comment-filters button').forEach(b => b.classList.remove('active'));
       this.classList.add('active');
       const type = this.dataset.type;
       filterComments(type);
     });
   });
 
-  document.querySelectorAll('#item-filters a').forEach(btn => {
+  // Filter buttons for items
+  document.querySelectorAll('#item-filters button').forEach(btn => {
     btn.addEventListener('click', function () {
-      document.querySelectorAll('#item-filters a').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#item-filters button').forEach(b => b.classList.remove('active'));
       this.classList.add('active');
       const type = this.dataset.type;
       filterItems(type);
