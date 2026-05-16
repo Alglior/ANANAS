@@ -15,43 +15,50 @@
       </nav>
       <h1>Administration — Utilisateurs</h1>
 
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nom</th>
-            <th>Email</th>
-            <th>Statut</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for user in users %}
-          <tr>
-            <td>{{ user.id }}</td>
-            <td>{{ user.prenom }} {{ user.nom }}</td>
-            <td>{{ user.email }}</td>
-            <td>
-              {% if user.banned %}
-                <span class="badge badge-rejected">Banni</span>
-              {% elif not user.is_active %}
-                <span class="badge badge-pending">Inactif</span>
-              {% else %}
-                <span class="badge badge-verified">Actif</span>
-              {% endif %}
-            </td>
-            <td>
-              <form class="admin-form-inline" action="/api/users/{{ user.id }}/ban" method="POST">
-                <input type="hidden" name="action" value="{% if user.banned %}unban{% else %}ban{% endif %}">
-                <button type="submit" class="btn btn-sm {% if user.banned %}btn-soft-unban{% else %}btn-danger{% endif %}">
-                  {% if user.banned %}Débannir{% else %}Bannir{% endif %}
-                </button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <div class="moderation-section">
+        <div class="mod-panel">
+          <h2>Liste des utilisateurs</h2>
+          <div class="table-wrapper">
+            <table id="users-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nom</th>
+                  <th>Email</th>
+                  <th>Statut</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for user in users %}
+                <tr>
+                  <td data-label="ID">{{ user.id }}</td>
+                  <td data-label="Nom">{{ user.prenom }} {{ user.nom }}</td>
+                  <td data-label="Email">{{ user.email }}</td>
+                  <td data-label="Statut">
+                    {% if user.banned %}
+                      <span class="badge badge-rejected">Banni</span>
+                    {% elif not user.is_active %}
+                      <span class="badge badge-pending">Inactif</span>
+                    {% else %}
+                      <span class="badge badge-verified">Actif</span>
+                    {% endif %}
+                  </td>
+                  <td data-label="Action">
+                    <form class="admin-form-inline" action="/api/users/{{ user.id }}/ban" method="POST">
+                      <input type="hidden" name="action" value="{% if user.banned %}unban{% else %}ban{% endif %}">
+                      <button type="submit" class="btn btn-sm {% if user.banned %}btn-soft-unban{% else %}btn-danger{% endif %}">
+                        {% if user.banned %}Débannir{% else %}Bannir{% endif %}
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 </main>
