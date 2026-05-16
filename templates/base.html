@@ -34,15 +34,15 @@
 
     {% include 'partials/footer.html' %}
 
-    <script src="{{ url_for('static', filename='js/utils/clipboard.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/catalogue.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/gallery/inlineGallery.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/gallery/imageModal.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/gallery/copyMagnet.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/gallery/starRating.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/gallery/reportModal.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/utils/clipboard.js') }}"></script>
+    <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/catalogue.js') }}"></script>
+    <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/gallery/inlineGallery.js') }}"></script>
+    <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/gallery/imageModal.js') }}"></script>
+    <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/gallery/copyMagnet.js') }}"></script>
+    <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/gallery/starRating.js') }}"></script>
+    <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/gallery/reportModal.js') }}"></script>
+    <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/app.js') }}"></script>
     {% block extra_scripts %}{% endblock %}
   </body>
 </html>

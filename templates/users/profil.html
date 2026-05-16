@@ -35,6 +35,13 @@
             </div>
           </div>
 
+          {% if current_user and current_user.is_admin %}
+          <div class="profil-card profil-admin">
+            <h3>Panel d'administration</h3>
+            <a href="/admin/users" class="btn btn-primary admin-link">Accéder au panel admin</a>
+          </div>
+          {% endif %}
+
           {% if org_memberships %}
           <div class="profil-card profil-orgs">
             <h3>Mes organisations</h3>
@@ -167,120 +174,6 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const profileForm = document.getElementById('profileForm');
-  const profileStatus = document.getElementById('profileStatus');
-  const passwordForm = document.getElementById('passwordForm');
-  const passwordStatus = document.getElementById('passwordStatus');
-  const newPassInput = document.getElementById('new_password');
-
-  if (profileForm) {
-    profileForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      profileStatus.textContent = 'Sauvegarde...';
-      profileStatus.className = 'form-status';
-
-      const formData = {
-        prenom: document.getElementById('prenom').value,
-        nom: document.getElementById('nom').value,
-        email: document.getElementById('email').value,
-      };
-
-      try {
-        const csrfToken = '{{ csrf_token() }}';
-        const response = await fetch('/api/users/profile', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': csrfToken,
-          },
-          body: JSON.stringify(formData),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          profileStatus.textContent = 'Profil sauvegardé !';
-          profileStatus.className = 'form-status form-success';
-        } else {
-          profileStatus.textContent = data.error || 'Erreur lors de la sauvegarde';
-          profileStatus.className = 'form-status form-error';
-        }
-      } catch (err) {
-        profileStatus.textContent = 'Erreur réseau';
-        profileStatus.className = 'form-status form-error';
-      }
-    });
-  }
-
-  if (passwordForm) {
-    passwordForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const newPw = document.getElementById('new_password').value;
-      const confirmPw = document.getElementById('confirm_password').value;
-
-      if (newPw !== confirmPw) {
-        passwordStatus.textContent = 'Les mots de passe ne correspondent pas';
-        passwordStatus.className = 'form-status form-error';
-        return;
-      }
-
-      passwordStatus.textContent = 'Modification...';
-      passwordStatus.className = 'form-status';
-
-      const formData = {
-        current_password: document.getElementById('current_password').value,
-        new_password: newPw,
-      };
-
-      try {
-        const csrfToken = '{{ csrf_token() }}';
-        const response = await fetch('/api/users/change-password', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': csrfToken,
-          },
-          body: JSON.stringify(formData),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          passwordStatus.textContent = 'Mot de passe modifié !';
-          passwordStatus.className = 'form-status form-success';
-          document.getElementById('current_password').value = '';
-          document.getElementById('new_password').value = '';
-          document.getElementById('confirm_password').value = '';
-        } else {
-          passwordStatus.textContent = data.error || (data.details ? data.details.join('; ') : 'Erreur');
-          passwordStatus.className = 'form-status form-error';
-        }
-      } catch (err) {
-        passwordStatus.textContent = 'Erreur réseau';
-        passwordStatus.className = 'form-status form-error';
-      }
-    });
-
-    if (newPassInput) {
-      newPassInput.addEventListener('input', function() {
-        const val = this.value;
-        toggleReq('req-length', val.length >= 8);
-        toggleReq('req-upper', /[A-Z]/.test(val));
-        toggleReq('req-lower', /[a-z]/.test(val));
-        toggleReq('req-digit', /\d/.test(val));
-        toggleReq('req-special', /[!@#$%^&*()_+\-={}\[\];':\"\\|,.<>\/?~`]/.test(val));
-      });
-    }
-
-    function toggleReq(id, met) {
-      const el = document.getElementById(id);
-      if (el) {
-        el.classList.toggle('req-met', met);
-      }
-    }
-  }
-});
-</script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/users/profile.js') }}"></script>
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 {% endblock %}

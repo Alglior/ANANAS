@@ -18,16 +18,16 @@ var ReportModalModule = (function () {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     }).then(function (r) { return r.json(); }).then(function (res) {
-      modal.style.display = "none";
+      modal.classList.remove("show");
     });
   }
 
   function closeModal(modal) {
-    modal.style.display = "none";
+    modal.classList.remove("show");
   }
 
   function openModal(modal) {
-    modal.style.display = "block";
+    modal.classList.add("show");
   }
 
   function init() {
@@ -55,7 +55,7 @@ var ReportModalModule = (function () {
     }
 
     document.addEventListener("click", function (e) {
-      var isOpen = modal.style.display === "block" || modal.style.display === "flex";
+      var isOpen = modal.classList.contains("show");
       if (!isOpen) return;
       if (!e.target.closest(".modal-box")) {
         closeModal(modal);
@@ -63,7 +63,7 @@ var ReportModalModule = (function () {
     });
 
     document.addEventListener("keydown", function (e) {
-      var isOpen = modal.style.display === "block" || modal.style.display === "flex";
+      var isOpen = modal.classList.contains("show");
       if (!isOpen) return;
       if (e.key === "Escape") {
         closeModal(modal);

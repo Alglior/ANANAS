@@ -65,8 +65,12 @@ var ImageModalModule = (function () {
       }
 
       var showNav = images.length > 1;
-      if (prevBtn) prevBtn.style.display = showNav ? "flex" : "none";
-      if (nextBtn) nextBtn.style.display = showNav ? "flex" : "none";
+      if (prevBtn) {
+        prevBtn.classList.toggle("modal-nav-hidden", !showNav);
+      }
+      if (nextBtn) {
+        nextBtn.classList.toggle("modal-nav-hidden", !showNav);
+      }
     }
 
     function showModal(index) {
@@ -74,16 +78,14 @@ var ImageModalModule = (function () {
         currentIndex = Math.min(index, images.length - 1);
       }
       modalImg.setAttribute("src", images[currentIndex]);
-      modal.style.display = "flex";
       modal.classList.add("open");
-      document.body.style.overflow = "hidden";
+      document.body.classList.add("modal-open");
       updateActiveThumb();
     }
 
     function hideModal() {
-      modal.style.display = "none";
-      modal.classList.remove("open");
-      document.body.style.overflow = "";
+      modal.classList.remove("open", "modal-active");
+      document.body.classList.remove("modal-open");
     }
 
     function navigate(direction) {

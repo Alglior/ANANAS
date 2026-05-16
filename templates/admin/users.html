@@ -7,6 +7,12 @@
 <main class="admin-page">
   <section class="admin-section">
     <div class="container">
+      <nav class="admin-nav">
+        <a href="/admin/users" {% if 'Utilisateurs' in title %}class="active"{% endif %}>Utilisateurs</a>
+        <a href="/admin/reports" {% if 'Signalements' in title %}class="active"{% endif %}>Signalements</a>
+        <a href="/admin/moderation" {% if 'Modération' in title %}class="active"{% endif %}>Modération</a>
+        <a href="/admin/audit" {% if 'Journal' in title %}class="active"{% endif %}>Journal d'audits</a>
+      </nav>
       <h1>Administration — Utilisateurs</h1>
 
       <table>
@@ -35,9 +41,9 @@
               {% endif %}
             </td>
             <td>
-              <form action="/api/users/{{ user.id }}/ban" method="POST" style="display:inline;">
+              <form class="admin-form-inline" action="/api/users/{{ user.id }}/ban" method="POST">
                 <input type="hidden" name="action" value="{% if user.banned %}unban{% else %}ban{% endif %}">
-                <button type="submit">
+                <button type="submit" class="btn btn-sm {% if user.banned %}btn-soft-unban{% else %}btn-danger{% endif %}">
                   {% if user.banned %}Débannir{% else %}Bannir{% endif %}
                 </button>
               </form>

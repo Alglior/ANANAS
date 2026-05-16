@@ -40,8 +40,6 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-  var __gallery_items = {{ item.gallery | default([]) | tojson }};
-</script>
+<script nonce="{{ csp_nonce }}" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<input type="hidden" id="__gallery_items_json" value="{{ item.gallery | default([]) | tojson }}">
 {% endblock %}

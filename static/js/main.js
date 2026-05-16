@@ -12,13 +12,12 @@ var MainModule = (function () {
     const toast = document.createElement("div");
     toast.className = "toast-notification";
     toast.textContent = message;
-    toast.style.cssText = "position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:12px 24px;background:#333;color:#fff;border-radius:8px;font-size:14px;z-index:10000;opacity:0;transition:opacity .3s;pointer-events:none;";
     document.body.appendChild(toast);
     requestAnimationFrame(function () {
-      toast.style.opacity = "1";
+      toast.classList.add("toast-show");
     });
     setTimeout(function () {
-      toast.style.opacity = "0";
+      toast.classList.remove("toast-show");
       setTimeout(function () {
         if (toast.parentNode) toast.parentNode.removeChild(toast);
       }, 300);
@@ -60,12 +59,12 @@ var MainModule = (function () {
         await navigator.clipboard.writeText(emailEl.textContent.trim());
         btn.classList.add("copied");
         btn.textContent = "✓ Copié";
-        if (feedback) feedback.style.opacity = "1";
+        if (feedback) feedback.classList.add("copy-feedback-visible");
 
         setTimeout(() => {
           btn.classList.remove("copied");
           btn.textContent = "Copier l'email";
-          if (feedback) feedback.style.opacity = "0";
+          if (feedback) feedback.classList.remove("copy-feedback-visible");
         }, 2000);
       } catch {
         btn.classList.add("error");

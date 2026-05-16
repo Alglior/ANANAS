@@ -16,13 +16,12 @@ var InlineGalleryModule = (function () {
         this.classList.add("active");
         var newSrc = this.getAttribute("data-src");
         if (newSrc) {
-          mainImg.style.opacity = "0";
+          mainImg.classList.add("img-fading");
           setTimeout(function () {
             mainImg.src = newSrc + "?t=" + Date.now();
             mainImg.addEventListener("load", function () {
-              mainImg.style.opacity = "1";
+              mainImg.classList.remove("img-fading");
             }, { once: true });
-            mainImg.style.opacity = "1";
           }, 150);
         }
       });

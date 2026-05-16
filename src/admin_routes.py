@@ -26,6 +26,43 @@ def require_admin(f):
     return decorated
 
 
+def _log_audit(action_type, target_type=None, target_id=None, details=None):
+    from models import AdminAudit
+    current_user = get_current_user()
+    audit = AdminAudit(
+        admin_user_id=current_user.id if current_user else None,
+        action_type=action_type,
+        target_type=target_type,
+        target_id=target_id,
+        details=details or {},
+    )
+    db.session.add(audit)
+    db.session.commit()
+
+
+def _get_audit_entries():
+    from models import AdminAudit, User
+
+    entries = (
+        AdminAudit.query
+        .order_by(AdminAudit.created_at.desc())
+        .limit(500)
+        .all()
+    )
+    result = []
+    for e in entries:
+        result.append({
+            "id": e.id,
+            "admin": {"id": e.admin_user_id, "name": str(e.admin)} if e.admin else None,
+            "action_type": e.action_type,
+            "target_type": e.target_type,
+            "target_id": e.target_id,
+            "details": e.details or {},
+            "created_at": e.created_at.isoformat() if hasattr(e, "created_at") and e.created_at else None,
+        })
+    return result
+
+
 @bp.route("/api/users/<int:user_id>/ban", methods=["POST"])
 @login_required
 def ban_user(user_id):
@@ -44,6 +81,7 @@ def ban_user(user_id):
 
     target_user.banned = (action == "ban")
     db.session.commit()
+    _log_audit("ban" if action == "ban" else "unban", "user", user_id, {"email": target_user.email})
 
     return jsonify({
         "status": "updated",
@@ -185,6 +223,7 @@ def resolve_report(report_id):
     report.reviewed_at = dt.datetime.now()
 
     db.session.commit()
+    _log_audit(new_status, "report", report_id, {"reason": report.reason, "description": report.description})
 
     return jsonify({"status": "updated", "report_id": report.id})
 
@@ -229,4 +268,181 @@ def admin_reports():
         reports=reports,
         status=status_filter,
         pending_count=pending_count,
+    )
+
+
+@bp.route("/api/admin/comments", methods=["GET"])
+@login_required
+def list_comments():
+    from models import Comment
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    item_id = request.args.get("item_id", type=int)
+    query = Comment.query
+    if item_id:
+        query = query.filter_by(item_id=item_id)
+    comments = query.order_by(Comment.created_at.desc()).all()
+    return jsonify([
+        {
+            "id": c.id,
+            "item_id": c.item_id,
+            "author_name": c.author_name,
+            "content": c.content,
+            "created_at": c.created_at.isoformat() if hasattr(c, "created_at") and c.created_at else None,
+            "item_title": c.item.title if c.item else None,
+            "item_type": c.item.type if c.item else None,
+        }
+        for c in comments
+    ])
+
+
+@bp.route("/api/admin/comments/<int:comment_id>", methods=["DELETE"])
+@login_required
+def delete_comment(comment_id):
+    from models import Comment
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    comment = Comment.query.get_or_404(comment_id)
+    item_title = comment.item.title if comment.item else None
+    db.session.delete(comment)
+    db.session.commit()
+    _log_audit("comment_deleted", "comment", comment_id, {"item_title": item_title, "content_preview": (comment.content[:80] if comment.content else "")})
+    return jsonify({"status": "deleted", "comment_id": comment_id})
+
+
+@bp.route("/api/admin/items", methods=["GET"])
+@login_required
+def list_items():
+    from models import Item
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    item_type = request.args.get("type", "all")
+    status_filter = request.args.get("status", "all")
+
+    query = Item.query
+    if item_type != "all":
+        query = query.filter_by(type=item_type)
+    if status_filter == "published":
+        query = query.filter_by(is_published=True)
+    elif status_filter == "unpublished":
+        query = query.filter_by(is_published=False)
+
+    items = query.order_by(Item.created_at.desc()).all()
+    return jsonify([
+        {
+            "id": it.id,
+            "type": it.type,
+            "title": it.title,
+            "description": it.description[:100],
+            "author_name": it.author_name,
+            "is_published": it.is_published,
+            "verification_status": it.verification_status,
+            "created_at": it.created_at.isoformat() if hasattr(it, "created_at") and it.created_at else None,
+            "comment_count": len(it.comments),
+        }
+        for it in items
+    ])
+
+
+@bp.route("/api/admin/items/<int:item_id>", methods=["DELETE"])
+@login_required
+def delete_item(item_id):
+    from models import Item
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    item = Item.query.get_or_404(item_id)
+    title = item.title
+    type_name = item.type
+    db.session.delete(item)
+    db.session.commit()
+    _log_audit("item_deleted", "item", item_id, {"title": title, "type": type_name})
+    return jsonify({"status": "deleted", "item_id": item_id, "title": title})
+
+
+@bp.route("/api/admin/items/<int:item_id>/unpublish", methods=["POST"])
+@login_required
+def unpublish_item(item_id):
+    from models import Item
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    item = Item.query.get_or_404(item_id)
+    item.is_published = False
+    db.session.commit()
+    _log_audit("item_unpublished", "item", item_id, {"title": item.title})
+    return jsonify({"status": "updated", "item_id": item_id, "is_published": False})
+
+
+@bp.route("/api/admin/items/<int:item_id>/publish", methods=["POST"])
+@login_required
+def publish_item(item_id):
+    from models import Item
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    item = Item.query.get_or_404(item_id)
+    item.is_published = True
+    db.session.commit()
+    _log_audit("item_published", "item", item_id, {"title": item.title})
+    return jsonify({"status": "updated", "item_id": item_id, "is_published": True})
+
+
+@bp.route("/api/admin/audit")
+@login_required
+def admin_audit_log():
+    """API endpoint for fetching audit log entries."""
+    from models import User
+
+    if not get_current_user() or not get_current_user().is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    entries = _get_audit_entries()
+    return jsonify(entries)
+
+
+@bp.route("/admin/audit")
+@login_required
+@require_admin
+def admin_audit():
+    from models import AdminAudit
+
+    entries = (
+        AdminAudit.query
+        .order_by(AdminAudit.created_at.desc())
+        .limit(500)
+        .all()
+    )
+
+    return render_template(
+        "admin/audit.html",
+        title="Administration — Journal d'audits",
+        meta_description="Journal des actions administratives",
+        entries=entries,
+    )
+
+
+@bp.route("/admin/moderation")
+@login_required
+@require_admin
+def admin_moderation():
+    return render_template(
+        "admin/moderation.html",
+        title="Administration — Modération",
+        meta_description="Modération des contenus et commentaires",
     )

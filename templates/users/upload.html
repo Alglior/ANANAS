@@ -164,5 +164,5 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload.js') }}"></script>
 {% endblock %}

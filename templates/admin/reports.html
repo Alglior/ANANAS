@@ -7,9 +7,14 @@
 <main class="admin-page">
   <section class="admin-section">
     <div class="container">
-      <h1>Administration — Signalements ({{ reports | length }})</h1>
+      <nav class="admin-nav">
+        <a href="/admin/users" {% if 'Utilisateurs' in title %}class="active"{% endif %}>Utilisateurs</a>
+        <a href="/admin/reports" {% if 'Signalements' in title %}class="active"{% endif %}>Signalements</a>
+        <a href="/admin/moderation" {% if 'Modération' in title %}class="active"{% endif %}>Modération</a>
+        <a href="/admin/audit" {% if 'Journal' in title %}class="active"{% endif %}>Journal d'audits</a>
+      </nav>
 
-      <nav style="margin-bottom:20px;">
+      <nav class="admin-filters">
         <a href="/admin/reports?status=all&type=all" {% if status == 'all' %}class="active"{% endif %}>Tous</a>
         <a href="/admin/reports?status=pending&type=all">En attente ({{ pending_count }})</a>
       </nav>
@@ -55,14 +60,16 @@
             <td>{{ report.created_at.strftime('%d/%m/%Y') }}</td>
             <td>
               {% if report.status == 'pending' %}
-                  <form action="/api/admin/reports/{{ report.id }}/resolve" method="POST" style="display:inline;">
-                      <input type="hidden" name="status" value="resolved">
-                      <button type="submit" style="background:#28a745; color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer;">Résoudre</button>
-                  </form>
-                  <form action="/api/admin/reports/{{ report.id }}/resolve" method="POST" style="display:inline;">
-                      <input type="hidden" name="status" value="dismissed">
-                      <button type="submit" style="background:#6c757d; color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer;">Non fondé</button>
-                  </form>
+                  <div class="admin-actions-cell">
+                      <form class="admin-form-inline" action="/api/admin/reports/{{ report.id }}/resolve" method="POST">
+                          <input type="hidden" name="status" value="resolved">
+                          <button type="submit" class="admin-btn-action admin-btn-resolve">Résoudre</button>
+                      </form>
+                      <form class="admin-form-inline" action="/api/admin/reports/{{ report.id }}/resolve" method="POST">
+                          <input type="hidden" name="status" value="dismissed">
+                          <button type="submit" class="admin-btn-action admin-btn-dismiss">Non fondé</button>
+                      </form>
+                  </div>
               {% else %}
                   —
               {% endif %}

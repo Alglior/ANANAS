@@ -10,16 +10,18 @@ var StarRatingModule = (function () {
       if (!labels.length) return;
 
       labels.forEach(function (label, idx) {
+        var hoverIdx = idx + 1;
+        label.setAttribute("data-hover", hoverIdx);
         label.addEventListener("mouseenter", function () {
-          var hoverIdx = idx + 1;
           labels.forEach(function (s, i) {
-            s.style.color = i < hoverIdx ? "#daa520" : "";
+            if (i < hoverIdx) s.classList.add("star-hovered");
+            else s.classList.remove("star-hovered");
           });
         });
 
         label.addEventListener("mouseleave", function () {
           labels.forEach(function (s) {
-            s.style.color = "";
+            s.classList.remove("star-hovered");
           });
         });
 

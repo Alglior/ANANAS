@@ -27,6 +27,11 @@
   color: var(--border-color);
 }
 
+/* Star hover highlight (no inline style.color) */
+.star-hovered {
+  color: var(--mustard) !important;
+}
+
 .rating-count {
   font-size: 0.9rem;
   color: var(--specs-gray);

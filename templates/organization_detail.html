@@ -8,7 +8,7 @@
   <section class="org-header">
     <div class="container">
       {% if org.logo_url %}
-        <img src="{{ org.logo_url }}" alt="{{ org.name }} logo" style="max-width:120px;">
+        <img class="org-logo" src="{{ org.logo_url }}" alt="{{ org.name }} logo">
       {% endif %}
       <h1>{{ org.name }}</h1>
       {% if org.website_url %}

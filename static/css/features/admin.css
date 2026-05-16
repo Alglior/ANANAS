@@ -1,0 +1,207 @@
+/* ────────────────────────────────────────────
+   Admin dashboard styles
+   ──────────────────────────────────────────── */
+
+.admin-page {
+  padding: var(--space-xl) 0;
+}
+
+.admin-section {
+  min-height: calc(100vh - 200px);
+}
+
+/* Admin navigation bar */
+.admin-nav {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border-light);
+  padding-bottom: 0.5rem;
+}
+
+.admin-nav a {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.admin-nav a:hover {
+  background: var(--surface-gray);
+  color: var(--forest);
+}
+
+.admin-nav a.active {
+  color: var(--forest);
+  border-bottom: 2px solid var(--forest);
+  font-weight: 700;
+}
+
+/* Admin form elements */
+.admin-form-inline {
+  display: inline;
+}
+
+.admin-btn-action {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.75rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--white);
+  margin: 2px;
+  transition: opacity 0.15s ease;
+}
+
+.admin-btn-action:hover {
+  opacity: 0.85;
+}
+
+.admin-btn-resolve {
+  background: #28a745;
+}
+
+.admin-btn-resolve:hover {
+  opacity: 0.85;
+}
+
+.admin-btn-dismiss {
+  background: #6c757d;
+}
+
+.admin-btn-dismiss:hover {
+  opacity: 0.85;
+}
+
+/* Filter navigation bar (status/type selectors) */
+.admin-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border-light);
+  padding-bottom: 0.5rem;
+}
+
+.admin-filters a {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.admin-filters a:hover {
+  background: var(--surface-gray);
+  color: var(--forest);
+}
+
+.admin-filters a.active {
+  color: var(--forest);
+  border-bottom: 2px solid var(--forest);
+  font-weight: 700;
+}
+
+/* Admin table actions cell */
+.admin-actions-cell {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Small buttons for table actions */
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btn-danger:hover {
+  opacity: 0.85;
+}
+
+.btn-soft-unban {
+  background: #17a2b8;
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btn-soft-unban:hover {
+  opacity: 0.85;
+}
+
+/* ── Moderation panel styles ── */
+
+.moderation-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.mod-panel {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.mod-panel h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: var(--forest);
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.type-geodonnee {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.type-carte {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.type-application {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.loading-cell,
+.empty-cell {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+.btn-danger-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+

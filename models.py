@@ -330,6 +330,20 @@ class Report(db.Model):
     reviewer = relationship("User", foreign_keys=[reviewed_by])
 
 
+class AdminAudit(db.Model):
+    __tablename__ = "admin_audit"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    admin_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+    action_type: Mapped[str]  # ban, unban, report_resolve, report_dismiss, item_publish, item_unpublish, user_verify
+    target_type: Mapped[str | None]  # 'user', 'item', 'report'
+    target_id: Mapped[int | None]
+    details: Mapped[str | None] = mapped_column(JSON, server_default="{}")
+    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
+
+    admin = relationship("User", foreign_keys=[admin_user_id])
+
+
 # ─── Back-references sur User et Item ───
 
 User.data_chunks = relationship("DataChunk", back_populates="owner")

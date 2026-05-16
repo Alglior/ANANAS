@@ -57,6 +57,7 @@ def profil_page():
         title="A.N.A.N.A.S. | Mon profil",
         meta_description="Consultez et modifiez votre profil A.N.A.N.A.S.",
         user=current_user,
+        current_user=current_user,
         rating_count=rating_count,
         org_memberships=org_memberships,
         data_chunks=data_chunks,

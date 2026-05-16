@@ -83,21 +83,5 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const tabs = document.querySelectorAll('.tab-btn');
-  const panels = document.querySelectorAll('.tab-panel');
-
-  tabs.forEach(function(tab) {
-    tab.addEventListener('click', function() {
-      tabs.forEach(function(t) { t.classList.remove('tab-active'); });
-      panels.forEach(function(p) { p.classList.remove('tab-panel-active'); });
-
-      tab.classList.add('tab-active');
-      const panelId = 'panel-' + tab.getAttribute('data-tab');
-      document.getElementById(panelId).classList.add('tab-panel-active');
-    });
-  });
-});
-</script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/users/activite.js') }}"></script>
 {% endblock %}

@@ -20,6 +20,7 @@ services:
     volumes:
       - secret_key:/app/.secret   # persist .secret file across container rebuilds
 
+
 # ─── PostgreSQL (official image, no custom build) ───
   postgres:
     image: postgres:18-alpine

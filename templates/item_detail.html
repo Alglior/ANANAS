@@ -273,7 +273,7 @@
       <section class="report-section">
         <button id="open-report-modal">🚩 Signaler ce contenu</button>
 
-        <div id="reportModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;" data-target-type="{{ item.report_type or 'geodonnee' }}" data-target-id="{{ item.id }}">
+        <div id="reportModal" class="modal modal-backdrop" data-target-type="{{ item.report_type or 'geodonnee' }}" data-target-id="{{ item.id }}">
           <div class="modal-box">
             <h3>Signaler ce contenu</h3>
             <form id="reportForm">
@@ -341,9 +341,5 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    StarRatingModule.init();
-  });
-</script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/item/detail.js') }}"></script>
 {% endblock %}

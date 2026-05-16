@@ -9,9 +9,9 @@ document.addEventListener('DOMContentLoaded', function() {
       const count = Math.min(lines.length, MAX_LINES);
       dataLineCount.textContent = `${count} ligne(s) / ${MAX_LINES} max`;
       if (lines.length > MAX_LINES) {
-        dataLineCount.style.color = 'var(--error-red)';
+        dataLineCount.classList.add('color-error');
       } else {
-        dataLineCount.style.color = 'var(--text-muted)';
+        dataLineCount.classList.remove('color-error');
       }
     }
 
@@ -68,9 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (addMagnetBtn) {
     addMagnetBtn.addEventListener('click', function() {
       const entry = document.createElement('div');
-      entry.className = 'form-row magnet-entry';
-      entry.style.marginBottom = '10px';
-      entry.style.gap = '10px';
+      entry.className = 'form-row magnet-entry magnet-entry-block';
 
       const magnetInput = document.createElement('input');
       magnetInput.type = 'text';
@@ -119,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
         uploadStatus.textContent = 'Veuillez coller vos données';
         uploadStatus.className = 'form-status form-error';
         uploadBtn.disabled = false;
-        uploadProgress.style.display = 'none';
+        uploadProgress.classList.add('hidden-section');
         return;
       }
 
@@ -134,11 +132,11 @@ document.addEventListener('DOMContentLoaded', function() {
       if (dataFormatLevel.value === 'pack') {
         const magnetLink = document.getElementById('magnet_link').value;
         if (!magnetLink) {
-          uploadStatus.textContent = 'Le lien Magnet est requis';
-          uploadStatus.className = 'form-status form-error';
-          uploadBtn.disabled = false;
-          uploadProgress.style.display = 'none';
-          return;
+         uploadStatus.textContent = 'Le lien Magnet est requis';
+            uploadStatus.className = 'form-status form-error';
+            uploadBtn.disabled = false;
+            uploadProgress.classList.add('hidden-section');
+            return;
         }
         formData.append('magnet_link', magnetLink);
       } else {
@@ -178,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
             uploadStatus.textContent = data.error || 'Erreur téléversement';
             uploadStatus.className = 'form-status form-error';
             uploadBtn.disabled = false;
-            uploadProgress.style.display = 'none';
+            uploadProgress.classList.add('hidden-section');
             return;
           }
 
@@ -227,14 +225,15 @@ document.addEventListener('DOMContentLoaded', function() {
           const itemData = await itemResponse.json();
 
           if (!itemResponse.ok) {
-            uploadStatus.textContent = itemData.error || 'Erreur création de l\'item';
-            uploadStatus.className = 'form-status form-error';
-            uploadBtn.disabled = false;
-            uploadProgress.style.display = 'none';
-            return;
+        uploadStatus.textContent = itemData.error || 'Erreur création de l\'item';
+             uploadStatus.className = 'form-status form-error';
+             uploadBtn.disabled = false;
+             uploadProgress.classList.add('hidden-section');
+             return;
           }
 
-          progressBar.style.width = '100%';
+          progressBar.classList.add('progress-complete');
+          progressBar.classList.remove('progress-error');
           progressText.textContent = 'Données publiées avec succès !';
           uploadStatus.textContent = 'Publication terminée';
           uploadStatus.className = 'form-status form-success';
@@ -243,24 +242,24 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = '/catalogue/item/' + itemData.id;
           }, 1500);
         } else {
-          progressBar.style.width = '30%';
+          progressBar.classList.remove('progress-complete');
           progressBar.classList.add('progress-error');
           progressText.textContent = 'Échec du téléversement';
           uploadStatus.textContent = data.error || 'Erreur inconnue';
           uploadStatus.className = 'form-status form-error';
           setTimeout(() => {
-            uploadProgress.style.display = 'none';
+            uploadProgress.classList.add('hidden-section');
             uploadBtn.disabled = false;
           }, 4000);
         }
       } catch (err) {
-        progressBar.style.width = '30%';
+        progressBar.classList.remove('progress-complete');
         progressBar.classList.add('progress-error');
         progressText.textContent = 'Erreur réseau';
         uploadStatus.textContent = 'Erreur de communication';
         uploadStatus.className = 'form-status form-error';
         setTimeout(() => {
-          uploadProgress.style.display = 'none';
+          uploadProgress.classList.add('hidden-section');
           uploadBtn.disabled = false;
         }, 4000);
       }

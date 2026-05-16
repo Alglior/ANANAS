@@ -279,3 +279,51 @@
   color: var(--text-muted);
   font-size: 0.95rem;
 }
+
+/* ────────────────────────────────────────────
+   Organization page styles
+   ──────────────────────────────────────────── */
+
+.org-page {
+  padding: var(--space-xl) 0;
+}
+
+.org-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.org-header h1 {
+  color: var(--forest);
+  margin-top: 0.5rem;
+}
+
+.org-logo {
+  max-width: 120px;
+  height: auto;
+}
+
+.org-members,
+.org-items {
+  margin-top: 2rem;
+}
+
+.org-members h2,
+.org-items h2 {
+  color: var(--forest);
+  margin-bottom: 1rem;
+}
+
+.member-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--surface-gray);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.member-card span {
+  font-weight: 600;
+}

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<main class="admin-page">
+  <section class="admin-section">
+    <div class="container">
+      <nav class="admin-nav">
+        <a href="/admin/users" {% if 'Utilisateurs' in title %}class="active"{% endif %}>Utilisateurs</a>
+        <a href="/admin/reports" {% if 'Signalements' in title %}class="active"{% endif %}>Signalements</a>
+        <a href="/admin/moderation" {% if 'Modération' in title %}class="active"{% endif %}>Modération</a>
+        <a href="/admin/audit" {% if 'Journal' in title %}class="active"{% endif %}>Journal d'audits</a>
+      </nav>
+
+      <div class="moderation-section">
+        <!-- Comments Moderation -->
+        <div class="mod-panel">
+          <h2>Commentaires</h2>
+          <div class="admin-filters" id="comment-filters">
+            <a href="javascript:void(0)" data-type="all" class="active">Tous</a>
+            <a href="javascript:void(0)" data-type="recent" data-days="7">7 derniers jours</a>
+            <a href="javascript:void(0)" data-type="old">Anciens</a>
+          </div>
+          <table id="comments-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Auteur</th>
+                <th>Contenu</th>
+                <th>Article lié</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="comments-tbody">
+              <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Items Moderation -->
+        <div class="mod-panel">
+          <h2>Cartes, Applications &amp; Données</h2>
+          <div class="admin-filters" id="item-filters">
+            <a href="/catalogue" data-type="all" class="active">Tous</a>
+            <a href="/catalogue/donnees" data-type="geodonnee">Données</a>
+            <a href="/catalogue/cartes" data-type="carte">Cartes</a>
+            <a href="/catalogue/applications" data-type="application">Applications</a>
+          </div>
+          <table id="items-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Titre</th>
+                <th>Auteur</th>
+                <th>Publié</th>
+                <th>Vérification</th>
+                <th>Commentaires</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="items-tbody">
+              <tr><td colspan="9" class="loading-cell">Chargement...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/moderation.js') }}"></script>
+{% endblock %}

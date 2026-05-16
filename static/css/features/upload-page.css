@@ -314,6 +314,17 @@
   display: none;
 }
 
+.magnet-entry-block {
+  margin-bottom: 10px;
+  gap: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.color-error {
+  color: var(--error-red);
+}
+
 .mt-10 {
   margin-bottom: 10px;
 }

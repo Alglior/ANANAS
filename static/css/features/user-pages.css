@@ -515,3 +515,36 @@
   font-size: 1rem;
   margin-bottom: 1rem;
 }
+
+/* ==========================================
+   Admin panel card on profile page
+   ========================================== */
+
+.profil-admin {
+  background: linear-gradient(135deg, rgba(34, 139, 34, 0.05), rgba(218, 165, 32, 0.05));
+  border: 2px solid var(--mustard);
+  padding: 1.25rem;
+}
+
+.profil-admin h3 {
+  color: var(--forest) !important;
+  margin-bottom: 0.75rem;
+}
+
+.admin-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  background: var(--forest);
+  color: var(--white);
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.admin-link:hover {
+  background: var(--hover-forest);
+  transform: translateY(-1px);
+}
