@@ -61,6 +61,26 @@ def _build_page_numbers(current, total):
     return pages
 
 
+def user_owns_item_or_admin(current_user, item):
+    if not current_user or not item:
+        return False
+    from models import OrganizationMember
+
+    if getattr(current_user, "is_admin", False):
+        return True
+    if getattr(item, "author_name", None) and current_user:
+        full_name = f"{current_user.prenom} {current_user.nom}"
+        if item.author_name == full_name:
+            return True
+    if getattr(item, "organization_id", None):
+        membership = OrganizationMember.query.filter_by(
+            user_id=current_user.id, organization_id=item.organization_id
+        ).first()
+        if membership and membership.is_active:
+            return True
+    return False
+
+
 def _generate_secret_key():
     return token_hex(32)
 

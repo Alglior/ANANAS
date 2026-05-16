@@ -12,6 +12,7 @@ from utils.security import sanitize_html, validate_external_url
 
 db = SQLAlchemy()
 migrate = Migrate()
+limiter = Limiter(key_func=get_remote_address, default_limits=["100 per hour"])
 
 
 def create_app(app_name="ANANAS"):
@@ -45,25 +46,20 @@ def create_app(app_name="ANANAS"):
                     return jsonify({"error": "Token CSRF requis pour les requêtes API"}), 422
 
     # Rate limiting pour prévenir le brute-force sur les routes d'authentification
-    limiter = Limiter(
-        app=app,
-        key_func=get_remote_address,
-        default_limits=["100 per hour"]
-    )
+    limiter.init_app(app)
 
     # ────────────────────────────────────────────
     #  Database setup
     # ────────────────────────────────────────────
     db_uri = os.environ.get("SQLALCHEMY_DATABASE_URI", "")
     if not db_uri:
-        pg_user = os.environ.get("POSTGRES_USER", "ananas_user")
-        pg_pass = os.environ.get("POSTGRES_PASSWORD", "password")
-        pg_host = os.environ.get("POSTGRES_HOST", "postgres")
-        pg_db = os.environ.get("POSTGRES_DB", "ananas")
-        db_uri = f"postgresql+psycopg2://{pg_user}:{pg_pass}@{pg_host}:5432/{pg_db}?sslmode=prefer"
+        raise RuntimeError(
+            "CRITICAL: SQLALCHEMY_DATABASE_URI must be set via environment variable. "
+            "No fallback to defaults for security."
+        )
     elif "sslmode" not in db_uri:
         separator = "&" if "?" in db_uri else "?"
-        db_uri = f"{db_uri}{separator}sslmode=prefer"
+        db_uri = f"{db_uri}{separator}sslmode=disable"
 
     app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -86,7 +82,9 @@ def create_app(app_name="ANANAS"):
 
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password_hash, password) and user.is_active and not user.banned:
+            session.pop("_csrf_token", None)
             session["user_id"] = user.id
+            session.modified = True
             return redirect(url_for("home"))
 
         if user and (not user.is_active or user.banned):

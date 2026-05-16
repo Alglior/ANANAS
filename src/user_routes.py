@@ -7,8 +7,8 @@ from flask import Blueprint, request, render_template, redirect, url_for, sessio
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
-from app import db
-from src.shared import login_required, get_current_user
+from app import db, limiter
+from src.shared import login_required, get_current_user, user_owns_item_or_admin
 from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink
 from utils.security import validate_file_magic
 
@@ -47,7 +47,7 @@ def profil_page():
 
     uploaded_items = (
         db.session.query(Item)
-        .filter(Item.author_name.like(f"{current_user.prenom} {current_user.nom}%"))
+        .filter(Item.author_name == f"{current_user.prenom} {current_user.nom}")
         .order_by(Item.created_at.desc())
         .all()
     )
@@ -146,6 +146,7 @@ def update_profile():
 
 @bp.route("/api/users/change-password", methods=["POST"])
 @login_required
+@limiter.limit("3 per hour")
 def change_password():
     data = request.get_json()
 
@@ -257,6 +258,18 @@ def create_upload_item():
     data_format_level = (data.get("data_format_level") or request.form.get("data_format_level", "individual"))
     magnet_link = ((data.get("magnet_link") or request.form.get("magnet_link", "")).strip())
 
+    if organization_id:
+        from models import OrganizationMember, Organization
+        org = db.session.get(Organization, organization_id)
+        if not org:
+            return jsonify({"error": "Organisation introuvable"}), 404
+        if not current_user.is_admin:
+            membership = OrganizationMember.query.filter_by(
+                user_id=current_user.id, organization_id=organization_id
+            ).first()
+            if not membership or not membership.is_active:
+                return jsonify({"error": "Non autorisé à publier dans cette organisation"}), 403
+
     if not title:
         return jsonify({"error": "Titre requis"}), 400
 
@@ -335,6 +348,9 @@ def create_upload_item():
 def add_viz_link(item_id):
     current_user = get_current_user()
     item = Item.query.get_or_404(item_id)
+
+    if not user_owns_item_or_admin(current_user, item):
+        return jsonify({"error": "Non autorisé"}), 403
 
     data = request.get_json(silent=True) or {}
     name = data.get("name", "").strip()

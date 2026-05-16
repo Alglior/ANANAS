@@ -1,10 +1,29 @@
 import datetime as dt
 
-from flask import Blueprint, request, render_template, jsonify
+from flask import Blueprint, request, render_template, jsonify, redirect, url_for
 from app import db
 from src.shared import login_required, get_current_user
 
 bp = Blueprint("admin", __name__)
+
+
+def require_admin(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        current_user = get_current_user()
+        if not current_user:
+            return redirect(url_for("auth.connexion_page"))
+        if not current_user.is_admin:
+            return render_template(
+                "error.html",
+                title="Accès refusé — A.N.A.N.A.S.",
+                meta_description="Vous n'avez pas accès à cette page.",
+                message="Accès non autorisé. Vous devez être administrateur.",
+                code=403,
+            ), 403
+        return f(*args, **kwargs)
+    return decorated
 
 
 @bp.route("/api/users/<int:user_id>/ban", methods=["POST"])
@@ -97,6 +116,9 @@ def create_report():
         item = Item.query.filter_by(id=target_id, type=item_type_map[target_type]).first()
         if not item:
             return jsonify({"error": "Contenu introuvable"}), 404
+        full_name = f"{current_user.prenom} {current_user.nom}"
+        if item.author_name and item.author_name == full_name:
+            return jsonify({"error": "Impossible de signaler son propre contenu"}), 400
         report.target_item_id = target_id
 
     db.session.add(report)
@@ -169,12 +191,9 @@ def resolve_report(report_id):
 
 @bp.route("/admin/users")
 @login_required
+@require_admin
 def admin_users():
     from models import User
-
-    current_user = get_current_user()
-    if not current_user.is_admin:
-        return jsonify({"error": "Non autorisé"}), 403
 
     users = User.query.all()
     return render_template(
@@ -187,12 +206,9 @@ def admin_users():
 
 @bp.route("/admin/reports")
 @login_required
+@require_admin
 def admin_reports():
     from models import Report
-
-    current_user = get_current_user()
-    if not current_user.is_admin:
-        return jsonify({"error": "Non autorisé"}), 403
 
     status_filter = request.args.get("status", "all")
     report_type = request.args.get("type", "all")

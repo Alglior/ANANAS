@@ -73,6 +73,8 @@ def verify_item(item_id):
     from models import Item
 
     current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
     data = request.get_json(silent=True) or {}
     status = data.get("status", "")
 

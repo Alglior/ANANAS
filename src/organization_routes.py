@@ -1,8 +1,23 @@
+import re
+import string
+
 from flask import Blueprint, request, render_template, jsonify
 from app import db
 from src.shared import login_required, get_current_user, ITEMS_PER_PAGE
 
+ALLOWED_SLUG_CHARS = set(string.ascii_lowercase + string.digits + "-")
+
 bp = Blueprint("organizations", __name__)
+
+
+def sanitize_slug(name):
+    slug = name.lower().replace(" ", "-")
+    slug = re.sub(r"[^a-z0-9\-]", "", slug)
+    slug = re.sub(r"-+", "-", slug)
+    slug = slug.strip("-")
+    if len(slug) > 80:
+        slug = slug[:80]
+    return slug or "org"
 
 
 @bp.route("/api/organizations", methods=["POST"])
@@ -12,14 +27,14 @@ def create_organization():
 
     current_user = get_current_user()
     data = request.get_json(silent=True) or {}
-    name = data.get("name", "")
+    name = data.get("name", "").strip()
 
-    if not name:
-        return jsonify({"error": "Le nom est requis"}), 400
+    if not name or len(name) < 2 or len(name) > 100:
+        return jsonify({"error": "Le nom doit contenir entre 2 et 100 caractères"}), 400
 
     org = Organization(
         name=name,
-        slug=name.lower().replace(" ", "-"),
+        slug=sanitize_slug(name),
         description=data.get("description", ""),
         created_by=current_user.id,
         is_active=True,

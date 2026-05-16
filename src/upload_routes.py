@@ -4,7 +4,7 @@ from pathlib import Path
 from flask import Blueprint, request, jsonify
 from werkzeug.utils import secure_filename
 from app import db
-from src.shared import login_required, get_current_user
+from src.shared import login_required, get_current_user, user_owns_item_or_admin
 from utils.security import validate_file_magic
 
 bp = Blueprint("upload", __name__)
@@ -93,6 +93,18 @@ def create_item():
     if data_format_level not in ("pack", "individual"):
         return jsonify({"error": "data_format_level doit être 'pack' ou 'individual'"}), 400
 
+    from models import OrganizationMember, Organization
+    if organization_id:
+        org = db.session.get(Organization, organization_id)
+        if not org:
+            return jsonify({"error": "Organisation introuvable"}), 404
+        if not current_user.is_admin:
+            membership = OrganizationMember.query.filter_by(
+                user_id=current_user.id, organization_id=organization_id
+            ).first()
+            if not membership or not membership.is_active:
+                return jsonify({"error": "Non autorisé à publier dans cette organisation"}), 403
+
     item = Item(
         type=item_type,
         title=title[:300],
@@ -116,6 +128,9 @@ def add_viz_link(item_id):
 
     current_user = get_current_user()
     item = Item.query.get_or_404(item_id)
+
+    if not user_owns_item_or_admin(current_user, item):
+        return jsonify({"error": "Non autorisé"}), 403
 
     data = request.get_json(silent=True) or {}
     name = data.get("name", "").strip()
