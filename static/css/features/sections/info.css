@@ -36,14 +36,14 @@
 .info-card ul,
 .info-card ol {
   margin: 0 0 1rem;
-  padding-left: 1.25rem;
+  padding-left: calc(var(--section-gap-header) - 1rem);
 }
 
 .info-card li {
   color: var(--charcoal);
   line-height: 1.75;
   margin-bottom: 0.6rem;
-  max-width: 65ch;
+  max-width: var(--lead-max-width);
 }
 
 .info-card strong {

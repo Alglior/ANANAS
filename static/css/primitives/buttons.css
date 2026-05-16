@@ -2,13 +2,14 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid transparent;
   padding: 0.7rem 1rem;
   cursor: pointer;
   font: inherit;
   font-weight: 700;
   white-space: nowrap;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 .btn:hover {
@@ -58,10 +59,11 @@
   font-weight: 600;
   font-size: 0.95rem;
   position: absolute;
+  bottom: auto;
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  margin-top: 0.5rem;
+  margin-top: var(--copy-feedback-offset, 0.5rem);
   background: var(--white);
   padding: 0.4rem 0.8rem;
   border-radius: 6px;
@@ -70,11 +72,14 @@
   white-space: nowrap;
 }
 
-.copy-feedback-visible {
-  opacity: 1 !important;
+.copy-btn .copy-feedback {
+  --copy-feedback-offset: 0.5rem;
 }
 
-.btn.transition-hover,
-.btn-primary.transition-hover {
-  transition: background-color 0.2s ease;
+.profile-form .copy-feedback {
+  --copy-feedback-offset: -2.5rem;
+}
+
+.copy-feedback-visible {
+  opacity: 1 !important;
 }

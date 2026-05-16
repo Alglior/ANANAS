@@ -5,9 +5,9 @@
 
 {% block content %}
 <main>
-  <section class="profil-page">
-    <div class="container profil-container">
-      <div class="profil-header">
+  <section class="profile-page">
+    <div class="container profile-container">
+      <div class="profile-header">
         <h1>Mon profil</h1>
         <p>Gérez vos informations personnelles et suivez vos contributions.</p>
       </div>
@@ -20,9 +20,9 @@
         {% endif %}
       {% endwith %}
 
-      <div class="profil-layout">
-        <aside class="profil-sidebar">
-          <div class="profil-card profil-stats">
+      <div class="profile-layout">
+        <aside class="profile-sidebar">
+          <div class="profile-card profile-stats">
             <h3>Mes contributions</h3>
             <div class="stats-grid">
               <div class="stat-item stat-rating">
@@ -36,14 +36,14 @@
           </div>
 
           {% if current_user and current_user.is_admin %}
-          <div class="profil-card profil-admin">
+          <div class="profile-card admin-card">
             <h3>Panel d'administration</h3>
             <a href="/admin/users" class="btn btn-primary admin-link">Accéder au panel admin</a>
           </div>
           {% endif %}
 
           {% if org_memberships %}
-          <div class="profil-card profil-orgs">
+          <div class="profile-card profile-orgs">
             <h3>Mes organisations</h3>
             <ul class="org-list">
               {% for m in org_memberships %}
@@ -57,13 +57,13 @@
             </ul>
           </div>
           {% else %}
-          <div class="profil-card profil-orgs-empty">
+          <div class="profile-card profile-orgs-empty">
             <h3>Mes organisations</h3>
             <p class="empty-hint">Aucune organisation membre.</p>
           </div>
           {% endif %}
 
-          <div class="profil-card profil-uploads">
+          <div class="profile-card profile-uploads">
             <h3>Mes données publiées</h3>
             {% if data_chunks or uploaded_items %}
               {% if data_chunks %}
@@ -108,10 +108,10 @@
           </div>
         </aside>
 
-        <section class="profil-main">
-          <div class="profil-card">
+        <section class="profile-main">
+          <div class="profile-card">
             <h2>Informations personnelles</h2>
-            <form class="profil-form" id="profileForm">
+            <form class="profile-form" id="profileForm">
               <div class="form-row">
                 <div class="form-group">
                   <label for="prenom">Prénom</label>
@@ -135,7 +135,7 @@
             </form>
           </div>
 
-          <div class="profil-card">
+          <div class="profile-card">
             <h2>Mot de passe</h2>
             <form class="password-form" id="passwordForm">
               <div class="form-group">

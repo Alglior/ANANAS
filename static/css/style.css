@@ -1,4 +1,5 @@
 @import url("./base.css");
+@import url("./utilities/section.css");
 @import url("./primitives/buttons.css");
 @import url("./primitives/cards.css");
 @import url("./primitives/badges.css");
@@ -27,9 +28,9 @@
    Error messages (inscription / connexion)
    ──────────────────────────────────────────── */
 .error-box {
-  background: #ffe6e6;
-  border: 1px solid #dc3545;
-  border-radius: 8px;
+  background: var(--surface-error-light);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-md);
   padding: 1rem 1.25rem;
   margin-bottom: 1rem;
 }

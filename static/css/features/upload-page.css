@@ -315,30 +315,14 @@
 }
 
 .magnet-entry-block {
-  margin-bottom: 10px;
-  gap: 10px;
+  margin-bottom: var(--space-md);
+  gap: var(--space-md);
   display: flex;
   align-items: center;
 }
 
 .color-error {
   color: var(--error-red);
-}
-
-.mt-10 {
-  margin-bottom: 10px;
-}
-
-.mr-10 {
-  margin-right: 10px;
-}
-
-.mb-10 {
-  margin-bottom: 10px;
-}
-
-.gap-10 {
-  gap: 10px;
 }
 
 .hidden-file {
@@ -349,22 +333,10 @@
   width: 0;
 }
 
-.flex-2 {
-  flex: 2;
-}
-
-.flex-1 {
-  flex: 1;
-}
-
-.flex-auto {
-  flex: 0 0 auto;
-}
-
 .magnet-entry {
   display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
 }
 
 /* ── Custom file upload ── */

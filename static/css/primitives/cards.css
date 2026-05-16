@@ -36,21 +36,3 @@
 .copy-btn {
   position: relative;
 }
-
-.copy-feedback {
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  color: var(--forest);
-  font-weight: 600;
-  font-size: 0.95rem;
-  position: absolute;
-  bottom: -2.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--white);
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  pointer-events: none;
-  white-space: nowrap;
-}

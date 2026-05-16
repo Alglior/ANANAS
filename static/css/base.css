@@ -38,13 +38,37 @@
   --hover-forest-darker: #1a6b1a;
   --hover-charcoal: #4a4a4a;
 
-  /* Shadow color tokens */
-  --shadow-color-soft: rgba(0, 0, 0, 0.06);
-  --shadow-mustard-focus: 0 0 0 3px rgba(218, 165, 32, 0.15);
-  --shadow-mustard-btn: 0 6px 18px rgba(218, 165, 32, 0.3);
-  --shadow-mustard-btn-hover: 0 9px 22px rgba(218, 165, 32, 0.35);
+  /* Semantic action colors */
+  --color-success: #28a745;
+  --color-danger: #dc3545;
+  --color-info: #17a2b8;
+  --color-warning: #ffc107;
+  --color-muted: #6c757d;
+  --color-blue: #2d8cff;
+  --color-purple: #9b59b6;
 
-  /* Banderolle button colors */
+  /* Semantic surfaces */
+  --surface-success-light: #e8f5e9;
+  --surface-info-light: #e3f2fd;
+  --surface-warning-light: #fff3e0;
+  --surface-error-light: #ffe6e6;
+
+  /* Semantic text on surfaces */
+  --color-success-dark: #2e7d32;
+  --color-info-dark: #1565c0;
+  --color-warning-dark: #e65100;
+
+  /* Border radius tokens */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Section layout tokens */
+  --section-padding: 5rem;
+  --section-gap-header: 3.5rem;
+  --lead-max-width: 65ch;
+
+  /* Shadow color tokens */
   --forest-band: rgba(34, 139, 34, 0.85);
   --forest-active: #2aad2a;
   --forest-btn-hover: #2a9f2a;
@@ -61,10 +85,7 @@
   --mono: "Ubuntu Mono", "DejaVu Sans Mono", monospace;
 }
 
-/* Shared hover transitions — combine with other classes */
-.transition-hover {
-  transition: transform 0.15s ease, box-shadow 0.2s ease;
-}
+
 
 html {
   scroll-behavior: smooth;

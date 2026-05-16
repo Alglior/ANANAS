@@ -65,54 +65,77 @@
    Profile page styles
    ========================================== */
 
-.profil-page {
+.profile-page {
   padding: var(--space-xl) 0;
 }
 
-.profil-container {
+.profile-container {
   max-width: 1100px;
 }
 
-.profil-header {
+.profile-header {
   text-align: center;
   margin-bottom: 2rem;
 }
 
-.profil-header h1 {
+.profile-header h1 {
   color: var(--forest);
   margin-bottom: 0.5rem;
 }
 
-.profil-header p {
+.profile-header p {
   color: var(--specs-gray);
   font-size: 1rem;
 }
 
-.profil-layout {
+.profile-layout {
   display: grid;
   grid-template-columns: 280px 1fr;
   gap: 2rem;
 }
 
 @media (max-width: 768px) {
-  .profil-layout {
+  .profile-layout {
     grid-template-columns: 1fr;
   }
 }
 
-.profil-card {
+.profile-card {
   background: var(--white);
   border: 1px solid var(--border-light);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
-.profil-card h2,
-.profil-card h3 {
+.profile-card h2,
+.profile-card h3 {
   color: var(--forest);
   margin-top: 0;
   margin-bottom: 1rem;
+}
+
+.profile-sidebar {
+  flex-shrink: 0;
+}
+
+.profile-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.profile-stats {
+  padding: 0;
+  border: none;
+  background: transparent;
+  margin-bottom: 0;
+}
+
+.profile-orgs,
+.profile-orgs-empty,
+.profile-uploads {
+  margin-bottom: 1.5rem;
 }
 
 /* Stats sidebar */
@@ -191,7 +214,7 @@
 }
 
 /* Uploads section */
-.profil-uploads {
+.profile-uploads {
   margin-top: 0;
 }
 
@@ -259,17 +282,7 @@
   font-family: var(--mono);
 }
 
-.status-pending {
-  color: var(--mustard);
-}
 
-.status-processing {
-  color: var(--forest);
-}
-
-.status-completed {
-  color: var(--forest);
-}
 
 .upload-empty-cta {
   margin-top: 0.5rem;
@@ -278,13 +291,13 @@
 }
 
 /* Forms */
-.profil-form .form-row,
+.profile-form .form-row,
 .password-form .form-row {
   display: flex;
   gap: 1rem;
 }
 
-.profil-form .form-group,
+.profile-form .form-group,
 .password-form .form-group {
   margin-bottom: 1rem;
   flex: 1;
@@ -302,13 +315,13 @@
   color: var(--text-secondary);
 }
 
-.form-success {
-  color: var(--forest) !important;
+.form-status--success {
+  color: var(--forest);
   font-weight: 600;
 }
 
-.form-error {
-  color: var(--error-red) !important;
+.form-status--error {
+  color: var(--error-red);
   font-weight: 600;
 }
 
@@ -520,14 +533,14 @@
    Admin panel card on profile page
    ========================================== */
 
-.profil-admin {
+.admin-card {
   background: linear-gradient(135deg, rgba(34, 139, 34, 0.05), rgba(218, 165, 32, 0.05));
   border: 2px solid var(--mustard);
   padding: 1.25rem;
 }
 
-.profil-admin h3 {
-  color: var(--forest) !important;
+.admin-card h3 {
+  color: var(--forest);
   margin-bottom: 0.75rem;
 }
 

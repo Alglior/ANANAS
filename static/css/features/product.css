@@ -410,39 +410,39 @@
 
 
 
-.detail-tabs { 
-  display: flex; 
-  gap: 0.5rem; 
-  padding: 0 1rem; 
+.detail-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1rem;
   justify-content: flex-end;
-  background: var(--light-gray, #f0f0f0); 
-  border-radius: 4px; 
-  position: relative; 
-  border-bottom: 2px solid var(--forest, #2d5a27);
+  background: var(--light-gray);
+  border-radius: var(--radius-sm);
+  position: relative;
+  border-bottom: 2px solid var(--forest);
   z-index: 10;
 }
-.tab-btn { 
-  padding: 0.75rem 1.5rem; 
-  text-decoration: none; 
-  color: #333; 
-  font-size: 0.95rem; 
-  font-weight: 500; 
-  transition: all 0.2s ease; 
-  display: inline-flex; 
-  align-items: center; 
-  border-radius: 4px 4px 0 0;
+.tab-btn {
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  color: var(--charcoal);
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   margin-bottom: -2px;
   background: transparent;
 }
-.tab-btn:hover { 
+.tab-btn:hover {
   background: rgba(0,0,0,0.05);
-  color: var(--forest, #2d5a27); 
+  color: var(--forest);
 }
-.tab-btn.active { 
-  background: #fff; 
-  color: var(--forest, #2d5a27);
-  border: 2px solid var(--forest, #2d5a27);
-  border-bottom-color: #fff;
+.tab-btn.active {
+  background: var(--white);
+  color: var(--forest);
+  border: 2px solid var(--forest);
+  border-bottom-color: var(--white);
 }
 
 .download-levels-list {
@@ -462,7 +462,7 @@
 }
 
 .level-link {
-  color: #7b3fa0;
+  color: var(--color-purple);
   text-decoration: none;
   font-size: 0.825rem;
 }

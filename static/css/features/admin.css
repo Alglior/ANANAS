@@ -63,7 +63,7 @@
 }
 
 .admin-btn-resolve {
-  background: #28a745;
+  background: var(--color-success);
 }
 
 .admin-btn-resolve:hover {
@@ -71,7 +71,7 @@
 }
 
 .admin-btn-dismiss {
-  background: #6c757d;
+  background: var(--color-muted);
 }
 
 .admin-btn-dismiss:hover {
@@ -130,7 +130,7 @@
 }
 
 .btn-danger {
-  background: #dc3545;
+  background: var(--color-danger);
   color: var(--white);
   border: none;
   cursor: pointer;
@@ -142,7 +142,7 @@
 }
 
 .btn-soft-unban {
-  background: #17a2b8;
+  background: var(--color-info);
   color: var(--white);
   border: none;
   cursor: pointer;
@@ -178,24 +178,24 @@
 .type-badge {
   display: inline-block;
   padding: 0.15rem 0.5rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 0.78rem;
   font-weight: 600;
 }
 
 .type-geodonnee {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--surface-success-light);
+  color: var(--color-success-dark);
 }
 
 .type-carte {
-  background: #e3f2fd;
-  color: #1565c0;
+  background: var(--surface-info-light);
+  color: var(--color-info-dark);
 }
 
 .type-application {
-  background: #fff3e0;
-  color: #e65100;
+  background: var(--surface-warning-light);
+  color: var(--color-warning-dark);
 }
 
 .loading-cell,
