@@ -54,9 +54,7 @@ def inscription_post():
         return render_template("inscription.html", form_errors=strength_errors, password=password, email=email, prenom=prenom, nom=nom), 400
 
     if User.query.filter_by(email=email).first():
-        return render_template(
-            "inscription.html", error="Un compte avec cet e-mail existe déjà", password=password, email=email, prenom=prenom, nom=nom
-        ), 400
+        return redirect(url_for("auth.connexion_page"))
 
     user = User(
         prenom=prenom,

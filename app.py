@@ -1,3 +1,4 @@
+import datetime
 import os
 
 from src.shared import Config, _build_page_numbers, ITEMS_PER_PAGE, SECRET_FILE, login_required, get_current_user
@@ -82,8 +83,10 @@ def create_app(app_name="ANANAS"):
 
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password_hash, password) and user.is_active and not user.banned:
+            session.clear()
             session.pop("_csrf_token", None)
             session["user_id"] = user.id
+            session["_auth_time"] = datetime.datetime.now().isoformat()
             session.modified = True
             return redirect(url_for("home"))
 

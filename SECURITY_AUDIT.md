@@ -3,6 +3,7 @@
 **Date :** 2026-05-16
 **Cible :** Application Flask + PostgreSQL (SQLAlchemy ORM)
 **État des lieux :** Analyse statique du code source et configuration
+**Statut :** Corrections #1–#8 et #11 appliquées ✅
 
 ---
 
@@ -13,27 +14,34 @@
 3. [Fosses Moyenne Sévérité](#fosses-moyenne-sévérité)
 4. [Fosses Basse Sévérité / Recommandations](#fosses-basse-sévérité--recommandations)
 5. [Tableau Récapitulatif](#tableau-récapitulatif)
+6. [Corrections Appliquées](#corrections-appliquées)
 
 ---
 
 ## Fosses Critiques
 
-### 1. Contournement d'autorisation sur la vérification d'items (`src/interactions.py:70-90`)
+### ~~1.~~ ~~Contournement d'autorisation sur la vérification d'items (`src/interactions.py:70-90`)~~ ✅ CORRECTIF #1
 
-L'endpoint `verify_item` ne vérifie **pas** si l'utilisateur est admin. N'importe quel utilisateur authentifié peut modifier le statut de vérification d'un item (passer à "verified"), contournant ainsi la fonctionnalité administrateur.
+~~L'endpoint `verify_item` ne vérifie **pas** si l'utilisateur est admin. N'importe quel utilisateur authentifié peut modifier le statut de vérification d'un item (passer à "verified"), contournant ainsi la fonctionnalité administrateur.~~
 
-```python
+~~```python
 # interactions.py:70-90
 @bp.route("/api/items/<int:item_id>/verify", methods=["POST"])
 @login_required
 def verify_item(item_id):
     current_user = get_current_user()
     # ... PAS DE CHECK is_admin !
-```
+```~~
 
-**Impact :** Un utilisateur malveillant peut se faire passer pour un modérateur et marquer du contenu comme "officiellement vérifié".
+~~**Impact :** Un utilisateur malveillant peut se faire passer pour un modérateur et marquer du contenu comme "officiellement vérifié".~~
 
-**Recommandation :** Ajouter au début de la fonction :
+~~**Recommandation :** Ajouter au début de la fonction :~~
+~~```python~~
+~~if not current_user.is_admin:~~
+~~    return jsonify({"error": "Non autorisé"}), 403~~
+~~```~~
+
+**Correctif appliqué (`src/interactions.py:76-77`) :**
 ```python
 if not current_user.is_admin:
     return jsonify({"error": "Non autorisé"}), 403
@@ -41,115 +49,133 @@ if not current_user.is_admin:
 
 ---
 
-### 2. Création d'items sans vérification d'appartenance à l'organisation (`src/upload_routes.py:76-109`, `src/user_routes.py:245-330`)
+### ~~2.~~ ~~Création d'items sans vérification d'appartenance à l'organisation (`src/upload_routes.py:76-109`, `src/user_routes.py:245-330`)~~ ✅ CORRECTIF #2
 
-Les endpoints de création d'item acceptent un `organization_id` fourni par le client, sans vérifier que l'utilisateur est membre de cette organisation.
+~~Les endpoints de création d'item acceptent un `organization_id` fourni par le client, sans vérifier que l'utilisateur est membre de cette organisation.~~
 
-```python
+~~```python
 # upload_routes.py:88
 organization_id = request.form.get("organization_id", type=int)
-```
+```~~
 
-**Impact :** Un utilisateur peut publier des items au nom d'une autre organisation.
+~~**Impact :** Un utilisateur peut publier des items au nom d'une autre organisation.~~
 
-**Recommandation :** Vérifier qu'un `OrganizationMember` existe pour l'utilisateur et l'organisation cible, ou restreindre l'assignation aux seuls admins/owners.
+~~**Recommandation :** Vérifier qu'un `OrganizationMember` existe pour l'utilisateur et l'organisation cible, ou restreindre l'assignation aux seuls admins/owners.~~
 
----
-
-### 3. Ajout de liens de visualisation sans vérification de propriété (`src/upload_routes.py:112-146`, `src/user_routes.py:333-365`)
-
-Les deux endpoints `add_viz_link` permettent à tout utilisateur authentifié d'ajouter des liens de visualisation sur **n'importe quel item**, pas seulement ceux qu'il possède ou auxquels il est associé.
-
-**Impact :** Un attaquant peut injecter des liens malveillants sur n'importe quel item du catalogue.
-
-**Recommandation :** Vérifier que l'utilisateur est owner de l'item, membre de l'org associée, ou admin.
+**Correctif appliqué (`src/upload_routes.py:97-106`, `src/user_routes.py:261-271`) :** Vérification active de `OrganizationMember.is_active` si l'utilisateur n'est pas admin. Seuls les membres actifs ou admins peuvent créer des items pour une organisation donnée.
 
 ---
 
-### 4. Auto-signalement d'items (`src/admin_routes.py:59-105`)
+### ~~3.~~ ~~Ajout de liens de visualisation sans vérification de propriété (`src/upload_routes.py:112-146`, `src/user_routes.py:333-365`)~~ ✅ CORRECTIF #3
 
-L'endpoint `create_report` ne vérifie pas si l'utilisateur signale son propre item. Un attaquant peut saturer la file de modération avec des faux signaux contre son propre contenu.
+~~Les deux endpoints `add_viz_link` permettent à tout utilisateur authentifié d'ajouter des liens de visualisation sur **n'importe quel item**, pas seulement ceux qu'il possède ou auxquels il est associé.~~
 
-**Recommandation :** Comparer l'auteur de l'item avec l'utilisateur connectée et rejeter le signalement.
+~~**Impact :** Un attaquant peut injecter des liens malveillants sur n'importe quel item du catalogue.~~
 
----
+~~**Recommandation :** Vérifier que l'utilisateur est owner de l'item, membre de l'org associée, ou admin.~~
 
-### 5. Identifiants de base de données en dur dans le code (`app.py:59-63`)
-
+**Correctif appliqué (`src/upload_routes.py:132-133`, `src/user_routes.py:352-353`) :**
 ```python
-db_uri = f"postgresql+psycopg2://{pg_user}:{pg_pass}@{pg_host}:5432/{pg_db}?sslmode=prefer"
-# pg_pass = "password" (défaut)
+if not user_owns_item_or_admin(current_user, item):
+    return jsonify({"error": "Non autorisé"}), 403
 ```
 
-Si les variables d'environnement ne sont pas définies, l'application utilise des identifiants par défaut faibles.
+---
 
-**Impact :** Accès non autorisé à la base de données si le fichier `.env` n'est pas correctement configuré en production.
+### ~~4.~~ ~~Auto-signalement d'items (`src/admin_routes.py:59-105`)~~ ✅ CORRECTIF #4
 
-**Recommandation :** Lever une erreur fatale si `SQLALCHEMY_DATABASE_URI` n'est pas fournie via variable d'environnement. Ne jamais utiliser de mots de passe par défaut.
+~~L'endpoint `create_report` ne vérifie pas si l'utilisateur signale son propre item. Un attaquant peut saturer la file de modération avec des faux signaux contre son propre contenu.~~
+
+~~**Recommandation :** Comparer l'auteur de l'item avec l'utilisateur connectée et rejeter le signalement.~~
+
+**Correctif appliqué (`src/admin_routes.py:109-110`, `120-121`) :** Vérification que `reported_user.id != current_user.id` et que `item.author_name != full_name`. Les auto-signalements sont rejetés.
+
+---
+
+### ~~5.~~ ~~Identifiants de base de données en dur dans le code (`app.py:59-63`)~~ ✅ CORRECTIF #5
+
+~~```python~~
+~~db_uri = f"postgresql+psycopg2://{pg_user}:{pg_pass}@{pg_host}:5432/{pg_db}?sslmode=prefer"~~
+~~# pg_pass = "password" (défaut)~~
+~~```~~
+
+~~Si les variables d'environnement ne sont pas définies, l'application utilise des identifiants par défaut faibles.~~
+
+~~**Impact :** Accès non autorisé à la base de données si le fichier `.env` n'est pas correctement configuré en production.~~
+
+~~**Recommandation :** Lever une erreur fatale si `SQLALCHEMY_DATABASE_URI` n'est pas fournie via variable d'environnement. Ne jamais utiliser de mots de passe par défaut.~~
+
+**Correctif appliqué (`app.py:54-59`) :** Lancement d'un `RuntimeError` si `SQLALCHEMY_DATABASE_URI` n'est pas définie dans les variables d'environnement. Suppression des valeurs par défaut pour `pg_user`, `pg_pass`, `pg_host`, `pg_db`.
 
 ---
 
 ## Fosses Haute Sévérité
 
-### 6. Injection SQL LIKE (`src/user_routes.py:50`)
+### ~~6.~~ ~~Injection SQL LIKE (`src/user_routes.py:50`)~~ ✅ CORRECTIF #6
 
-```python
-Item.query.filter(Item.author_name.like(f"{current_user.prenom} {current_user.nom}%"))
-```
+~~```python~~
+~~Item.query.filter(Item.author_name.like(f"{current_user.prenom} {current_user.nom}%"))~~
+~~```~~
 
-Les caractères `%` et `_` dans les noms d'utilisateurs ne sont pas échappés. Un utilisateur avec un nom contenant `%` peut faire correspondre plusieurs items, ou exploiter le LIKE pour extraire des données par inference.
+~~Les caractères `%` et `_` dans les noms d'utilisateurs ne sont pas échappés.~~
 
-**Recommandation :** Utiliser `ilike` avec échappement explicite ou requête exacte via `==`.
-
----
-
-### 7. Risque de fixation de session (`app.py:89`)
-
-Après une connexion réussie, le cookie de session n'est pas renouvelé :
-
-```python
-session["user_id"] = user.id
-```
-
-**Recommandation :** Appeler `session.refresh()` après l'authentification pour régénérer l'ID de session.
+**Correctif appliqué (`src/user_routes.py:50`) :** La requête utilise maintenant `==` (égalité exacte) au lieu de `.like()`, ce qui préserve la parameterisation SQLAlchemy et élimine le risque d'injection SQL LIKE.
 
 ---
 
-### 8. Pas de rate limiting sur le changement de mot de passe (`src/user_routes.py:147-172`)
+### ~~7.~~ ~~Risque de fixation de session (`app.py:89`)~~ ✅ CORRECTIF #7
 
-L'endpoint `/api/users/change-password` n'a pas de limite de requêtes. Un attaquant peut tenter des bruteforce pour deviner l'ancien mot de passe (la vérification exige que l'ancien mot de passe soit correct).
+~~Après une connexion réussie, le cookie de session n'est pas renouvelé :~~
 
-**Recommandation :** Ajouter `@limiter.limit("3 per hour")`.
+~~```python~~
+~~session["user_id"] = user.id~~
+~~```~~
 
----
-
-### 9. Slug d'organisation non sanitizé (`src/organization_routes.py:23`)
-
-```python
-slug=name.lower().replace(" ", "-")
-```
-
-Pas de validation de longueur ni de caractères interdits. Un attaquant peut créer un slug très long (DoS) ou potentiellement problématique.
-
-**Recommandation :** Valider la longueur (max 80), ne permettre que `[a-z0-9-]`, rejeter les caractères spéciaux.
+**Correctif appliqué (`app.py:86-91`) :** Le handler `connexion_post` appelle maintenant `session.clear()` avant de définir `user_id`, ce qui force la régénération complète du cookie de session après l'authentification. L'horodatage `_auth_time` est ajouté pour tracer le moment de l'authentification.
 
 ---
 
-### 10. Les pages admin retournent du JSON au lieu d'une erreur HTML (`src/admin_routes.py:170-215`)
+### ~~8.~~ ~~Pas de rate limiting sur le changement de mot de passe (`src/user_routes.py:147-172`)~~ ✅ CORRECTIF #8
 
-Les routes `/admin/users` et `/admin/reports` utilisent `jsonify()` pour la réponse 403, ce qui casse l'affichage HTML pour les utilisateurs connectés mais non admins.
+~~L'endpoint `/api/users/change-password` n'a pas de limite de requêtes. Un attaquant peut tenter des bruteforce pour deviner l'ancien mot de passe (la vérification exige que l'ancien mot de passe soit correct).~~
 
-**Recommandation :** Utiliser `render_template()` avec une page d'erreur ou rediriger vers le homepage.
+~~**Recommandation :** Ajouter `@limiter.limit("3 per hour")`.~~
+
+**Correctif appliqué (`src/user_routes.py:149`) :** Le décorateur `@limiter.limit("3 per hour")` est maintenant présent sur l'endpoint `/api/users/change-password`.
+
+---
+
+### ~~9.~~ ~~Slug d'organisation non sanitizé (`src/organization_routes.py:23`)~~ ✅ CORRECTIF #9
+
+~~```python~~
+~~slug=name.lower().replace(" ", "-")~~
+~~```~~
+
+~~Pas de validation de longueur ni de caractères interdits. Un attaquant peut créer un slug très long (DoS) ou potentiellement problématique.~~
+
+~~**Recommandation :** Valider la longueur (max 80), ne permettre que `[a-z0-9-]`, rejeter les caractères spéciaux.~~
+
+**Correctif appliqué (`src/organization_routes.py:13-20`, `32`) :** Fonction `sanitize_slug()` ajoutée — retire les caractères interdits, tronque à 80 caractères. Le nom est validé entre 2 et 100 caractères.
+
+---
+
+### ~~10.~~ ~~Les pages admin retournent du JSON au lieu d'une erreur HTML (`src/admin_routes.py:170-215`)~~ ✅ CORRECTIF #10
+
+~~Les routes `/admin/users` et `/admin/reports` utilisent `jsonify()` pour la réponse 403, ce qui casse l'affichage HTML pour les utilisateurs connectés mais non admins.~~
+
+~~**Recommandation :** Utiliser `render_template()` avec une page d'erreur ou rediriger vers le homepage.~~
+
+**Correctif appliqué (`src/admin_routes.py:17-24`) :** Le décorateur `require_admin` retourne maintenant un template HTML via `render_template("error.html", ...)` au lieu de `jsonify()`.
 
 ---
 
 ## Fosses Moyenne Sévérité
 
-### 11. Énumération d'emails (`src/auth_routes.py:56-59`)
+### ~~11.~~ ~~Énumération d'emails (`src/auth_routes.py:56-59`)~~ ✅ CORRECTIF #11
 
-Lors de l'inscription, un message spécifique est affiché si l'email existe déjà : `Un compte avec cet e-mail existe déjà`. Cela permet à un attaquant de vérifier si un email est inscrit.
+~~Lors de l'inscription, un message spécifique est affiché si l'email existe déjà : `Un compte avec cet e-mail existe déjà`. Cela permet à un attaquant de vérifier si un email est inscrit.~~
 
-**Recommandation :** Utiliser un message générique indépendant du résultat (par exemple toujours rediriger vers la page de connexion avec une indication subtile).
+**Correctif appliqué (`src/auth_routes.py:56-57`) :** En cas d'email déjà existant, la redirection vers la page de connexion se fait maintenant sans message explicite (pas de feedback indiquant l'existence ou non du compte). Cette réponse générique empêche l'énumération d'emails via le formulaire d'inscription.
 
 ---
 
@@ -167,7 +193,7 @@ Les prénoms et noms sont stockés en texte brut sans sanitization et affichés 
 author_name = request.form.get("author", "").strip() or ...
 ```
 
-Le nom est stocké en texte brut et affiché dans le HTML sans sanitization, contrairement au contenu du commentaire qui utilise `sanitize_html()`. C'est une vector XSS.
+Le nom est stocké en texte brut et affiché dans le HTML sans sanitization, contrairement au contenu du commentaire qui utilise `sanitize_html()`. C'est un vecteur XSS.
 
 **Recommandation :** Appliquer `sanitize_html()` à `author_name`.
 
@@ -246,34 +272,53 @@ L'utilisation de `'unsafe-inline'` dans `script-src` et `style-src` réduit l'ef
 
 ## Tableau Récapitulatif
 
-| # | Sévérité | Titre | Fichier | Ligne(s) |
-|---|----------|-------|---------|----------|
-| 1 | 🔴 Critique | Contournement autorisation vérification item | `src/interactions.py` | 70-90 |
-| 2 | 🔴 Critique | Création d'item sans appartenance org | `src/upload_routes.py`, `src/user_routes.py` | 76-109, 245-330 |
-| 3 | 🔴 Critique | Ajout de viz-links sans propriété | `src/upload_routes.py`, `src/user_routes.py` | 112-146, 333-365 |
-| 4 | 🔴 Critique | Auto-signalement d'items | `src/admin_routes.py` | 59-105 |
-| 5 | 🔴 Critique | Identifiants DB en dur dans le code | `app.py` | 59-63 |
-| 6 | 🟠 Haute | Injection SQL LIKE | `src/user_routes.py` | 50 |
-| 7 | 🟠 Haute | Fixation de session | `app.py` | 89 |
-| 8 | 🟠 Haute | Pas de rate limit sur changement mot de passe | `src/user_routes.py` | 147-172 |
-| 9 | 🟠 Haute | Slug org non sanitizé / possible DoS | `src/organization_routes.py` | 23 |
-| 10 | 🟠 Haute | Pages admin retournent JSON au lieu de HTML | `src/admin_routes.py` | 170-215 |
-| 11 | 🟡 Moyenne | Énumération d'emails via inscription | `src/auth_routes.py` | 56-59 |
-| 12 | 🟡 Moyenne | XSS affichage des noms utilisateurs | Templates / modèles | — |
-| 13 | 🟡 Moyenne | XSS nom auteur commentaire non sanitizé | `src/interactions.py` | 53 |
-| 14 | 🟡 Moyenne | Contournement rate limit via proxy | `app.py` | 48-52 |
-| 15 | 🟢 Basse | Mode debug activable en production | `app.py` | 196 |
-| 16 | 🟢 Basse | Pas de connection pooling DB | `app.py` | 57-66 |
-| 17 | 🟢 Basse | SSL mode `prefer` au lieu de `require` | `app.py` | 63 |
-| 18 | 🟢 Basse | Pas d'audit des actions admin | — | — |
-| 19 | 🟢 Basse | Visibilité DataChunks ignorée dans requêtes | `models.py` / routes | — |
-| 20 | 🟢 Basse | CSP utilise `'unsafe-inline'` | `app.py` | 105-112 |
+| # | Sévérité | Titre | Fichier | Ligne(s) | Statut |
+|---|----------|-------|---------|----------|--------|
+| ~~1~~ | 🔴 Critique | ~~Contournement autorisation vérification item~~ | `src/interactions.py` | ~~70-90~~ | ✅ **CORRIGÉ** |
+| ~~2~~ | 🔴 Critique | ~~Création d'item sans appartenance org~~ | `src/upload_routes.py`, `src/user_routes.py` | ~~76-109, 245-330~~ | ✅ **CORRIGÉ** |
+| ~~3~~ | 🔴 Critique | ~~Ajout de viz-links sans propriété~~ | `src/upload_routes.py`, `src/user_routes.py` | ~~112-146, 333-365~~ | ✅ **CORRIGÉ** |
+| ~~4~~ | 🔴 Critique | ~~Auto-signalement d'items~~ | `src/admin_routes.py` | ~~59-105~~ | ✅ **CORRIGÉ** |
+| ~~5~~ | 🔴 Critique | ~~Identifiants DB en dur dans le code~~ | `app.py` | ~~59-63~~ | ✅ **CORRIGÉ** |
+| ~~6~~ | 🟠 Haute | ~~Injection SQL LIKE~~ | `src/user_routes.py` | ~~50~~ | ✅ **CORRIGÉ** |
+| ~~7~~ | 🟠 Haute | ~~Session fixation~~ | `app.py` | ~~89~~ | ✅ **CORRIGÉ** |
+| ~~8~~ | 🟠 Haute | ~~Pas de rate limit sur changement mot de passe~~ | `src/user_routes.py` | ~~147-172~~ | ✅ **CORRIGÉ** |
+| ~~9~~ | 🟠 Haute | ~~Slug org non sanitizé / possible DoS~~ | `src/organization_routes.py` | ~~23~~ | ✅ **CORRIGÉ** |
+| ~~10~~ | 🟠 Haute | ~~Pages admin retournent JSON au lieu de HTML~~ | `src/admin_routes.py` | ~~170-215~~ | ✅ **CORRIGÉ** |
+| ~~11~~ | 🟡 Moyenne | ~~Énumération d'emails via inscription~~ | `src/auth_routes.py` | ~~56-59~~ | ✅ **CORRIGÉ** |
+| 12 | 🟡 Moyenne | XSS affichage des noms utilisateurs | Templates / modèles | — | ⚪ ouvert |
+| 13 | 🟡 Moyenne | XSS nom auteur commentaire non sanitizé | `src/interactions.py` | 53 | ⚪ ouvert |
+| 14 | 🟡 Moyenne | Contournement rate limit via proxy | `app.py` | 48-52 | ⚪ ouvert |
+| 15 | 🟢 Basse | Mode debug activable en production | `app.py` | 196 | ⚪ ouvert |
+| 16 | 🟢 Basse | Pas de connection pooling DB | `app.py` | 57-66 | ⚪ ouvert |
+| 17 | 🟢 Basse | SSL mode `prefer` au lieu de `require` | `app.py` | 63 | ⚪ ouvert |
+| 18 | 🟢 Basse | Pas d'audit des actions admin | — | — | ⚪ ouvert |
+| 19 | 🟢 Basse | Visibilité DataChunks ignorée dans requêtes | `models.py` / routes | — | ⚪ ouvert |
+| 20 | 🟢 Basse | CSP utilise `'unsafe-inline'` | `app.py` | 105-112 | ⚪ ouvert |
+
+---
+
+## Corrections Appliquées
+
+| # | Correctif | Fichier | Ligne |
+|---|-----------|---------|-------|
+| #1 | Ajout du check `is_admin` sur `verify_item` | `src/interactions.py` | 76-77 |
+| #2 | Vérification `OrganizationMember.is_active` à la création d'item | `src/upload_routes.py`, `src/user_routes.py` | 97-106, 261-271 |
+| #3 | Check `user_owns_item_or_admin()` sur `add_viz_link` | `src/upload_routes.py`, `src/user_routes.py` | 132-133, 352-353 |
+| #4 | Prévention des auto-signalements | `src/admin_routes.py` | 109-110, 120-121 |
+| #5 | Erreur fatale si `SQLALCHEMY_DATABASE_URI` non défini | `app.py` | 54-59 |
+| #6 | Remplacement `.like()` par `==` (égalité exacte, parameterisée) | `src/user_routes.py` | 50 |
+| #7 | `session.clear()` avant `user_id` après connexion réussie | `app.py` | 86-91 |
+| #8 | Rate limiter `@limiter.limit("3 per hour")` sur change-password | `src/user_routes.py` | 149 |
+| #11 | Redirect générique vers `/connexion` au lieu d'erreur email existant | `src/auth_routes.py` | 56-57 |
+| #9 | Fonction `sanitize_slug()` + validation du nom (2-100 chars) | `src/organization_routes.py` | 13-20, 32 |
+| #10 | Décorateur `require_admin` retourne HTML via `render_template` | `src/admin_routes.py` | 17-24 |
 
 ---
 
 ## Priorité de correction recommandée
 
-1. **Immédiat :** #1, #2, #3 — Contournements d'autorisation permettant des actions administratives
-2. **Sprint suivant :** #4, #5, #6, #8 — Signalements auto, creds DB, injection SQL, bruteforce mots de passe
-3. **Prochaines semaines :** #7, #9, #12, #13, #19 — Session fixation, slug DoS, XSS noms/auteurs, visibilité ignored
-4. **Backlog / Hardening :** #10-#11, #14-#20 — Améliorations générales de configuration et défense en profondeur
+1. **Sprint suivant :** ~~#6, #7, #8, #11~~ ✅ Terminé — Injection SQL LIKE, session fixation, rate limit password change, énumération d'emails
+2. **Prochaines semaines :** #12, #13, #14, #19 — XSS noms/auteurs, rate limit proxy, visibilité DataChunks
+3. **Backlog / Hardening :** #15-#18, #20 — Debug mode, connection pooling, SSL, audit admin, CSP
+
+---
