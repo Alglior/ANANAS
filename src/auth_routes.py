@@ -3,6 +3,7 @@ import re
 from flask import Blueprint, request, render_template, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
+from utils.security import sanitize_html
 
 bp = Blueprint("auth", __name__)
 
@@ -42,8 +43,8 @@ def inscription_page():
 
 @bp.route("/inscription", methods=["POST"])
 def inscription_post():
-    prenom = request.form.get("prenom", "").strip()
-    nom = request.form.get("nom", "").strip()
+    prenom = sanitize_html(request.form.get("prenom", "").strip())
+    nom = sanitize_html(request.form.get("nom", "").strip())
     email = request.form.get("email", "").strip()
     password = request.form.get("password", "")
 

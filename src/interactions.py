@@ -50,7 +50,8 @@ def add_comment(item_id):
 
     current_user = get_current_user()
     item = Item.query.get_or_404(item_id)
-    author_name = request.form.get("author", "").strip() or (f"{current_user.prenom} {current_user.nom}" if current_user else "")
+    raw_author = request.form.get("author", "").strip() or (f"{current_user.prenom} {current_user.nom}" if current_user else "")
+    author_name = sanitize_html(raw_author)
     content = sanitize_html(request.form.get("text", ""))
 
     if not content:

@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify
 from werkzeug.utils import secure_filename
 from app import db
 from src.shared import login_required, get_current_user, user_owns_item_or_admin
-from utils.security import validate_file_magic
+from utils.security import sanitize_html, validate_file_magic
 
 bp = Blueprint("upload", __name__)
 
@@ -111,7 +111,7 @@ def create_item():
         description=description[:2000],
         format_type=format_type[:50] if format_type else None,
         magnet_link=magnet_link[:500],
-        author_name=current_user.prenom + " " + current_user.nom,
+        author_name=sanitize_html(current_user.prenom + " " + current_user.nom),
         organization_id=organization_id if organization_id else None,
         data_format_level=data_format_level,
     )

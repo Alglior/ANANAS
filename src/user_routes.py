@@ -10,7 +10,7 @@ from sqlalchemy import func
 from app import db, limiter
 from src.shared import login_required, get_current_user, user_owns_item_or_admin
 from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink
-from utils.security import validate_file_magic
+from utils.security import sanitize_html, validate_file_magic
 
 bp = Blueprint("users", __name__)
 
@@ -117,8 +117,8 @@ def update_profile():
     if not current_user:
         return jsonify({"error": "Utilisateur non trouvé"}), 401
 
-    prenom = data.get("prenom", "").strip()
-    nom = data.get("nom", "").strip()
+    prenom = sanitize_html(data.get("prenom", "").strip())
+    nom = sanitize_html(data.get("nom", "").strip())
     email = data.get("email", "").strip()
 
     if not prenom or not nom:
@@ -282,7 +282,7 @@ def create_upload_item():
         description=description[:2000],
         format_type=format_type[:50] if format_type else None,
         magnet_link=magnet_link[:500] if data_format_level == "pack" else "",
-        author_name=f"{current_user.prenom} {current_user.nom}",
+        author_name=sanitize_html(f"{current_user.prenom} {current_user.nom}"),
         organization_id=organization_id if organization_id else None,
         data_format_level=data_format_level,
     )

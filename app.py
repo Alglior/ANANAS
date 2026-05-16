@@ -11,9 +11,17 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from utils.security import sanitize_html, validate_external_url
 
+
+def _get_client_ip():
+    forwarded_for = request.headers.getlist("X-Forwarded-For")
+    if forwarded_for:
+        return forwarded_for[0].split(",")[0].strip()
+    return get_remote_address()
+
+
 db = SQLAlchemy()
 migrate = Migrate()
-limiter = Limiter(key_func=get_remote_address, default_limits=["100 per hour"])
+limiter = Limiter(key_func=_get_client_ip, default_limits=["100 per hour"])
 
 
 def create_app(app_name="ANANAS"):

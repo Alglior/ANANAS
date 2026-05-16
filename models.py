@@ -74,7 +74,7 @@ class Item(db.Model):
             "rating": self._get_rating_avg(),
             "review_count": len(self.ratings),
             "data_format_level": self.data_format_level,
-            "download_levels": [{"name": c.name, "size_mb": c.size_mb, "magnet": c.magnet_link} for c in DataChunk.query.filter_by(parent_item_id=self.id).all()] if self.data_format_level == "individual" else None,
+            "download_levels": [{"name": c.name, "size_mb": c.size_mb, "magnet": c.magnet_link} for c in DataChunk.query.filter_by(parent_item_id=self.id, visibility="public").all()] if self.data_format_level == "individual" else None,
         }
 
     def _get_rating_avg(self):

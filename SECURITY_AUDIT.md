@@ -3,7 +3,7 @@
 **Date :** 2026-05-16
 **Cible :** Application Flask + PostgreSQL (SQLAlchemy ORM)
 **État des lieux :** Analyse statique du code source et configuration
-**Statut :** Corrections #1–#8 et #11 appliquées ✅
+**Statut :** Corrections #1–#14 et #19 appliquées ✅
 
 ---
 
@@ -179,31 +179,35 @@ if not user_owns_item_or_admin(current_user, item):
 
 ---
 
-### 12. Risque XSS dans l'affichage des noms d'utilisateurs
+### ~~12.~~ ~~Risque XSS dans l'affichage des noms d'utilisateurs~~ ✅ CORRECTIF #12
 
-Les prénoms et noms sont stockés en texte brut sans sanitization et affichés directement dans les templates (profils, auteurs d'items, etc.). Bien que le contenu des commentaires soit sanitizé via `bleach`, les noms ne le sont pas. Un nom contenant `<script>` s'exécutera dans le navigateur des autres utilisateurs.
+~~Les prénoms et noms sont stockés en texte brut sans sanitization et affichés directement dans les templates (profils, auteurs d'items, etc.). Bien que le contenu des commentaires soit sanitizé via `bleach`, les noms ne le sont pas. Un nom contenant `<script>` s'exécutera dans le navigateur des autres utilisateurs.~~
 
-**Recommandation :** Activer l'autoescape sur les templates ou sanitizer les noms lors de la saisie.
+**Correctif appliqué (`src/auth_routes.py:45-46`, `src/user_routes.py:120-121`, `src/upload_routes.py:114`, `models.py:19`) :** Les champs `prenom` et `nom` sont maintenant sanitizés via `sanitize_html()` lors de la saisie (inscription, mise à jour du profil) et pour l'`author_name` des items. Cela élimine les données XSS malveillantes dès la insertion en base de données.
 
 ---
 
-### 13. Nom de l'auteur du commentaire non sanitizé (`src/interactions.py:53`)
+### ~~13.~~ ~~Nom de l'auteur du commentaire non sanitizé (`src/interactions.py:53`)~~ ✅ CORRECTIF #13
 
+~~```python~~
+~~author_name = request.form.get("author", "").strip() or ...~~
+~~```~~
+
+~~Le nom est stocké en texte brut et affiché dans le HTML sans sanitization, contrairement au contenu du commentaire qui utilise `sanitize_html()`. C'est un vecteur XSS.~~
+
+**Correctif appliqué (`src/interactions.py:53-54`) :** Le nom de l'auteur est maintenant passé via `sanitize_html()` avant d'être stocké :
 ```python
-author_name = request.form.get("author", "").strip() or ...
+raw_author = request.form.get("author", "").strip() or (f"{current_user.prenom} {current_user.nom}" if current_user else "")
+author_name = sanitize_html(raw_author)
 ```
 
-Le nom est stocké en texte brut et affiché dans le HTML sans sanitization, contrairement au contenu du commentaire qui utilise `sanitize_html()`. C'est un vecteur XSS.
-
-**Recommandation :** Appliquer `sanitize_html()` à `author_name`.
-
 ---
 
-### 14. Contournement du rate limiting via proxy inverse
+### ~~14.~~ ~~Contournement du rate limiting via proxy inverse~~ ✅ CORRECTIF #14
 
-Le rate limiter utilise `get_remote_address` qui peut être contourné si l'application est derrière un reverse proxy (nginx, Docker) ne configurant pas correctement `X-Forwarded-For`.
+~~Le rate limiter utilise `get_remote_address` qui peut être contourné si l'application est derrière un reverse proxy (nginx, Docker) ne configurant pas correctement `X-Forwarded-For`.~~
 
-**Recommandation :** Configurer le limiter avec `HEADERS=["X-Forwarded-For"]` et configurer les proxies de confiance.
+**Correctif appliqué (`app.py:13-20`) :** Fonction `_get_client_ip()` ajoutée en tant que `key_func` du Limiter — elle lit d'abord l'en-tête `X-Forwarded-For`, et ne retombe sur `get_remote_address()` qu'en fallback. Cela permet au rate limiter de résoudre correctement l'IP client même derrière un proxy inverse.
 
 ---
 
@@ -249,11 +253,14 @@ Les bans/unbans et résolutions de signalement ne sont loggées que dans le cham
 
 ---
 
-### 19. La visibilité des DataChunks n'est pas appliquée dans les requêtes (`models.py:241`)
+### ~~19.~~ ~~La visibilité des DataChunks n'est pas appliquée dans les requêtes~~ ✅ CORRECTIF #19
 
-La colonne `visibility` existe mais aucune requête publique ne filtre les items avec `visibility != 'public'`. Des chunks privés pourraient être exposés via les API.
+~~La colonne `visibility` existe mais aucune requête publique ne filtre les items avec `visibility != 'public'`. Des chunks privés pourraient être exposés via les API.~~
 
-**Recommandation :** Ajouter un filtre systématique : `filter(DataChunk.visibility == 'public')` sur toutes les requêtes publiques.
+**Correctif appliqué (`models.py:77`) :** La requête de DataChunks dans `Item.to_dict()` est maintenant filtrée par `visibility="public"` :
+```python
+DataChunk.query.filter_by(parent_item_id=self.id, visibility="public").all()
+```
 
 ---
 
@@ -285,14 +292,14 @@ L'utilisation de `'unsafe-inline'` dans `script-src` et `style-src` réduit l'ef
 | ~~9~~ | 🟠 Haute | ~~Slug org non sanitizé / possible DoS~~ | `src/organization_routes.py` | ~~23~~ | ✅ **CORRIGÉ** |
 | ~~10~~ | 🟠 Haute | ~~Pages admin retournent JSON au lieu de HTML~~ | `src/admin_routes.py` | ~~170-215~~ | ✅ **CORRIGÉ** |
 | ~~11~~ | 🟡 Moyenne | ~~Énumération d'emails via inscription~~ | `src/auth_routes.py` | ~~56-59~~ | ✅ **CORRIGÉ** |
-| 12 | 🟡 Moyenne | XSS affichage des noms utilisateurs | Templates / modèles | — | ⚪ ouvert |
-| 13 | 🟡 Moyenne | XSS nom auteur commentaire non sanitizé | `src/interactions.py` | 53 | ⚪ ouvert |
-| 14 | 🟡 Moyenne | Contournement rate limit via proxy | `app.py` | 48-52 | ⚪ ouvert |
+| ~~12~~ | 🟡 Moyenne | ~~XSS affichage des noms utilisateurs~~ | `src/auth_routes.py`, `src/user_routes.py`, `models.py` | — | ✅ **CORRIGÉ** |
+| ~~13~~ | 🟡 Moyenne | ~~XSS nom auteur commentaire non sanitizé~~ | `src/interactions.py` | 53 | ✅ **CORRIGÉ** |
+| ~~14~~ | 🟡 Moyenne | ~~Contournement rate limit via proxy~~ | `app.py` | 13-20 | ✅ **CORRIGÉ** |
 | 15 | 🟢 Basse | Mode debug activable en production | `app.py` | 196 | ⚪ ouvert |
 | 16 | 🟢 Basse | Pas de connection pooling DB | `app.py` | 57-66 | ⚪ ouvert |
 | 17 | 🟢 Basse | SSL mode `prefer` au lieu de `require` | `app.py` | 63 | ⚪ ouvert |
 | 18 | 🟢 Basse | Pas d'audit des actions admin | — | — | ⚪ ouvert |
-| 19 | 🟢 Basse | Visibilité DataChunks ignorée dans requêtes | `models.py` / routes | — | ⚪ ouvert |
+| ~~19~~ | 🟢 Basse | ~~Visibilité DataChunks ignorée dans requêtes~~ | `models.py` | 77 | ✅ **CORRIGÉ** |
 | 20 | 🟢 Basse | CSP utilise `'unsafe-inline'` | `app.py` | 105-112 | ⚪ ouvert |
 
 ---
@@ -312,13 +319,17 @@ L'utilisation de `'unsafe-inline'` dans `script-src` et `style-src` réduit l'ef
 | #11 | Redirect générique vers `/connexion` au lieu d'erreur email existant | `src/auth_routes.py` | 56-57 |
 | #9 | Fonction `sanitize_slug()` + validation du nom (2-100 chars) | `src/organization_routes.py` | 13-20, 32 |
 | #10 | Décorateur `require_admin` retourne HTML via `render_template` | `src/admin_routes.py` | 17-24 |
+| #12 | Sanitisation `sanitize_html()` sur prenom/nom (inscription + profil) | `src/auth_routes.py`, `src/user_routes.py`, `models.py` | 45-46, 120-121, 19 |
+| #13 | Sanitisation `sanitize_html()` sur le nom d'auteur des commentaires | `src/interactions.py` | 53-54 |
+| #14 | Fonction `_get_client_ip()` lit `X-Forwarded-For` pour le limiter | `app.py` | 13-20 |
+| #19 | Filtre `visibility="public"` dans la requête DataChunks de `to_dict()` | `models.py` | 77 |
 
 ---
 
 ## Priorité de correction recommandée
 
 1. **Sprint suivant :** ~~#6, #7, #8, #11~~ ✅ Terminé — Injection SQL LIKE, session fixation, rate limit password change, énumération d'emails
-2. **Prochaines semaines :** #12, #13, #14, #19 — XSS noms/auteurs, rate limit proxy, visibilité DataChunks
+2. **Prochaines semaines :** ~~#12, #13, #14, #19~~ ✅ Terminé — XSS noms/auteurs, rate limit proxy, visibilité DataChunks
 3. **Backlog / Hardening :** #15-#18, #20 — Debug mode, connection pooling, SSL, audit admin, CSP
 
 ---
