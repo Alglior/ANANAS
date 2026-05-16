@@ -257,6 +257,21 @@ class DataChunk(db.Model):
 
     published_at: Mapped[datetime.datetime | None]
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "size_mb": self.size_mb,
+            "format_type": self.format_type,
+            "magnet_link": self.magnet_link,
+            "data_url": self.data_url,
+            "upload_status": self.upload_status,
+            "visibility": self.visibility,
+            "metadata_json": self.metadata_json or {},
+            "created_at": self.created_at.strftime("%Y-%m-%d") if self.created_at else "",
+        }
+
     owner = relationship("User", back_populates="data_chunks")
     organization = relationship("Organization")
 
@@ -305,6 +320,18 @@ class VisualizationLink(db.Model):
             self.is_active = True
         if self.created_at is None:
             self.created_at = datetime.datetime.now()
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "url": self.url,
+            "link_type": self.link_type,
+            "description": self.description,
+            "display_order": self.display_order,
+            "is_active": self.is_active,
+            "created_at": self.created_at.strftime("%Y-%m-%d") if self.created_at else "",
+        }
 
     item = relationship("Item", back_populates="visualization_links")
 

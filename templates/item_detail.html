@@ -18,12 +18,169 @@
       </nav>
 
       <nav class="detail-tabs" aria-label="Actions sur la donnée">
-        <a href="#" class="tab-btn active">Aperçu</a>
-        <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn">Données</a>
-        <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Visualisation</a>
+        {% if active_data_tab %}
+          <a href="/catalogue/item/{{ item.id }}" class="tab-btn">Aperçu</a>
+          <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn active">Données</a>
+          <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Visualisation</a>
+        {% else %}
+          <a href="#" class="tab-btn active">Aperçu</a>
+          <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn">Données</a>
+          <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Visualisation</a>
+        {% endif %}
       </nav>
     </div>
   </section>
+
+{% if active_data_tab %}
+  <section class="detail-body">
+    <div class="container">
+      <div class="viz-section">
+        <!-- Visualization Links -->
+        {% if viz_links and viz_links|length > 0 %}
+        <section class="viz-links-section">
+          <h2>Visualisations</h2>
+          <div class="viz-grid">
+            {% for link in viz_links %}
+            <div class="viz-card{% if link.link_type == 'embed' %} is-embed{% endif %}">
+              <div class="viz-card-header">
+                <span class="viz-type-badge badge-{{ link.link_type }}">{{ link.link_type }}</span>
+                <h3>{{ link.name }}</h3>
+              </div>
+              {% if link.link_type == 'embed' or link.link_type == 'widget' %}
+              <div class="viz-iframe-wrapper">
+                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">
+                  {{ link.name }} — Voir la visualisation
+                </a>
+              </div>
+              {% else %}
+              <div class="viz-link-info">
+                <p>{{ link.description or 'Visualisation de ces données.' }}</p>
+              </div>
+              {% endif %}
+              <div class="viz-card-footer">
+                <a href="{{ link.url }}" class="btn btn-viz" target="_blank" rel="noopener noreferrer">Accéder</a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </section>
+        {% endif %}
+
+        <!-- Visualization Links -->
+        {% if viz_links and viz_links|length > 0 %}
+        <section class="viz-links-section">
+          <h2>Visualisations</h2>
+          <div class="viz-grid">
+            {% for link in viz_links %}
+            <div class="viz-card{% if link.link_type == 'embed' %} is-embed{% endif %}">
+              <div class="viz-card-header">
+                <span class="viz-type-badge badge-{{ link.link_type }}">{{ link.link_type }}</span>
+                <h3>{{ link.name }}</h3>
+              </div>
+              {% if link.link_type == 'embed' or link.link_type == 'widget' %}
+              <div class="viz-iframe-wrapper">
+                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">
+                  {{ link.name }} — Voir la visualisation
+                </a>
+              </div>
+              {% else %}
+              <div class="viz-link-info">
+                <p>{{ link.description or 'Visualisation de ces données.' }}</p>
+              </div>
+              {% endif %}
+              <div class="viz-card-footer">
+                <a href="{{ link.url }}" class="btn btn-viz" target="_blank" rel="noopener noreferrer">Accéder</a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </section>
+        {% endif %}
+
+        <!-- Data Extractions -->
+        {% if data_chunks and data_chunks|length > 0 %}
+        <section class="data-extractions-section">
+          <div class="extractions-grid">
+            {% for chunk in data_chunks %}
+            {% set has_preview = chunk.upload_status == 'pending' and chunk.metadata_json and chunk.metadata_json.get('preview_rows') %}
+            <div class="extraction-card{% if has_preview %} has-preview{% endif %}">
+              {% if has_preview %}
+              <div class="extraction-header">
+                {% if chunk.size_mb %}<span class="data-size">{{ chunk.size_mb }} Mo</span>{% endif %}
+              </div>
+              {% if chunk.metadata_json.get('column_count', 0) > 0 %}
+              <div class="data-table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      {% for col in range(chunk.metadata_json.column_count) %}
+                      <th>{{ col + 1 }}</th>
+                      {% endfor %}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for row in chunk.metadata_json.preview_rows[:50] %}
+                    <tr>
+                      {% set cells = row.split(',') %}
+                      {% for cell in cells[:chunk.metadata_json.column_count] %}
+                      <td>{{ cell.strip() }}</td>
+                      {% endfor %}
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% if chunk.metadata_json.preview_rows|length > 50 %}
+              <p class="data-more">… {{ chunk.metadata_json.preview_rows|length - 50 }} lignes supplémentaires</p>
+              {% endif %}
+              {% else %}
+              <p class="no-columns">Aucune colonne détectée dans cet extrait.</p>
+              {% endif %}
+              {% else %}
+              <div class="extraction-header">
+                {% if chunk.size_mb %}<span class="data-size">{{ chunk.size_mb }} Mo</span>{% endif %}
+              </div>
+              <dl class="chunk-details">
+                {% if chunk.format_type %}
+                <div class="detail-row">
+                  <dt>Format</dt>
+                  <dd>{{ chunk.format_type }}</dd>
+                </div>
+                {% endif %}
+                {% if chunk.description %}
+                <div class="detail-row">
+                  <dt>Description</dt>
+                  <dd>{{ chunk.description }}</dd>
+                </div>
+                {% endif %}
+                {% if chunk.magnet_link %}
+                <div class="detail-row">
+                  <dt>Lien</dt>
+                  <dd><a href="{{ chunk.magnet_link }}">{{ chunk.magnet_link[:80] }}{% if chunk.magnet_link|length > 80 %}...{% endif %}</a></dd>
+                </div>
+                {% endif %}
+              </dl>
+              {% if chunk.data_url %}
+              <a href="{{ chunk.data_url }}" class="btn btn-download" target="_blank" rel="noopener noreferrer">Accéder aux données</a>
+              {% elif chunk.magnet_link %}
+              <a href="{{ chunk.magnet_link }}" class="btn btn-download">Télécharger via Magnet</a>
+              {% endif %}
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </section>
+        {% endif %}
+
+        <!-- Fallback: No data or viz links -->
+        {% if not (viz_links and viz_links|length > 0) and not (data_chunks and data_chunks|length > 0) %}
+        <p class="no-data-message">Aucune visualisation ou extrait de données disponible pour cet élément.</p>
+        {% endif %}
+
+      </div>
+    </div>
+  </section>
+{% else %}
 
   <section class="detail-body">
     <div class="container">
@@ -315,6 +472,8 @@
 
     </div>
   </section>
+
+{% endif %}
 
 </main>
 <div class="image-modal" id="imageModal">
