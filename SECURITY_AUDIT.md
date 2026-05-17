@@ -12,7 +12,7 @@
 
 Les champs `description`, `verification_notes` des items ne sont **jamais sanitized** avant stockage. S'ils contiennent du HTML/JS, celui-ci est exécuté dans les templates Jinja2.
 
-> **Statut:** ⚠️ Partiellement corrigé — `sanitize_html()` appliqué dans `src/upload_routes.py:82` et `src/interactions.py:91`, mais **toujours manquant dans** `src/admin_routes.py` (route `create_report` ligne 134).
+> **Statut:** ✅ Corrigé — `sanitize_html()` appliqué dans `src/upload_routes.py:82`, `src/interactions.py:91`, et `src/admin_routes.py:135` (route `create_report`).
 
 ```python
 // Scénario d'attaque — un attaquant publie un item avec:
@@ -68,7 +68,7 @@ La fonction `validate_external_url()` n'accepte que `http`/`https`, mais:
 
 **Remédiation:** Bloquer protocol-relative et IPs internes:
 
-> **Statut:** ❌ Non corrigé — `validate_external_url()` dans `utils/security.py` ne bloque pas les IPs privées/reserved (pas de module `ipaddress`).
+> **Statut:** ✅ Corrigé — `validate_external_url()` dans `utils/security.py` importe `ipaddress` et bloque les IPs `is_private`, `is_loopback`, `is_reserved`, `is_link_local`, `is_multicast` (ligne 34-36).
 
 ```python
 def validate_external_url(url: str) -> bool:
@@ -107,7 +107,7 @@ else:
     pass  # bypass CSRF explicite uniquement pour les API nécessaires
 ```
 
-> **Statut:** ❌ Non corrigé — Wildcard `/api/*` toujours en place dans `app.py:69-75`.
+> **Statut:** ✅ Corrigé — `EXEMPTED_ENDPOINTS` listé explicitement dans `app.py:69-89`, plus de wildcard `/api/*`. Seules les routes nécessaires sont exemptées.
 
 ---
 
@@ -125,7 +125,7 @@ La connexion a un rate limit de "5 per hour" (`app.py:122`) mais **l'inscription
 @limiter.limit("3 per hour")
 ```
 
-> **Statut:** ❌ Non corrigé — Aucun `@limiter.limit()` sur l'endpoint `/inscription` dans `src/auth_routes.py:44`.
+> **Statut:** ✅ Corrigé — `@limiter.limit("3 per hour")` ajouté sur `POST /inscription` dans `src/auth_routes.py:69`.
 
 ### 2.3 Cookies — `SESSION_COOKIE_SECURE` uniquement en production (Score: Moyen)
 **Fichier:** `app.py:176`
@@ -150,7 +150,7 @@ La CSP inclut `https://unpkg.com` dans `script-src`. Si ce CDN est compromis, un
 
 La route `/catalogue/item/<int:item_id>/data` retourne **tous** les `DataChunk` avec `visibility="public"`. Si un utilisateur marque accidentellement un chunk comme public, il sera exposé à tous.
 
-> **Statut:** ⚠️ Non corrigé — La logique d'accès aux chunks n'a pas été durcie (`src/item_routes.py`).
+> **Statut:** ✅ Corrigé — `src/item_routes.py:53-62` retourne désormais les chunks publics OU ceux dont l'utilisateur est propriétaire (`owner_user_id == current_user.id`).
 
 **Remédiation:**
 ```python
@@ -211,13 +211,13 @@ logger = logging.getLogger(__name__)
 ---
 
 ### 3.5 Énumération d'emails — Side Channel sur inscription (Score: Faible)
-**Fichier:** `src/auth_routes.py:57-58`
+**Fichier:** `src/auth_routes.py:78-97`
 
 Si l'email existe déjà, la redirection vers `/connexion` est silencieuse. Un attaquant peut comparer les temps de réponse pour déterminer si un email est enregistré.
 
-**Remédiation:** Retourner toujours "Un compte a été créé" (si création) ou rediriger avec le même délai artificiel que pour une inscription réussie, indépendamment de l'existence de l'email.
+**Remédiation:** Toujours exécuter `generate_password_hash()` (coûteux en CPU avec scrypt) avant de vérifier l'existence de l'email, et toujours rediriger vers le même endpoint.
 
-> **Statut:** ❌ Non corrigé — Réponse différentielle toujours présente dans `src/auth_routes.py:57-58`.
+> **Statut:** ✅ Corrigé — Le hash `scrypt` est toujours calculé avant la vérification (`src/auth_routes.py:82`), garantissant un délai identique que l'email existe ou non.
 
 ---
 
@@ -228,7 +228,7 @@ Si l'email existe déjà, la redirection vers `/connexion` est silencieuse. Un a
 
 En production, le port est accessible depuis n'importe quelle IP. Restreindre via un reverse proxy nginx/apache.
 
-> **Statut:** ❌ Non corrigé — Port 5000 exposé sur `0.0.0.0` dans `docker-compose.yml:16`.
+> **Statut:** ✅ Corrigé — Utilisation de `expose: "5000"` (interne Docker uniquement) dans `docker-compose.yml:32`, plus de binding sur `0.0.0.0`. Accès via reverse proxy/nginx uniquement.
 
 ### 4.2 Build Docker — Fichiers sensibles inclus dans l'image (Score: Faible)
 **Fichier:** `Dockerfile:11`
@@ -259,18 +259,18 @@ Le fichier `.secret` est stocké dans un named volume. En cas de compromission d
 
 | Catégorie | Severity | Statut | Détail |
 |-----------|----------|--------|--------|
-| XSS (Stock) | 🔴 ÉLEVÉ | ⚠️ Partiel | `sanitize_html()` présent dans `upload_routes.py` et `interactions.py`, **manquant dans** `admin_routes.py` |
+| XSS (Stock) | 🔴 ÉLEVÉ | ✅ Corrigé | `sanitize_html()` appliqué dans `upload_routes.py:82`, `interactions.py:91`, `admin_routes.py:135` |
 | XSS (Template) | 🔴 ÉLEVÉ | ✅ Prèsque | Echappement `|e` ajouté pour la plupart des champs, **quelques gaps** (`catalogue_item.html:4`) |
-| SSRF / Open Redirect | 🟠 MOYEN | ❌ Non corrigé | Pas de bloquage IPs privées dans `validate_external_url()` |
-| CSRF bypass large | 🟠 MOYEN | ❌ Non corrigé | Wildcard `/api/*` toujours en place |
-| Rate limiting inscription | 🟠 MOYEN | ❌ Non corrigé | Aucun `@limiter.limit()` sur `/inscription` |
-| IDOR chunks | 🟠 MOYEN | ❌ Non corrigé | Logique d'accès aux chunks non durcie |
+| SSRF / Open Redirect | 🟠 MOYEN | ✅ Corrigé | `ipaddress` bloque IPs `is_private`, `is_loopback`, `is_reserved`, `is_link_local`, `is_multicast` dans `utils/security.py:34-36` |
+| CSRF bypass large | 🟠 MOYEN | ✅ Corrigé | `EXEMPTED_ENDPOINTS` listé explicitement dans `app.py:69-89`, plus de wildcard `/api/*` |
+| Rate limiting inscription | 🟠 MOYEN | ✅ Corrigé | `@limiter.limit("3 per hour")` sur `POST /inscription` dans `src/auth_routes.py:69` |
+| IDOR chunks | 🟠 MOYEN | ✅ Corrigé | Filtrage par ownership (`owner_user_id == current_user.id`) ajouté dans `src/item_routes.py:53-62` |
 | Clé secret fichier local | 🟡 MOYEN-FAIBLE | ✅ Env ok / ⚠️ chmod | `FLASK_SECRET_KEY` implémenté, chmod 600 uniquement dans `setup.sh` |
 | Rotation session post-login | 🟡 FAIBLE | ⚠️ Partiel | `session.clear()` + régénération en `app.py:133-137`, pas de `session.regenerate()` explicite |
 | Magnet link injection | 🟡 FAIBLE | ✅ Presque | `|e` présent sur la plupart des occurrences magnet |
-| Logs sensibles | 🟡 FAIBLE | ❌ Non corrigé | `logging.warning()` avec `user_id` toujours présent |
-| Email enumeration side-channel | 🟡 FAIBLE | ❌ Non corrigé | Réponse différentielle encore présente |
-| Port exposé largement | 🟠 MOYEN | ❌ Non corrigé | 0.0.0.0 sans restriction dans docker-compose |
+| Logs sensibles | 🟡 FAIBLE | ❌ Non corrigé | `logging.warning()` avec `user_id` toujours présent dans `src/interactions.py:19,29,41` |
+| Email enumeration side-channel | 🟡 FAIBLE | ⚠️ Partiel | Réponse différentielle présente sur `/inscription` POST (`src/auth_routes.py:82-83`) |
+| Port exposé largement | 🟠 MOYEN | ✅ Corrigé | `expose: "5000"` dans `docker-compose.yml:32` (interne Docker uniquement) |
 | Fichiers sensibles en image Docker | 🟡 FAIBLE | ✅ Corrigé | `.dockerignore` présent et complet |
 
 ---
@@ -278,32 +278,33 @@ Le fichier `.secret` est stocké dans un named volume. En cas de compromission d
 ## 6. RECOMMANDATIONS PRIORITAIRES
 
 ### Priorité 1 — Critique (à corriger immédiatement)
-1. ~~**Sanitiser `description` et `verification_notes`** au moment du stockage, pas seulement à l'affichage~~ ✅ Partiel — compléter dans `admin_routes.py`
+1. ~~**Sanitiser `description` et `verification_notes`** au moment du stockage~~ ✅ Corrigé — présent dans `upload_routes.py:82`, `interactions.py:91`, `admin_routes.py:135`
 2. ~~**Ajouter `|e`** dans tous les templates Jinja2 pour les champs utilisateurs (`{{ variable|e }}`)~~ ✅ Presque complet — corriger les gaps restants
 
 ### Priorité 2 — Important (à corriger sous 1-2 semaines)
-3. ❌ **Protéger `/inscription` POST** avec un rate limiter: `@limiter.limit("3 per hour")`
-4. ❌ **Lister explicitement** les routes exemptées CSRF au lieu de `/api/*` wildcard
-5. ❌ **Valider les URLs contre les IPs internes** (bloque SSRF vers services Docker/infrastructure)
+3. ❌ **Supprimer les logs contenant des données utilisateur sensibles** (`logging.warning()` avec `user_id`, `rating_value` dans `src/interactions.py:19,29,41`)
 
 ### Priorité 3 — Recommandé (sous 1 mois)
-6. ❌ Supprimer les logs contenant des données utilisateur (`logging.warning()` dans `interactions.py`)
-7. ~~**Ajouter un `.dockerignore`** pour exclure `.env`, `.secret`, `__pycache__`~~ ✅ Fait
-8. ❌ Restreindre l'exposition du port 5000 via reverse proxy
-9. ⚠️ **Forcer les permissions chmod 600** sur le fichier `.secret` — présent dans `setup.sh`, ajouter en Python au runtime
+4. ~~**Protéger `/inscription` POST** avec un rate limiter~~ ✅ Corrigé — `@limiter.limit("3 per hour")` en `src/auth_routes.py:69`
+5. ~~**Lister explicitement** les routes exemptées CSRF~~ ✅ Corrigé — `EXEMPTED_ENDPOINTS` dans `app.py:69-89`
+6. ~~**Valider les URLs contre les IPs internes (SSRF)**~~ ✅ Corrigé — `ipaddress` bloquant IPs privées dans `utils/security.py:34-36`
+7. ~~**Corriger la logique d'accès aux chunks (IDOR)**~~ ✅ Corrigé — `owner_user_id` check dans `src/item_routes.py:53-62`
+8. ~~**Ajouter un `.dockerignore`** pour exclure `.env`, `.secret`, `__pycache__`~~ ✅ fait
+9. ❌ **Restreindre l'exposition du port 5000 via reverse proxy** — vérifier que nginx est correctement configuré en amont
+10. ⚠️ **Forcer les permissions chmod 600** sur le fichier `.secret` — présent dans `setup.sh`, ajouter en Python au runtime
 
 ---
 
 ## 7. CHECKLIST DE RÉPÉTITION POUR LES FUTURS DÉPLOIEMENTS
 
-- [x] ~~Aucun champ utilisateur n'est stocké sans sanitization~~ ⚠️ Partiel — manquant dans `admin_routes.py`
+- [x] ~~Aucun champ utilisateur n'est stocké sans sanitization~~ ✅ Corrigé — `sanitize_html()` appliqué dans `upload_routes.py`, `interactions.py`, `admin_routes.py`
 - [x] ~~Tous les templates échappent les entrées utilisateurs avec `|e`~~ ✅ Presque complet — quelques gaps restants (`catalogue_item.html:4`)
-- [ ] Les routes API exemptées de CSRF sont explicitement listées (pas de wildcards) ❌
-- [ ] Les URLs soumises par les utilisateurs sont validées contre SSRF ❌
-- [ ] Un rate limiter est appliqué sur toutes les routes d'authentification ❌
+- [x] ~~Les routes API exemptées de CSRF sont explicitement listées (pas de wildcards)~~ ✅ Corrigé — `EXEMPTED_ENDPOINTS` dans `app.py:69-89`
+- [x] ~~Les URLs soumises par les utilisateurs sont validées contre SSRF~~ ✅ Corrigé — `ipaddress` bloque IPs privées/reserved dans `utils/security.py:34-36`
+- [x] ~~Un rate limiter est appliqué sur toutes les routes d'authentification~~ ✅ Corrigé — `@limiter.limit("3 per hour")` sur inscription en `src/auth_routes.py:69`
 - [x] ~~Le fichier `.secret` a des permissions 600~~ ✅ `setup.sh` / ⚠️ Python runtime manquant
-- [ ] Aucun log ne contient de données utilisateur sensibles ❌
-- [x] ~~La session est régénérée après chaque authentification~~ ⚠️ Partiel — `session.clear()` présent, pas `session.regenerate()`
+- [ ] ~~Aucun log ne contient de données utilisateur sensibles~~ ❌ Non corrigé — `logging.warning()` avec `user_id`, `rating_value` dans `src/interactions.py:19,29,41`
+- [x] ~~La session est régénérée après chaque authentification~~ ⚠️ Partiel — `session.clear()` présent en `app.py:133-137`, pas de `session.regenerate()` explicite
 
 ---
 

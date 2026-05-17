@@ -79,14 +79,16 @@ def inscription_post():
     if not strength_ok:
         return render_template("inscription.html", form_errors=strength_errors, password=password, email=email, prenom=prenom, nom=nom), 400
 
-    if User.query.filter_by(email=email).first():
+    user_hash = generate_password_hash(password, method="scrypt")
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
         return redirect(url_for("auth.connexion_page"))
 
     user = User(
         prenom=prenom,
         nom=nom,
         email=email,
-        password_hash=generate_password_hash(password, method="scrypt"),
+        password_hash=user_hash,
         is_active=True,
         banned=False,
     )
