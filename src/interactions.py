@@ -50,7 +50,9 @@ def add_comment(item_id):
     content = sanitize_html(request.form.get("text", ""))
 
     if not content:
-        return redirect(url_for("items.item_detail_view", item_id=item_id))
+        page = request.args.get("page", 1, type=int)
+        base = url_for("items.item_detail_view", item_id=item_id)
+        return redirect(f"{base}?page={page}")
 
     comment = Comment(
         item_id=item_id,
@@ -61,7 +63,9 @@ def add_comment(item_id):
     db.session.add(comment)
     db.session.commit()
 
-    return redirect(url_for("items.item_detail_view", item_id=item_id))
+    page = request.args.get("page", 1, type=int)
+    base = url_for("items.item_detail_view", item_id=item_id)
+    return redirect(f"{base}?page={page}")
 
 
 @bp.route("/api/items/<int:item_id>/verify", methods=["POST"])
