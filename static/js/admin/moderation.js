@@ -65,7 +65,7 @@
       tbody.innerHTML = data.comments.map(c => `
         <tr>
           <td data-label="ID">${c.id}</td>
-          <td data-label="Auteur">${c.author_name || '(anonyme)'}</td>
+          <td data-label="Auteur">${escapeHtml(c.author_name || '(anonyme)')}</td>
           <td data-label="Contenu">${escapeHtml(c.content).substring(0, 80)}${c.content && c.content.length > 80 ? '...' : ''}</td>
           <td data-label="Article"><a href="/catalogue/item/${c.item_id}">${c.item_title || '#'}</a></td>
           <td data-label="Type">${c.item_type || '-'}</td>
@@ -82,34 +82,45 @@
   }
 
   function renderItemsRows(items) {
+    const allowedTypes = {
+      geodonnee: "Géodonnée",
+      carte: "Carte",
+      application: "Application"
+    };
+
     return items.map(it => {
-        const statusBadge = it.is_published
-          ? '<span class="badge badge-verified">Publié</span>'
-          : '<span class="badge badge-pending">Non publié</span>';
-        const verBadge = it.verification_status === 'verified'
-          ? '<span class="badge badge-verified">Vérifié</span>'
-          : it.verification_status === 'rejected'
-          ? '<span class="badge badge-rejected">Rejeté</span>'
-          : '<span class="badge badge-pending">Non vérifié</span>';
-        const actions = [];
-        if (it.is_published) {
-          actions.push(`<button type="button" class="admin-btn-action admin-btn-dismiss" data-toggle-publish="${it.id}" data-published="false">Masquer</button>`);
-        } else {
-          actions.push(`<button type="button" class="admin-btn-action admin-btn-resolve" data-toggle-publish="${it.id}" data-published="true">Publier</button>`);
-        }
-        actions.push(`<a href="/catalogue/item/${it.id}" class="admin-btn-action btn-green">Voir données</a>`);
-        if (it.verification_status === 'verified') {
-          actions.push(`<button type="button" class="admin-btn-action btn-unverify" data-unverify-item="${it.id}">Révoquer</button>`);
-        } else {
-          actions.push(`<button type="button" class="admin-btn-action btn-verify" data-verify-item="${it.id}">Vérifier</button>`);
-        }
-        actions.push(`<button type="button" class="admin-btn-action btn-danger" data-delete-item="${it.id}">Supprimer</button>`);
+      const statusBadge = it.is_published
+        ? '<span class="badge badge-verified">Publié</span>'
+        : '<span class="badge badge-pending">Non publié</span>';
+      const verBadge = it.verification_status === 'verified'
+        ? '<span class="badge badge-verified">Vérifié</span>'
+        : it.verification_status === 'rejected'
+        ? '<span class="badge badge-rejected">Rejeté</span>'
+        : '<span class="badge badge-pending">Non vérifié</span>';
+
+      const rawType = (typeof it.type === 'string') ? it.type : '';
+      const safeType = Object.prototype.hasOwnProperty.call(allowedTypes, rawType) ? rawType : 'unknown';
+      const typeLabel = allowedTypes[safeType] || 'Inconnu';
+
+      const actions = [];
+      if (it.is_published) {
+        actions.push(`<button type="button" class="admin-btn-action admin-btn-dismiss" data-toggle-publish="${it.id}" data-published="false">Masquer</button>`);
+      } else {
+        actions.push(`<button type="button" class="admin-btn-action admin-btn-resolve" data-toggle-publish="${it.id}" data-published="true">Publier</button>`);
+      }
+      actions.push(`<a href="/catalogue/item/${it.id}" class="admin-btn-action btn-green">Voir données</a>`);
+      if (it.verification_status === 'verified') {
+        actions.push(`<button type="button" class="admin-btn-action btn-unverify" data-unverify-item="${it.id}">Révoquer</button>`);
+      } else {
+        actions.push(`<button type="button" class="admin-btn-action btn-verify" data-verify-item="${it.id}">Vérifier</button>`);
+      }
+      actions.push(`<button type="button" class="admin-btn-action btn-danger" data-delete-item="${it.id}">Supprimer</button>`);
       return `
           <tr>
             <td data-label="ID">${it.id}</td>
-            <td data-label="Type"><span class="type-badge type-${it.type}">${it.type.charAt(0).toUpperCase() + it.type.slice(1)}</span></td>
+            <td data-label="Type"><span class="type-badge type-${safeType}">${escapeHtml(typeLabel)}</span></td>
             <td data-label="Titre"><a href="/catalogue/item/${it.id}" class="admin-item-link">${escapeHtml(it.title).substring(0, 40)}${it.title.length > 40 ? '...' : ''}</a></td>
-            <td data-label="Auteur">${it.author_name || '-'}</td>
+            <td data-label="Auteur">${escapeHtml(it.author_name || '-')}</td>
             <td data-label="Publié">${statusBadge}</td>
             <td data-label="Vérification">${verBadge}</td>
             <td data-label="Commentaires">${it.comment_count || 0}</td>
@@ -117,7 +128,7 @@
             <td data-label="Action"><div class="admin-actions-cell">${actions.join('')}</div></td>
           </tr>
         `;
-      }).join('');
+    }).join('');
   }
 
   function renderItemsTable(items) {

@@ -165,6 +165,40 @@ class TestAPIEndpoints:
         resp = client.post("/catalogue/item/1/rate", data={"rating": "5"})
         assert resp.status_code in (302, 200)
 
+    def test_upload_item_rejects_invalid_type(self, client, seeded):
+        with client.session_transaction() as sess:
+            sess["user_id"] = seeded["user"].id
+
+        resp = client.post(
+            "/api/upload/item",
+            json={
+                "title": "Test item",
+                "type": "<img src=x onerror=alert(1)>",
+                "format_type": "csv",
+                "description": "desc",
+                "data_format_level": "pack",
+            },
+        )
+        assert resp.status_code == 400
+
+    def test_upload_item_accepts_valid_type(self, client, seeded):
+        with client.session_transaction() as sess:
+            sess["user_id"] = seeded["user"].id
+
+        resp = client.post(
+            "/api/upload/item",
+            json={
+                "title": "Test item ok",
+                "type": "geodonnee",
+                "format_type": "csv",
+                "description": "desc",
+                "data_format_level": "pack",
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data and data.get("status") == "created"
+
 
 class TestOrganizationRoutes:
     """Phase 7.6 — Vérifier les routes organisation."""

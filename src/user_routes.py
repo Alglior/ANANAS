@@ -12,6 +12,8 @@ from src.shared import login_required, get_current_user, user_owns_item_or_admin
 from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink
 from utils.security import sanitize_html, validate_magnet_link
 
+ALLOWED_ITEM_TYPES = {"geodonnee", "carte", "application"}
+
 bp = Blueprint("users", __name__)
 
 @bp.route("/profil")
@@ -235,6 +237,8 @@ def upload_file():
         return jsonify({"error": "Les données sont requises"}), 400
     if not title:
         return jsonify({"error": "Le titre est requis"}), 400
+    if item_type not in ALLOWED_ITEM_TYPES:
+        return jsonify({"error": "Type de contenu invalide"}), 400
 
  
     org_id = int(organization_id) if organization_id and organization_id.isdigit() else None
@@ -288,6 +292,8 @@ def create_upload_item():
 
     if not title:
         return jsonify({"error": "Le titre est requis"}), 400
+    if item_type not in ALLOWED_ITEM_TYPES:
+        return jsonify({"error": "Type de contenu invalide"}), 400
 
     org_id = int(organization_id) if organization_id and str(organization_id).isdigit() else None
 
