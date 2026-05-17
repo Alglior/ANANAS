@@ -34,6 +34,7 @@
             </td>
             <td data-label="Action">
               <form class="admin-form-inline" action="/api/users/{{ user.id }}/ban" method="POST">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="{% if user.banned %}unban{% else %}ban{% endif %}">
                 <button type="submit" class="btn btn-sm {% if user.banned %}btn-soft-unban{% else %}btn-danger{% endif %}">
                   {% if user.banned %}Débannir{% else %}Bannir{% endif %}
