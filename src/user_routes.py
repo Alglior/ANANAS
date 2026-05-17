@@ -10,20 +10,9 @@ from sqlalchemy import func
 from app import db, limiter
 from src.shared import login_required, get_current_user, user_owns_item_or_admin
 from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink
-from utils.security import sanitize_html, validate_file_magic
+from utils.security import sanitize_html
 
 bp = Blueprint("users", __name__)
-
-ALLOWED_EXTENSIONS = {"csv", "shp", "geojson", "json", "xml"}
-
-
-
-def is_allowed_file(filename):
-    if not filename or "." not in filename:
-        return False
-    ext = filename.rsplit(".", 1)[1].lower()
-    return ext in ALLOWED_EXTENSIONS
-
 
 @bp.route("/profil")
 @login_required
@@ -112,6 +101,7 @@ def activite_page():
 
 @bp.route("/api/users/profile", methods=["PUT"])
 @login_required
+@limiter.limit("10 per hour")
 def update_profile():
     data = request.get_json()
 
@@ -190,157 +180,6 @@ def validate_password_strength(password: str):
     return len(errors) == 0, errors
 
 
-@bp.route("/api/upload/file", methods=["POST"])
-@login_required
-def upload_file():
-    data_text = request.form.get("data_text", "").strip()
-    parent_item_id = request.form.get("parent_item_id")
-    zoom_level = request.form.get("zoom_level", "").strip()
-    data_format_level = request.form.get("data_format_level", "individual")
-
-    if not data_text:
-        return jsonify({"error": "Données requises"}), 400
-
-    if data_format_level not in ("pack", "individual"):
-        return jsonify({"error": "data_format_level doit être 'pack' ou 'individual'"}), 400
-
-    current_user = get_current_user()
-    lines = [line for line in data_text.split('\n')[:50] if line.strip()]
-
-    metadata = {
-        "preview_rows": lines,
-        "column_count": len(lines[0].split(',')) if lines else 0,
-        "zoom_level": zoom_level,
-    }
-
-    upload = UserUpload(
-        owner_user_id=current_user.id,
-        parent_item_id=parent_item_id,
-        file_name="preview",
-        file_size_bytes=len(data_text.encode('utf-8')),
-        mime_type="text/csv",
-        original_format="csv",
-        processing_status="queued",
-    )
-    db.session.add(upload)
-    db.session.flush()
-
-    chunk = DataChunk(
-        parent_item_id=parent_item_id,
-        name=f"chunk_{upload.id}",
-        owner_user_id=current_user.id,
-        metadata_json=metadata,
-    )
-    db.session.add(chunk)
-    db.session.commit()
-
-    upload.chunk_id = chunk.id
-    db.session.commit()
-
-    if parent_item_id:
-        db.session.commit()
-
-    return jsonify({"status": "queued", "upload_id": upload.id, "chunk_id": chunk.id})
-
-
-@bp.route("/api/upload/item", methods=["POST"])
-@login_required
-def create_upload_item():
-    from models import Item, VisualizationLink, DataChunk
-
-    current_user = get_current_user()
-    data = request.get_json(silent=True) or {}
-    title = (data.get("title") or request.form.get("title", "")).strip()
-    description = sanitize_html((data.get("description") or request.form.get("description", "")).strip())
-    item_type = data.get("type") or request.form.get("type", "geodonnee")
-    format_type = data.get("format_type") or request.form.get("format_type", "")
-    organization_id = data.get("organization_id") or request.form.get("organization_id", type=int)
-    data_format_level = (data.get("data_format_level") or request.form.get("data_format_level", "individual"))
-    magnet_link = ((data.get("magnet_link") or request.form.get("magnet_link", "")).strip())
-
-    if organization_id:
-        from models import OrganizationMember, Organization
-        org = db.session.get(Organization, organization_id)
-        if not org:
-            return jsonify({"error": "Organisation introuvable"}), 404
-        if not current_user.is_admin:
-            membership = OrganizationMember.query.filter_by(
-                user_id=current_user.id, organization_id=organization_id
-            ).first()
-            if not membership or not membership.is_active:
-                return jsonify({"error": "Non autorisé à publier dans cette organisation"}), 403
-
-    if not title:
-        return jsonify({"error": "Titre requis"}), 400
-
-    if data_format_level not in ("pack", "individual"):
-        return jsonify({"error": "data_format_level doit être 'pack' ou 'individual'"}), 400
-
-    item = Item(
-        type=item_type,
-        title=title[:300],
-        description=description[:2000],
-        format_type=format_type[:50] if format_type else None,
-        magnet_link=magnet_link[:500] if data_format_level == "pack" else "",
-        owner_user_id=current_user.id,
-        author_name=sanitize_html(f"{current_user.prenom} {current_user.nom}"),
-        organization_id=organization_id if organization_id else None,
-        data_format_level=data_format_level,
-    )
-    db.session.add(item)
-    db.session.commit()
-
-    # Link the preview chunk to this item (created by upload_file route)
-    preview_chunk = DataChunk.query.filter_by(
-        owner_user_id=current_user.id,
-        parent_item_id=None,
-    ).order_by(DataChunk.created_at.desc()).first()
-    if preview_chunk:
-        preview_chunk.parent_item_id = item.id
-
-    # Create chunks for individual format magnet links
-    if data_format_level == "individual":
-        magnet_links = data.get("magnet_links") or request.form.getlist("magnet_link[]")
-        zoom_levels = data.get("zoom_levels") or request.form.getlist("zoom_level[]")
-        for i, ml in enumerate(magnet_links):
-            ml_val = ml if isinstance(ml, dict) else (ml or "")
-            zl_val = zoom_levels[i] if i < len(zoom_levels) else ""
-            if isinstance(ml_val, dict):
-                mag = ml_val.get("magnet_link", "")
-                zlm = ml_val.get("zoom_level", "")
-            else:
-                mag = ml_val
-                zlm = zl_val
-            if mag:
-                chunk = DataChunk(
-                    parent_item_id=item.id,
-                    name=f"chunk_{item.id}_{i}",
-                    owner_user_id=current_user.id,
-                    magnet_link=mag[:500],
-                    metadata_json={"zoom_level": zlm},
-                )
-                db.session.add(chunk)
-
-    # Add viz link if provided in the upload data
-    viz_name = data.get("viz_link_name") or request.form.get("viz_link_name", "").strip()
-    viz_url = data.get("viz_link_url") or request.form.get("viz_link_url", "").strip()
-    from app import validate_external_url
-    if viz_name and viz_url and validate_external_url(viz_url):
-        link = VisualizationLink(
-            parent_item_id=item.id,
-            name=viz_name[:200],
-            url=viz_url,
-            owner_user_id=current_user.id,
-            link_type='external',
-            display_order=0,
-        )
-        db.session.add(link)
-
-    db.session.commit()
-
-    return jsonify({"status": "created", "id": item.id})
-
-
 @bp.route("/api/items/<int:item_id>/viz-links", methods=["POST"])
 @login_required
 def add_viz_link(item_id):
@@ -378,3 +217,121 @@ def add_viz_link(item_id):
     db.session.commit()
 
     return jsonify({"status": "created", "id": link.id})
+
+
+@bp.route("/api/upload/file", methods=["POST"])
+@login_required
+def upload_file():
+    current_user = get_current_user()
+    data_text = request.form.get("data_text", "").strip()
+    title = request.form.get("title", "").strip()
+    item_type = request.form.get("type", "geodonnee").strip()
+    format_type = request.form.get("format_type", "").strip()
+    description = request.form.get("description", "").strip()
+    data_format_level = request.form.get("data_format_level", "individual").strip()
+    organization_id = request.form.get("organization_id", "").strip()
+
+    if not data_text:
+        return jsonify({"error": "Les données sont requises"}), 400
+    if not title:
+        return jsonify({"error": "Le titre est requis"}), 400
+
+ 
+    org_id = int(organization_id) if organization_id and organization_id.isdigit() else None
+
+    chunk = DataChunk(
+        parent_item_id=None,
+        name=title,
+        owner_user_id=current_user.id,
+        description=description or None,
+        format_type=format_type or None,
+        data_url=data_text[:10000] if len(data_text) <= 10000 else data_text[:5000],
+        visibility="public",
+        upload_status="uploaded",
+        organization_id=org_id,
+    )
+    db.session.add(chunk)
+    db.session.flush()
+
+    upload_record = UserUpload(
+        owner_user_id=current_user.id,
+        chunk_id=chunk.id,
+        file_name=title,
+        file_size_bytes=len(data_text.encode('utf-8')),
+        mime_type="text/plain",
+        original_format=format_type or None,
+        processing_status="queued",
+        organization_id=org_id,
+    )
+    db.session.add(upload_record)
+    db.session.commit()
+
+    return jsonify({
+        "status": "uploaded",
+        "chunk_id": chunk.id,
+        "upload_id": upload_record.id,
+    })
+
+
+@bp.route("/api/upload/item", methods=["POST"])
+@login_required
+def create_upload_item():
+    current_user = get_current_user()
+
+    data = request.get_json(silent=True) or {}
+    title = data.get("title", "").strip()
+    item_type = data.get("type", "geodonnee").strip()
+    format_type = data.get("format_type", "").strip()
+    description = data.get("description", "").strip()
+    data_format_level = data.get("data_format_level", "individual").strip()
+    organization_id = data.get("organization_id", "").strip()
+
+    if not title:
+        return jsonify({"error": "Le titre est requis"}), 400
+
+    org_id = int(organization_id) if organization_id and str(organization_id).isdigit() else None
+
+    item = Item(
+        type=item_type,
+        title=title,
+        description=description or "",
+        format_type=format_type or None,
+        magnet_link="",
+        owner_user_id=current_user.id,
+        author_name=f"{current_user.prenom} {current_user.nom}",
+        organization_id=org_id,
+        is_published=True,
+        verification_status="unofficial",
+        data_format_level=data_format_level,
+    )
+    db.session.add(item)
+    db.session.flush()
+
+    viz_link_name = data.get("viz_link_name", "").strip()
+    viz_link_url = data.get("viz_link_url", "").strip()
+    if viz_link_name and viz_link_url:
+        from app import validate_external_url
+        if not validate_external_url(viz_link_url):
+            return jsonify({"error": "URL invalide ou non sécurisée"}), 400
+        link = VisualizationLink(
+            parent_item_id=item.id,
+            name=viz_link_name[:200],
+            url=viz_link_url,
+            owner_user_id=current_user.id,
+            link_type=data.get("link_type", "external"),
+        )
+        db.session.add(link)
+
+    if data_format_level == "pack":
+        magnet = data.get("magnet_link", "").strip()
+        if magnet:
+            item.magnet_link = magnet
+    else:
+        magnet_links = data.get("magnet_links", [])
+        if magnet_links:
+            links_json = [{"magnet_link": ml.get("magnet_link", ""), "zoom_level": ml.get("zoom_level", "")} for ml in magnet_links]
+            item.metadata_json = links_json
+
+    db.session.commit()
+
+    return jsonify({"status": "created", "id": item.id})
