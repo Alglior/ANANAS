@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, session, Response, request, g
+from flask import Blueprint, render_template, session, Response, request, g, abort
 from app import db
+from src.shared import get_current_user, user_owns_item_or_admin
 
 bp = Blueprint("items", __name__)
 
@@ -26,9 +27,9 @@ def item_detail_view(item_id):
 
     img_gallery = get_image_gallery(item)
 
-    current_user = None
-    if "user_id" in session:
-        current_user = db.session.get(User, session["user_id"])
+    current_user = get_current_user()
+    if not item.is_published and not user_owns_item_or_admin(current_user, item):
+        abort(404)
 
     return render_template(
         "item_detail.html",
@@ -46,9 +47,9 @@ def item_data_view(item_id):
     from models import Item, DataChunk, VisualizationLink, User
 
     item = Item.query.get_or_404(item_id)
-    current_user = None
-    if "user_id" in session:
-        current_user = db.session.get(User, session["user_id"])
+    current_user = get_current_user()
+    if not item.is_published and not user_owns_item_or_admin(current_user, item):
+        abort(404)
     viz_links = [vl.to_dict() for vl in VisualizationLink.query.filter_by(parent_item_id=item_id, is_active=True).all()]
     public_filter = [DataChunk.parent_item_id == item.id, DataChunk.visibility == "public"]
     if current_user:
@@ -82,6 +83,9 @@ def item_gallery_view(item_id):
     from models import Item
 
     item = Item.query.get_or_404(item_id)
+    current_user = get_current_user()
+    if not item.is_published and not user_owns_item_or_admin(current_user, item):
+        abort(404)
     return render_template(
         "gallery.html",
         title=f"Galerie — {item.title}",

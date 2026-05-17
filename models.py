@@ -4,7 +4,7 @@ from app import db
 from sqlalchemy import ForeignKey, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from utils.security import sanitize_gallery_data, sanitize_value
+from utils.security import sanitize_gallery_data, sanitize_value, validate_external_url, validate_magnet_link
 
 
 class Item(db.Model):
@@ -55,7 +55,7 @@ class Item(db.Model):
             "title": self.title,
             "description": self.description,
             "format": self.format_type,
-            "magnet": self.magnet_link,
+            "magnet": self.magnet_link if validate_magnet_link(self.magnet_link) else "",
             "image": self.image_path,
             "author": self.author_name,
             "organization_id": self.organization_id,
@@ -75,7 +75,11 @@ class Item(db.Model):
             "rating": self._get_rating_avg(),
             "review_count": len(self.ratings),
             "data_format_level": self.data_format_level,
-            "download_levels": [{"name": c.name, "magnet": c.magnet_link} for c in DataChunk.query.filter_by(parent_item_id=self.id, visibility="public").all()] if self.data_format_level == "individual" else None,
+            "download_levels": [
+                {"name": c.name, "magnet": c.magnet_link}
+                for c in DataChunk.query.filter_by(parent_item_id=self.id, visibility="public").all()
+                if validate_magnet_link(c.magnet_link or "")
+            ] if self.data_format_level == "individual" else None,
         }
 
     def _get_rating_avg(self):
@@ -303,8 +307,8 @@ class DataChunk(db.Model):
             "name": self.name,
             "description": self.description,
             "format_type": self.format_type,
-            "magnet_link": self.magnet_link,
-            "data_url": self.data_url,
+            "magnet_link": self.magnet_link if validate_magnet_link(self.magnet_link or "") else None,
+            "data_url": self.data_url if validate_external_url(self.data_url or "") else None,
             "visibility": self.visibility,
             "metadata_json": meta_json,
             "created_at": self.created_at.strftime("%Y-%m-%d") if self.created_at else "",

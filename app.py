@@ -4,7 +4,8 @@ import secrets
 
 from src.shared import Config, _build_page_numbers, ITEMS_PER_PAGE, SECRET_FILE, login_required, get_current_user
 
-from flask import Flask, render_template, redirect, url_for, request, session, jsonify, g
+from flask import Flask, render_template, redirect, url_for, request, session, jsonify, g, current_app
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_wtf import CSRFProtect
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -14,8 +15,10 @@ from utils.security import sanitize_html, validate_external_url
 
 
 def _get_client_ip():
+    trusted = set(current_app.config.get("TRUSTED_PROXIES", []))
+    remote_addr = request.remote_addr or ""
     forwarded_for = request.headers.getlist("X-Forwarded-For")
-    if forwarded_for:
+    if forwarded_for and remote_addr in trusted:
         return forwarded_for[0].split(",")[0].strip()
     return get_remote_address()
 
@@ -44,6 +47,9 @@ def create_app(app_name="ANANAS"):
 
     app = Flask(__name__, template_folder="templates")
     app.jinja_env.autoescape = True  # Défend contre les XSS via échappement automatique
+
+    # Respect reverse proxy headers only when behind trusted proxy
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
     # ────────────────────────────────────────────
     #  CSP nonce generator + CSRF check (combined before_request)

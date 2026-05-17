@@ -10,7 +10,7 @@ from sqlalchemy import func
 from app import db, limiter
 from src.shared import login_required, get_current_user, user_owns_item_or_admin
 from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink
-from utils.security import sanitize_html
+from utils.security import sanitize_html, validate_magnet_link
 
 bp = Blueprint("users", __name__)
 
@@ -325,11 +325,20 @@ def create_upload_item():
     if data_format_level == "pack":
         magnet = data.get("magnet_link", "").strip()
         if magnet:
+            if not validate_magnet_link(magnet):
+                return jsonify({"error": "Lien magnet invalide"}), 400
             item.magnet_link = magnet
     else:
         magnet_links = data.get("magnet_links", [])
         if magnet_links:
-            links_json = [{"magnet_link": ml.get("magnet_link", ""), "zoom_level": ml.get("zoom_level", "")} for ml in magnet_links]
+            links_json = [
+                {
+                    "magnet_link": ml.get("magnet_link", ""),
+                    "zoom_level": ml.get("zoom_level", ""),
+                }
+                for ml in magnet_links
+                if validate_magnet_link(ml.get("magnet_link", ""))
+            ]
             item.metadata_json = links_json
 
     db.session.commit()

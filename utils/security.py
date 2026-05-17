@@ -47,6 +47,32 @@ def validate_external_url(url: str) -> bool:
         return False
 
 
+def validate_magnet_link(url: str) -> bool:
+    """Valider strictement un lien magnet pour éviter les schémas dangereux."""
+    if not url or not isinstance(url, str):
+        return False
+
+    url = url.strip()
+    if not url:
+        return False
+
+    if any(c.isspace() for c in url):
+        return False
+
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme != "magnet":
+            return False
+        if not parsed.query:
+            return False
+        query = parsed.query.lower()
+        if "xt=urn:btih:" not in query and "xt=urn:btmh:" not in query:
+            return False
+        return True
+    except Exception:
+        return False
+
+
 
 def sanitize_value(value) -> str | int | float | bool:
     """Sanitizer une valeur individuelle pour prévenir les attaques XSS."""
