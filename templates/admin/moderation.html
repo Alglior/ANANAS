@@ -36,6 +36,7 @@
         </tbody>
       </table>
     </div>
+    <div id="comment-pagination" class="mod-pagination"></div>
   </div>
 
   <!-- Items Moderation -->
@@ -67,10 +68,12 @@
         </tbody>
       </table>
     </div>
+    <div id="items-pagination" class="mod-pagination"></div>
   </div>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
-<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/moderation.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/moderation.js') }}?v=2">
+</script>
 {% endblock %}

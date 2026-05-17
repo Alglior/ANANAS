@@ -6,7 +6,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app, db
-from models import Item, ItemTag, ItemGallery, DataChunk
+from models import Item, ItemTag, ItemGallery, DataChunk, Report, User
 
 
 LOREM_IPSUM_FR = [
@@ -158,12 +158,12 @@ def _build_chunks(item_id, pack_title):
         band = BAND_NAMES[(j * item_id) % len(BAND_NAMES)]
         fmt = CHUNK_FORMATS[j % len(CHUNK_FORMATS)]
         chunk = DataChunk(
-             parent_item_id=item_id,
-             name=f"{pack_title}_L{lvl}_{band}",
-             format_type=fmt,
-             magnet_link=f"magnet:?xt=urn:btih:{item_id:032d}chunk{j:03d}",
-             owner_user_id=SYSTEM_USER_ID,
-         )
+            parent_item_id=item_id,
+            name=f"{pack_title}_L{lvl}_{band}",
+            format_type=fmt,
+            magnet_link=f"magnet:?xt=urn:btih:{item_id:032d}chunk{j:03d}",
+            owner_user_id=SYSTEM_USER_ID,
+        )
 
         chunks.append(chunk)
     return chunks
@@ -208,6 +208,170 @@ def _build_gallery(item_id):
         elif media_type == "interactive_map":
             gallery.append({"type": "interactive_map", "id": f"map-gallery-{item_id}", "label": label})
     return gallery
+
+
+COMMENT_CONTENTS = [
+    "Excellentes données, très précises et bien structurées. Merci pour le partage !",
+    "J'ai utilisé ces données pour un projet de cartographie et les résultats sont convaincants. Bravo.",
+    "Quelques petites erreurs dans l'attribut 'surface_ha', vérifiez les valeurs pour les zones 45 à 60.",
+    "Format Shapefile impeccable, tout ouvre sans problème dans QGIS. Bien joué.",
+    "Seriez-vous en mesure de fournir une version en GeoJSON ? Le Shapefile ne supporte pas bien les encodages UTF-8 complexes.",
+    "Très utile pour la comparaison interannuelle que je prépare sur l'évolution du territoire régional.",
+    "La résolution spatiale est令人叹为观止 (wow)! On voit clairement les détails de l'occupation du sol.",
+    "Attention, le système de coordonnées indiqué ne correspond pas toujours à celui des données brutes.",
+    "Merci pour ce travail minutieux. Serait-il possible d'ajouter la couche linéaire des cours d'eau ?",
+    "J'ai croisé ces données avec le cadastre et les recoupements sont quasi parfaits — bravo.",
+    "Données un peu anciennes (2022) mais toujours pertinentes pour l'échelle de mon étude.",
+    "Les métadonnées sont bien documentées, c'est rare et ça fait plaisir !",
+    "Le format GeoPackage serait plus performant pour les gros volumes. À envisager pour la prochaine version.",
+    "J'ai testé sur le secteur sud — pas de problème détecté pour l'heure. Je reviendrai vers vous si besoin.",
+    "Cette ressource a considérablement accéléré notre rapport annuel. Merci infiniment à l'auteur.",
+    "On regrette l'absence d'un indicateur de confiance / qualité par valeur, pourtant essentiel pour les analyses quantitatives.",
+    "Parfait pour alimenter le dashboard du service urbanisme. Le partage est vraiment bénéfique pour tous.",
+    "Petit bémol sur la cohérence des codes INSEE dans la table attributaire — quelques coquilles à corriger.",
+    "Données hydro : le débit moyen semble sous-estimé de 15% par rapport aux relevés Sandre. À vérifier ?",
+    "Excellente couverture orthophoto, bien plus précise que celle disponible en open source. Merci !",
+]
+
+COMMENT_AUTHORS = [
+    "Lucas Dubois", "Marie Laurent", "Pierre Martin", "Sophie Durand",
+    "Nicolas Moreau", "Isabelle Petit", "Thomas Leroy", "Camille Roux",
+    "Antoine Morel", "Léa Fournier", "Jules Girard", "Emma Bernard",
+]
+
+REPORT_REASONS = [
+    "spam", "contenu_inapproprié", "fake_data", "other", "données_fausses",
+    "harcèlement", "proposition_non_conforme", "contenu_suspect",
+]
+REPORT_DESCRIPTIONS = [
+    "Signalement automatique détecté par le système de modération.",
+    "L'utilisateur signalé a été accusé d'utiliser des données falsifiées.",
+    "Ce rapport concerne un abus de confiance dans la communauté.",
+    "La publication signalée semble contenir des informations trompeuses.",
+    "Plusieurs utilisateurs ont déjà soumis un signalement similaire.",
+    "Contenu potentiellement illégal ou non conforme aux conditions d'utilisation.",
+    "Données publiées sans autorisation préalable du propriétaire initial.",
+    "L'utilisateur signalé multiplie les tentatives de publication non vérifiée.",
+    "Signalement lié à une activité suspecte de scraping ou de collecte massive.",
+    "Publication ne respectant pas la charte qualité de la plateforme.",
+]
+
+REPORT_TYPES = ["user", "item_geodonnee", "item_carte", "item_application"]
+
+
+def seed_reports():
+    if db.session.execute(db.select(db.func.count()).select_from(Report)).scalar() > 0:
+        print("Reports already exist. Skipping seeding.")
+        return
+
+    users = db.session.execute(
+        db.select(User).order_by(User.id)
+    ).scalars().all()
+
+    items = db.session.execute(
+        db.select(Item).order_by(Item.id)
+    ).scalars().all()
+
+    if len(users) < 5:
+        print("Not enough users to seed reports (need at least 5). Skipping.")
+        return
+
+    admin_user = None
+    for u in users:
+        if u.is_admin:
+            admin_user = u
+            break
+
+    items_by_type = {
+        "item_geodonnee": [i.id for i in items if i.type == "geodonnee"],
+        "item_carte": [i.id for i in items if i.type == "carte"],
+        "item_application": [i.id for i in items if i.type == "application"],
+    }
+
+    reports_to_add = []
+    n_reports = 50
+
+    for i in range(1, n_reports + 1):
+        reporter_id = users[i % len(users)].id
+        reported_user_id = users[(i * 7) % len(users)].id
+        report_type = REPORT_TYPES[i % len(REPORT_TYPES)]
+        target_item_id = None
+
+        if item_list := items_by_type.get(report_type):
+            target_item_id = item_list[i % len(item_list)]
+
+        reason = REPORT_REASONS[i % len(REPORT_REASONS)]
+        description = REPORT_DESCRIPTIONS[i % len(REPORT_DESCRIPTIONS)]
+        status = "pending" if i <= 35 else ("resolved" if i <= 42 else "dismissed")
+        reviewed_by_id = admin_user.id if status != "pending" else None
+
+        created_at = _pseudo_date(f"report_{i}")
+
+        reviewed_at = None
+        if reviewed_by_id:
+            review_offset = i + 30
+            reviewed_at = created_at + datetime.timedelta(days=review_offset % 30, hours=review_offset % 24)
+
+        report = Report(
+            reporter_id=reporter_id,
+            reported_user_id=reported_user_id,
+            report_type=report_type,
+            target_item_id=target_item_id,
+            reason=reason,
+            description=description,
+            status=status,
+            reviewed_by=reviewed_by_id,
+            reviewed_at=reviewed_at,
+            created_at=created_at,
+        )
+        reports_to_add.append(report)
+
+    db.session.add_all(reports_to_add)
+    try:
+        db.session.commit()
+        print(f"  Seed reports: {len(reports_to_add)} reports created (pending={sum(1 for r in reports_to_add if r.status == 'pending')}, resolved={sum(1 for r in reports_to_add if r.status == 'resolved')}, dismissed={sum(1 for r in reports_to_add if r.status == 'dismissed')})")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error seeding reports: {e}")
+
+
+def seed_comments():
+    from models import Comment
+    if db.session.execute(db.select(db.func.count()).select_from(Comment)).scalar() > 0:
+        print("Comments already exist. Skipping seeding.")
+        return
+
+    items = db.session.execute(
+        db.select(Item.id).order_by(Item.id)
+    ).scalars().all()
+
+    if not items:
+        print("No items found to attach comments to. Skipping comment seeding.")
+        return
+
+    comments_to_add = []
+    n_comments = 120
+    for i in range(1, n_comments + 1):
+        author = COMMENT_AUTHORS[i % len(COMMENT_AUTHORS)]
+        item_id = items[(i * 3) % len(items)]
+        content = COMMENT_CONTENTS[i % len(COMMENT_CONTENTS)]
+        created_at = _pseudo_date(f"comment_{i}")
+
+        comment = Comment(
+            item_id=item_id,
+            author_name=author,
+            content=content,
+            created_at=created_at,
+        )
+        comments_to_add.append(comment)
+
+    db.session.add_all(comments_to_add)
+    try:
+        db.session.commit()
+        print(f"  Seed comments: {len(comments_to_add)} comments created")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error seeding comments: {e}")
 
 
 def seed_items(category, count, type_val, title_fn, format_fn, is_pack=False):
@@ -281,8 +445,8 @@ def seed_all():
 
         if before > 0:
             print(f"Clearing existing {before} items...")
-            db.session.execute(db.table("item_gallery").delete())
-            db.session.execute(db.table("item_tags").delete())
+            for tbl in ["visualization_links", "reports", "ratings", "comments", "item_gallery", "item_tags", "user_uploads", "data_chunks"]:
+                db.session.execute(db.table(tbl).delete())
             db.session.execute(db.table("items").delete())
             db.session.commit()
 
@@ -297,7 +461,7 @@ def seed_all():
             "Pack SIG Administrative Entieres",
             "Pack Hydrographie SANDRE Global",
             "Pack Occupation Sol CORINE",
-            "Pack Pédologie Reference France",
+            "Pack Pedologie Reference France",
             "Pack Catastral Property Parcels",
         ]
 
@@ -305,7 +469,7 @@ def seed_all():
             category="donnees",
             count=100,
             type_val="geodonnee",
-            title_fn=lambda i: f"Géodonnée {i:04d}",
+            title_fn=lambda i: f"Gedonnee {i:04d}",
             format_fn=lambda i: _get_tags("donnees", i),
         )
 
@@ -333,6 +497,10 @@ def seed_all():
             title_fn=lambda i: f"{APP_NAMES[i % len(APP_NAMES)]} — v{i // 10 + 1}.{i % 10}",
             format_fn=lambda i: _get_tags("applications", i),
         )
+
+        # Seed mock comments and reports
+        seed_comments()
+        seed_reports()
 
         total = db.session.execute(func.count(Item.id)).scalar()
         stmt = db.select(db.func.count()).where(Item.data_format_level == "pack")

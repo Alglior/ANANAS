@@ -676,3 +676,18 @@
     padding: 0.4rem var(--space-xs);
   }
 }
+
+/* ── Moderation pagination ── */
+
+.mod-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.mod-pagination-nav .pagination-numbers {
+  gap: 0.25rem;
+}

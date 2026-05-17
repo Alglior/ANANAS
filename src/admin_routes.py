@@ -177,6 +177,8 @@ def list_reports():
 
     status_filter = request.args.get("status", "all")
     report_type = request.args.get("type", "all")
+    page = int(request.args.get("page", 1))
+    per_page = 30
 
     query = Report.query
     if status_filter != "all":
@@ -184,23 +186,33 @@ def list_reports():
     if report_type != "all":
         query = query.filter_by(report_type=report_type)
 
-    reports = query.order_by(Report.created_at.desc()).all()
-    return jsonify([
-        {
-            "id": r.id,
-            "reporter": {"id": r.reporter.id, "name": str(r.reporter)} if r.reporter else None,
-            "reported_user": {"id": r.reported_user.id, "name": str(r.reported_user)} if r.reported_user else None,
-            "target_item_id": r.target_item_id,
-            "report_type": r.report_type,
-            "reason": r.reason,
-            "description": r.description,
-            "status": r.status,
-            "reviewed_by": {"id": r.reviewed_by.id, "name": str(r.reviewed_by)} if r.reviewed_by else None,
-            "reviewed_at": r.reviewed_at.isoformat() if hasattr(r, "reviewed_at") and r.reviewed_at else None,
-            "created_at": r.created_at.isoformat(),
-        }
-        for r in reports
-    ])
+    total_items = query.count()
+    per_page = per_page or 30
+    paginated_reports = query.order_by(Report.created_at.desc()).limit(per_page).offset((page - 1) * per_page).all()
+    total_pages = (total_items + per_page - 1) // per_page if total_items > 0 else 1
+    page_numbers = _build_page_numbers(page, total_pages)
+    return jsonify({
+        "reports": [
+            {
+                "id": r.id,
+                "reporter": {"id": r.reporter.id, "name": str(r.reporter)} if r.reporter else None,
+                "reported_user": {"id": r.reported_user.id, "name": str(r.reported_user)} if r.reported_user else None,
+                "target_item_id": r.target_item_id,
+                "report_type": r.report_type,
+                "reason": r.reason,
+                "description": r.description,
+                "status": r.status,
+                "reviewed_by": {"id": r.reviewer.id, "name": str(r.reviewer)} if r.reviewer else None,
+                "reviewed_at": r.reviewed_at.isoformat() if hasattr(r, "reviewed_at") and r.reviewed_at else None,
+                "created_at": r.created_at.isoformat(),
+            }
+            for r in paginated_reports
+        ],
+        "page": page,
+        "total_pages": total_pages,
+        "total_items": total_items,
+        "page_numbers": page_numbers,
+    })
 
 
 @bp.route("/api/admin/reports/<int:report_id>/resolve", methods=["POST"])
@@ -265,27 +277,10 @@ def admin_users(page=None):
 @login_required
 @require_admin
 def admin_reports():
-    from models import Report
-
-    status_filter = request.args.get("status", "all")
-    report_type = request.args.get("type", "all")
-
-    query = Report.query
-    if status_filter != "all":
-        query = query.filter_by(status=status_filter)
-    if report_type != "all":
-        query = query.filter_by(report_type=report_type)
-
-    reports = query.order_by(Report.created_at.desc()).all()
-    pending_count = Report.query.filter_by(status="pending").count()
-
     return render_template(
         "admin/reports.html",
         title="Administration — Signalements",
         meta_description="Liste des signalements",
-        reports=reports,
-        status=status_filter,
-        pending_count=pending_count,
     )
 
 
@@ -299,22 +294,47 @@ def list_comments():
         return jsonify({"error": "Non autorisé"}), 403
 
     item_id = request.args.get("item_id", type=int)
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", ITEMS_PER_PAGE, type=int)
+
     query = Comment.query
     if item_id:
         query = query.filter_by(item_id=item_id)
-    comments = query.order_by(Comment.created_at.desc()).all()
-    return jsonify([
-        {
-            "id": c.id,
-            "item_id": c.item_id,
-            "author_name": c.author_name,
-            "content": c.content,
-            "created_at": c.created_at.isoformat() if hasattr(c, "created_at") and c.created_at else None,
-            "item_title": c.item.title if c.item else None,
-            "item_type": c.item.type if c.item else None,
-        }
-        for c in comments
-    ])
+
+    # Support since filter for recent/old filtering
+    since_param = request.args.get("since")
+    if since_param:
+        try:
+            since_date = dt.datetime.fromisoformat(since_param)
+            query = query.filter(Comment.created_at >= since_date)
+        except (ValueError, TypeError):
+            pass
+
+    total_items = query.count()
+    total_pages = max((total_items + per_page - 1) // per_page, 1)
+    page = min(max(page, 1), total_pages) or 1
+
+    paginated_comments = query.order_by(Comment.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+    page_numbers = _build_page_numbers(page, total_pages)
+
+    return jsonify({
+        "comments": [
+            {
+                "id": c.id,
+                "item_id": c.item_id,
+                "author_name": c.author_name,
+                "content": c.content,
+                "created_at": c.created_at.isoformat() if hasattr(c, "created_at") and c.created_at else None,
+                "item_title": c.item.title if c.item else None,
+                "item_type": c.item.type if c.item else None,
+            }
+            for c in paginated_comments
+        ],
+        "page": page,
+        "total_pages": total_pages,
+        "total_items": total_items,
+        "page_numbers": page_numbers,
+    })
 
 
 @bp.route("/api/admin/comments/<int:comment_id>", methods=["DELETE"])
@@ -345,6 +365,8 @@ def list_items():
 
     item_type = request.args.get("type", "all")
     status_filter = request.args.get("status", "all")
+    page = int(request.args.get("page", 1))
+    per_page = 30
 
     query = Item.query
     if item_type != "all":
@@ -354,21 +376,29 @@ def list_items():
     elif status_filter == "unpublished":
         query = query.filter_by(is_published=False)
 
-    items = query.order_by(Item.created_at.desc()).all()
-    return jsonify([
-        {
-            "id": it.id,
-            "type": it.type,
-            "title": it.title,
-            "description": it.description[:100],
-            "author_name": it.author_name,
-            "is_published": it.is_published,
-            "verification_status": it.verification_status,
-            "created_at": it.created_at.isoformat() if hasattr(it, "created_at") and it.created_at else None,
-            "comment_count": len(it.comments),
-        }
-        for it in items
-    ])
+    total_items = query.count()
+    paginated = query.order_by(Item.created_at.desc()).limit(per_page).offset((page - 1) * per_page).all()
+    page_numbers = _build_page_numbers(page, (total_items + per_page - 1) // per_page)
+    return jsonify({
+        "items": [
+            {
+                "id": it.id,
+                "type": it.type,
+                "title": it.title,
+                "description": it.description[:100],
+                "author_name": it.author_name,
+                "is_published": it.is_published,
+                "verification_status": it.verification_status,
+                "created_at": it.created_at.isoformat() if hasattr(it, "created_at") and it.created_at else None,
+                "comment_count": len(it.comments),
+            }
+            for it in paginated
+        ],
+        "page": page,
+        "total_pages": ((total_items + per_page - 1) // per_page),
+        "total_items": total_items,
+        "page_numbers": page_numbers,
+    })
 
 
 @bp.route("/api/admin/items/<int:item_id>", methods=["DELETE"])

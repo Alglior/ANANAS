@@ -239,6 +239,7 @@ class DataChunk(db.Model):
     metadata_json: Mapped[dict | None] = mapped_column(JSON, server_default="{}")
     is_published: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
+    upload_status: Mapped[str] = mapped_column(default="uploaded")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -248,6 +249,8 @@ class DataChunk(db.Model):
             self.is_published = False
         if self.created_at is None:
             self.created_at = datetime.datetime.now()
+        if not hasattr(self, "upload_status") or self.upload_status is None:
+            self.upload_status = "uploaded"
 
     published_at: Mapped[datetime.datetime | None]
 
