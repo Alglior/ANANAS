@@ -4,6 +4,8 @@ from app import db
 from sqlalchemy import ForeignKey, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
+from utils.security import sanitize_gallery_data, sanitize_value
+
 
 class Item(db.Model):
     __tablename__ = "items"
@@ -85,15 +87,38 @@ class Item(db.Model):
     def _build_gallery_dict(self):
         result = []
         for g in self.gallery_items:
-            entry = {"type": g.media_type, "label": g.label}
+            entry = {"type": g.media_type, "label": sanitize_value(g.label) if isinstance(g.label, str) else g.label}
             if g.src:
-                entry["src"] = g.src
+                entry["src"] = sanitize_value(g.src) if isinstance(g.src, str) else g.src
             if g.data_json:
                 if isinstance(g.data_json, dict):
-                    if g.media_type == "csv":
-                        entry["data"] = g.data_json.get("rows", [])
-                    elif g.media_type == "dashboard":
-                        entry["metrics"] = g.data_json.get("metrics", [])
+                    rows = g.data_json.get("rows", [])
+                    metrics = g.data_json.get("metrics", [])
+                    if g.media_type == "csv" and rows:
+                        if not isinstance(rows, list):
+                            rows = []
+                        entry["data"] = sanitize_gallery_data(rows)
+                    elif g.media_type == "dashboard" and metrics:
+                        if not isinstance(metrics, list):
+                            metrics = []
+                        sanitized_metrics = []
+                        for m in metrics:
+                            if isinstance(m, dict):
+                                clean_m = {}
+                                for k, v in m.items():
+                                    sk = sanitize_value(str(k))
+                                    clean_m[sk] = sanitize_value(v) if isinstance(v, str) else v
+                                sanitized_metrics.append(clean_m)
+                            elif isinstance(m, (str, int, float)):
+                                sanitized_metrics.append(sanitize_value(m) if isinstance(m, str) else m)
+                        entry["metrics"] = sanitized_metrics
+                    else:
+                        # For any other media_type with data_json, sanitize the whole dict
+                        clean_dict = {}
+                        for k, v in g.data_json.items():
+                            sk = sanitize_value(str(k))
+                            clean_dict[sk] = sanitize_gallery_data(v) if isinstance(v, list) else (sanitize_value(v) if isinstance(v, str) else v)
+                        entry["data"] = clean_dict
             result.append(entry)
         return result
 
@@ -258,6 +283,21 @@ class DataChunk(db.Model):
     published_at: Mapped[datetime.datetime | None]
 
     def to_dict(self):
+        meta = self.metadata_json or {}
+        if isinstance(meta, dict):
+            clean_meta = {}
+            for k, v in meta.items():
+                ck = sanitize_value(str(k))
+                if isinstance(v, list):
+                    cv = sanitize_gallery_data(v)
+                elif isinstance(v, str):
+                    cv = sanitize_value(v)
+                else:
+                    cv = v
+                clean_meta[ck] = cv
+            meta_json = clean_meta
+        else:
+            meta_json = {}
         return {
             "id": self.id,
             "name": self.name,
@@ -266,7 +306,7 @@ class DataChunk(db.Model):
             "magnet_link": self.magnet_link,
             "data_url": self.data_url,
             "visibility": self.visibility,
-            "metadata_json": self.metadata_json or {},
+            "metadata_json": meta_json,
             "created_at": self.created_at.strftime("%Y-%m-%d") if self.created_at else "",
         }
 

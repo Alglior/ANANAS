@@ -62,6 +62,65 @@ class TestItemModel:
         assert gal[1]["type"] == "csv"
         assert gal[1]["data"] == [{"a": 1}]
 
+    def test_item_gallery_xss_prevention(self):
+        from models import Item, ItemGallery
+        item = Item(type="geodonnee", title="XSS Gallery", description="Desc", format_type="zip", magnet_link="magnet:?xt=xss")
+        xss_payload = '<script>alert("XSS")</script>'
+        g1 = ItemGallery(item_id=item.id, media_type="csv", data_json={"rows": [[xss_payload, "safe", 42]]}, label="CSV XSS")
+        g2 = ItemGallery(item_id=item.id, media_type="dashboard", data_json={"metrics": [{"metric": "<b>Bold</b>", "value": '<script>alert(1)</script>'}]})
+        g3 = ItemGallery(item_id=item.id, media_type="image", src='/img/<script>alert("src")</script>.png', label='<script>alert("lbl")</script>')
+        item.gallery_items = [g1, g2, g3]
+        gal = item._build_gallery_dict()
+        assert len(gal) == 3
+        # CSV rows should be sanitized - HTML tags stripped
+        csv_data = gal[0]["data"][0]
+        assert "<script>" not in str(csv_data[0])
+        assert "<" not in str(csv_data[0])
+        # Dashboard metrics should be sanitized
+        metric_val = gal[1]["metrics"][0].get("metric", "")
+        assert "<b>" not in str(metric_val)
+        assert "<" not in str(metric_val)
+        val = gal[1]["metrics"][0].get("value", "")
+        assert "<script>" not in str(val)
+        assert "<" not in str(val)
+        # Image src and label should be sanitized
+        assert "<script>" not in str(gal[2].get("src", ""))
+        assert "<" not in str(gal[2].get("src", ""))
+        assert "<script>" not in str(gal[2].get("label", ""))
+        assert "<" not in str(gal[2].get("label", ""))
+
+    def test_item_gallery_invalid_data_json(self):
+        from models import Item, ItemGallery
+        item = Item(type="geodonnee", title="Invalid Gallery", description="Desc", format_type="zip", magnet_link="magnet:?xt=invalid")
+        g1 = ItemGallery(item_id=item.id, media_type="csv", data_json={"rows": "not_a_list"}, label="Bad rows")
+        g2 = ItemGallery(item_id=item.id, media_type="dashboard", data_json={"metrics": "not_a_list"}, label="Bad metrics")
+        g3 = ItemGallery(item_id=item.id, media_type="csv", data_json="string_not_dict", label="String json")
+        item.gallery_items = [g1, g2, g3]
+        gal = item._build_gallery_dict()
+        assert len(gal) == 3
+        # Invalid data should result in empty lists/empty values
+        assert gal[0].get("data") == [] or not gal[0].get("data")
+        assert gal[1].get("metrics") == [] or not gal[1].get("metrics")
+
+    def test_data_chunk_metadata_json_sanitization(self):
+        from models import DataChunk
+        chunk = DataChunk(name="Test Chunk", owner_user_id=1)
+        chunk.metadata_json = {
+            "preview_rows": [
+                '<script>alert("xss")</script>',
+                "<b>bold text</b>",
+                42,
+                "safe_value"
+            ],
+            "column_count": 3,
+            "column_name": "<img src=x onerror=alert(1)>"
+        }
+        d = chunk.to_dict()
+        meta = d["metadata_json"]
+        # Check that strings in preview_rows are sanitized
+        assert "<script>" not in str(meta.get("preview_rows", [])) or "&lt;" in str(meta.get("preview_rows", []))
+        assert "<b>" not in str(meta.get("column_name", ""))
+
     def test_item_verification_status(self):
         from models import Item, User
         user = User(prenom="Verif", nom="Admin", email="verif@test.com", password_hash="pbkdf2:sha256:260000$xxx$yyy", is_active=True)
