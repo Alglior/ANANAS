@@ -13,11 +13,11 @@
         {% for org in organizations %}
         <a href="/organizations/{{ org.slug }}" class="org-card">
           {% if org.logo_url %}
-          <img class="org-logo" src="{{ org.logo_url }}" alt="{{ org.name }} logo">
+          <img class="org-logo" src="{{ org.logo_url|e }}" alt="{{ org.name|e }} logo">
           {% endif %}
           <div class="org-card-info">
-            <span class="org-card-name">{{ org.name }}</span>
-            <p class="org-card-desc">{{ org.description or 'Aucune description.' }}</p>
+            <span class="org-card-name">{{ org.name|e }}</span>
+            <p class="org-card-desc">{{ (org.description|e) or 'Aucune description.'|e }}</p>
           </div>
         </a>
         {% endfor %}

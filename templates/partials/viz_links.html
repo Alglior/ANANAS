@@ -6,21 +6,21 @@
     <div class="viz-card{% if link.link_type == 'embed' %} is-embed{% endif %}">
       <div class="viz-card-header">
         <span class="viz-type-badge badge-{{ link.link_type }}">{{ link.link_type }}</span>
-        <h3>{{ link.name }}</h3>
+        <h3>{{ link.name|e }}</h3>
       </div>
       {% if link.link_type == 'embed' or link.link_type == 'widget' %}
       <div class="viz-iframe-wrapper">
-        <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">
-          {{ link.name }} — Voir la visualisation
+        <a href="{{ link.url|e }}" target="_blank" rel="noopener noreferrer">
+          {{ link.name|e }} — Voir la visualisation
         </a>
       </div>
       {% else %}
       <div class="viz-link-info">
-        <p>{{ link.description or 'Visualisation de ces données.' }}</p>
+        <p>{{ link.description|e or 'Visualisation de ces données.' }}</p>
       </div>
       {% endif %}
       <div class="viz-card-footer">
-        <a href="{{ link.url }}" class="btn btn-viz" target="_blank" rel="noopener noreferrer">Accéder</a>
+        <a href="{{ link.url|e }}" class="btn btn-viz" target="_blank" rel="noopener noreferrer">Accéder</a>
       </div>
     </div>
     {% endfor %}

@@ -59,6 +59,7 @@ def add_comment(item_id):
 
     comment = Comment(
         item_id=item_id,
+        user_id=current_user.id if current_user else None,
         author_name=author_name,
         content=content,
     )
@@ -87,7 +88,7 @@ def verify_item(item_id):
     item.verification_status = status
     item.verifier_user_id = current_user.id
     item.verified_at = dt.datetime.now() if status == "verified" else None
-    item.verification_notes = data.get("notes")
+    item.verification_notes = sanitize_html(data.get("notes", "")).strip() if data.get("notes") else None
 
     db.session.commit()
 

@@ -16,7 +16,7 @@
 
 {% if error and error != "banned" %}
 <div class="alert alert-danger">
-  {{ error }}
+  {{ error|e }}
 </div>
 {% endif %}
 {% endblock %}

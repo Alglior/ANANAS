@@ -21,7 +21,7 @@
         </a>
         <div class="user-dropdown-wrapper" id="userDropdownWrapper">
           <button class="user-dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
-            {{ current_user.prenom }} {{ current_user.nom }}
+            {{ current_user.prenom|e }} {{ current_user.nom|e }}
           </button>
           <div class="user-dropdown" id="userDropdown">
             <a href="/profil" class="dropdown-item">Mon profil</a>
@@ -33,7 +33,7 @@
             {% if user_orgs|length > 0 %}
             {% for org_member in user_orgs %}
             <a href="/organizations/{{ org_member.organization.slug }}" class="dropdown-item">
-              {{ org_member.organization.name }}
+              {{ org_member.organization.name|e }}
             </a>
             {% endfor %}
             {% else %}
@@ -87,7 +87,7 @@
       {% set user_orgs = current_user.organizations | selectattr('is_active', 'equalto', True) | list %}
       {% for org_member in user_orgs %}
       <a href="/organizations/{{ org_member.organization.slug }}">
-        {{ org_member.organization.name }}
+        {{ org_member.organization.name|e }}
       </a>
       {% endfor %}
       {% endif %}

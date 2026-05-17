@@ -211,6 +211,7 @@ class Comment(db.Model):
     __tablename__ = "comments"
     id: Mapped[int] = mapped_column(primary_key=True)
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     author_name: Mapped[str | None]
     content: Mapped[str]
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
@@ -221,6 +222,7 @@ class Comment(db.Model):
             self.created_at = datetime.datetime.now()
 
     item = relationship("Item", back_populates="comments")
+    user = relationship("User", back_populates="comments")
 
 
 class DataChunk(db.Model):
@@ -370,6 +372,7 @@ class AdminAudit(db.Model):
 
 User.data_chunks = relationship("DataChunk", back_populates="owner")
 User.user_uploads = relationship("UserUpload", back_populates="owner")
+User.comments = relationship("Comment", back_populates="user")
 User.reported_reports = relationship(
     "Report",
     foreign_keys=[Report.reported_user_id],

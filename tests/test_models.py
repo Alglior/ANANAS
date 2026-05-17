@@ -25,8 +25,7 @@ class TestItemModel:
             type="geodonnee",
             title="Item Org",
             description="Desc",
-           format_type="shapefile",
-            magnet_link="magnet:?xt=test2",
+            format_type="shapefile",            magnet_link="magnet:?xt=test2",
             organization_id=org.id,
         )
         item.organization = org
@@ -36,7 +35,7 @@ class TestItemModel:
 
     def test_item_rating_average(self):
         from models import Item, Rating
-       item = Item(type="carte", title="Rated", description="Desc", format_type="tif", magnet_link="magnet:?xt=rated")
+        item = Item(type="carte", title="Rated", description="Desc", format_type="tif", magnet_link="magnet:?xt=rated")
         r1 = Rating(item_id=item.id, rating=4.0)
         r2 = Rating(item_id=item.id, rating=6.0)
         item.ratings = [r1, r2]
@@ -45,14 +44,14 @@ class TestItemModel:
 
     def test_item_rating_no_ratings(self):
         from models import Item
-       item = Item(type="application", title="Unrated", description="Desc", format_type="web", magnet_link="magnet:?xt=unrated")
+        item = Item(type="application", title="Unrated", description="Desc", format_type="web", magnet_link="magnet:?xt=unrated")
         item.ratings = []
         avg = item._get_rating_avg()
         assert avg == 0
 
     def test_item_gallery_build(self):
         from models import Item, ItemGallery
-       item = Item(type="geodonnee", title="Gallery Item", description="Desc", format_type="zip", magnet_link="magnet:?xt=gal")
+        item = Item(type="geodonnee", title="Gallery Item", description="Desc", format_type="zip", magnet_link="magnet:?xt=gal")
         g1 = ItemGallery(item_id=item.id, media_type="image", src="/img/1.png", label="Label 1")
         g2 = ItemGallery(item_id=item.id, media_type="csv", data_json={"rows": [{"a": 1}]}, label="CSV 1")
         item.gallery_items = [g1, g2]
@@ -66,7 +65,8 @@ class TestItemModel:
     def test_item_verification_status(self):
         from models import Item, User
         user = User(prenom="Verif", nom="Admin", email="verif@test.com", password_hash="pbkdf2:sha256:260000$xxx$yyy", is_active=True)
-       item = Item(type="carte", title="Verified Item", description="Desc", format_type="map", magnet_link="magnet:?xt=verif")
+        item = Item(type="carte", title="Verified Item", description="Desc", format_type="map", magnet_link="magnet:?xt=verif"
+)
         item.verification_status = "verified"
         item.verifier_user_id = user.id
         item.verified_at = datetime.datetime.now()
@@ -79,7 +79,7 @@ class TestItemModel:
     def test_item_type_mapping(self):
         from models import Item
         for item_type, expected_link in [("geodonnee", "/catalogue/donnees"), ("carte", "/catalogue/cartes"), ("application", "/catalogue/applications")]:
-   item = Item(type=item_type, title="Map Test", description="Desc", format_type="x", magnet_link="magnet:?xt=map")
+            item = Item(type=item_type, title="Map Test", description="Desc", format_type="x", magnet_link="magnet:?xt=map")
             assert item.to_dict()["catalogue_link"] == expected_link
 
 

@@ -43,6 +43,7 @@ def create_app(app_name="ANANAS"):
             )
 
     app = Flask(__name__, template_folder="templates")
+    app.jinja_env.autoescape = True  # Défend contre les XSS via échappement automatique
 
     # ────────────────────────────────────────────
     #  CSP nonce generator + CSRF check (combined before_request)

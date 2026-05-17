@@ -79,7 +79,7 @@ def create_item():
 
     current_user = get_current_user()
     title = request.form.get("title", "").strip()
-    description = request.form.get("description", "").strip()
+    description = sanitize_html(request.form.get("description", "").strip())
     item_type = request.form.get("type", "geodonnee")
     format_type = request.form.get("format_type", "")
     magnet_link = request.form.get("magnet_link", "")

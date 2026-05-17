@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ item.title }} — Galerie{% endblock %}
-{% block meta_description %}Galerie {{ item.title }}{% endblock %}
+{% block title %}{{ item.title|e }} — Galerie{% endblock %}
+{% block meta_description %}Galerie {{ item.title|e }}{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />

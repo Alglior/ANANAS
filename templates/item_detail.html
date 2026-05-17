@@ -14,7 +14,7 @@
         <span class="sep">&rsaquo;</span>
         <a href="{{ item.catalogue_link }}">Catalogue</a>
         <span class="sep">&rsaquo;</span>
-        <span>{{ item.title }}</span>
+        <span>{{ item.title|e }}</span>
       </nav>
 
       <nav class="detail-tabs" aria-label="Actions sur la donnée">
@@ -62,7 +62,7 @@
                     <tr>
                       {% set cells = row.split(',') %}
                       {% for cell in cells[:chunk.metadata_json.column_count] %}
-                      <td>{{ cell.strip() }}</td>
+                      <td>{{ cell.strip()|e }}</td>
                       {% endfor %}
                     </tr>
                     {% endfor %}
@@ -82,26 +82,26 @@
                 {% if chunk.format_type %}
                 <div class="detail-row">
                   <dt>Format</dt>
-                  <dd>{{ chunk.format_type }}</dd>
+                  <dd>{{ chunk.format_type|e }}</dd>
                 </div>
                 {% endif %}
                 {% if chunk.description %}
                 <div class="detail-row">
                   <dt>Description</dt>
-                  <dd>{{ chunk.description }}</dd>
+                  <dd>{{ chunk.description|e }}</dd>
                 </div>
                 {% endif %}
                 {% if chunk.magnet_link %}
                 <div class="detail-row">
                   <dt>Lien</dt>
-                  <dd><a href="{{ chunk.magnet_link }}">{{ chunk.magnet_link[:80] }}{% if chunk.magnet_link|length > 80 %}...{% endif %}</a></dd>
+                  <dd><a href="{{ chunk.magnet_link }}">{{ chunk.magnet_link[:80]|e }}{% if chunk.magnet_link|length > 80 %}...{% endif %}</a></dd>
                 </div>
                 {% endif %}
               </dl>
               {% if chunk.data_url %}
-              <a href="{{ chunk.data_url }}" class="btn btn-download" target="_blank" rel="noopener noreferrer">Accéder aux données</a>
+              <a href="{{ chunk.data_url|e }}" class="btn btn-download" target="_blank" rel="noopener noreferrer">Accéder aux données</a>
               {% elif chunk.magnet_link %}
-              <a href="{{ chunk.magnet_link }}" class="btn btn-download">Télécharger via Magnet</a>
+              <a href="{{ chunk.magnet_link|e }}" class="btn btn-download">Télécharger via Magnet</a>
               {% endif %}
               {% endif %}
             </div>
@@ -129,12 +129,12 @@
         {% if item.is_official_verified %}
             <div class="verified-seal">
                 Données vérifiées et approuvées par A.N.A.N.A.S.
-                <br>Par {{ item.verifier_nom }} le {{ item.verified_at|default("N/A") }}
+                <br>Par {{ item.verifier_nom|e }} le {{ item.verified_at|default("N/A") }}
             </div>
         {% elif item.verification_status == 'rejected' %}
             <div class="warning-rejected">
                 Ces données n'ont pas été approuvées par A.N.A.N.A.S.
-                {% if item.verification_notes %}<br>Raison : {{ item.verification_notes }}{% endif %}
+                {% if item.verification_notes %}<br>Raison : {{ item.verification_notes|e }}{% endif %}
             </div>
         {% else %}
             <div class="unofficial-info">
@@ -148,13 +148,13 @@
 
         <!-- Main product image (left column) -->
         <div class="product-gallery">
-          <img class="product-img" id="mainProductImg" src="{{ item.image }}" alt="{{ item.title }}">
+          <img class="product-img" id="mainProductImg" src="{{ item.image|e }}" alt="{{ item.title|e }}">
           
           <!-- Inline image gallery strip -->
           {% if image_gallery and image_gallery|length > 0 %}
           <div class="inline-gallery" id="inlineGallery">
             {% for img in image_gallery %}
-              <img src="{{ img.src }}" alt="{{ img.label }}" class="gallery-thumb-img{% if loop.first %} active{% endif %}" data-src="{{ img.src }}">
+              <img src="{{ img.src|e }}" alt="{{ img.label|e }}" class="gallery-thumb-img{% if loop.first %} active{% endif %}" data-src="{{ img.src|e }}">
             {% endfor %}
           </div>
           {% endif %}
@@ -163,7 +163,7 @@
         <!-- Product details (right column) -->
         <div class="product-details">
 
-          <h1 class="product-title">{{ item.title }}</h1>
+          <h1 class="product-title">{{ item.title|e }}</h1>
 
           <!-- Rating -->
           <div class="rating-inline">
@@ -195,7 +195,7 @@
             <ul class="download-levels-list">
               {% for level in item.download_levels %}
               <li>
-                <a href="{{ level.magnet }}" class="level-link">
+                <a href="{{ level.magnet|e }}" class="level-link">
                   {{ level.name }}
                 </a>
               </li>
@@ -227,7 +227,7 @@
 
             {% if item.magnet %}
             <div class="download-actions">
-              <a href="{{ item.magnet }}" class="btn btn-download">Accès au téléchargement de la donnée</a>
+              <a href="{{ item.magnet|e }}" class="btn btn-download">Accès au téléchargement de la donnée</a>
             </div>
             {% else %}
             <p class="no-download">Lien de téléchargement non disponible</p>
@@ -246,15 +246,15 @@
           <!-- Description -->
           <div class="product-desc-section">
             <h3>Description</h3>
-            <p>{{ item.description }}</p>
+            <p>{{ item.description|e }}</p>
           </div>
 
           {% if item.pdf_doc %}
           <div class="pdf-doc-section">
-            <a href="{{ item.pdf_doc }}" class="btn btn-pdf" target="_blank" rel="noopener noreferrer">
+            <a href="{{ item.pdf_doc|e }}" class="btn btn-pdf" target="_blank" rel="noopener noreferrer">
               Voir la documentation PDF
             </a>
-            <a href="{{ item.pdf_doc }}" class="btn btn-pdf-download" download>
+            <a href="{{ item.pdf_doc|e }}" class="btn btn-pdf-download" download>
               Télécharger la documentation PDF
             </a>
           </div>
@@ -282,15 +282,15 @@
           </div>
           <div class="tech-item">
             <dt>Auteur / Publieur</dt>
-            <dd>{{ item.author }}{% if item.organization_name %} — {{ item.organization_name }}{% endif %}</dd>
+            <dd>{{ item.author|e }}{% if item.organization_name|e %} — {{ item.organization_name }}{% endif %}</dd>
           </div>
         </dl>
 
         {% if item.magnet %}
         <div class="tech-code-block">
           <h3>Lien magnet</h3>
-          <code>{{ item.magnet }}</code>
-          <button class="btn btn-copy-tech" type="button" data-magnet="{{ item.magnet }}">
+          <code>{{ item.magnet|e }}</code>
+          <button class="btn btn-copy-tech" type="button" data-magnet="{{ item.magnet|e }}">
             Copier le lien
           </button>
         </div>
@@ -313,14 +313,14 @@
             </div>
             <div class="reuse-item">
               <dt>Auteur</dt>
-              <dd>{{ item.author }}{% if item.organization_name %} — {{ item.organization_name }}{% endif %}</dd>
+              <dd>{{ item.author|e }}{% if item.organization_name|e %} — {{ item.organization_name }}{% endif %}</dd>
             </div>
             <div class="reuse-item">
               <dt>Date de publication</dt>
               <dd>{{ item.created_at }}</dd>
             </div>
           </dl>
-          <p class="reuse-note">Cette donnée publiée par {{ item.author }}{% if item.organization_name %} — {{ item.organization_name }}{% endif %} peut être réutilisée librement dans vos propres projets SIG, analyses ou visualisations cartographiques. La mention « Source : A.N.A.N.A.S. » est recommandée.</p>
+          <p class="reuse-note">Cette donnée publiée par {{ item.author|e }}{% if item.organization_name|e %} — {{ item.organization_name }}{% endif %} peut être réutilisée librement dans vos propres projets SIG, analyses ou visualisations cartographiques. La mention « Source : A.N.A.N.A.S. » est recommandée.</p>
         </div>
       </section>
 
@@ -333,10 +333,10 @@
           {% for comment in item.comments %}
           <li class="comment-item">
             <div class="comment-header">
-              <span class="comment-author">{{ comment.author_name }}</span>
+              <span class="comment-author">{{ comment.author_name|e }}</span>
               <span class="comment-date">{{ comment.created_at.strftime('%d/%m/%Y') if comment.created_at else '' }}</span>
             </div>
-            <p class="comment-text">{{ comment.content }}</p>
+            <p class="comment-text">{{ comment.content|e }}</p>
           </li>
           {% endfor %}
         </ul>
@@ -397,9 +397,9 @@
           <li>
             <a href="/catalogue/item/{{ rel.id }}" class="related-card">
               <div class="related-img-wrap">
-                <img src="{{ rel.image }}" alt="{{ rel.title }}">
+                <img src="{{ rel.image|e }}" alt="{{ rel.title|e }}">
               </div>
-              <span class="related-title">{{ rel.title }}</span>
+              <span class="related-title">{{ rel.title|e }}</span>
               <span class="related-info">{{ rel.format }} &middot; {{ rel.size }}</span>
             </a>
           </li>
@@ -429,7 +429,7 @@
           <img class="modal-thumb" src="{{ img.src }}" data-index="{{ loop.index0 }}">
         {% endfor %}
       {% else %}
-        <img class="modal-thumb modal-thumb-only" id="modalThumbOnly" src="{{ item.image }}">
+        <img class="modal-thumb modal-thumb-only" id="modalThumbOnly" src="{{ item.image|e }}">
       {% endif %}
     </div>
   </div>

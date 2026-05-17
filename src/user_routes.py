@@ -95,7 +95,7 @@ def activite_page():
     comments_query = (
         db.session.query(Comment, Item.title.label("item_title"), Item.type.label("item_type"))
         .join(Item, Comment.item_id == Item.id)
-        .filter(Comment.created_at != None)
+        .filter(Comment.user_id == current_user.id)
         .order_by(Comment.created_at.desc())
         .all()
     )
@@ -251,7 +251,7 @@ def create_upload_item():
     current_user = get_current_user()
     data = request.get_json(silent=True) or {}
     title = (data.get("title") or request.form.get("title", "")).strip()
-    description = (data.get("description") or request.form.get("description", "")).strip()
+    description = sanitize_html((data.get("description") or request.form.get("description", "")).strip())
     item_type = data.get("type") or request.form.get("type", "geodonnee")
     format_type = data.get("format_type") or request.form.get("format_type", "")
     organization_id = data.get("organization_id") or request.form.get("organization_id", type=int)

@@ -8,19 +8,19 @@
   <section class="org-header">
     <div class="container">
       {% if org.logo_url %}
-        <img class="org-logo" src="{{ org.logo_url }}" alt="{{ org.name }} logo">
+        <img class="org-logo" src="{{ org.logo_url|e }}" alt="{{ org.name|e }} logo">
       {% endif %}
-      <h1>{{ org.name }}</h1>
+      <h1>{{ org.name|e }}</h1>
       {% if org.website_url %}
-        <a href="{{ org.website_url }}">{{ org.website_url }}</a>
+        <a href="{{ org.website_url|e }}">{{ org.website_url|e }}</a>
       {% endif %}
-      <p>{{ org.description or 'Aucune description.' }}</p>
+      <p>{{ (org.description|e) or 'Aucune description.'|e }}</p>
 
       <div class="org-members">
         <h2>Membres ({{ org.members | length }})</h2>
         {% for m in org.organization_members | selectattr('is_active', 'equalto', True) %}
           <div class="member-card">
-            <span>{{ m.user.prenom }} {{ m.user.nom }}</span>
+            <span>{{ m.user.prenom|e }} {{ m.user.nom|e }}</span>
             <span class="badge badge-{{ 'verified' if m.role == 'owner' else 'pending' }}">{{ m.role }}</span>
           </div>
         {% endfor %}
@@ -50,10 +50,10 @@
         {% for item in items %}
         <li>
           <a href="/catalogue/item/{{ item.id }}" class="catalogue-item transition-hover catalogue-link">
-            <img class="catalogue-image" src="{{ item.image }}" alt="{{ item.title }}" loading="lazy">
+            <img class="catalogue-image" src="{{ item.image }}" alt="{{ item.title|e }}" loading="lazy">
             <div class="catalogue-content">
-              <span class="catalogue-title">{{ item.title }}</span>
-              <p class="catalogue-desc-preview">{{ item.description|truncate(120) }}</p>
+              <span class="catalogue-title">{{ item.title|e }}</span>
+              <p class="catalogue-desc-preview">{{ item.description|truncate(120)|e }}</p>
             </div>
           </a>
         </li>

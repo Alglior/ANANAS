@@ -61,7 +61,7 @@
                   <h3 class="activity-title">
                     <a href="/catalogue/item/{{ c[0].item_id }}">{{ c[1] }}</a>
                   </h3>
-                  <p class="activity-text">{{ c[0].content[:200] }}{% if c[0].content | length > 200 %}...{% endif %}</p>
+                  <p class="activity-text">{{ c[0].content[:200]|e }}{% if c[0].content | length > 200 %}...{% endif %}</p>
                   <div class="activity-meta">
                     <span class="activity-date">{{ c[0].created_at.strftime('%d/%m/%Y') }}</span>
                   </div>
