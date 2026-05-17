@@ -1,10 +1,5 @@
 /* admin/moderation page behaviour */
 (function () {
-  function getCsrfToken() {
-    const meta = document.querySelector('meta[name="csrf-token"]');
-    return meta ? meta.content : '';
-  }
-
   function escapeHtml(str) {
     if (!str) return '';
     const div = document.createElement('div');
@@ -61,7 +56,7 @@
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       url += '&since=' + sevenDaysAgo.toISOString();
     }
-    const resp = await fetch(url, { headers: { 'X-CSRF-Token': getCsrfToken() } });
+    const resp = await fetch(url, { headers: { 'X-CSRF-Token': CsrfModule.getCsrfToken() } });
     const data = await resp.json();
     const tbody = document.getElementById('comments-tbody');
     if (data.comments.length === 0) {
@@ -171,7 +166,7 @@
 
   async function loadItemsPage(page = 1) {
     let url = '/api/admin/items?type=' + activeItemFilter + '&status=all&page=' + page;
-    const resp = await fetch(url, { headers: { 'X-CSRF-Token': getCsrfToken() } });
+    const resp = await fetch(url, { headers: { 'X-CSRF-Token': CsrfModule.getCsrfToken() } });
     const data = await resp.json();
     document.getElementById('items-tbody').innerHTML = renderItemsTable(data.items);
     renderItemPagination(data);
@@ -220,7 +215,7 @@
     e.preventDefault();
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action est irréversible.')) return;
     const endpoint = '/api/admin/comments/' + form.dataset.deleteComment;
-    fetch(endpoint, { method: 'DELETE', headers: {'X-CSRF-Token': getCsrfToken()}})
+    fetch(endpoint, { method: 'DELETE', headers: {'X-CSRF-Token': CsrfModule.getCsrfToken()}})
       .then(r => { if (r.ok) reloadWithTab('comments'); });
   });
 
@@ -231,7 +226,7 @@
     const itemId = parseInt(btn.dataset.togglePublish);
     const published = btn.dataset.published === 'true';
     const endpoint = published ? '/api/admin/items/' + itemId + '/publish' : '/api/admin/items/' + itemId + '/unpublish';
-    fetch(endpoint, { method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken()}})
+    fetch(endpoint, { method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-Token': CsrfModule.getCsrfToken()}})
       .then(r => { if (r.ok) reloadWithTab('items'); });
   });
 
@@ -240,7 +235,7 @@
     const btn = e.target.closest('button[data-verify-item]');
     if (!btn) return;
     const itemId = parseInt(btn.dataset.verifyItem);
-    fetch('/api/admin/items/' + itemId + '/verify', { method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken()}})
+    fetch('/api/admin/items/' + itemId + '/verify', { method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-Token': CsrfModule.getCsrfToken()}})
       .then(r => { if (r.ok) reloadWithTab('items'); });
   });
 
@@ -249,7 +244,7 @@
     const btn = e.target.closest('button[data-unverify-item]');
     if (!btn) return;
     const itemId = parseInt(btn.dataset.unverifyItem);
-    fetch('/api/admin/items/' + itemId + '/unverify', { method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken()}})
+    fetch('/api/admin/items/' + itemId + '/unverify', { method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-Token': CsrfModule.getCsrfToken()}})
       .then(r => { if (r.ok) reloadWithTab('items'); });
   });
 
@@ -260,7 +255,7 @@
     const itemId = parseInt(btn.dataset.deleteItem);
     const msg = 'Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible et supprimera aussi les commentaires, notes et galeries associés.';
     if (!confirm(msg)) return;
-    fetch('/api/admin/items/' + itemId, { method: 'DELETE', headers: {'X-CSRF-Token': getCsrfToken()}})
+    fetch('/api/admin/items/' + itemId, { method: 'DELETE', headers: {'X-CSRF-Token': CsrfModule.getCsrfToken()}})
       .then(r => { if (r.ok) reloadWithTab('items'); });
   });
 

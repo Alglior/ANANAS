@@ -4,7 +4,6 @@
 {% block meta_description %}{{ meta_description }}{% endblock %}
 
 {% block extra_head %}
-<meta name="csrf-token" content="{{ csrf_token() }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/features/upload-page.css') }}" />
 {% endblock %}
 
@@ -18,6 +17,7 @@
       </div>
 
       <form class="upload-form" id="uploadForm">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <div class="upload-section">
           <h2>Informations de l'item</h2>
           <div class="form-group">

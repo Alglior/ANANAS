@@ -1,9 +1,5 @@
 /* admin/reports page behaviour */
 (function () {
-  function getCsrfToken() {
-    const meta = document.querySelector('meta[name="csrf-token"]');
-    return meta ? meta.content : '';
-  }
 
   function escapeHtml(str) {
     if (!str) return '';
@@ -100,7 +96,7 @@
     if (page !== undefined) reportPage = page;
     let url = '/api/admin/reports?status=' + activeStatusFilter + '&page=' + reportPage;
     try {
-      const resp = await fetch(url, { headers: { 'X-CSRF-Token': getCsrfToken() } });
+      const resp = await fetch(url, { headers: { 'X-CSRF-Token': CsrfModule.getCsrfToken() } });
       const data = await resp.json();
       document.getElementById('reports-tbody').innerHTML = renderReportsTable(data.reports);
       renderReportPagination(data);
@@ -114,7 +110,7 @@
     try {
       const resp = await fetch('/api/admin/reports/' + reportId + '/resolve', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfToken() },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CsrfModule.getCsrfToken() },
         body: JSON.stringify({ status: newStatus })
       });
       if (resp.ok) loadReportsPage();

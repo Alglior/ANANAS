@@ -16,6 +16,7 @@
     />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
     {% block extra_head %}{% endblock %}
+    <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/csrf.js') }}"></script>
   </head>
   <body>
     {% include 'partials/header.html' %}

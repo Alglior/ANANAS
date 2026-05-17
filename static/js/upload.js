@@ -160,8 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       try {
-        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-        const csrfToken = csrfMeta ? csrfMeta.content : '';
+        const csrfToken = CsrfModule.getCsrfToken();
         const response = await fetch('/api/upload/file', {
           method: 'POST',
           headers: {
