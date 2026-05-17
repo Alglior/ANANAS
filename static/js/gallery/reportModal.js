@@ -15,7 +15,10 @@ var ReportModalModule = (function () {
 
     fetch("/api/reports", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": CsrfModule.getCsrfToken()
+      },
       body: JSON.stringify(data)
     }).then(function (r) { return r.json(); }).then(function (res) {
       modal.classList.remove("show");

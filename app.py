@@ -150,7 +150,10 @@ def create_app(app_name="ANANAS"):
             f"script-src 'self' nonce-{nonce} https://unpkg.com; "
             f"font-src 'self' https://fonts.gstatic.com data:; "
             f"img-src 'self' data:; "
-            f"connect-src 'self' https://unpkg.com https://*.tile.openstreetmap.org"
+            f"connect-src 'self' https://unpkg.com https://*.tile.openstreetmap.org; "
+            f"object-src 'none'; "
+            f"base-uri 'none'; "
+            f"form-action 'self'"
         )
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         return response
