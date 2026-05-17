@@ -156,6 +156,26 @@
     }
   }
 
+  function reloadWithTab(tabName) {
+    const url = new URL(window.location);
+    url.searchParams.set('tab', tabName);
+    window.location.href = url.toString();
+  }
+
+  let activeTab = (new URLSearchParams(window.location.search)).get('tab') || 'comments';
+
+  // Restore active tab from URL parameter on load
+  document.querySelectorAll('.mod-tab').forEach(tab => {
+    if (tab.dataset.tab === activeTab) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  const targetPanel = document.getElementById('tab-' + activeTab);
+  if (targetPanel) targetPanel.classList.add('active');
+
   // Event delegation for comment deletion forms
   document.getElementById('comments-tbody').addEventListener('submit', function (e) {
     const form = e.target.closest('form[data-delete-comment]');
@@ -164,7 +184,7 @@
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action est irréversible.')) return;
     const endpoint = '/api/admin/comments/' + form.dataset.deleteComment;
     fetch(endpoint, { method: 'DELETE' })
-      .then(r => { if (r.ok) window.location.reload(); });
+      .then(r => { if (r.ok) reloadWithTab('comments'); });
   });
 
   // Event delegation for publish/unpublish toggles
@@ -175,7 +195,7 @@
     const published = btn.dataset.published === 'true';
     const endpoint = published ? '/api/admin/items/' + itemId + '/publish' : '/api/admin/items/' + itemId + '/unpublish';
     fetch(endpoint, { method: 'POST' })
-      .then(r => { if (r.ok) window.location.reload(); });
+      .then(r => { if (r.ok) reloadWithTab('items'); });
   });
 
   // Event delegation for verify button
@@ -184,7 +204,7 @@
     if (!btn) return;
     const itemId = parseInt(btn.dataset.verifyItem);
     fetch('/api/admin/items/' + itemId + '/verify', { method: 'POST' })
-      .then(r => { if (r.ok) window.location.reload(); });
+      .then(r => { if (r.ok) reloadWithTab('items'); });
   });
 
   // Event delegation for unverify button
@@ -193,7 +213,7 @@
     if (!btn) return;
     const itemId = parseInt(btn.dataset.unverifyItem);
     fetch('/api/admin/items/' + itemId + '/unverify', { method: 'POST' })
-      .then(r => { if (r.ok) window.location.reload(); });
+      .then(r => { if (r.ok) reloadWithTab('items'); });
   });
 
   // Event delegation for item deletion
@@ -204,7 +224,7 @@
     const msg = 'Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible et supprimera aussi les commentaires, notes et galeries associés.';
     if (!confirm(msg)) return;
     fetch('/api/admin/items/' + itemId, { method: 'DELETE' })
-      .then(r => { if (r.ok) window.location.reload(); });
+      .then(r => { if (r.ok) reloadWithTab('items'); });
   });
 
   // Filter buttons for comments
@@ -230,11 +250,15 @@
   // Tab switching for moderation panels
   document.querySelectorAll('.mod-tab').forEach(tab => {
     tab.addEventListener('click', function () {
+      const tabName = this.dataset.tab;
       document.querySelectorAll('.mod-tab').forEach(t => t.classList.remove('active'));
       this.classList.add('active');
-      const tabName = this.dataset.tab;
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       document.getElementById('tab-' + tabName).classList.add('active');
+
+      const url = new URL(window.location);
+      url.searchParams.set('tab', tabName);
+      window.history.pushState({}, '', url.toString());
     });
   });
 

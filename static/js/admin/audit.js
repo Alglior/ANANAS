@@ -52,14 +52,73 @@
     return '—';
   }
 
-  async function loadAudit() {
-    const resp = await fetch('/api/admin/audit');
-    const data = await resp.json();
-    const tbody = document.getElementById('audit-tbody');
-    if (data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" class="empty-cell">Aucune entrée</td></tr>';
+  let currentPage = 1;
+  let totalPages = 1;
+
+  function buildPaginationHTML(page, total, base_url) {
+    if (total <= 1) return '';
+
+    const pages = [];
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) pages.push(i);
     } else {
-      tbody.innerHTML = data.map(e => `
+      if (page <= 4) {
+        pages.push(1, 2, 3, 4, '...', total);
+      } else if (page > total - 5) {
+        pages.push(1, '...', total - 3, total - 2, total - 1, total);
+      } else {
+        pages.push(1, '...', page - 1, page, page + 1, '...', total);
+      }
+    }
+
+    let html = '<nav class="pagination" aria-label="Pagination">';
+
+    if (page > 1) {
+      html += `<a class="btn btn-outline transition-hover pagination-prev" href="${base_url}/${page - 1}">&#9664;&nbsp;Précédent</a>`;
+    } else {
+      html += `<span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>`;
+    }
+
+    html += '<div class="pagination-numbers">';
+    for (const p of pages) {
+      if (p === '...') {
+        html += '<span class="pagination-ellipsis">&hellip;</span>';
+      } else if (p === page) {
+        html += `<span class="pagination-link active">${p}</span>`;
+      } else {
+        html += `<a class="pagination-link" href="${base_url}/${p}">${p}</a>`;
+      }
+    }
+    html += '</div>';
+
+    if (page < total) {
+      html += `<a class="btn btn-outline transition-hover pagination-next" href="${base_url}/${page + 1}">Suivant&nbsp;&#9658;</a>`;
+    } else {
+      html += `<span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>`;
+    }
+
+    html += '</nav>';
+    html += `<p style="margin-top: 12px; color: #666; font-size: 0.85rem;">Page ${page} sur ${total}</p>`;
+
+    return html;
+  }
+
+  async function loadAudit(page) {
+    const tbody = document.getElementById('audit-tbody');
+    if (tbody) {
+      tbody.innerHTML = '<tr><td colspan="4" class="loading-cell">Chargement...</td></tr>';
+    }
+
+    const resp = await fetch(`/api/admin/audit?page=${page || 1}`);
+    const data = await resp.json();
+
+    if (data.entries.length === 0) {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="empty-cell">Aucune entrée</td></tr>';
+      return;
+    }
+
+    if (tbody) {
+      tbody.innerHTML = data.entries.map(e => `
         <tr>
           <td data-label="Date">${new Date(e.created_at).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
           <td data-label="Admin">${e.admin && e.admin.name ? escapeHtml(e.admin.name) : '(inconnu)'}</td>
@@ -68,7 +127,15 @@
         </tr>
       `).join('');
     }
+
+    const pagDiv = document.getElementById('pagination-audit');
+    if (pagDiv) {
+      pagDiv.innerHTML = buildPaginationHTML(data.page, data.total_pages, '/admin/audit');
+    }
+
+    currentPage = data.page;
+    totalPages = data.total_pages;
   }
 
-  loadAudit();
+  loadAudit(1);
 })();

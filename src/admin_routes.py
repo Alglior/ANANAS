@@ -2,7 +2,7 @@ import datetime as dt
 
 from flask import Blueprint, request, render_template, jsonify, redirect, url_for
 from app import db
-from src.shared import login_required, get_current_user
+from src.shared import login_required, get_current_user, _build_page_numbers, ITEMS_PER_PAGE
 
 bp = Blueprint("admin", __name__)
 
@@ -40,15 +40,16 @@ def _log_audit(action_type, target_type=None, target_id=None, details=None):
     db.session.commit()
 
 
-def _get_audit_entries():
+def _get_audit_entries(entries=None):
     from models import AdminAudit, User
 
-    entries = (
-        AdminAudit.query
-        .order_by(AdminAudit.created_at.desc())
-        .limit(500)
-        .all()
-    )
+    if entries is None:
+        entries = (
+            AdminAudit.query
+            .order_by(AdminAudit.created_at.desc())
+            .limit(500)
+            .all()
+        )
     result = []
     for e in entries:
         result.append({
@@ -229,17 +230,34 @@ def resolve_report(report_id):
 
 
 @bp.route("/admin/users")
+@bp.route("/admin/users/<int:page>")
 @login_required
 @require_admin
-def admin_users():
+def admin_users(page=None):
     from models import User
 
-    users = User.query.all()
+    if page is not None and (page < 1 or page > 9999):
+        return redirect(url_for("admin.admin_users"))
+    p = request.args.get("page", 1, type=int)
+    if page is not None:
+        p = int(page)
+    else:
+        p = min(max(p, 1), 9999)
+    query = User.query.order_by(User.id)
+    total_items = query.count()
+    total_pages = max((total_items + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE, 1)
+    p = min(max(p, 1), total_pages) or 1
+    users = query.offset((p - 1) * ITEMS_PER_PAGE).limit(ITEMS_PER_PAGE).all()
+    page_numbers = _build_page_numbers(p, total_pages)
     return render_template(
         "admin/users.html",
         title="Administration — Utilisateurs",
         meta_description="Liste des utilisateurs",
         users=users,
+        page=p,
+        total_pages=total_pages,
+        page_numbers=page_numbers,
+        total_items=total_items,
     )
 
 
@@ -443,33 +461,35 @@ def unverify_item(item_id):
 @login_required
 def admin_audit_log():
     """API endpoint for fetching audit log entries."""
-    from models import User
+    from models import AdminAudit
 
     if not get_current_user() or not get_current_user().is_admin:
         return jsonify({"error": "Non autorisé"}), 403
 
-    entries = _get_audit_entries()
-    return jsonify(entries)
+    page = request.args.get("page", 1, type=int)
+    per_page = 50
+    query = AdminAudit.query.order_by(AdminAudit.created_at.desc())
+    total_items = query.count()
+    total_pages = max((total_items + per_page - 1) // per_page, 1)
+    page = min(max(page, 1), total_pages) or 1
+    paginated_entries = query.offset((page - 1) * per_page).limit(per_page).all()
+    entries = _get_audit_entries(paginated_entries)
+    return jsonify({
+        "entries": entries,
+        "page": page,
+        "total_pages": total_pages,
+        "total_items": total_items,
+    })
 
 
 @bp.route("/admin/audit")
 @login_required
 @require_admin
 def admin_audit():
-    from models import AdminAudit
-
-    entries = (
-        AdminAudit.query
-        .order_by(AdminAudit.created_at.desc())
-        .limit(500)
-        .all()
-    )
-
     return render_template(
         "admin/audit.html",
         title="Administration — Journal d'audits",
         meta_description="Journal des actions administratives",
-        entries=entries,
     )
 
 
