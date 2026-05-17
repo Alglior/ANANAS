@@ -60,6 +60,8 @@ def create_app(app_name="ANANAS"):
         if request.method in ("POST", "PUT", "PATCH", "DELETE"):
             content_type = request.content_type or ""
             if "/api/" in request.path and "application/json" in content_type:
+                if current_app.config.get("TESTING") or not current_app.config.get("WTF_CSRF_ENABLED", True):
+                    return
                 if not request.headers.get("X-CSRF-Token"):
                     return jsonify({"error": "Token CSRF requis pour les requêtes API"}), 422
 

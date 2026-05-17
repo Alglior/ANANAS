@@ -83,7 +83,7 @@ def inscription_post():
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
         form_errors = ["Désolé, cet email est déjà utilisé."]
-        return render_template("inscription.html", form_errors=form_errors, password=password, email=email, prenom=prenom, nom=nom), 400
+        return render_template("inscription.html", form_errors=form_errors, password=password, email=email, prenom=prenom, nom=nom)
 
     user = User(
         prenom=prenom,

@@ -39,6 +39,7 @@ def rate_item(item_id):
 
 
 @bp.route("/catalogue/item/<int:item_id>/comment", methods=["POST"])
+@login_required
 def add_comment(item_id):
     from models import Item, Comment
 

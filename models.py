@@ -83,10 +83,10 @@ class Item(db.Model):
         }
 
     def _get_rating_avg(self):
-        user_ratings = [r for r in self.ratings if r.user_id is not None]
-        if not user_ratings:
+        ratings = [r.rating for r in self.ratings if r.rating is not None]
+        if not ratings:
             return 0
-        return sum(r.rating for r in user_ratings) / len(user_ratings)
+        return sum(ratings) / len(ratings)
 
     def _build_gallery_dict(self):
         result = []

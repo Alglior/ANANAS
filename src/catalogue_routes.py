@@ -70,7 +70,17 @@ def _do_catalogue(catalogue_type, page, per_page=30):
 
     total_items = query.count()
     total_pages = max((total_items + per_page - 1) // per_page, 1)
-    page = min(max(page, 1), total_pages) or 1
+    requested_page = page
+    if requested_page < 1:
+        if format_param != "json":
+            return redirect(f"/catalogue/{catalogue}")
+        page = 1
+    elif requested_page > total_pages:
+        if format_param != "json":
+            return redirect(f"/catalogue/{catalogue}?page={total_pages}")
+        page = total_pages
+    else:
+        page = requested_page
 
     items = query.offset((page - 1) * per_page).limit(per_page).all()
     result_items = [item.to_dict() for item in items]
@@ -137,6 +147,11 @@ def _do_catalogue(catalogue_type, page, per_page=30):
 @bp.route("/catalogue/<catalogue_type>")
 @bp.route("/catalogue/<catalogue_type>/<int:page>")
 def catalogue_view(catalogue_type, page=1):
+    if "page" in request.args:
+        try:
+            page = int(request.args.get("page", 1))
+        except (TypeError, ValueError):
+            page = 1
     if page < 1:
         return redirect(f"/catalogue/{catalogue_type}")
     return _do_catalogue(catalogue_type, page)

@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
 from app import db, limiter
 from src.shared import login_required, get_current_user, user_owns_item_or_admin
-from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink
+from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, OrganizationMember
 from utils.security import sanitize_html, validate_magnet_link
 
 ALLOWED_ITEM_TYPES = {"geodonnee", "carte", "application"}
@@ -240,8 +240,15 @@ def upload_file():
     if item_type not in ALLOWED_ITEM_TYPES:
         return jsonify({"error": "Type de contenu invalide"}), 400
 
- 
     org_id = int(organization_id) if organization_id and organization_id.isdigit() else None
+    if org_id:
+        membership = OrganizationMember.query.filter_by(
+            user_id=current_user.id,
+            organization_id=org_id,
+            is_active=True,
+        ).first()
+        if not membership:
+            return jsonify({"error": "Organisation non autorisée"}), 403
 
     chunk = DataChunk(
         parent_item_id=None,
@@ -296,6 +303,14 @@ def create_upload_item():
         return jsonify({"error": "Type de contenu invalide"}), 400
 
     org_id = int(organization_id) if organization_id and str(organization_id).isdigit() else None
+    if org_id:
+        membership = OrganizationMember.query.filter_by(
+            user_id=current_user.id,
+            organization_id=org_id,
+            is_active=True,
+        ).first()
+        if not membership:
+            return jsonify({"error": "Organisation non autorisée"}), 403
 
     item = Item(
         type=item_type,

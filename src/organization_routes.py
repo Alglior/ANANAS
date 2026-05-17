@@ -6,6 +6,7 @@ from app import db
 from src.shared import login_required, get_current_user, ITEMS_PER_PAGE
 
 ALLOWED_SLUG_CHARS = set(string.ascii_lowercase + string.digits + "-")
+ALLOWED_MEMBER_ROLES = {"member", "admin", "owner"}
 
 bp = Blueprint("organizations", __name__)
 
@@ -115,10 +116,13 @@ def update_member_role(slug, user_id):
         user_id=user_id, organization_id=org.id
     ).first_or_404()
 
-    target_member.role = data.get("role", "member")
+    role = data.get("role", "member")
+    if role not in ALLOWED_MEMBER_ROLES:
+        return jsonify({"error": "Role invalide"}), 400
+    target_member.role = role
     db.session.commit()
 
-    return jsonify({"status": "updated", "role": data.get("role")})
+    return jsonify({"status": "updated", "role": role})
 
 
 @bp.route("/organizations")
