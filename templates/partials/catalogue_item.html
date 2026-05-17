@@ -1,0 +1,43 @@
+<li>
+  {% if not simple %}<hr class="catalogue-divider">{% endif %}
+  <a href="/catalogue/item/{{ item.id }}" class="catalogue-item transition-hover catalogue-link">
+    <img class="catalogue-image" src="{{ item.image }}" alt="{{ item.title }}" loading="lazy">
+    <div class="catalogue-content">
+      {% if not simple %}
+      <div class="catalogue-top">
+        <span class="catalogue-title">{{ item.title }}</span>
+        {% if item.data_format_level == "pack" %}
+        <span class="badge badge-pack">Pack complet — fichier unique</span>
+        {% else %}
+        <span class="badge badge-individual">Données individuelles</span>
+        {% endif %}
+        {% if item.is_official_verified %}
+          <span class="badge badge-verified" title="Données vérifiées et approuvées par A.N.A.N.A.S.">Données vérifiées</span>
+        {% else %}
+          <span class="badge badge-unofficial" title="Données non officielles - Accès accessible mais non vérifié par A.N.A.N.A.S.">Données non officielles</span>
+        {% endif %}
+      </div>
+      <p class="catalogue-author"><strong>Publié par :</strong> {{ item.author }}</p>
+      {% if item.organization_name %}
+      <p class="catalogue-org">
+        <a href="/organizations/{{ item.organization_slug }}">{{ item.organization_name }}</a>
+      </p>
+      {% endif %}
+      <p class="catalogue-desc-preview" id="preview-{{ item.id }}">{{ item.description|truncate(140, True, '...') }}</p>
+      <p class="catalogue-desc-full" id="full-{{ item.id }}" hidden>{{ item.description }}</p>
+      <button
+        class="btn-expand"
+        type="button"
+        aria-expanded="false"
+        aria-controls="preview-{{ item.id }} full-{{ item.id }}"
+        onclick="event.preventDefault(); event.stopPropagation();"
+      >
+        Plus
+      </button>
+      {% else %}
+      <span class="catalogue-title">{{ item.title }}</span>
+      <p class="catalogue-desc-preview">{{ item.description|truncate(120) }}</p>
+      {% endif %}
+    </div>
+  </a>
+</li>

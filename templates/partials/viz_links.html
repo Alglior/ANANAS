@@ -1,0 +1,29 @@
+{% if viz_links and viz_links|length > 0 %}
+<section class="viz-links-section">
+  <h2>Visualisations</h2>
+  <div class="viz-grid">
+    {% for link in viz_links %}
+    <div class="viz-card{% if link.link_type == 'embed' %} is-embed{% endif %}">
+      <div class="viz-card-header">
+        <span class="viz-type-badge badge-{{ link.link_type }}">{{ link.link_type }}</span>
+        <h3>{{ link.name }}</h3>
+      </div>
+      {% if link.link_type == 'embed' or link.link_type == 'widget' %}
+      <div class="viz-iframe-wrapper">
+        <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">
+          {{ link.name }} — Voir la visualisation
+        </a>
+      </div>
+      {% else %}
+      <div class="viz-link-info">
+        <p>{{ link.description or 'Visualisation de ces données.' }}</p>
+      </div>
+      {% endif %}
+      <div class="viz-card-footer">
+        <a href="{{ link.url }}" class="btn btn-viz" target="_blank" rel="noopener noreferrer">Accéder</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}

@@ -21,7 +21,6 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
     op.add_column('items', sa.Column('data_format_level', sa.String(), nullable=True, server_default='individual'))
-    op.execute("UPDATE items SET data_format_level = 'individual' WHERE data_format_level IS NULL")
 
 
 def downgrade() -> None:

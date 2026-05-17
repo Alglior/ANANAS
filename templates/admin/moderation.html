@@ -1,89 +1,76 @@
-{% extends 'base.html' %}
+{% extends 'base_admin.html' %}
 
-{% block title %}{{ title }}{% endblock %}
-{% block meta_description %}{{ meta_description }}{% endblock %}
+{% set title = 'Administration — Modération' %}
 
-{% block content %}
-<main class="admin-page">
-  <section class="admin-section">
-    <div class="container">
-      <nav class="admin-nav">
-        <a href="/admin/users" {% if 'Utilisateurs' in title %}class="active"{% endif %}>Utilisateurs</a>
-        <a href="/admin/reports" {% if 'Signalements' in title %}class="active"{% endif %}>Signalements</a>
-        <a href="/admin/moderation" {% if 'Modération' in title %}class="active"{% endif %}>Modération</a>
-        <a href="/admin/audit" {% if 'Journal' in title %}class="active"{% endif %}>Journal d'audits</a>
-      </nav>
-      <h1>Administration — Modération</h1>
+{% block admin_content %}
+<!-- Tab navigation -->
+<div class="mod-tabs">
+  <button type="button" class="mod-tab active" data-tab="comments">Commentaires</button>
+  <button type="button" class="mod-tab" data-tab="items">Cartes, Applications &amp; Données</button>
+</div>
 
-      <!-- Tab navigation -->
-      <div class="mod-tabs">
-        <button type="button" class="mod-tab active" data-tab="comments">Commentaires</button>
-        <button type="button" class="mod-tab" data-tab="items">Cartes, Applications &amp; Données</button>
-      </div>
-
-      <div class="moderation-section">
-        <!-- Comments Moderation -->
-        <div class="mod-panel mod-panel-comments tab-content active" id="tab-comments">
-          <h2>Commentaires</h2>
-          <div class="admin-filters" id="comment-filters">
-            <button type="button" data-type="all" class="active active-filter" data-target="comments-tbody">Tous</button>
-            <button type="button" data-type="recent" data-days="7" class="filter-btn" data-target="comments-tbody">7 derniers jours</button>
-            <button type="button" data-type="old" class="filter-btn" data-target="comments-tbody">Anciens</button>
-          </div>
-          <div class="table-wrapper">
-            <table id="comments-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Auteur</th>
-                  <th>Contenu</th>
-                  <th>Article lié</th>
-                  <th>Type</th>
-                  <th>Date</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="comments-tbody">
-                <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Items Moderation -->
-        <div class="mod-panel mod-panel-items tab-content" id="tab-items">
-          <h2>Cartes, Applications &amp; Données</h2>
-          <div class="admin-filters" id="item-filters">
-            <button type="button" data-type="all" class="active active-filter" data-target="items-tbody">Tous</button>
-            <button type="button" data-type="geodonnee" class="filter-btn" data-target="items-tbody">Données</button>
-            <button type="button" data-type="carte" class="filter-btn" data-target="items-tbody">Cartes</button>
-            <button type="button" data-type="application" class="filter-btn" data-target="items-tbody">Applications</button>
-          </div>
-          <div class="table-wrapper">
-            <table id="items-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Type</th>
-                  <th>Titre</th>
-                  <th>Auteur</th>
-                  <th>Publié</th>
-                  <th>Vérification</th>
-                  <th>Commentaires</th>
-                  <th>Date</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="items-tbody">
-                <tr><td colspan="9" class="loading-cell">Chargement...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+<div class="moderation-section">
+  <!-- Comments Moderation -->
+  <div class="mod-panel mod-panel-comments tab-content active" id="tab-comments">
+    <h2>Commentaires</h2>
+    <div class="admin-filters" id="comment-filters">
+      <button type="button" data-type="all" class="active active-filter" data-target="comments-tbody">Tous</button>
+      <button type="button" data-type="recent" data-days="7" class="filter-btn" data-target="comments-tbody">7 derniers jours</button>
+      <button type="button" data-type="old" class="filter-btn" data-target="comments-tbody">Anciens</button>
     </div>
-  </section>
-</main>
+    <div class="table-wrapper">
+      <table id="comments-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Auteur</th>
+            <th>Contenu</th>
+            <th>Article lié</th>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="comments-tbody">
+          <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
+  <!-- Items Moderation -->
+  <div class="mod-panel mod-panel-items tab-content" id="tab-items">
+    <h2>Cartes, Applications &amp; Données</h2>
+    <div class="admin-filters" id="item-filters">
+      <button type="button" data-type="all" class="active active-filter" data-target="items-tbody">Tous</button>
+      <button type="button" data-type="geodonnee" class="filter-btn" data-target="items-tbody">Données</button>
+      <button type="button" data-type="carte" class="filter-btn" data-target="items-tbody">Cartes</button>
+      <button type="button" data-type="application" class="filter-btn" data-target="items-tbody">Applications</button>
+    </div>
+    <div class="table-wrapper">
+      <table id="items-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Titre</th>
+            <th>Auteur</th>
+            <th>Publié</th>
+            <th>Vérification</th>
+            <th>Commentaires</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="items-tbody">
+          <tr><td colspan="9" class="loading-cell">Chargement...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/moderation.js') }}"></script>
 {% endblock %}

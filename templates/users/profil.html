@@ -12,15 +12,7 @@
         <p>Gérez vos informations personnelles et suivez vos contributions.</p>
       </div>
 
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          {% for category, message in messages %}
-            <div class="flash flash-{{ category }}">{{ message }}</div>
-          {% endfor %}
-        {% endif %}
-      {% endwith %}
-
-     <section class="profile-main">
+      <section class="profile-main">
           <div class="profile-card">
             <h2>Informations personnelles</h2>
             <form class="profile-form" id="profileForm">

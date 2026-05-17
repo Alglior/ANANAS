@@ -1,65 +1,50 @@
-{% extends 'base.html' %}
+{% extends 'base_admin.html' %}
 
-{% block title %}{{ title }}{% endblock %}
-{% block meta_description %}{{ meta_description }}{% endblock %}
+{% set title = 'Administration — Utilisateurs' %}
 
-{% block content %}
-<main class="admin-page">
-  <section class="admin-section">
-    <div class="container">
-      <nav class="admin-nav">
-        <a href="/admin/users" {% if 'Utilisateurs' in title %}class="active"{% endif %}>Utilisateurs</a>
-        <a href="/admin/reports" {% if 'Signalements' in title %}class="active"{% endif %}>Signalements</a>
-        <a href="/admin/moderation" {% if 'Modération' in title %}class="active"{% endif %}>Modération</a>
-        <a href="/admin/audit" {% if 'Journal' in title %}class="active"{% endif %}>Journal d'audits</a>
-      </nav>
-      <h1>Administration — Utilisateurs</h1>
-
-      <div class="moderation-section">
-        <div class="mod-panel">
-          <h2>Liste des utilisateurs</h2>
-          <div class="table-wrapper">
-            <table id="users-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nom</th>
-                  <th>Email</th>
-                  <th>Statut</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for user in users %}
-                <tr>
-                  <td data-label="ID">{{ user.id }}</td>
-                  <td data-label="Nom">{{ user.prenom }} {{ user.nom }}</td>
-                  <td data-label="Email">{{ user.email }}</td>
-                  <td data-label="Statut">
-                    {% if user.banned %}
-                      <span class="badge badge-rejected">Banni</span>
-                    {% elif not user.is_active %}
-                      <span class="badge badge-pending">Inactif</span>
-                    {% else %}
-                      <span class="badge badge-verified">Actif</span>
-                    {% endif %}
-                  </td>
-                  <td data-label="Action">
-                    <form class="admin-form-inline" action="/api/users/{{ user.id }}/ban" method="POST">
-                      <input type="hidden" name="action" value="{% if user.banned %}unban{% else %}ban{% endif %}">
-                      <button type="submit" class="btn btn-sm {% if user.banned %}btn-soft-unban{% else %}btn-danger{% endif %}">
-                        {% if user.banned %}Débannir{% else %}Bannir{% endif %}
-                      </button>
-                    </form>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+{% block admin_content %}
+<div class="moderation-section">
+  <div class="mod-panel">
+    <h2>Liste des utilisateurs</h2>
+    <div class="table-wrapper">
+      <table id="users-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr>
+            <td data-label="ID">{{ user.id }}</td>
+            <td data-label="Nom">{{ user.prenom }} {{ user.nom }}</td>
+            <td data-label="Email">{{ user.email }}</td>
+            <td data-label="Statut">
+              {% if user.banned %}
+                <span class="badge badge-rejected">Banni</span>
+              {% elif not user.is_active %}
+                <span class="badge badge-pending">Inactif</span>
+              {% else %}
+                <span class="badge badge-verified">Actif</span>
+              {% endif %}
+            </td>
+            <td data-label="Action">
+              <form class="admin-form-inline" action="/api/users/{{ user.id }}/ban" method="POST">
+                <input type="hidden" name="action" value="{% if user.banned %}unban{% else %}ban{% endif %}">
+                <button type="submit" class="btn btn-sm {% if user.banned %}btn-soft-unban{% else %}btn-danger{% endif %}">
+                  {% if user.banned %}Débannir{% else %}Bannir{% endif %}
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-  </section>
-</main>
+  </div>
+</div>
 {% endblock %}

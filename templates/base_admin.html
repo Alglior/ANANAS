@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<main class="admin-page">
+  <section class="admin-section">
+    <div class="container">
+      {% include 'partials/admin_nav.html' %}
+      <h1>{{ title }}</h1>
+      {% block admin_content %}{% endblock %}
+    </div>
+  </section>
+</main>
+{% endblock %}

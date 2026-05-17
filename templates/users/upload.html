@@ -17,14 +17,6 @@
         <p>Téléversez vos fichiers géospatiaux sur A.N.A.N.A.S.</p>
       </div>
 
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          {% for category, message in messages %}
-            <div class="flash flash-{{ category }}">{{ message }}</div>
-          {% endfor %}
-        {% endif %}
-      {% endwith %}
-
       <form class="upload-form" id="uploadForm">
         <div class="upload-section">
           <h2>Informations de l'item</h2>
