@@ -9,6 +9,7 @@ bp = Blueprint("interactions", __name__)
 
 
 @bp.route("/catalogue/item/<int:item_id>/rate", methods=["POST"])
+@login_required
 def rate_item(item_id):
     from models import Item, Rating
 
@@ -22,20 +23,13 @@ def rate_item(item_id):
         return redirect(url_for("items.item_detail_view", item_id=item_id))
 
     rating = int(rating_value)
-    existing = Rating.query.filter_by(item_id=item_id).first()
-    
-    if current_user:
-        existing = Rating.query.filter_by(item_id=item_id, user_id=current_user.id).first()
-        logging.warning(f"[RATE] found_existing={bool(existing)} new_rating={rating}")
-        if existing:
-            existing.rating = rating
-        else:
-            new_rating = Rating(item_id=item_id, user_id=current_user.id, rating=rating)
-            db.session.add(new_rating)
-    elif existing:
+    existing = Rating.query.filter_by(item_id=item_id, user_id=current_user.id).first()
+    logging.warning(f"[RATE] found_existing={bool(existing)} new_rating={rating}")
+    if existing:
         existing.rating = rating
-    elif not existing and not current_user:
-        return redirect(url_for("items.item_detail_view", item_id=item_id))
+    else:
+        new_rating = Rating(item_id=item_id, user_id=current_user.id, rating=rating)
+        db.session.add(new_rating)
 
     ratings = Rating.query.filter_by(item_id=item_id).all()
     logging.warning(f"[RATE] all_ratings={[(r.id, r.user_id, r.rating) for r in ratings]}")
