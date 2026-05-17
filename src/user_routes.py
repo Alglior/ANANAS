@@ -282,6 +282,7 @@ def create_upload_item():
         description=description[:2000],
         format_type=format_type[:50] if format_type else None,
         magnet_link=magnet_link[:500] if data_format_level == "pack" else "",
+        owner_user_id=current_user.id,
         author_name=sanitize_html(f"{current_user.prenom} {current_user.nom}"),
         organization_id=organization_id if organization_id else None,
         data_format_level=data_format_level,

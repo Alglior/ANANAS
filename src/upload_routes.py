@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 
 from flask import Blueprint, request, jsonify
@@ -89,6 +90,10 @@ def create_item():
     if not title or not magnet_link:
         return jsonify({"error": "Titre et lien magnet requis"}), 400
 
+    magnet_link = magnet_link[:500]
+    if not re.match(r'^magnet:\?xt=urn:', magnet_link, re.IGNORECASE):
+        return jsonify({"error": "Format de lien magnet invalide"}), 400
+
     if data_format_level not in ("pack", "individual"):
         return jsonify({"error": "data_format_level doit être 'pack' ou 'individual'"}), 400
 
@@ -109,7 +114,8 @@ def create_item():
         title=title[:300],
         description=description[:2000],
         format_type=format_type[:50] if format_type else None,
-        magnet_link=magnet_link[:500],
+        magnet_link=magnet_link,
+        owner_user_id=current_user.id,
         author_name=sanitize_html(current_user.prenom + " " + current_user.nom),
         organization_id=organization_id if organization_id else None,
         data_format_level=data_format_level,

@@ -82,7 +82,8 @@ def inscription_post():
     user_hash = generate_password_hash(password, method="scrypt")
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
-        return redirect(url_for("auth.connexion_page"))
+        form_errors = ["Désolé, cet email est déjà utilisé."]
+        return render_template("inscription.html", form_errors=form_errors, password=password, email=email, prenom=prenom, nom=nom), 400
 
     user = User(
         prenom=prenom,

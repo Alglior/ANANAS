@@ -68,10 +68,8 @@ def user_owns_item_or_admin(current_user, item):
 
     if getattr(current_user, "is_admin", False):
         return True
-    if getattr(item, "author_name", None) and current_user:
-        full_name = f"{current_user.prenom} {current_user.nom}"
-        if item.author_name == full_name:
-            return True
+    if getattr(item, "owner_user_id", None) == current_user.id:
+        return True
     if getattr(item, "organization_id", None):
         membership = OrganizationMember.query.filter_by(
             user_id=current_user.id, organization_id=item.organization_id

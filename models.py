@@ -15,6 +15,7 @@ class Item(db.Model):
     format_type: Mapped[str | None]
     magnet_link: Mapped[str]
     image_path: Mapped[str] = mapped_column(default="/static/images/logo/ANANAS.png")
+    owner_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     author_name: Mapped[str | None]
     organization_id: Mapped[int | None] = mapped_column(ForeignKey("organizations.id"))
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
