@@ -159,7 +159,7 @@ def create_app(app_name="ANANAS"):
 
     # Configuration des cookies sécurisés
     app.config["SESSION_COOKIE_HTTPONLY"] = True  # Empêche les scripts JavaScript de lire le cookie de session
-    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # Protection contre les attaques CSRF par cookie
+    app.config["SESSION_COOKIE_SAMESITE"] = "Strict"  # Empêche toute requête cross-site, réduction du risque CSRF
     app.config["SESSION_COOKIE_SECURE"] = _is_production_env()  # En production seulement, force HTTPS pour les cookies
     app.config["TRUSTED_PROXIES"] = ["nginx", "127.0.0.1", "::1"]  # Confiance proxy reverser nginx/Docker
     app.config["PERMANENT_SESSION_LIFETIME"] = 1800  # Les sessions expireront après 30 minutes
