@@ -74,7 +74,13 @@ def ban_user(user_id):
         return jsonify({"error": "Non autorisé"}), 403
 
     target_user = User.query.get_or_404(user_id)
-    data = request.get_json(silent=True) or {}
+    if target_user.id == current_user.id:
+        return jsonify({"error": "Action interdite"}), 403
+
+    if request.is_json and request.content_type == "application/json":
+        data = request.get_json(silent=True) or {}
+    else:
+        data = request.form
     action = data.get("action", "")
 
     if action not in ("ban", "unban"):
