@@ -25,7 +25,7 @@
 {% endblock %}
 
 {% block auth_fields %}
-<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+<input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"/>
 <div class="form-row">
   <div class="form-group">
     <label for="nom">Nom</label>

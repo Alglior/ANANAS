@@ -1,5 +1,6 @@
 import bleach
 import re
+import ipaddress
 from urllib.parse import urlparse
 
 
@@ -26,6 +27,21 @@ def validate_external_url(url: str) -> bool:
             return False
         if "@" in url:
             return False
+        hostname = parsed.hostname.lower()
+        if not hostname:
+            return False
+        try:
+            addr = ipaddress.ip_address(hostname)
+            if addr.is_private or addr.is_loopback or addr.is_reserved or addr.is_link_local or addr.is_multicast:
+                return False
+        except ValueError:
+            pass
+        if "." not in hostname and ":" not in hostname:
+            return False
+        parts = hostname.split(".")
+        if len(parts) < 2:
+            if not any(c.isdigit() for c in hostname):
+                return False
         return True
     except Exception:
         return False

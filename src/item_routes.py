@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, Response
+from flask import Blueprint, render_template, session, Response, request, g
 from app import db
 
 bp = Blueprint("items", __name__)
@@ -50,9 +50,16 @@ def item_data_view(item_id):
     if "user_id" in session:
         current_user = db.session.get(User, session["user_id"])
     viz_links = [vl.to_dict() for vl in VisualizationLink.query.filter_by(parent_item_id=item_id, is_active=True).all()]
-    chunks = [c.to_dict() for c in DataChunk.query.filter_by(
-        parent_item_id=item.id, visibility="public"
-    ).all()]
+    public_filter = [DataChunk.parent_item_id == item.id, DataChunk.visibility == "public"]
+    if current_user:
+        user_chunks = [c.to_dict() for c in DataChunk.query.filter(
+            DataChunk.parent_item_id == item.id,
+            DataChunk.owner_user_id == current_user.id
+        ).all()]
+        public_chunks = [c.to_dict() for c in DataChunk.query.filter(*public_filter).all()]
+        all_chunks = list({c["id"]: c for c in public_chunks + user_chunks}.values())
+    else:
+        all_chunks = [c.to_dict() for c in DataChunk.query.filter(*public_filter).all()]
 
     return render_template(
         "item_detail.html",
@@ -66,7 +73,7 @@ def item_data_view(item_id):
         current_user=current_user,
         active_data_tab=True,
         viz_links=viz_links,
-        data_chunks=chunks,
+        data_chunks=all_chunks,
     )
 
 

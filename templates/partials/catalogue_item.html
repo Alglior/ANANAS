@@ -1,7 +1,7 @@
 <li>
   {% if not simple %}<hr class="catalogue-divider">{% endif %}
   <a href="/catalogue/item/{{ item.id }}" class="catalogue-item transition-hover catalogue-link">
-    <img class="catalogue-image" src="{{ item.image }}" alt="{{ item.title|e }}" loading="lazy">
+    <img class="catalogue-image" src="{{ item.image|e }}" alt="{{ item.title|e }}" loading="lazy">
     <div class="catalogue-content">
       {% if not simple %}
       <div class="catalogue-top">

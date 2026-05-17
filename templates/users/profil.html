@@ -78,5 +78,5 @@
 
 {% block extra_scripts %}
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/users/profile.js') }}"></script>
-<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 {% endblock %}

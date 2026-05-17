@@ -7,26 +7,47 @@
 # ──────────────────────────────────────────────
 
 services:
+  # ─── Nginx reverse proxy (entry point) ───
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: ananas_nginx
+    ports:
+      - "80:80"           # HTTP (replace with 443 for HTTPS)
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/proxy_params:/etc/nginx/proxy_params:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+
   # ─── Flask app (built from Dockerfile) ───
   app:
     build: .
     container_name: ananas_app
     env_file: .env          # reads POSTGRES_*, FLASK_SECRET_KEY from .env
-    ports:
-      - "5000:5000"         # expose web UI on host port 5000
+    environment:
+      - FLASK_ENV=development
+    expose:
+      - "5000"              # internal only, behind nginx
     depends_on:
       postgres:
-        condition: service_healthy  # attend que PostgreSQL soit prêt (pas juste le container démarré)
+        condition: service_healthy
     volumes:
       - secret_key:/app/.secret   # persist .secret file across container rebuilds
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:5000/health')\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
 
-
-# ─── PostgreSQL (official image, no custom build) ───
+  # ─── PostgreSQL (official image, no custom build) ───
   postgres:
     image: postgres:18-alpine
     container_name: ananas_postgres
     env_file: .env          # reads POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD from .env
- 
+   
     command: >
       postgres
       -c max_connections=50

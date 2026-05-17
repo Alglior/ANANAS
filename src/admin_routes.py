@@ -3,6 +3,7 @@ import datetime as dt
 from flask import Blueprint, request, render_template, jsonify, redirect, url_for
 from app import db
 from src.shared import login_required, get_current_user, _build_page_numbers, ITEMS_PER_PAGE
+from utils.security import sanitize_html
 
 bp = Blueprint("admin", __name__)
 
@@ -131,7 +132,7 @@ def create_report():
     target_type = data.get("target_type")
     target_id = data.get("target_id")
     reason = data.get("reason")
-    description = data.get("description", "")
+    description = sanitize_html(data.get("description", ""))
 
     if not target_type or not target_id or not reason:
         return jsonify({"error": "target_type, target_id et reason sont requis"}), 400

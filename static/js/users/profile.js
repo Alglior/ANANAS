@@ -1,5 +1,5 @@
 (function () {
-  var csrfToken = document.querySelector('input[name="csrf_token"]')?.value || '';
+  var csrfToken = document.querySelector('input[name="_csrf_token"]')?.value || '';
 
   function initProfileForm() {
     var profileForm = document.getElementById('profileForm');

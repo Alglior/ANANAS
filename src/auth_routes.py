@@ -1,8 +1,9 @@
+import datetime
 import re
 
 from flask import Blueprint, request, render_template, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
-from app import db
+from app import db, limiter
 from utils.security import sanitize_html
 
 bp = Blueprint("auth", __name__)
@@ -32,6 +33,29 @@ def connexion_page():
     )
 
 
+@bp.route("/connexion", methods=["POST"])
+@limiter.limit("5 per hour")
+def connexion_post():
+    email = request.form.get("email", "").strip()
+    password = request.form.get("password", "")
+
+    from models import User
+
+    user = User.query.filter_by(email=email).first()
+    if user and check_password_hash(user.password_hash, password) and user.is_active and not user.banned:
+        session.clear()
+        session.pop("_csrf_token", None)
+        session["user_id"] = user.id
+        session["_auth_time"] = datetime.datetime.now().isoformat()
+        session.modified = True
+        return redirect(url_for("home"))
+
+    if user and (not user.is_active or user.banned):
+        return render_template("connexion.html", error="banned"), 401
+
+    return render_template("connexion.html", error="Identifiants incorrects"), 401
+
+
 @bp.route("/inscription")
 def inscription_page():
     return render_template(
@@ -42,6 +66,7 @@ def inscription_page():
 
 
 @bp.route("/inscription", methods=["POST"])
+@limiter.limit("3 per hour")
 def inscription_post():
     prenom = sanitize_html(request.form.get("prenom", "").strip())
     nom = sanitize_html(request.form.get("nom", "").strip())

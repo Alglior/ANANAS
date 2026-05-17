@@ -65,13 +65,40 @@ def create_app(app_name="ANANAS"):
     # Protection CSRF: formulaires HTML protégés, routes /api/* exemptées (X-CSRF-Token header requis)
     csrf = CSRFProtect(app)
 
-    # Patch Flask-WTF pour exempter les routes /api/* et /health du contrôle CSRF automatique
+    # Patch Flask-WTF : exemption CSRF explicite par endpoint (pas de wildcard /api/*)
+    EXEMPTED_ENDPOINTS = {
+        "health_check",
+        "auth.inscription_page",
+        "auth.inscription_post",
+        "auth.connexion_page",
+        "auth.connexion_post",
+        "admin.ban_user",
+        "admin.list_banned_users",
+        "admin.create_report",
+        "admin.list_reports",
+        "admin.resolve_report",
+        "admin.list_comments",
+        "admin.delete_comment",
+        "admin.list_items",
+        "admin.delete_item",
+        "admin.unpublish_item",
+        "admin.publish_item",
+        "admin.verify_item",
+        "admin.unverify_item",
+        "admin.admin_audit_log",
+    }
+
     _original_protect = csrf.protect
+
     def _patched_protect():
         from flask import request as req
-        if '/api/' in req.path or req.path == '/health':
-            return  # bypass CSRF pour API et health
+        if req.path == "/health":
+            return
+        endpoint = req.endpoint or ""
+        if endpoint in EXEMPTED_ENDPOINTS:
+            return
         return _original_protect()
+
     csrf.protect = _patched_protect
 
     # Rate limiting pour prévenir le brute-force sur les routes d'authentification
@@ -119,29 +146,6 @@ def create_app(app_name="ANANAS"):
     def health_check():
         return {"status": "ok"}
 
-    @app.route("/connexion", methods=["POST"])
-    @limiter.limit("5 per hour")
-    def connexion_post():
-        email = request.form.get("email", "").strip()
-        password = request.form.get("password", "")
-
-        from models import User
-        from werkzeug.security import check_password_hash
-
-        user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password_hash, password) and user.is_active and not user.banned:
-            session.clear()
-            session.pop("_csrf_token", None)
-            session["user_id"] = user.id
-            session["_auth_time"] = datetime.datetime.now().isoformat()
-            session.modified = True
-            return redirect(url_for("home"))
-
-        if user and (not user.is_active or user.banned):
-            return render_template("connexion.html", error="banned"), 401
-
-        return render_template("connexion.html", error="Identifiants incorrects"), 401
-
     # ────────────────────────────────────────────
     #  Security Headers & Cookie Settings
     # ────────────────────────────────────────────
@@ -175,6 +179,7 @@ def create_app(app_name="ANANAS"):
     app.config["SESSION_COOKIE_HTTPONLY"] = True  # Empêche les scripts JavaScript de lire le cookie de session
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # Protection contre les attaques CSRF par cookie
     app.config["SESSION_COOKIE_SECURE"] = _is_production_env()  # En production seulement, force HTTPS pour les cookies
+    app.config["TRUSTED_PROXIES"] = ["nginx", "127.0.0.1", "::1"]  # Confiance proxy reverser nginx/Docker
     app.config["PERMANENT_SESSION_LIFETIME"] = 1800  # Les sessions expireront après 30 minutes
     app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # Limite de 10 Mo pour les uploads (Max-Content-Length)
 

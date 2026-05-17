@@ -170,7 +170,7 @@
             <span class="rating-number-inline">{{ item.rating|default(0) }}</span>
             {% if current_user %}
             <form class="rate-form" method="POST" action="/catalogue/item/{{ item.id }}/rate">
-               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+<input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"/>
               {% for i in range(1, 6) %}
                 {% set rating = item.rating|default(0) %}
                 <input type="radio" name="rating" value="{{ i }}" id="star-{{ item.id }}-{{ i }}">
@@ -346,7 +346,7 @@
 
         {% if current_user %}
         <form class="comment-form" method="POST" action="/catalogue/item/{{ item.id }}/comment">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"/>
           <div class="comment-form-fields">
             <input class="comment-input" type="text" name="author" value="{{ current_user.prenom }} {{ current_user.nom }}" readonly>
           </div>
