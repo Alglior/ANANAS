@@ -1,3 +1,4 @@
+import base64
 import datetime
 import os
 import secrets
@@ -56,7 +57,7 @@ def create_app(app_name="ANANAS"):
     # ────────────────────────────────────────────
     @app.before_request
     def combined_before_request():
-        g.csp_nonce = secrets.token_hex(16)
+        g.csp_nonce = base64.b64encode(secrets.token_bytes(16)).decode()
         if request.method in ("POST", "PUT", "PATCH", "DELETE"):
             content_type = request.content_type or ""
             if "/api/" in request.path and "application/json" in content_type:
