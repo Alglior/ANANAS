@@ -60,7 +60,11 @@
                   <tbody>
                     {% for row in chunk.metadata_json.preview_rows[:50] %}
                     <tr>
-                      {% set cells = row.split(',') %}
+                      {% if row is string %}
+                        {% set cells = row.split(chunk.metadata_json.get('delimiter', ',')) %}
+                      {% else %}
+                        {% set cells = row %}
+                      {% endif %}
                       {% for cell in cells[:chunk.metadata_json.column_count] %}
                       <td>{{ cell.strip()|e }}</td>
                       {% endfor %}

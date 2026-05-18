@@ -250,13 +250,28 @@ def upload_file():
         if not membership:
             return jsonify({"error": "Organisation non autorisée"}), 403
 
+    lines = [line.strip() for line in data_text.splitlines() if line.strip()]
+    preview_lines = lines[:50]
+    delimiter = "\t" if preview_lines and ("\t" in preview_lines[0] and "," not in preview_lines[0]) else ","
+    preview_rows = []
+    column_count = 0
+    for line in preview_lines:
+        cells = [c.strip() for c in line.split(delimiter)]
+        preview_rows.append(cells)
+        column_count = max(column_count, len(cells))
+
     chunk = DataChunk(
         parent_item_id=None,
         name=title,
         owner_user_id=current_user.id,
         description=description or None,
         format_type=format_type or None,
-        data_url=data_text[:10000] if len(data_text) <= 10000 else data_text[:5000],
+        data_url=None,
+        metadata_json={
+            "preview_rows": preview_rows,
+            "column_count": column_count,
+            "delimiter": delimiter,
+        },
         upload_status="uploaded",
         organization_id=org_id,
     )
@@ -290,6 +305,7 @@ def create_upload_item():
 
     data = request.get_json(silent=True) or {}
     title = data.get("title", "").strip()
+    chunk_id = data.get("chunk_id")
     item_type = data.get("type", "geodonnee").strip()
     format_type = data.get("format_type", "").strip()
     description = data.get("description", "").strip()
@@ -325,6 +341,19 @@ def create_upload_item():
     )
     db.session.add(item)
     db.session.flush()
+
+    if chunk_id:
+        try:
+            chunk_id_int = int(chunk_id)
+        except (TypeError, ValueError):
+            chunk_id_int = None
+        if chunk_id_int:
+            chunk = DataChunk.query.filter_by(id=chunk_id_int, owner_user_id=current_user.id).first()
+            if chunk:
+                chunk.parent_item_id = item.id
+                upload_row = UserUpload.query.filter_by(chunk_id=chunk.id, owner_user_id=current_user.id).first()
+                if upload_row:
+                    upload_row.parent_item_id = item.id
 
     viz_link_name = data.get("viz_link_name", "").strip()
     viz_link_url = data.get("viz_link_url", "").strip()

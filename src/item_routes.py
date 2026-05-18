@@ -129,8 +129,8 @@ def item_data_view(item_id):
     comments, pag_info = _paginate_comments(item_id, comment_page)
     item_dict = item.to_dict()
     item_dict["comment_count"] = Comment.query.filter_by(item_id=item_id).count()
-    viz_links = [vl.to_dict() for vl in VisualizationLink.query.filter_by(item_id=item_id).all()]
-    all_chunks = [c.to_dict() for c in DataChunk.query.filter_by(item_id=item_id).all()]
+    viz_links = [vl.to_dict() for vl in VisualizationLink.query.filter_by(parent_item_id=item_id).all()]
+    all_chunks = [c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=item_id).all()]
 
     return render_template(
         "item_detail.html",

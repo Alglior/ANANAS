@@ -188,6 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
             description: document.getElementById('description').value,
             data_format_level: dataFormatLevel.value,
             organization_id: document.getElementById('organization_id').value || '',
+            chunk_id: data.chunk_id,
           };
 
           if (vizName.value && vizUrl.value) {
