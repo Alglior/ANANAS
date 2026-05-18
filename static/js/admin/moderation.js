@@ -89,9 +89,6 @@
     };
 
     return items.map(it => {
-      const statusBadge = it.is_published
-        ? '<span class="badge badge-verified">Publié</span>'
-        : '<span class="badge badge-pending">Non publié</span>';
       const verBadge = it.verification_status === 'verified'
         ? '<span class="badge badge-verified">Vérifié</span>'
         : it.verification_status === 'rejected'
@@ -103,11 +100,6 @@
       const typeLabel = allowedTypes[safeType] || 'Inconnu';
 
       const actions = [];
-      if (it.is_published) {
-        actions.push(`<button type="button" class="admin-btn-action admin-btn-dismiss" data-toggle-publish="${it.id}" data-published="false">Masquer</button>`);
-      } else {
-        actions.push(`<button type="button" class="admin-btn-action admin-btn-resolve" data-toggle-publish="${it.id}" data-published="true">Publier</button>`);
-      }
       actions.push(`<a href="/catalogue/item/${it.id}" class="admin-btn-action btn-green">Voir données</a>`);
       if (it.verification_status === 'verified') {
         actions.push(`<button type="button" class="admin-btn-action btn-unverify" data-unverify-item="${it.id}">Révoquer</button>`);
@@ -121,7 +113,6 @@
             <td data-label="Type"><span class="type-badge type-${safeType}">${escapeHtml(typeLabel)}</span></td>
             <td data-label="Titre"><a href="/catalogue/item/${it.id}" class="admin-item-link">${escapeHtml(it.title).substring(0, 40)}${it.title.length > 40 ? '...' : ''}</a></td>
             <td data-label="Auteur">${escapeHtml(it.author_name || '-')}</td>
-            <td data-label="Publié">${statusBadge}</td>
             <td data-label="Vérification">${verBadge}</td>
             <td data-label="Commentaires">${it.comment_count || 0}</td>
             <td data-label="Date">${it.created_at ? new Date(it.created_at).toLocaleDateString('fr-FR') : '-'}</td>
@@ -228,17 +219,6 @@
     const endpoint = '/api/admin/comments/' + form.dataset.deleteComment;
     fetch(endpoint, { method: 'DELETE', headers: {'X-CSRF-Token': CsrfModule.getCsrfToken()}})
       .then(r => { if (r.ok) reloadWithTab('comments'); });
-  });
-
-  // Event delegation for publish/unpublish toggles
-  document.getElementById('items-tbody').addEventListener('click', function (e) {
-    const btn = e.target.closest('button[data-toggle-publish]');
-    if (!btn) return;
-    const itemId = parseInt(btn.dataset.togglePublish);
-    const published = btn.dataset.published === 'true';
-    const endpoint = published ? '/api/admin/items/' + itemId + '/publish' : '/api/admin/items/' + itemId + '/unpublish';
-    fetch(endpoint, { method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRF-Token': CsrfModule.getCsrfToken()}})
-      .then(r => { if (r.ok) reloadWithTab('items'); });
   });
 
   // Event delegation for verify button

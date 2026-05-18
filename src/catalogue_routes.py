@@ -167,7 +167,7 @@ def catalogue_json_view(catalogue_type, page):
 
     per_page = 20
     item_type = type_map[catalogue_type]
-    total_items = Item.query.filter_by(type=item_type, is_published=True).count()
+    total_items = Item.query.filter_by(type=item_type).count()
     total_pages = max((total_items + per_page - 1) // per_page, 1)
     page = min(max(page, 1), total_pages) or 1
 
@@ -179,7 +179,7 @@ def catalogue_json_view(catalogue_type, page):
 
     meta = _CATALOGUE_META[catalogue]
     base = "/catalogue/" + catalogue
-    query = Item.query.filter_by(type=item_type, is_published=True)
+    query = Item.query.filter_by(type=item_type)
     if org_slug:
         org = Organization.query.filter_by(slug=org_slug).first()
         if org:

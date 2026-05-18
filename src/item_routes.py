@@ -53,8 +53,6 @@ def item_comments_json(item_id):
 
     item = Item.query.get_or_404(item_id)
     current_user = get_current_user()
-    if not item.is_published and not user_owns_item_or_admin(current_user, item):
-        abort(404)
 
     comment_page = 1
     try:
@@ -80,14 +78,11 @@ def item_detail_view(item_id):
     related_items = Item.query.filter(
         Item.format_type == item.format_type,
         Item.id != item_id,
-        Item.is_published == True
     ).limit(3).all()
 
     img_gallery = get_image_gallery(item)
 
     current_user = get_current_user()
-    if not item.is_published and not user_owns_item_or_admin(current_user, item):
-        abort(404)
 
     from models import Comment
 
@@ -122,19 +117,6 @@ def item_data_view(item_id):
 
     item = Item.query.get_or_404(item_id)
     current_user = get_current_user()
-    if not item.is_published and not user_owns_item_or_admin(current_user, item):
-        abort(404)
-    viz_links = [vl.to_dict() for vl in VisualizationLink.query.filter_by(parent_item_id=item_id, is_active=True).all()]
-    public_filter = [DataChunk.parent_item_id == item.id, DataChunk.visibility == "public"]
-    if current_user:
-        user_chunks = [c.to_dict() for c in DataChunk.query.filter(
-            DataChunk.parent_item_id == item.id,
-            DataChunk.owner_user_id == current_user.id
-        ).all()]
-        public_chunks = [c.to_dict() for c in DataChunk.query.filter(*public_filter).all()]
-        all_chunks = list({c["id"]: c for c in public_chunks + user_chunks}.values())
-    else:
-        all_chunks = [c.to_dict() for c in DataChunk.query.filter(*public_filter).all()]
 
     from models import Comment
 
@@ -158,7 +140,7 @@ def item_data_view(item_id):
         comment_total_pages=pag_info["total_pages"],
         comment_page_numbers=pag_info["page_numbers"],
         related_items=[ri.to_dict() for ri in Item.query.filter(
-            Item.format_type == item.format_type, Item.id != item_id, Item.is_published == True
+            Item.format_type == item.format_type, Item.id != item_id
         ).limit(3).all()],
         image_gallery=get_image_gallery(item),
         current_user=current_user,
@@ -173,9 +155,6 @@ def item_gallery_view(item_id):
     from models import Item
 
     item = Item.query.get_or_404(item_id)
-    current_user = get_current_user()
-    if not item.is_published and not user_owns_item_or_admin(current_user, item):
-        abort(404)
     return render_template(
         "gallery.html",
         title=f"Galerie — {item.title}",

@@ -190,4 +190,4 @@ class TestDataChunkModel:
     def test_chunk_defaults(self):
         from models import DataChunk
         c = DataChunk(name="Test Chunk", owner_user_id=1)
-        assert c.is_published is False
+        assert c.upload_status == "uploaded"

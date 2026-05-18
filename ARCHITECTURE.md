@@ -140,7 +140,7 @@ Le code est organisé en **8 blueprints** répartis dans `src/` :
 | **Rating** | `ratings` | id, item_id(FK), user_id(FK), rating(float 1-5) | Notes utilisateurs sur les items |
 | **Comment** | `comments` | id, item_id(FK), author_name, content, created_at | Commentaires sur les items |
 | **Report** | `reports` | id, reporter_id(FK), reported_user_id(FK), report_type, target_item_id(FK), reason(spam\|fake_data\|other), description, status(pending\|reviewed\|dismissed\|resolved), reviewed_by(FK) | Signalements modérés par l'admin |
-| **DataChunk** | `data_chunks` | id, parent_item_id(FK), name, owner_user_id(FK), visibility, data_url, metadata_json(JSON), is_published | Chunks de données uploadées |
+| **DataChunk** | `data_chunks` | id, parent_item_id(FK), name, owner_user_id(FK), data_url, metadata_json(JSON) | Chunks de données uploadées |
 | **UserUpload** | `user_uploads` | id, owner_user_id(FK), parent_item_id(FK), chunk_id(FK), file_name, file_size_bytes, mime_type, original_format, processing_status, error_message | Suivi des uploads utilisateurs |
 | **VisualizationLink** | `visualization_links` | id, parent_item_id(FK), name, url, owner_user_id(FK), link_type(external\|internal\|embed\|widget), display_order, thumbnail_url, is_active | Liens de visualisation pour les items |
 

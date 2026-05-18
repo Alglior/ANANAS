@@ -147,7 +147,7 @@ def organization_items_view(slug):
     org = Organization.query.filter_by(slug=slug).first_or_404()
     filter_verified = request.args.get("verified") == "1"
     items = (
-        Item.query.filter_by(organization_id=org.id, is_published=True)
+        Item.query.filter_by(organization_id=org.id)
     )
     if filter_verified:
         items = items.filter_by(verification_status="verified")
@@ -166,7 +166,7 @@ def organization_detail_view(slug):
 
     org = Organization.query.filter_by(slug=slug).first_or_404()
     items = (
-        Item.query.filter_by(organization_id=org.id, is_published=True)
+        Item.query.filter_by(organization_id=org.id)
         .limit(ITEMS_PER_PAGE)
         .all()
     )

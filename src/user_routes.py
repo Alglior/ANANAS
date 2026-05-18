@@ -257,7 +257,6 @@ def upload_file():
         description=description or None,
         format_type=format_type or None,
         data_url=data_text[:10000] if len(data_text) <= 10000 else data_text[:5000],
-        visibility="public",
         upload_status="uploaded",
         organization_id=org_id,
     )
@@ -320,9 +319,8 @@ def create_upload_item():
         magnet_link="",
         owner_user_id=current_user.id,
         author_name=f"{current_user.prenom} {current_user.nom}",
-        organization_id=org_id,
-        is_published=True,
-        verification_status="unofficial",
+           organization_id=org_id,
+            verification_status="unofficial",
         data_format_level=data_format_level,
     )
     db.session.add(item)

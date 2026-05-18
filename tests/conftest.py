@@ -57,7 +57,6 @@ def seeded(client):
             magnet_link=f"magnet:?xt=urn:btih:{i:040x}",
             author_name=f"Author {i}",
             organization_id=org.id if i % 2 == 0 else None,
-            is_published=True,
             verification_status="verified" if i % 5 == 0 else "unofficial",
         )
         db.session.add(item)

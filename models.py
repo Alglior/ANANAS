@@ -21,7 +21,6 @@ class Item(db.Model):
     author_name: Mapped[str | None]
     organization_id: Mapped[int | None] = mapped_column(ForeignKey("organizations.id"))
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
-    is_published: Mapped[bool] = mapped_column(default=True)
     verification_status: Mapped[str] = mapped_column(default="unofficial")
     data_format_level: Mapped[str] = mapped_column(default="individual")
     verifier_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
@@ -30,8 +29,6 @@ class Item(db.Model):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        if self.is_published is None:
-            self.is_published = True
         if self.verification_status is None:
             self.verification_status = "unofficial"
         if self.created_at is None:
@@ -77,7 +74,7 @@ class Item(db.Model):
             "data_format_level": self.data_format_level,
             "download_levels": [
                 {"name": c.name, "magnet": c.magnet_link}
-                for c in DataChunk.query.filter_by(parent_item_id=self.id, visibility="public").all()
+                for c in DataChunk.query.filter_by(parent_item_id=self.id).all()
                 if validate_magnet_link(c.magnet_link or "")
             ] if self.data_format_level == "individual" else None,
         }
@@ -266,19 +263,13 @@ class DataChunk(db.Model):
     format_type: Mapped[str | None]
     magnet_link: Mapped[str | None]
     organization_id: Mapped[int | None] = mapped_column(ForeignKey("organizations.id"))
-    visibility: Mapped[str] = mapped_column(default="public")
     data_url: Mapped[str | None]
     metadata_json: Mapped[dict | None] = mapped_column(JSON, server_default="{}")
-    is_published: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
     upload_status: Mapped[str] = mapped_column(default="uploaded")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        if self.visibility is None:
-            self.visibility = "public"
-        if self.is_published is None:
-            self.is_published = False
         if self.created_at is None:
             self.created_at = datetime.datetime.now()
         if not hasattr(self, "upload_status") or self.upload_status is None:
@@ -309,7 +300,6 @@ class DataChunk(db.Model):
             "format_type": self.format_type,
             "magnet_link": self.magnet_link if validate_magnet_link(self.magnet_link or "") else None,
             "data_url": self.data_url if validate_external_url(self.data_url or "") else None,
-            "visibility": self.visibility,
             "metadata_json": meta_json,
             "created_at": self.created_at.strftime("%Y-%m-%d") if self.created_at else "",
         }

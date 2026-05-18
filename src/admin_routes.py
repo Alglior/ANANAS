@@ -378,10 +378,6 @@ def list_items():
     query = Item.query
     if item_type != "all":
         query = query.filter_by(type=item_type)
-    if status_filter == "published":
-        query = query.filter_by(is_published=True)
-    elif status_filter == "unpublished":
-        query = query.filter_by(is_published=False)
 
     total_items = query.count()
     paginated = query.order_by(Item.created_at.desc()).limit(per_page).offset((page - 1) * per_page).all()
@@ -394,7 +390,6 @@ def list_items():
                 "title": it.title,
                 "description": it.description[:100],
                 "author_name": it.author_name,
-                "is_published": it.is_published,
                 "verification_status": it.verification_status,
                 "created_at": it.created_at.isoformat() if hasattr(it, "created_at") and it.created_at else None,
                 "comment_count": len(it.comments),
@@ -424,38 +419,6 @@ def delete_item(item_id):
     db.session.commit()
     _log_audit("item_deleted", "item", item_id, {"title": title, "type": type_name})
     return jsonify({"status": "deleted", "item_id": item_id, "title": title})
-
-
-@bp.route("/api/admin/items/<int:item_id>/unpublish", methods=["POST"])
-@login_required
-def unpublish_item(item_id):
-    from models import Item
-
-    current_user = get_current_user()
-    if not current_user.is_admin:
-        return jsonify({"error": "Non autorisé"}), 403
-
-    item = Item.query.get_or_404(item_id)
-    item.is_published = False
-    db.session.commit()
-    _log_audit("item_unpublished", "item", item_id, {"title": item.title})
-    return jsonify({"status": "updated", "item_id": item_id, "is_published": False})
-
-
-@bp.route("/api/admin/items/<int:item_id>/publish", methods=["POST"])
-@login_required
-def publish_item(item_id):
-    from models import Item
-
-    current_user = get_current_user()
-    if not current_user.is_admin:
-        return jsonify({"error": "Non autorisé"}), 403
-
-    item = Item.query.get_or_404(item_id)
-    item.is_published = True
-    db.session.commit()
-    _log_audit("item_published", "item", item_id, {"title": item.title})
-    return jsonify({"status": "updated", "item_id": item_id, "is_published": True})
 
 
 @bp.route("/api/admin/items/<int:item_id>/verify", methods=["POST"])
