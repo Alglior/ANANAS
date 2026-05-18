@@ -31,6 +31,7 @@ docker_setup() {
 POSTGRES_DB=${pg_db}
 POSTGRES_USER=${pg_user}
 POSTGRES_PASSWORD=${pg_pass}
+SQLALCHEMY_DATABASE_URI=postgresql://${pg_user}:${pg_pass}@postgres/${pg_db}
 
 # ─── Admin Account ───
 ADMIN_EMAIL=system@ananas.local
