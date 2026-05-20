@@ -70,13 +70,13 @@ CREATE TABLE items (
     title                   VARCHAR NOT NULL,
     description             TEXT NOT NULL,
     format_type             VARCHAR,
-    magnet_link             VARCHAR NOT NULL,
-  image_path              VARCHAR NOT NULL DEFAULT '/static/images/logo/ANANAS.png',
+        magnet_link             VARCHAR NOT NULL,
+        image_path              VARCHAR NOT NULL DEFAULT '/static/images/logo/ANANAS.png',
     author_name             TEXT,
     organization_id         INTEGER REFERENCES organizations(id),
     created_at              TIMESTAMP NOT NULL DEFAULT NOW(),
     verification_status     VARCHAR NOT NULL DEFAULT 'unofficial',  -- 'unofficial', 'verified'
-    data_format_level       VARCHAR NOT NULL DEFAULT 'individual',  -- 'collectivité', 'commune', 'quartier', 'individu'
+    data_format_level       VARCHAR NOT NULL DEFAULT 'individual',  -- 'individual', 'pack'
     verifier_user_id        INTEGER REFERENCES users(id),
     verified_at             TIMESTAMP,
     verification_notes      TEXT,
@@ -198,7 +198,7 @@ CREATE TABLE reports (
     reported_user_id    INTEGER REFERENCES users(id),
     report_type         VARCHAR NOT NULL,  -- 'user', 'item_geodonnee', 'item_carte', 'item_application'
     target_item_id      INTEGER REFERENCES items(id),
-    reason              VARCHAR NOT NULL,  -- 'spam', 'contenu_inapproprié', 'fake_data', 'other'
+    reason              VARCHAR NOT NULL,  -- 'spam', 'fake_data', 'other'
     description         TEXT,
     status              VARCHAR NOT NULL DEFAULT 'pending',  -- 'pending', 'reviewed', 'dismissed', 'resolved'
     reviewed_by         INTEGER REFERENCES users(id),
@@ -213,7 +213,7 @@ CREATE TABLE reports (
 CREATE TABLE admin_audit (
     id                  SERIAL PRIMARY KEY,
     admin_user_id       INTEGER REFERENCES users(id),
-    action_type         VARCHAR NOT NULL,  -- 'ban', 'unban', 'report_resolve', 'report_dismiss', 'item_publish', 'item_unpublish', 'user_verify'
+    action_type         VARCHAR NOT NULL,  -- 'ban', 'unban', 'resolved', 'dismissed', 'comment_deleted', 'item_deleted', 'item_verified', 'item_unverified', 'user_verify'
     target_type         VARCHAR,  -- 'user', 'item', 'report'
     target_id           INTEGER,
     details             JSON NOT NULL DEFAULT '{}',
@@ -335,7 +335,7 @@ CREATE INDEX ix_admin_audit_action_type   ON admin_audit(action_type);
 - `unofficial`, `verified`
 
 ### `items.data_format_level`
-- `collectivité`, `commune`, `quartier`, `individu`
+- `individual`, `pack`
 
 ### `item_gallery.media_type`
 - `image`, `csv`, `dashboard`, `interactive_map`
@@ -356,13 +356,13 @@ CREATE INDEX ix_admin_audit_action_type   ON admin_audit(action_type);
 - `user`, `item_geodonnee`, `item_carte`, `item_application`
 
 ### `reports.reason`
-- `spam`, `contenu_inapproprié`, `fake_data`, `other`
+- `spam`, `fake_data`, `other`
 
 ### `reports.status`
 - `pending`, `reviewed`, `dismissed`, `resolved`
 
 ### `admin_audit.action_type`
-- `ban`, `unban`, `report_resolve`, `report_dismiss`, `item_verified`, `item_unverified`, `user_verify`
+- `ban`, `unban`, `resolved`, `dismissed`, `comment_deleted`, `item_deleted`, `item_verified`, `item_unverified`, `user_verify`
 
 ---
 
@@ -373,12 +373,12 @@ CREATE INDEX ix_admin_audit_action_type   ON admin_audit(action_type);
 | 1 | users | 9 | id | — | — |
 | 2 | organizations | 9 | id | created_by → users.id | — |
 | 3 | organization_members | 6 | id | user_id → users.id, org_id → orgs.id | — |
-| 4 | items | 17 | id | org_id → orgs.id, verifier → users, owner → users | org, verifier, owner |
+| 4 | items | 16 | id | org_id → orgs.id, verifier → users, owner → users | org, verifier, owner |
 | 5 | item_tags | 3 | id | item_id → items.id | — |
 | 6 | item_gallery | 6 | id | item_id → items.id | — |
 | 7 | ratings | 4 | id | item_id → items.id, user_id → users | — |
 | 8 | comments | 6 | id | item_id → items.id, user_id → users | — |
-| 9 | data_chunks | 12 | id | parent → items, owner → users, org → orgs | parent, org |
+| 9 | data_chunks | 13 | id | parent → items, owner → users, org → orgs | parent, org |
 | 10 | user_uploads | 13 | id | owner → users, parent → items, chunk → data_chunks, pub → items, org → orgs | owner, parent, chunk, publisher, org |
 | 11 | visualization_links | 11 | id | parent → items, owner → users | — |
 | 12 | reports | 10 | id | reporter → users, reportee → users, target → items, reviewer → users | reporter, reportee, target, reviewer |
@@ -397,6 +397,8 @@ b2c3d4e5f6g7  add_data_format_level   → data_format_level (items)
 32cff08a15b4  add_admin_audit_table   → Table admin_audit + index
 c3d4e5f6g7h8  add_user_id_comments    → user_id FK → users (comments)
 d4e5f6g7h8i9  add_owner_user_items    → owner_user_id FK → users (items)
+e5f6g7h8i9j0  remove_is_published     → suppression de is_published (items)
+f6g7h8i9j0k1  remove_data_chunk_fields → suppression de visibility/is_published (data_chunks)
 ```
 
 ---
