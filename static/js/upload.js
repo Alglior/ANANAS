@@ -92,10 +92,17 @@ document.addEventListener('DOMContentLoaded', function() {
     typeSelect.addEventListener('change', function() {
       populateFormats(this.value);
       if (dataTextInputGroup) {
-        if (this.value === 'carte') {
+        if (this.value === 'carte' || this.value === 'application') {
           dataTextInputGroup.classList.add('hidden-section');
         } else {
           dataTextInputGroup.classList.remove('hidden-section');
+        }
+      }
+      if (dataFormatLevel) {
+        if (this.value === 'application' || this.value === 'carte') {
+          dataFormatLevel.closest('.form-group').classList.add('hidden-section');
+        } else {
+          dataFormatLevel.closest('.form-group').classList.remove('hidden-section');
         }
       }
     });
@@ -166,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function() {
       uploadStatus.className = 'form-status';
       uploadProgress.classList.remove('hidden-section');
 
-      if (selectedType !== 'carte') {
+      if (selectedType !== 'carte' && selectedType !== 'application') {
         const dataText = dataInput ? dataInput.value : '';
         const lines = dataText.split('\n').filter(line => line.trim()).slice(0, MAX_LINES);
 
@@ -180,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       const formData = new FormData();
-      if (selectedType !== 'carte') {
+      if (selectedType !== 'carte' && selectedType !== 'application') {
         const dataText = dataInput.value;
         const lines = dataText.split('\n').filter(line => line.trim()).slice(0, MAX_LINES);
         formData.append('data_text', lines.join('\n'));
@@ -189,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
       formData.append('type', selectedType);
       formData.append('format_type', formatTypeSelect.value);
       formData.append('description', document.getElementById('description').value);
-      if (selectedType === 'carte') {
+      if (selectedType === 'carte' || selectedType === 'application') {
         formData.append('data_format_level', 'pack');
       } else {
         formData.append('data_format_level', dataFormatLevel.value);
@@ -197,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
       formData.append('organization_id', document.getElementById('organization_id').value);
 
       let magnetLink = '';
-      if (selectedType === 'carte' || dataFormatLevel.value === 'pack') {
+      if (selectedType === 'carte' || selectedType === 'application' || dataFormatLevel.value === 'pack') {
         magnetLink = document.getElementById('magnet_link').value;
         if (!magnetLink) {
           uploadStatus.textContent = 'Le lien Magnet est requis';
@@ -254,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
             type: selectedType,
             format_type: formatTypeSelect.value,
             description: document.getElementById('description').value,
-            data_format_level: selectedType === 'carte' ? 'pack' : dataFormatLevel.value,
+            data_format_level: (selectedType === 'carte' || selectedType === 'application') ? 'pack' : dataFormatLevel.value,
             organization_id: document.getElementById('organization_id').value || '',
             chunk_id: data.chunk_id,
           };
@@ -264,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
             itemPayload.viz_link_url = vizUrl.value;
           }
 
-          if (selectedType === 'carte' || dataFormatLevel.value === 'pack') {
+          if (selectedType === 'carte' || selectedType === 'application' || dataFormatLevel.value === 'pack') {
             itemPayload.magnet_link = magnetLink;
           } else {
             const entries = magnetEntries.querySelectorAll('.form-row');
