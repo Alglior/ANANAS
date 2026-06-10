@@ -34,6 +34,17 @@
                 <option value="application">Application</option>
               </select>
             </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="data_format_level" class="label-with-help">Niveau de granularité <span class="help-icon" data-tooltip="Pack = un seul lien Magnet pour tous les fichiers du jeu. Individuel = plusieurs liens Magnets, un par fichier, avec un niveau d'indexation précis pour chacun.">?</span></label>
+              <select id="data_format_level" name="data_format_level">
+                <option value="pack">Pack (tous les fichiers)</option>
+                <option value="individual">Fichier individuel</option>
+              </select>
+            </div>
+
             <div class="form-group">
               <label for="format_type" class="label-with-help">Format du fichier <span class="help-icon" data-tooltip="Le format technique du fichier principal que vous téléversez. Cela permet d'adapter l'indexation dans le catalogue.">?</span></label>
               <select id="format_type" name="format_type">
@@ -43,14 +54,6 @@
                  <option value="xml">XML</option>
               </select>
             </div>
-          </div>
-
-          <div class="form-group">
-            <label for="data_format_level" class="label-with-help">Niveau de granularité <span class="help-icon" data-tooltip="Pack = un seul lien Magnet pour tous les fichiers du jeu. Individuel = plusieurs liens Magnets, un par fichier, avec un niveau d'indexation précis pour chacun.">?</span></label>
-            <select id="data_format_level" name="data_format_level">
-              <option value="pack">Pack (tous les fichiers)</option>
-              <option value="individual">Fichier individuel</option>
-            </select>
           </div>
 
           <div class="form-group">
