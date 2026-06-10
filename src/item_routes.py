@@ -152,6 +152,7 @@ def item_data_view(item_id):
         ).limit(3).all()],
         image_gallery=get_image_gallery(item),
         current_user=current_user,
+        show_data_visualization_tabs=item.type == "geodonnee",
         active_data_tab=True,
         viz_links=viz_links,
         data_chunks=all_chunks,
