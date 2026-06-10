@@ -236,6 +236,33 @@
   box-shadow: var(--shadow-mustard-btn-hover);
 }
 
+.scroll-btn {
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+  line-height: 1.4;
+  transition: box-shadow 0.2s ease;
+  font-size: 1rem;
+}
+
+@media (max-width: 980px) {
+  .scroll-btn {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .scroll-btn {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .scroll-btn {
+    font-size: 0.85rem;
+  }
+}
+
 .btn-copy-secondary {
   border-width: 2px;
   padding: 0.8rem 1.4rem;

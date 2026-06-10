@@ -233,7 +233,7 @@
 
             {% if item.magnet %}
             <div class="download-actions">
-              <a href="{{ item.magnet|e }}" class="btn btn-download">Accès au téléchargement de la donnée</a>
+              <button class="btn btn-download scroll-btn" type="button">Accès au téléchargement de la donnée</button>
             </div>
             {% else %}
             <p class="no-download">Lien de téléchargement non disponible</p>
@@ -293,7 +293,7 @@
         </dl>
 
         {% if item.magnet %}
-        <div class="tech-code-block">
+        <div class="tech-code-block" id="techCodeBlock">
           <h3>Lien magnet</h3>
           <code>{{ item.magnet|e }}</code>
           <button class="btn btn-copy-tech" type="button" data-magnet="{{ item.magnet|e }}">

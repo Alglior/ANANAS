@@ -32,6 +32,10 @@
   .footer-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .download-actions .scroll-btn {
+    padding: 0.75rem 1.4rem;
+  }
 }
 
 @media (max-width: 680px) {
@@ -60,6 +64,10 @@
   .btn-primary,
   .btn-outline {
     width: 100%;
+  }
+
+  .download-actions .scroll-btn {
+    padding: 0.8rem 1.2rem;
   }
 
   .cards-grid {
@@ -96,6 +104,7 @@
 @media (max-width: 560px) {
   .download-actions {
     flex-direction: column;
+    gap: 0.75rem;
   }
 
   .btn-download,
@@ -103,6 +112,11 @@
     width: 100%;
     justify-content: center;
     text-align: center;
+  }
+
+  .scroll-btn {
+    padding: 0.8rem 1.2rem;
+    min-height: 44px;
   }
 
   .related-list {
@@ -116,6 +130,10 @@
 }
 
 @media (max-width: 768px) {
+  .download-actions .scroll-btn {
+    padding: 0.7rem 1.2rem;
+  }
+
   .modal-content { flex-direction: column; padding: 10px; max-width: 96vw; max-height: calc(100vh - 40px); }
   .white-box { flex-direction: column-reverse; }
   .modal-left { min-width: auto; padding: 8px; }
