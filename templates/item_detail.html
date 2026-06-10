@@ -304,35 +304,35 @@
 
       </section>
 
-      <!-- Réutilisation -->
-      <section class="reuse-section">
-        <h2>Réutilisation</h2>
+      <!-- Attribution -->
+      <section class="attribution-section">
+        <h2>Attribution</h2>
         {% set license_map = {
           'cc-by': 'CC-BY 4.0',
           'odc-odbl': 'ODC-ODbL',
           'licence-ouverte': 'Licence Ouverte',
           'public-domain': 'Domaine public'
         } %}
-        <div class="reuse-card">
-          <dl class="reuse-grid">
-            <div class="reuse-item">
+        <div class="attribution-card">
+          <dl class="attribution-grid">
+            <div class="attribution-item">
               <dt>Catégorie</dt>
               <dd>{{ item.format }}</dd>
             </div>
-            <div class="reuse-item">
+            <div class="attribution-item">
               <dt>Licence</dt>
               <dd>{% if item.license_type in license_map %}{{ license_map[item.license_type] }}{% else %}{{ item.license_type or 'Non spécifiée' }}{% endif %}</dd>
             </div>
-            <div class="reuse-item">
+            <div class="attribution-item">
               <dt>Auteur</dt>
               <dd>{{ item.author|e }}{% if item.organization_name|e %} — {{ item.organization_name }}{% endif %}</dd>
             </div>
-            <div class="reuse-item">
+            <div class="attribution-item">
               <dt>Date de publication</dt>
               <dd>{{ item.created_at }}</dd>
             </div>
           </dl>
-          <p class="reuse-note">Cette donnée publiée par {{ item.author|e }}{% if item.organization_name|e %} — {{ item.organization_name }}{% endif %} peut être réutilisée librement dans vos propres projets SIG, analyses ou visualisations cartographiques. La mention « Source : A.N.A.N.A.S. » est recommandée.</p>
+          <p class="attribution-note">Cette donnée publiée par {{ item.author|e }}{% if item.organization_name|e %} — {{ item.organization_name }}{% endif %} peut être réutilisée librement dans vos propres projets SIG, analyses ou visualisations cartographiques. La mention « Source : A.N.A.N.A.S. » est recommandée.</p>
         </div>
       </section>
 

@@ -200,7 +200,7 @@ Approche **modulaire** avec separation en deux sous-répertoires :
 - `badges.css` — Badges et tags visuels
 
 ### Features (`static/css/features/`)
-- `sections/reuse.css` — Section réutilisation (`.reuse-section`, `.reuse-card`, etc.)
+- `sections/attribution.css` — Section attribution (`.attribution-section`, `.attribution-card`, etc.)
 - `sections/info.css` — Section informations (`.info-section`, `.info-card`, etc.)
 - `sections/p2p.css` — Section P2P & résilience (timeline, avantages)
 - `sections/geopackage.css` — Section GeoPackage Packs (collections, CTA)

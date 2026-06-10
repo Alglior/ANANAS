@@ -1,22 +1,22 @@
-/* ── Réutilisation section ── */
-.reuse-section {
+/* ── Attribution section ── */
+.attribution-section {
   margin-top: 3rem;
 }
 
-.reuse-section h2 {
+.attribution-section h2 {
   color: var(--charcoal);
   font-size: 1.35rem;
   margin-bottom: 1.5rem;
 }
 
-.reuse-card {
+.attribution-card {
   background: rgba(218, 165, 32, 0.06);
   border-radius: 12px;
   border: 1px solid rgba(218, 165, 32, 0.25);
   padding: 1.75rem 2rem;
 }
 
-.reuse-grid {
+.attribution-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1px;
@@ -26,14 +26,14 @@
   margin-bottom: 1.25rem;
 }
 
-.reuse-item {
+.attribution-item {
   display: flex;
   flex-direction: column;
   padding: 1.25rem 1.5rem;
   background: var(--white);
 }
 
-.reuse-item dt {
+.attribution-item dt {
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -42,14 +42,14 @@
   font-weight: 600;
 }
 
-.reuse-item dd {
+.attribution-item dd {
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--charcoal);
   margin: 0;
 }
 
-.reuse-note {
+.attribution-note {
   color: var(--charcoal);
   line-height: 1.7;
   font-size: 0.95rem;
