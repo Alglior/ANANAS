@@ -18,14 +18,16 @@
       </nav>
 
       <nav class="detail-tabs" aria-label="Actions sur la donnée">
-        {% if active_data_tab %}
-          <a href="/catalogue/item/{{ item.id }}" class="tab-btn">Aperçu</a>
-          <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn active">Données</a>
-          <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Visualisation</a>
-        {% else %}
-          <a href="#" class="tab-btn active">Aperçu</a>
-          <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn">Données</a>
-          <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Visualisation</a>
+        {% if show_data_visualization_tabs and show_data_visualization_tabs != False %}
+          {% if active_data_tab %}
+            <a href="/catalogue/item/{{ item.id }}" class="tab-btn">Aperçu</a>
+            <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn active">Données</a>
+            <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Visualisation</a>
+          {% else %}
+            <a href="#" class="tab-btn active">Aperçu</a>
+            <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn">Données</a>
+            <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Visualisation</a>
+          {% endif %}
         {% endif %}
       </nav>
     </div>

@@ -109,6 +109,7 @@ def item_detail_view(item_id):
         related_items=[ri.to_dict() for ri in related_items],
         image_gallery=img_gallery,
         current_user=current_user,
+        show_data_visualization_tabs=item.type == "geodonnee",
     )
 
 
@@ -132,6 +133,9 @@ def item_data_view(item_id):
     item_dict["comment_count"] = Comment.query.filter_by(item_id=item_id).count()
     viz_links = [vl.to_dict() for vl in VisualizationLink.query.filter_by(parent_item_id=item_id).all()]
     all_chunks = [c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=item_id).all()]
+
+    if item.type != "geodonnee":
+        return abort(404)
 
     return render_template(
         "item_detail.html",
@@ -159,6 +163,8 @@ def item_gallery_view(item_id):
     from models import Item
 
     item = Item.query.get_or_404(item_id)
+    if item.type != "geodonnee":
+        return abort(404)
     return render_template(
         "gallery.html",
         title=f"Galerie — {item.title}",
