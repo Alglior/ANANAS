@@ -305,6 +305,12 @@
       <!-- Réutilisation -->
       <section class="reuse-section">
         <h2>Réutilisation</h2>
+        {% set license_map = {
+          'cc-by': 'CC-BY 4.0',
+          'odc-odbl': 'ODC-ODbL',
+          'licence-ouverte': 'Licence Ouverte',
+          'public-domain': 'Domaine public'
+        } %}
         <div class="reuse-card">
           <dl class="reuse-grid">
             <div class="reuse-item">
@@ -313,7 +319,7 @@
             </div>
             <div class="reuse-item">
               <dt>Licence</dt>
-              <dd>Licence Ouverte — Licence CC-BY</dd>
+              <dd>{% if item.license_type in license_map %}{{ license_map[item.license_type] }}{% else %}{{ item.license_type or 'Non spécifiée' }}{% endif %}</dd>
             </div>
             <div class="reuse-item">
               <dt>Auteur</dt>

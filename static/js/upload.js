@@ -38,6 +38,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const uploadProgress = document.getElementById('uploadProgress');
   const progressBar = document.getElementById('progressBar');
   const progressText = document.getElementById('progressText');
+  const typeSelect = document.getElementById('type');
+  const formatTypeSelect = document.getElementById('format_type');
+  const dataTextInputGroup = document.getElementById('dataTextInputGroup');
   const dataFormatLevel = document.getElementById('data_format_level');
   const packMagnetGroup = document.getElementById('packMagnetGroup');
   const individualMagnetGroup = document.getElementById('individualMagnetGroup');
@@ -45,6 +48,58 @@ document.addEventListener('DOMContentLoaded', function() {
   const addMagnetBtn = document.getElementById('addMagnetBtn');
 
   let magnetEntryCount = 0;
+
+  const formatDict = {
+    geodonnee: [
+      { value: 'geopackage', label: 'Geopackage (.gpkg)' },
+      { value: 'csv', label: 'CSV' },
+      { value: 'shp', label: 'Shapefile (.shp)' },
+      { value: 'geojson', label: 'GeoJSON' },
+      { value: 'xml', label: 'XML' }
+    ],
+    carte: [
+      { value: 'png', label: 'PNG' },
+      { value: 'jpg', label: 'JPG/JPEG' },
+      { value: 'tiff', label: 'TIFF' },
+      { value: 'gif', label: 'GIF' },
+      { value: 'bmp', label: 'BMP' },
+      { value: 'webp', label: 'WebP' }
+    ],
+    application: [
+      { value: 'python', label: 'Python (.py)' },
+      { value: 'rust', label: 'Rust (.rs)' },
+      { value: 'javascript', label: 'JavaScript (.js)' },
+      { value: 'typescript', label: 'TypeScript (.ts)' },
+      { value: 'java', label: 'Java (.java)' },
+      { value: 'go', label: 'Go (.go)' },
+      { value: 'cpp', label: 'C++ (.cpp/.h)' },
+      { value: 'html', label: 'HTML/CSS' }
+    ]
+  };
+
+  function populateFormats(type) {
+    if (!formatTypeSelect || !formatDict[type]) return;
+    formatTypeSelect.innerHTML = '';
+    formatDict[type].forEach(opt => {
+      const option = document.createElement('option');
+      option.value = opt.value;
+      option.textContent = opt.label;
+      formatTypeSelect.appendChild(option);
+    });
+  }
+
+  if (typeSelect) {
+    typeSelect.addEventListener('change', function() {
+      populateFormats(this.value);
+      if (dataTextInputGroup) {
+        if (this.value === 'carte') {
+          dataTextInputGroup.classList.add('hidden-section');
+        } else {
+          dataTextInputGroup.classList.remove('hidden-section');
+        }
+      }
+    });
+  }
 
   if (dataFormatLevel) {
     function toggleMagnetSections() {
@@ -105,38 +160,51 @@ document.addEventListener('DOMContentLoaded', function() {
   if (uploadForm) {
     uploadForm.addEventListener('submit', async function(e) {
       e.preventDefault();
+      const selectedType = typeSelect ? typeSelect.value : '';
       uploadBtn.disabled = true;
       uploadStatus.textContent = 'Préparation...';
       uploadStatus.className = 'form-status';
       uploadProgress.classList.remove('hidden-section');
 
-      const dataText = dataInput ? dataInput.value : '';
-      const lines = dataText.split('\n').filter(line => line.trim()).slice(0, MAX_LINES);
+      if (selectedType !== 'carte') {
+        const dataText = dataInput ? dataInput.value : '';
+        const lines = dataText.split('\n').filter(line => line.trim()).slice(0, MAX_LINES);
 
-      if (!lines.length) {
-        uploadStatus.textContent = 'Veuillez coller vos données';
-        uploadStatus.className = 'form-status form-error';
-        uploadBtn.disabled = false;
-        uploadProgress.classList.add('hidden-section');
-        return;
+        if (!lines.length) {
+          uploadStatus.textContent = 'Veuillez coller vos données';
+          uploadStatus.className = 'form-status form-error';
+          uploadBtn.disabled = false;
+          uploadProgress.classList.add('hidden-section');
+          return;
+        }
       }
 
       const formData = new FormData();
-      formData.append('data_text', lines.join('\n'));
+      if (selectedType !== 'carte') {
+        const dataText = dataInput.value;
+        const lines = dataText.split('\n').filter(line => line.trim()).slice(0, MAX_LINES);
+        formData.append('data_text', lines.join('\n'));
+      }
       formData.append('title', document.getElementById('title').value);
-      formData.append('type', document.getElementById('type').value);
-      formData.append('format_type', document.getElementById('format_type').value);
+      formData.append('type', selectedType);
+      formData.append('format_type', formatTypeSelect.value);
       formData.append('description', document.getElementById('description').value);
-      formData.append('data_format_level', dataFormatLevel.value);
+      if (selectedType === 'carte') {
+        formData.append('data_format_level', 'pack');
+      } else {
+        formData.append('data_format_level', dataFormatLevel.value);
+      }
       formData.append('organization_id', document.getElementById('organization_id').value);
-      if (dataFormatLevel.value === 'pack') {
-        const magnetLink = document.getElementById('magnet_link').value;
+
+      let magnetLink = '';
+      if (selectedType === 'carte' || dataFormatLevel.value === 'pack') {
+        magnetLink = document.getElementById('magnet_link').value;
         if (!magnetLink) {
-         uploadStatus.textContent = 'Le lien Magnet est requis';
-            uploadStatus.className = 'form-status form-error';
-            uploadBtn.disabled = false;
-            uploadProgress.classList.add('hidden-section');
-            return;
+          uploadStatus.textContent = 'Le lien Magnet est requis';
+          uploadStatus.className = 'form-status form-error';
+          uploadBtn.disabled = false;
+          uploadProgress.classList.add('hidden-section');
+          return;
         }
         formData.append('magnet_link', magnetLink);
       } else {
@@ -183,10 +251,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Also create the item if not already created
           const itemPayload = {
             title: document.getElementById('title').value,
-            type: document.getElementById('type').value,
-            format_type: document.getElementById('format_type').value,
+            type: selectedType,
+            format_type: formatTypeSelect.value,
             description: document.getElementById('description').value,
-            data_format_level: dataFormatLevel.value,
+            data_format_level: selectedType === 'carte' ? 'pack' : dataFormatLevel.value,
             organization_id: document.getElementById('organization_id').value || '',
             chunk_id: data.chunk_id,
           };
@@ -196,8 +264,8 @@ document.addEventListener('DOMContentLoaded', function() {
             itemPayload.viz_link_url = vizUrl.value;
           }
 
-          if (dataFormatLevel.value === 'pack') {
-            itemPayload.magnet_link = document.getElementById('magnet_link').value;
+          if (selectedType === 'carte' || dataFormatLevel.value === 'pack') {
+            itemPayload.magnet_link = magnetLink;
           } else {
             const entries = magnetEntries.querySelectorAll('.form-row');
             itemPayload.magnet_links = [];

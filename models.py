@@ -23,6 +23,8 @@ class Item(db.Model):
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
     verification_status: Mapped[str] = mapped_column(default="unofficial")
     data_format_level: Mapped[str] = mapped_column(default="individual")
+    pdf_magnet_link: Mapped[str | None] = mapped_column(default=None)
+    license_type: Mapped[str | None] = mapped_column(default=None)
     verifier_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     verified_at: Mapped[datetime.datetime | None]
     verification_notes: Mapped[str | None]
@@ -61,16 +63,17 @@ class Item(db.Model):
             "created_at": self.created_at.strftime("%Y-%m-%d") if self.created_at else "",
             "tags": [t.tag for t in self.tags],
             "gallery": self._build_gallery_dict(),
-            "pdf_doc": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/r6.pdf",
+            "pdf_doc": self.pdf_magnet_link if self.pdf_magnet_link and validate_magnet_link(self.pdf_magnet_link) else "",
             "verification_status": self.verification_status,
             "is_official_verified": self.verification_status == "verified",
             "verifier_nom": f"{self.verifier.prenom} {self.verifier.nom}" if (self.verifier and getattr(self.verifier, "prenom", None)) else None,
             "verified_at": self.verified_at.strftime("%Y-%m-%d") if self.verified_at else None,
             "verification_notes": self.verification_notes,
             "catalogue_link": catalogue_map.get(self.type, "/catalogue"),
-            "report_type": self.type.replace("geodonnee", "geodonnee").replace("carte", "carte").replace("application", "application"),
-            "rating": self._get_rating_avg(),
-            "review_count": len(self.ratings),
+          "report_type": self.type.replace("geodonnee", "geodonnee").replace("carte", "carte").replace("application", "application"),
+             "rating": self._get_rating_avg(),
+             "review_count": len(self.ratings),
+             "license_type": self.license_type,
             "data_format_level": self.data_format_level,
             "download_levels": [
                 {"name": c.name, "magnet": c.magnet_link}

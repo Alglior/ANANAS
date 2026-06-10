@@ -311,6 +311,13 @@ def create_upload_item():
     description = data.get("description", "").strip()
     data_format_level = data.get("data_format_level", "individual").strip()
     organization_id = data.get("organization_id", "").strip()
+    license_type = data.get("license_type", "").strip() or None
+    custom_license_text = data.get("custom_license_text", "").strip() or None
+    if license_type == "custom" and custom_license_text:
+        license_type = custom_license_text
+    elif license_type == "custom":
+        license_type = None
+    pdf_magnet_link = data.get("pdf_magnet_link", "").strip() or None
 
     if not title:
         return jsonify({"error": "Le titre est requis"}), 400
@@ -338,6 +345,8 @@ def create_upload_item():
            organization_id=org_id,
             verification_status="unofficial",
         data_format_level=data_format_level,
+        license_type=license_type or None,
+        pdf_magnet_link=pdf_magnet_link if validate_magnet_link(pdf_magnet_link) else None,
     )
     db.session.add(item)
     db.session.flush()
