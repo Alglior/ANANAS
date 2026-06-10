@@ -161,14 +161,33 @@ def item_data_view(item_id):
 
 @bp.route("/catalogue/item/<int:item_id>/gallery")
 def item_gallery_view(item_id):
-    from models import Item
+    from models import Item, DataChunk, VisualizationLink, Comment
 
     item = Item.query.get_or_404(item_id)
     if item.type != "geodonnee":
         return abort(404)
+
+    current_user = get_current_user()
+    comments, _ = _paginate_comments(item_id, 1)
+    item_dict = item.to_dict()
+    item_dict["comment_count"] = Comment.query.filter_by(item_id=item_id).count()
+    viz_links = [vl.to_dict() for vl in VisualizationLink.query.filter_by(parent_item_id=item_id).all()]
+    related_items = [ri.to_dict() for ri in Item.query.filter(
+        Item.format_type == item.format_type, Item.id != item_id
+    ).limit(3).all()]
+
     return render_template(
-        "gallery.html",
-        title=f"Galerie — {item.title}",
-        meta_description="Galerie de " + item.title,
-        item=item.to_dict(),
+        "item_detail.html",
+        title=f"A.N.A.N.A.S. | Réutilisation — {item.title}",
+        meta_description=item.description[:160],
+        item=item_dict,
+        comments=comments,
+        comment_count=item_dict["comment_count"],
+        related_items=related_items,
+        image_gallery=get_image_gallery(item),
+        current_user=current_user,
+        show_data_visualization_tabs=True,
+        active_reuse_tab=True,
+        viz_links=viz_links,
+        data_chunks=[c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=item_id).all()],
     )

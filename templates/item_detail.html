@@ -22,26 +22,30 @@
           {% if active_data_tab %}
             <a href="/catalogue/item/{{ item.id }}" class="tab-btn">Aperçu</a>
             <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn active">Données</a>
-            <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Visualisation</a>
+            <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Réutilisation</a>
+          {% elif active_reuse_tab %}
+            <a href="/catalogue/item/{{ item.id }}" class="tab-btn">Aperçu</a>
+            <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn">Données</a>
+            <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn active">Réutilisation</a>
           {% else %}
             <a href="#" class="tab-btn active">Aperçu</a>
             <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn">Données</a>
-            <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Visualisation</a>
+            <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Réutilisation</a>
           {% endif %}
         {% endif %}
       </nav>
     </div>
   </section>
 
-{% if active_data_tab %}
+{% if active_data_tab or active_reuse_tab %}
   <section class="detail-body">
     <div class="container">
       <div class="viz-section">
         <!-- Visualization Links -->
         {% include 'partials/viz_links.html' %}
 
-        <!-- Data Extractions -->
-        {% if data_chunks and data_chunks|length > 0 %}
+        <!-- Data Extractions (only on Données tab) -->
+        {% if active_data_tab and data_chunks and data_chunks|length > 0 %}
         <section class="data-extractions-section">
           <div class="extractions-grid">
             {% for chunk in data_chunks %}
@@ -116,9 +120,11 @@
         </section>
         {% endif %}
 
-        <!-- Fallback: No data or viz links -->
-        {% if not (viz_links and viz_links|length > 0) and not (data_chunks and data_chunks|length > 0) %}
+        <!-- Fallback -->
+        {% if active_data_tab and not (viz_links and viz_links|length > 0) and not (data_chunks and data_chunks|length > 0) %}
         <p class="no-data-message">Aucune visualisation ou extrait de données disponible pour cet élément.</p>
+        {% elif active_reuse_tab and not (viz_links and viz_links|length > 0) %}
+        <p class="no-data-message">Aucune réutilisation disponible pour cet élément.</p>
         {% endif %}
 
       </div>
