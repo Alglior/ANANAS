@@ -71,6 +71,23 @@
               {% endfor %}
             </select>
           </div>
+
+          <div class="form-group">
+            <label for="license_type" class="label-with-help">Licence <span class="help-icon" data-tooltip="Conditions d'utilisation et de réutilisation de vos données. Cela indique aux utilisateurs ce qu'ils peuvent faire avec votre contenu.">?</span></label>
+            <select id="license_type" name="license_type">
+              <option value="">-- Aucune --</option>
+              <option value="cc-by">CC-BY 4.0 (Attribution)</option>
+              <option value="odc-odbl">ODC-ODbL (Base de données)</option>
+              <option value="licence-ouverte">Licence Ouverte (Réutilisation libre)</option>
+              <option value="public-domain">Domaine Public</option>
+              <option value="other">Autre (préciser)</option>
+            </select>
+          </div>
+
+          <div class="form-group hidden-section" id="licenseOtherGroup">
+            <label for="custom_license_text" class="label-with-help">Titre de la licence <span class="help-icon" data-tooltip="Nom court pour identifier votre licence personnalisée. Ce nom sera affiché publiquement dans la fiche catalogue de l'item.">?</span></label>
+            <input type="text" id="custom_license_text" name="custom_license_text" placeholder="Ex: Licence A.N.A.N.A.S. 2025" />
+          </div>
         </div>
 
         <div class="upload-section">

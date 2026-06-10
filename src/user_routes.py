@@ -233,7 +233,7 @@ def upload_file():
     data_format_level = request.form.get("data_format_level", "individual").strip()
     organization_id = request.form.get("organization_id", "").strip()
 
-    if not data_text:
+    if not data_text and item_type not in ("carte", "application"):
         return jsonify({"error": "Les données sont requises"}), 400
     if not title:
         return jsonify({"error": "Le titre est requis"}), 400
@@ -313,9 +313,9 @@ def create_upload_item():
     organization_id = data.get("organization_id", "").strip()
     license_type = data.get("license_type", "").strip() or None
     custom_license_text = data.get("custom_license_text", "").strip() or None
-    if license_type == "custom" and custom_license_text:
+    if license_type == "other" and custom_license_text:
         license_type = custom_license_text
-    elif license_type == "custom":
+    elif license_type == "other":
         license_type = None
     pdf_magnet_link = data.get("pdf_magnet_link", "").strip() or None
 

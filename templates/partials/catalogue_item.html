@@ -6,10 +6,10 @@
       {% if not simple %}
       <div class="catalogue-top">
         <span class="catalogue-title">{{ item.title|e }}</span>
-        {% if item.data_format_level == "pack" %}
+        {% if item.type == "application" and item.data_format_level == "pack" %}
         <span class="badge badge-pack">Pack complet — fichier unique</span>
-        {% else %}
-        <span class="badge badge-individual">Données individuelles</span>
+        {% elif item.type == "application" and item.data_format_level == "individual" %}
+        <span class="badge badge-individual">Fichiers individuels</span>
         {% endif %}
         {% if item.is_official_verified %}
           <span class="badge badge-verified" title="Données vérifiées et approuvées par A.N.A.N.A.S.">Données vérifiées</span>

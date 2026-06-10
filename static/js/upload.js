@@ -46,8 +46,26 @@ document.addEventListener('DOMContentLoaded', function() {
   const individualMagnetGroup = document.getElementById('individualMagnetGroup');
   const magnetEntries = document.getElementById('magnetEntries');
   const addMagnetBtn = document.getElementById('addMagnetBtn');
+  const licenseTypeSelect = document.getElementById('license_type');
+  const licenseOtherGroup = document.getElementById('licenseOtherGroup');
+  const customLicenseText = document.getElementById('custom_license_text');
 
   let magnetEntryCount = 0;
+
+  if (licenseTypeSelect) {
+    licenseTypeSelect.addEventListener('change', function() {
+      if (licenseOtherGroup && customLicenseText) {
+        if (this.value === 'other') {
+          licenseOtherGroup.classList.remove('hidden-section');
+          customLicenseText.required = true;
+        } else {
+          licenseOtherGroup.classList.add('hidden-section');
+          customLicenseText.required = false;
+          customLicenseText.value = '';
+        }
+      }
+    });
+  }
 
   const formatDict = {
     geodonnee: [
@@ -202,6 +220,13 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('data_format_level', dataFormatLevel.value);
       }
       formData.append('organization_id', document.getElementById('organization_id').value);
+      const licenseType = document.getElementById('license_type');
+      if (licenseType && licenseType.value) {
+        formData.append('license_type', licenseType.value);
+        if (licenseType.value === 'other') {
+          formData.append('custom_license_text', customLicenseText.value);
+        }
+      }
 
       let magnetLink = '';
       if (selectedType === 'carte' || selectedType === 'application' || dataFormatLevel.value === 'pack') {
@@ -264,6 +289,8 @@ document.addEventListener('DOMContentLoaded', function() {
             data_format_level: (selectedType === 'carte' || selectedType === 'application') ? 'pack' : dataFormatLevel.value,
             organization_id: document.getElementById('organization_id').value || '',
             chunk_id: data.chunk_id,
+            license_type: document.getElementById('license_type').value || '',
+            custom_license_text: document.getElementById('custom_license_text').value || '',
           };
 
           if (vizName.value && vizUrl.value) {
