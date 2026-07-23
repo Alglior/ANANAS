@@ -442,6 +442,21 @@ document.addEventListener('DOMContentLoaded', function() {
     return payload;
   }
 
+  async function safeFetchJson(url, options) {
+    var resp = await fetch(url, options);
+    var contentType = resp.headers.get('content-type') || '';
+    if (resp.redirected) {
+      throw new Error('SESSION_EXPIRED');
+    }
+    if (!contentType.includes('application/json')) {
+      var text = await resp.text();
+      console.error('Réponse non-JSON de ' + url + ' (status ' + resp.status + '):', text.substring(0, 300));
+      throw new Error('NON_JSON_RESPONSE');
+    }
+    var data = await resp.json();
+    return { response: resp, data: data };
+  }
+
   if (uploadForm) {
     uploadForm.addEventListener('submit', function(e) {
       e.preventDefault();
@@ -514,21 +529,20 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         }
 
-        var fileResp = await fetch('/api/upload/file', {
+        var fileResult = await safeFetchJson('/api/upload/file', {
           method: 'POST',
           headers: { 'X-CSRF-Token': csrfToken },
           body: formData,
         });
-        var fileData = await fileResp.json();
-        if (!fileResp.ok) {
+        if (!fileResult.response.ok) {
           hideSpinner();
-          uploadStatus.textContent = fileData.error || 'Erreur téléversement';
+          uploadStatus.textContent = fileResult.data.error || 'Erreur téléversement';
           uploadStatus.className = 'form-status form-error';
           uploadBtn.disabled = false;
           if (draftBtn) draftBtn.disabled = false;
           return;
         }
-        chunkId = fileData.chunk_id;
+        chunkId = fileResult.data.chunk_id;
       }
 
       showSpinner('Création de l\'item...', 'Étape 2/2');
@@ -536,7 +550,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var itemPayload = buildItemPayload(magnetLinks, false);
       if (chunkId) itemPayload.chunk_id = chunkId;
 
-      var itemResp = await fetch('/api/upload/item', {
+      var itemResult = await safeFetchJson('/api/upload/item', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -544,11 +558,10 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         body: JSON.stringify(itemPayload),
       });
-      var itemData = await itemResp.json();
 
-      if (!itemResp.ok) {
+      if (!itemResult.response.ok) {
         hideSpinner();
-        uploadStatus.textContent = itemData.error || 'Erreur création de l\'item';
+        uploadStatus.textContent = itemResult.data.error || 'Erreur création de l\'item';
         uploadStatus.className = 'form-status form-error';
         uploadBtn.disabled = false;
         if (draftBtn) draftBtn.disabled = false;
@@ -559,18 +572,23 @@ document.addEventListener('DOMContentLoaded', function() {
       if (hasImages) {
         showSpinner('Publication réussie !', 'Téléchargement des images en arrière-plan...', true);
         setTimeout(function() {
-          window.location.href = '/catalogue/item/' + itemData.id;
+          window.location.href = '/catalogue/item/' + itemResult.data.id;
         }, 2000);
       } else {
         showSpinner('Publication réussie !', 'Redirection...');
         setTimeout(function() {
-          window.location.href = '/catalogue/item/' + itemData.id;
+          window.location.href = '/catalogue/item/' + itemResult.data.id;
         }, 1500);
       }
 
     } catch (err) {
       hideSpinner();
-      uploadStatus.textContent = 'Erreur de communication';
+      if (err.message === 'SESSION_EXPIRED') {
+        uploadStatus.textContent = 'Session expirée, veuillez vous reconnecter';
+      } else {
+        console.error('Erreur de communication:', err);
+        uploadStatus.textContent = 'Erreur de communication';
+      }
       uploadStatus.className = 'form-status form-error';
       uploadBtn.disabled = false;
       if (draftBtn) draftBtn.disabled = false;
@@ -586,6 +604,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
 
+      draftBtn.disabled = true;
       showSpinner('Enregistrement du brouillon...', '');
 
       var payload = buildItemPayload([], true);
@@ -594,7 +613,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var csrfToken = CsrfModule.getCsrfToken();
 
       try {
-        var response = await fetch('/api/upload/item', {
+        var result = await safeFetchJson('/api/upload/item', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -602,18 +621,26 @@ document.addEventListener('DOMContentLoaded', function() {
           },
           body: JSON.stringify(payload),
         });
-        var data = await response.json();
-        if (response.ok) {
+        if (result.response.ok) {
           hideSpinner();
-          window.location.href = '/catalogue/item/' + data.id;
+          window.location.href = '/catalogue/item/' + result.data.id;
         } else {
           hideSpinner();
-          uploadStatus.textContent = data.error || 'Erreur';
+          draftBtn.disabled = false;
+          uploadStatus.textContent = result.data.error || 'Erreur';
           uploadStatus.className = 'form-status form-error';
         }
       } catch (err) {
         hideSpinner();
-        uploadStatus.textContent = 'Erreur réseau';
+        draftBtn.disabled = false;
+        if (err.message === 'SESSION_EXPIRED') {
+          uploadStatus.textContent = 'Session expirée, veuillez vous reconnecter';
+        } else if (err.message === 'NON_JSON_RESPONSE') {
+          uploadStatus.textContent = 'Erreur serveur inattendue';
+        } else {
+          console.error('Erreur réseau:', err);
+          uploadStatus.textContent = 'Erreur réseau';
+        }
         uploadStatus.className = 'form-status form-error';
       }
     });

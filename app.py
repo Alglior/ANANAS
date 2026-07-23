@@ -1,5 +1,6 @@
 import base64
 import datetime
+import hashlib
 import os
 import secrets
 
@@ -8,6 +9,7 @@ from src.shared import Config, _build_page_numbers, ITEMS_PER_PAGE, SECRET_FILE,
 from flask import Flask, render_template, redirect, url_for, request, session, jsonify, g, current_app
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_wtf import CSRFProtect
+from flask_wtf.csrf import generate_csrf
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_limiter import Limiter
@@ -53,11 +55,15 @@ def create_app(app_name="ANANAS"):
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
     # ────────────────────────────────────────────
-    #  CSP nonce generator + CSRF check (combined before_request)
+    #  CSP nonce generator + CSRF token generation
     # ────────────────────────────────────────────
     @app.before_request
     def combined_before_request():
         g.csp_nonce = base64.b64encode(secrets.token_bytes(16)).decode()
+        try:
+            generate_csrf()
+        except RuntimeError:
+            pass
         if request.method in ("POST", "PUT", "PATCH", "DELETE"):
             content_type = request.content_type or ""
             if "/api/" in request.path and "application/json" in content_type:
@@ -159,6 +165,18 @@ def create_app(app_name="ANANAS"):
             f"form-action 'self'"
         )
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+
+        csrf_signed = g.get("csrf_token", "")
+        if csrf_signed:
+            response.set_cookie(
+                "csrf_token",
+                csrf_signed,
+                httponly=False,
+                samesite="Strict",
+                secure=_is_production_env(),
+                path="/",
+            )
+
         return response
 
 
