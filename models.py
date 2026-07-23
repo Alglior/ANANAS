@@ -24,6 +24,7 @@ class Item(db.Model):
     verification_status: Mapped[str] = mapped_column(default="unofficial")
     data_format_level: Mapped[str] = mapped_column(default="individual")
     pdf_magnet_link: Mapped[str | None] = mapped_column(default=None)
+    status: Mapped[str] = mapped_column(default="published")
     license_type: Mapped[str | None] = mapped_column(default=None)
     verifier_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     verified_at: Mapped[datetime.datetime | None]
@@ -75,6 +76,7 @@ class Item(db.Model):
              "review_count": len(self.ratings),
              "license_type": self.license_type,
             "data_format_level": self.data_format_level,
+            "status": self.status,
             "download_levels": [
                 {"name": c.name, "magnet": c.magnet_link}
                 for c in DataChunk.query.filter_by(parent_item_id=self.id).all()

@@ -8,7 +8,18 @@ bp = Blueprint("items", __name__)
 
 
 def get_image_gallery(item):
-    return [g for g in item.gallery_items if g.media_type == "image"]
+    result = []
+    for g in item.gallery_items:
+        if g.media_type != "image":
+            continue
+        entry = {
+            "src": g.src,
+            "label": g.label,
+        }
+        if g.data_json and isinstance(g.data_json, dict):
+            entry["magnet_link"] = g.data_json.get("magnet_link", "")
+        result.append(entry)
+    return result
 
 
 def _paginate_comments(item_id, page=1):

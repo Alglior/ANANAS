@@ -156,6 +156,12 @@
       </div>
       {% endif %}
 
+      {% if item.status == "draft" %}
+      <div class="draft-banner">
+        Ce contenu est un brouillon. <a href="/upload?edit={{ item.id }}">Reprendre l'édition</a>
+      </div>
+      {% endif %}
+
       <div class="product-card">
 
         <!-- Main product image (left column) -->
@@ -166,7 +172,16 @@
           {% if image_gallery and image_gallery|length > 0 %}
           <div class="inline-gallery" id="inlineGallery">
             {% for img in image_gallery %}
-              <img src="{{ img.src|e }}" alt="{{ img.label|e }}" class="gallery-thumb-img{% if loop.first %} active{% endif %}" data-src="{{ img.src|e }}">
+              <div class="gallery-thumb-wrap">
+                <img src="{{ img.src|e }}" alt="{{ img.label|e }}" class="gallery-thumb-img{% if loop.first %} active{% endif %}" data-src="{{ img.src|e }}">
+                <span class="gallery-thumb-label">{{ img.label|e }}</span>
+                {% if img.magnet_link %}
+                <details class="magnet-source">
+                  <summary>Lien Magnet source</summary>
+                  <code>{{ img.magnet_link[:80] }}{% if img.magnet_link|length > 80 %}...{% endif %}</code>
+                </details>
+                {% endif %}
+              </div>
             {% endfor %}
           </div>
           {% endif %}

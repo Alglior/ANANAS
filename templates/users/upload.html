@@ -13,12 +13,15 @@
     <div class="container upload-container">
       <div class="upload-header">
         <h1>Publier des données</h1>
-        <p>Téléversez vos fichiers géospatiaux sur A.N.A.N.A.S.</p>
+        <p>Téléversez vos fichiers géospatiaux sur A.N.A.N.A.S. 
+           <a href="#" id="relaunchTuto" class="tuto-relaunch">Guide</a>
+        </p>
       </div>
 
       <form class="upload-form" id="uploadForm">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-        <div class="upload-section">
+
+        <div class="upload-section" id="tutoSectionInfo">
           <h2>Informations de l'item</h2>
           <div class="form-group">
             <label for="title" class="label-with-help">Titre <span class="help-icon" data-tooltip="Nom affiché publiquement dans le catalogue des données. C'est le titre qui sera visible par les utilisateurs finaux.">?</span></label>
@@ -34,24 +37,21 @@
                 <option value="application">Application</option>
               </select>
             </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="data_format_level" class="label-with-help">Niveau de granularité <span class="help-icon" data-tooltip="Pack = un seul lien Magnet pour tous les fichiers du jeu. Individuel = plusieurs liens Magnets, un par fichier, avec un niveau d'indexation précis pour chacun.">?</span></label>
-              <select id="data_format_level" name="data_format_level">
-                <option value="pack">Pack (tous les fichiers)</option>
-                <option value="individual">Fichier individuel</option>
-              </select>
-            </div>
 
             <div class="form-group">
               <label for="format_type" class="label-with-help">Format du fichier <span class="help-icon" data-tooltip="Le format technique du fichier principal que vous téléversez. Cela permet d'adapter l'indexation dans le catalogue.">?</span></label>
               <select id="format_type" name="format_type">
+                <option value="geopackage">Geopackage (.gpkg)</option>
                 <option value="csv">CSV</option>
                 <option value="shp">Shapefile (.shp)</option>
                 <option value="geojson">GeoJSON</option>
-                 <option value="xml">XML</option>
+                <option value="kml">KML</option>
+                <option value="gml">GML</option>
+                <option value="gpx">GPX</option>
+                <option value="topojson">TopoJSON</option>
+                <option value="geoparquet">GeoParquet</option>
+                <option value="tab">MapInfo TAB</option>
+                <option value="xml">XML</option>
               </select>
             </div>
           </div>
@@ -90,7 +90,7 @@
           </div>
         </div>
 
-        <div class="upload-section">
+        <div class="upload-section" id="tutoSectionData">
           <h2>Données</h2>
           <div id="dataTextInputGroup" class="form-group data-input-group">
             <label class="label-with-help">Coller vos données <span class="help-icon" data-tooltip="Copiez-collez votre tableau ici (format CSV : virgules ou tabs). Seules les 50 premières lignes seront conservées pour l'aperçu dans le catalogue.">?</span></label>
@@ -102,19 +102,60 @@
             </div>
           </div>
 
-          <div id="magnetSection">
-            <div class="form-group" id="packMagnetGroup">
-              <label for="magnet_link" class="label-with-help">Lien Magnet <span class="help-icon" data-tooltip="Liens torrent qui pointent vers vos fichiers complets. Un lien sera téléversé, décodé et distribué par nos nœuds de stockage géo-distribués.">?</span></label>
-              <input type="text" id="magnet_link" name="magnet_link" placeholder="magnet:?xt=urn:btih:..." required />
+          <div id="magnetSection" class="form-group">
+            <label class="label-with-help">Liens Magnet <span class="help-icon" data-tooltip="Liens torrent qui pointent vers vos fichiers complets. Un lien sera téléversé, décodé et distribué par nos nœuds de stockage géo-distribués.">?</span></label>
+            <div id="magnetEntries"></div>
+            <div class="magnet-actions">
+              <button type="button" class="btn btn-outline mt-10" id="addMagnetBtn">+ Ajouter un lien</button>
+              <button type="button" class="btn btn-outline mt-10" id="bulkMagnetBtn">Ajouter en lot</button>
             </div>
-
-            <div id="individualMagnetGroup" class="hidden-section">
+            <div id="bulkMagnetGroup" class="hidden-section bulk-magnet-group">
               <div class="form-group">
-                <button type="button" class="btn btn-outline mt-10" id="addMagnetBtn">
-                  + Ajouter un lien Magnet
-                </button>
+                <label>Collez vos liens Magnet (1 par ligne)</label>
+                <textarea id="bulkMagnetTextarea" rows="5" placeholder="magnet:?xt=urn:btih:abc123...&#10;magnet:?xt=urn:btih:def456...&#10;magnet:?xt=urn:btih:ghi789..."></textarea>
+                <div class="bulk-magnet-footer">
+                  <span id="bulkMagnetCount" class="data-line-count">0 liens détectés</span>
+                </div>
               </div>
-              <div id="magnetEntries"></div>
+              <div class="form-group">
+                <label>Zoom pour tous ces liens</label>
+                <div class="zoom-pills" id="bulkZoomPills">
+                  <button type="button" class="zoom-pill" data-zoom="iris">IRIS</button>
+                  <button type="button" class="zoom-pill" data-zoom="communes">Communes</button>
+                  <button type="button" class="zoom-pill" data-zoom="departements">Départements</button>
+                  <button type="button" class="zoom-pill active" data-zoom="regions">Régions</button>
+                  <button type="button" class="zoom-pill" data-zoom="pays">Pays</button>
+                </div>
+              </div>
+              <div class="bulk-magnet-actions">
+                <button type="button" class="btn btn-primary" id="bulkMagnetConfirm">Ajouter ces X liens</button>
+                <button type="button" class="btn btn-outline" id="bulkMagnetCancel">Annuler</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="upload-section" id="tutoSectionImages">
+          <h2>Images (optionnel)</h2>
+          <div class="form-group">
+            <label class="label-with-help">Liens Magnet vers des images <span class="help-icon" data-tooltip="Collez un ou plusieurs liens Magnet pointant vers des images (PNG, JPG, WebP...). Les images seront téléchargées une fois et mises en cache sur le serveur. Les liens Magnet restent visibles sur la fiche.">?</span></label>
+          </div>
+          <div id="imageMagnetEntries"></div>
+          <div class="magnet-actions">
+            <button type="button" class="btn btn-outline" id="addImageMagnetBtn">+ Ajouter une image</button>
+            <button type="button" class="btn btn-outline" id="bulkImageMagnetBtn">Ajouter en lot</button>
+          </div>
+          <div id="bulkImageMagnetGroup" class="hidden-section bulk-magnet-group">
+            <div class="form-group">
+              <label>Collez vos liens Magnet d'images (1 par ligne)</label>
+              <textarea id="bulkImageTextarea" rows="5" placeholder="magnet:?xt=urn:btih:abc123...&#10;magnet:?xt=urn:btih:def456..."></textarea>
+              <div class="bulk-magnet-footer">
+                <span id="bulkImageCount" class="data-line-count">0 liens détectés</span>
+              </div>
+            </div>
+            <div class="bulk-magnet-actions">
+              <button type="button" class="btn btn-primary" id="bulkImageConfirm">Ajouter ces X liens</button>
+              <button type="button" class="btn btn-outline" id="bulkImageCancel">Annuler</button>
             </div>
           </div>
         </div>
@@ -133,18 +174,25 @@
           </div>
         </div>
 
-        <div class="form-actions upload-actions">
-          <button type="submit" class="btn btn-primary transition-hover" id="uploadBtn">
+        <div class="form-actions upload-actions" id="tutoSectionActions">
+          <button type="submit" class="btn btn-primary" id="uploadBtn">
             Publier les données
+          </button>
+          <button type="button" class="btn btn-outline" id="draftBtn">
+            Enregistrer comme brouillon
           </button>
           <span class="form-status" id="uploadStatus"></span>
         </div>
 
-        <div class="upload-progress hidden-section" id="uploadProgress">
-          <div class="progress-bar-container">
-            <div class="progress-bar" id="progressBar"></div>
+        <div id="uploadSpinnerOverlay" class="spinner-overlay hidden-section">
+          <div class="spinner-card">
+            <div class="spinner-circle"></div>
+            <p class="spinner-text" id="spinnerText">Téléversement en cours...</p>
+            <p class="spinner-subtext" id="spinnerSubtext"></p>
+            <div id="spinnerImagesPending" class="hidden-section">
+              <p class="spinner-images-note">Images en cours de téléchargement depuis Magnet...</p>
+            </div>
           </div>
-          <p class="progress-text" id="progressText">Téléversement en cours...</p>
         </div>
       </form>
 
@@ -171,8 +219,29 @@
     </div>
   </section>
 </main>
+
+<!-- Tutorial overlay -->
+<div id="tutoOverlay" class="tuto-overlay hidden-section"></div>
+
+<div id="tutoTooltip" class="tuto-tooltip hidden-section">
+  <div class="tuto-step-indicator">
+    <span id="tutoStepCurrent">1</span>/<span id="tutoStepTotal">6</span>
+  </div>
+  <p id="tutoStepText"></p>
+  <div class="tuto-actions">
+    <button type="button" class="btn btn-sm btn-outline" id="tutoPrev">&larr; Précédent</button>
+    <button type="button" class="btn btn-sm btn-primary" id="tutoNext">Suivant &rarr;</button>
+    <button type="button" class="btn btn-sm btn-outline" id="tutoSkip">Passer</button>
+  </div>
+  <label class="tuto-dont-show">
+    <input type="checkbox" id="tutoDontShow" />
+    Ne plus afficher ce guide
+  </label>
+</div>
+
 {% endblock %}
 
 {% block extra_scripts %}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload_tuto.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload.js') }}"></script>
 {% endblock %}

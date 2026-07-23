@@ -1,6 +1,7 @@
 import datetime
 import os
 import re
+import threading
 from pathlib import Path
 
 from flask import Blueprint, request, render_template, redirect, url_for, session, flash, jsonify
@@ -9,7 +10,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
 from app import db, limiter
 from src.shared import login_required, get_current_user, user_owns_item_or_admin
-from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, OrganizationMember
+from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, OrganizationMember, ItemGallery
 from utils.security import sanitize_html, validate_magnet_link
 
 ALLOWED_ITEM_TYPES = {"geodonnee", "carte", "application"}
@@ -319,6 +320,10 @@ def create_upload_item():
         license_type = None
     pdf_magnet_link = data.get("pdf_magnet_link", "").strip() or None
 
+    status = data.get("status", "published").strip()
+    if status not in ("published", "draft"):
+        status = "published"
+
     if not title:
         return jsonify({"error": "Le titre est requis"}), 400
     if item_type not in ALLOWED_ITEM_TYPES:
@@ -347,10 +352,124 @@ def create_upload_item():
         data_format_level=data_format_level,
         license_type=license_type or None,
         pdf_magnet_link=pdf_magnet_link if validate_magnet_link(pdf_magnet_link) else None,
+        status=status,
     )
     db.session.add(item)
     db.session.flush()
 
+    if chunk_id:
+        try:
+            chunk_id_int = int(chunk_id)
+        except (TypeError, ValueError):
+            chunk_id_int = None
+        if chunk_id_int:
+            chunk = DataChunk.query.filter_by(id=chunk_id_int, owner_user_id=current_user.id).first()
+            if chunk:
+                chunk.parent_item_id = item.id
+                upload_row = UserUpload.query.filter_by(chunk_id=chunk.id, owner_user_id=current_user.id).first()
+                if upload_row:
+                    upload_row.parent_item_id = item.id
+
+    viz_link_name = data.get("viz_link_name", "").strip()
+    viz_link_url = data.get("viz_link_url", "").strip()
+    if viz_link_name and viz_link_url:
+        from app import validate_external_url
+        if not validate_external_url(viz_link_url):
+            return jsonify({"error": "URL invalide ou non sécurisée"}), 400
+        link = VisualizationLink(
+            parent_item_id=item.id,
+            name=viz_link_name[:200],
+            url=viz_link_url,
+            owner_user_id=current_user.id,
+            link_type=data.get("link_type", "external"),
+        )
+        db.session.add(link)
+
+    if status != "draft":
+        if data_format_level == "pack":
+            magnet = data.get("magnet_link", "").strip()
+            if magnet:
+                if not validate_magnet_link(magnet):
+                    return jsonify({"error": "Lien magnet invalide"}), 400
+                item.magnet_link = magnet
+        else:
+            magnet_links = data.get("magnet_links", [])
+            if magnet_links:
+                links_json = [
+                    {
+                        "magnet_link": ml.get("magnet_link", ""),
+                        "zoom_level": ml.get("zoom_level", ""),
+                    }
+                    for ml in magnet_links
+                    if validate_magnet_link(ml.get("magnet_link", ""))
+                ]
+                item.metadata_json = links_json
+
+        image_magnets = data.get("image_magnets", [])
+        if image_magnets:
+            _item_id = item.id
+            _image_magnets = list(image_magnets)
+            def _process_images():
+                from src.image_cache import process_image_magnets
+                process_image_magnets(_item_id, _image_magnets)
+            thread = threading.Thread(target=_process_images, daemon=True)
+            thread.start()
+
+    db.session.commit()
+
+    return jsonify({"status": "created", "id": item.id})
+
+
+@bp.route("/api/upload/item/<int:item_id>", methods=["PUT"])
+@login_required
+def update_draft_item(item_id):
+    current_user = get_current_user()
+    item = Item.query.get_or_404(item_id)
+
+    if not user_owns_item_or_admin(current_user, item):
+        return jsonify({"error": "Non autorisé"}), 403
+
+    data = request.get_json(silent=True) or {}
+    title = data.get("title", "").strip()
+    item_type = data.get("type", "geodonnee").strip()
+    format_type = data.get("format_type", "").strip()
+    description = data.get("description", "").strip()
+    data_format_level = data.get("data_format_level", "individual").strip()
+    organization_id = data.get("organization_id", "").strip()
+    license_type = data.get("license_type", "").strip() or None
+    custom_license_text = data.get("custom_license_text", "").strip() or None
+    if license_type == "other" and custom_license_text:
+        license_type = custom_license_text
+    elif license_type == "other":
+        license_type = None
+    pdf_magnet_link = data.get("pdf_magnet_link", "").strip() or None
+
+    if not title:
+        return jsonify({"error": "Le titre est requis"}), 400
+    if item_type not in ALLOWED_ITEM_TYPES:
+        return jsonify({"error": "Type de contenu invalide"}), 400
+
+    org_id = int(organization_id) if organization_id and str(organization_id).isdigit() else None
+    if org_id:
+        membership = OrganizationMember.query.filter_by(
+            user_id=current_user.id,
+            organization_id=org_id,
+            is_active=True,
+        ).first()
+        if not membership:
+            return jsonify({"error": "Organisation non autorisée"}), 403
+
+    item.type = item_type
+    item.title = title
+    item.description = description or ""
+    item.format_type = format_type or None
+    item.organization_id = org_id
+    item.data_format_level = data_format_level
+    item.license_type = license_type or None
+    item.pdf_magnet_link = pdf_magnet_link if validate_magnet_link(pdf_magnet_link) else None
+    item.status = "published"
+
+    chunk_id = data.get("chunk_id")
     if chunk_id:
         try:
             chunk_id_int = int(chunk_id)
@@ -398,6 +517,31 @@ def create_upload_item():
             ]
             item.metadata_json = links_json
 
-    db.session.commit()
+    image_magnets = data.get("image_magnets", [])
+    if image_magnets:
+        _item_id = item.id
+        _image_magnets = list(image_magnets)
+        def _process_images():
+            from src.image_cache import process_image_magnets
+            process_image_magnets(_item_id, _image_magnets)
+        thread = threading.Thread(target=_process_images, daemon=True)
+        thread.start()
 
-    return jsonify({"status": "created", "id": item.id})
+    db.session.commit()
+    return jsonify({"status": "updated", "id": item.id})
+
+
+@bp.route("/brouillons")
+@login_required
+def brouillons_page():
+    current_user = get_current_user()
+    drafts = Item.query.filter_by(
+        owner_user_id=current_user.id,
+        status="draft",
+    ).order_by(Item.created_at.desc()).all()
+    return render_template(
+        "users/brouillons.html",
+        title="A.N.A.N.A.S. | Mes brouillons",
+        drafts=drafts,
+        current_user=current_user,
+    )
