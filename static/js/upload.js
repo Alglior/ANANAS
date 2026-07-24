@@ -780,4 +780,174 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+
+  var currentDraftPage = 1;
+  var currentTrashPage = 1;
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function renderDraftItem(d) {
+    return '<li class="upload-history-item" data-draft-id="' + d.id + '">' +
+      '<a href="/catalogue/item/' + d.id + '" class="upload-history-link">' + escapeHtml(d.title) + '</a>' +
+      '<span class="upload-history-meta">' +
+        '<span class="badge badge-draft">Brouillon</span>' +
+        ' ' + d.created_at +
+        ' <a href="/upload?edit=' + d.id + '" class="btn btn-sm">Modifier</a>' +
+        ' <button type="button" class="btn btn-sm btn-outline draft-delete-btn" data-id="' + d.id + '">Supprimer</button>' +
+      '</span>' +
+    '</li>';
+  }
+
+  function renderTrashItem(t) {
+    return '<li class="upload-history-item" data-draft-id="' + t.id + '">' +
+      '<span class="upload-history-link trashed-title">' + escapeHtml(t.title) + '</span>' +
+      '<span class="upload-history-meta">' +
+        '<span class="badge badge-trashed">Corbeille</span>' +
+        ' ' + t.deleted_at +
+        ' <button type="button" class="btn btn-sm btn-outline trash-restore-btn" data-id="' + t.id + '">Restaurer</button>' +
+        ' <button type="button" class="btn btn-sm btn-outline trash-purge-btn" data-id="' + t.id + '">Supprimer</button>' +
+      '</span>' +
+    '</li>';
+  }
+
+  function renderPagination(data, containerId) {
+    var container = document.getElementById(containerId);
+    if (!container || data.total_pages <= 1) {
+      if (container) container.innerHTML = '';
+      return;
+    }
+    var html = '<nav class="pagination" aria-label="Pagination">';
+
+    if (data.page > 1) {
+      html += '<a class="btn btn-outline transition-hover pagination-prev" href="#" data-page="' + (data.page - 1) + '">&#9664;&nbsp;Précédent</a>';
+    } else {
+      html += '<span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>';
+    }
+
+    html += '<div class="pagination-numbers">';
+    for (var i = 0; i < data.page_numbers.length; i++) {
+      var p = data.page_numbers[i];
+      if (p === '...') {
+        html += '<span class="pagination-ellipsis">&hellip;</span>';
+      } else if (p === data.page) {
+        html += '<span class="pagination-link active">' + p + '</span>';
+      } else {
+        html += '<a class="pagination-link" href="#" data-page="' + p + '">' + p + '</a>';
+      }
+    }
+    html += '</div>';
+
+    if (data.page < data.total_pages) {
+      html += '<a class="btn btn-outline transition-hover pagination-next" href="#" data-page="' + (data.page + 1) + '">Suivant&nbsp;&#9658;</a>';
+    } else {
+      html += '<span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>';
+    }
+
+    html += '</nav>';
+    container.innerHTML = html;
+  }
+
+  function loadDraftsPage(page) {
+    currentDraftPage = page;
+    var list = document.getElementById('drafts-list');
+    var empty = document.getElementById('drafts-empty');
+    if (!list && !empty) return;
+
+    fetch('/api/upload/drafts?page=' + page, {
+      headers: { 'X-CSRF-Token': CsrfModule.getCsrfToken() }
+    }).then(function(resp) { return resp.json(); })
+    .then(function(data) {
+      if (data.total_items === 0 || data.drafts.length === 0) {
+        if (list) list.style.display = 'none';
+        if (!empty) {
+          empty = document.createElement('p');
+          empty.className = 'no-data-message';
+          empty.id = 'drafts-empty';
+          var tabDrafts = document.getElementById('tab-drafts');
+          if (tabDrafts) tabDrafts.insertBefore(empty, document.getElementById('draft-pagination'));
+        }
+        empty.style.display = '';
+        empty.textContent = 'Aucun brouillon pour le moment.';
+      } else {
+        if (empty) empty.style.display = 'none';
+        if (!list) {
+          list = document.createElement('ul');
+          list.className = 'upload-history-list';
+          list.id = 'drafts-list';
+          var pagDiv = document.getElementById('draft-pagination');
+          var tabDrafts = document.getElementById('tab-drafts');
+          if (tabDrafts && pagDiv) tabDrafts.insertBefore(list, pagDiv);
+        }
+        list.style.display = '';
+        list.innerHTML = data.drafts.map(renderDraftItem).join('');
+      }
+      renderPagination(data, 'draft-pagination');
+    }).catch(function() {
+      console.error('Failed to load drafts');
+    });
+  }
+
+  function loadTrashPage(page) {
+    currentTrashPage = page;
+    var list = document.getElementById('trash-list');
+    var empty = document.getElementById('trash-empty');
+
+    fetch('/api/upload/trash?page=' + page, {
+      headers: { 'X-CSRF-Token': CsrfModule.getCsrfToken() }
+    }).then(function(resp) { return resp.json(); })
+    .then(function(data) {
+      if (data.total_items === 0 || data.trashed.length === 0) {
+        if (list) list.style.display = 'none';
+        if (!empty) {
+          empty = document.createElement('p');
+          empty.className = 'no-data-message';
+          empty.id = 'trash-empty';
+          var hint = document.querySelector('#tab-trash .trash-hint');
+          var pagDiv = document.getElementById('trash-pagination');
+          var tabTrash = document.getElementById('tab-trash');
+          if (tabTrash && pagDiv) tabTrash.insertBefore(empty, pagDiv);
+        }
+        empty.style.display = '';
+        empty.textContent = 'La corbeille est vide.';
+      } else {
+        if (empty) empty.style.display = 'none';
+        if (!list) {
+          list = document.createElement('ul');
+          list.className = 'upload-history-list';
+          list.id = 'trash-list';
+          var hint = document.querySelector('#tab-trash .trash-hint');
+          if (hint) hint.style.display = '';
+          var pagDiv = document.getElementById('trash-pagination');
+          var tabTrash = document.getElementById('tab-trash');
+          if (tabTrash && pagDiv) tabTrash.insertBefore(list, pagDiv);
+        }
+        list.style.display = '';
+        list.innerHTML = data.trashed.map(renderTrashItem).join('');
+      }
+      renderPagination(data, 'trash-pagination');
+    }).catch(function() {
+      console.error('Failed to load trash');
+    });
+  }
+
+  document.getElementById('draft-pagination').addEventListener('click', function(e) {
+    e.preventDefault();
+    var link = e.target.closest('a.pagination-link, a.pagination-prev, a.pagination-next');
+    if (!link) return;
+    var page = parseInt(link.dataset.page);
+    loadDraftsPage(page);
+  });
+
+  document.getElementById('trash-pagination').addEventListener('click', function(e) {
+    e.preventDefault();
+    var link = e.target.closest('a.pagination-link, a.pagination-prev, a.pagination-next');
+    if (!link) return;
+    var page = parseInt(link.dataset.page);
+    loadTrashPage(page);
+  });
 });

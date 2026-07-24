@@ -20,8 +20,8 @@
 
       <div class="upload-tabs">
         <button class="upload-tab active" data-tab="publish">Publier</button>
-        <button class="upload-tab" data-tab="drafts">Mes brouillons {% if drafts %}({{ drafts|length }}){% endif %}</button>
-        <button class="upload-tab" data-tab="trash">Corbeille {% if trashed %}({{ trashed|length }}){% endif %}</button>
+        <button class="upload-tab" data-tab="drafts">Mes brouillons {% if draft_total %}({{ draft_total }}){% endif %}</button>
+        <button class="upload-tab" data-tab="trash">Corbeille {% if trash_total %}({{ trash_total }}){% endif %}</button>
       </div>
 
       <div class="upload-tab-content active" id="tab-publish">
@@ -206,7 +206,7 @@
 
       <div class="upload-tab-content" id="tab-drafts">
         {% if drafts %}
-        <ul class="upload-history-list">
+        <ul class="upload-history-list" id="drafts-list">
           {% for draft in drafts %}
           <li class="upload-history-item" data-draft-id="{{ draft.id }}">
             <a href="/catalogue/item/{{ draft.id }}" class="upload-history-link">{{ draft.title }}</a>
@@ -219,15 +219,43 @@
           </li>
           {% endfor %}
         </ul>
+        {% if draft_total_pages > 1 %}
+        <nav class="pagination draft-pagination" id="draft-pagination" aria-label="Pagination des brouillons">
+          {% if draft_page > 1 %}
+            <a class="btn btn-outline transition-hover pagination-prev" href="#" data-page="{{ draft_page - 1 }}">&#9664;&nbsp;Précédent</a>
+          {% else %}
+            <span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>
+          {% endif %}
+          <div class="pagination-numbers">
+            {% for p in draft_page_numbers %}
+              {% if p == "..." %}
+                <span class="pagination-ellipsis">&hellip;</span>
+              {% elif p == draft_page %}
+                <span class="pagination-link active">{{ p }}</span>
+              {% else %}
+                <a class="pagination-link" href="#" data-page="{{ p }}">{{ p }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% if draft_page < draft_total_pages %}
+            <a class="btn btn-outline transition-hover pagination-next" href="#" data-page="{{ draft_page + 1 }}">Suivant&nbsp;&#9658;</a>
+          {% else %}
+            <span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>
+          {% endif %}
+        </nav>
         {% else %}
-        <p class="no-data-message">Aucun brouillon pour le moment.</p>
+        <div class="draft-pagination" id="draft-pagination"></div>
+        {% endif %}
+        {% else %}
+        <p class="no-data-message" id="drafts-empty">Aucun brouillon pour le moment.</p>
+        <div class="draft-pagination" id="draft-pagination"></div>
         {% endif %}
       </div>
 
       <div class="upload-tab-content" id="tab-trash">
         {% if trashed %}
         <p class="trash-hint">Les éléments supprimés restent ici 7 jours avant suppression définitive.</p>
-        <ul class="upload-history-list">
+        <ul class="upload-history-list" id="trash-list">
           {% for item in trashed %}
           <li class="upload-history-item" data-draft-id="{{ item.id }}">
             <span class="upload-history-link trashed-title">{{ item.title }}</span>
@@ -240,8 +268,36 @@
           </li>
           {% endfor %}
         </ul>
+        {% if trash_total_pages > 1 %}
+        <nav class="pagination trash-pagination" id="trash-pagination" aria-label="Pagination de la corbeille">
+          {% if trash_page > 1 %}
+            <a class="btn btn-outline transition-hover pagination-prev" href="#" data-page="{{ trash_page - 1 }}">&#9664;&nbsp;Précédent</a>
+          {% else %}
+            <span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>
+          {% endif %}
+          <div class="pagination-numbers">
+            {% for p in trash_page_numbers %}
+              {% if p == "..." %}
+                <span class="pagination-ellipsis">&hellip;</span>
+              {% elif p == trash_page %}
+                <span class="pagination-link active">{{ p }}</span>
+              {% else %}
+                <a class="pagination-link" href="#" data-page="{{ p }}">{{ p }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% if trash_page < trash_total_pages %}
+            <a class="btn btn-outline transition-hover pagination-next" href="#" data-page="{{ trash_page + 1 }}">Suivant&nbsp;&#9658;</a>
+          {% else %}
+            <span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>
+          {% endif %}
+        </nav>
         {% else %}
-        <p class="no-data-message">La corbeille est vide.</p>
+        <div class="trash-pagination" id="trash-pagination"></div>
+        {% endif %}
+        {% else %}
+        <p class="no-data-message" id="trash-empty">La corbeille est vide.</p>
+        <div class="trash-pagination" id="trash-pagination"></div>
         {% endif %}
       </div>
 

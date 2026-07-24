@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
 from app import db, limiter
-from src.shared import login_required, get_current_user, user_owns_item_or_admin
+from src.shared import login_required, get_current_user, user_owns_item_or_admin, _build_page_numbers, ITEMS_PER_PAGE
 from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, OrganizationMember, ItemGallery
 from utils.security import sanitize_html, validate_magnet_link
 
@@ -63,15 +63,33 @@ def profil_page():
 def upload_page():
     current_user = get_current_user()
 
-    drafts = Item.query.filter_by(
+    draft_page = request.args.get("draft_page", 1, type=int)
+    trash_page = request.args.get("trash_page", 1, type=int)
+
+    drafts_query = Item.query.filter_by(
         owner_user_id=current_user.id,
         status="draft",
-    ).order_by(Item.created_at.desc()).all()
+    ).order_by(Item.created_at.desc())
 
-    trashed = Item.query.filter_by(
+    trashed_query = Item.query.filter_by(
         owner_user_id=current_user.id,
         status="trashed",
-    ).order_by(Item.deleted_at.desc()).all()
+    ).order_by(Item.deleted_at.desc())
+
+    total_drafts = drafts_query.count()
+    total_trash = trashed_query.count()
+
+    max_draft_page = max((total_drafts + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE, 1) if total_drafts else 1
+    max_trash_page = max((total_trash + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE, 1) if total_trash else 1
+
+    draft_page = max(1, min(draft_page, max_draft_page))
+    trash_page = max(1, min(trash_page, max_trash_page))
+
+    drafts = drafts_query.limit(ITEMS_PER_PAGE).offset((draft_page - 1) * ITEMS_PER_PAGE).all()
+    trashed = trashed_query.limit(ITEMS_PER_PAGE).offset((trash_page - 1) * ITEMS_PER_PAGE).all()
+
+    draft_page_numbers = _build_page_numbers(draft_page, max_draft_page)
+    trash_page_numbers = _build_page_numbers(trash_page, max_trash_page)
 
     edit_id = request.args.get("edit", "")
     edit_data = None
@@ -91,6 +109,14 @@ def upload_page():
         current_user=current_user,
         drafts=drafts,
         trashed=trashed,
+        draft_page=draft_page,
+        draft_total_pages=max_draft_page,
+        draft_total=total_drafts,
+        draft_page_numbers=draft_page_numbers,
+        trash_page=trash_page,
+        trash_total_pages=max_trash_page,
+        trash_total=total_trash,
+        trash_page_numbers=trash_page_numbers,
         edit_data=edit_data,
     )
 
@@ -626,3 +652,73 @@ def purge_draft_item(item_id):
     db.session.delete(item)
     db.session.commit()
     return jsonify({"status": "deleted"})
+
+
+@bp.route("/api/upload/drafts")
+@login_required
+def list_drafts():
+    current_user = get_current_user()
+    page = request.args.get("page", 1, type=int)
+
+    query = Item.query.filter_by(
+        owner_user_id=current_user.id,
+        status="draft",
+    ).order_by(Item.created_at.desc())
+
+    total = query.count()
+    total_pages = max((total + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE, 1) if total else 1
+    page = max(1, min(page, total_pages))
+
+    items = query.limit(ITEMS_PER_PAGE).offset((page - 1) * ITEMS_PER_PAGE).all()
+    page_numbers = _build_page_numbers(page, total_pages)
+
+    return jsonify({
+        "drafts": [
+            {
+                "id": d.id,
+                "title": d.title,
+                "created_at": d.created_at.strftime("%d/%m/%Y %H:%M") if d.created_at else "",
+                "status": d.status,
+            }
+            for d in items
+        ],
+        "page": page,
+        "total_pages": total_pages,
+        "total_items": total,
+        "page_numbers": page_numbers,
+    })
+
+
+@bp.route("/api/upload/trash")
+@login_required
+def list_trash():
+    current_user = get_current_user()
+    page = request.args.get("page", 1, type=int)
+
+    query = Item.query.filter_by(
+        owner_user_id=current_user.id,
+        status="trashed",
+    ).order_by(Item.deleted_at.desc())
+
+    total = query.count()
+    total_pages = max((total + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE, 1) if total else 1
+    page = max(1, min(page, total_pages))
+
+    items = query.limit(ITEMS_PER_PAGE).offset((page - 1) * ITEMS_PER_PAGE).all()
+    page_numbers = _build_page_numbers(page, total_pages)
+
+    return jsonify({
+        "trashed": [
+            {
+                "id": t.id,
+                "title": t.title,
+                "deleted_at": t.deleted_at.strftime("%d/%m/%Y %H:%M") if t.deleted_at else "",
+                "status": t.status,
+            }
+            for t in items
+        ],
+        "page": page,
+        "total_pages": total_pages,
+        "total_items": total,
+        "page_numbers": page_numbers,
+    })
