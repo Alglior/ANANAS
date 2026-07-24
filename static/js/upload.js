@@ -700,28 +700,84 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   document.addEventListener('click', function(e) {
-    var btn = e.target.closest('.draft-delete-btn');
-    if (!btn) return;
-    e.preventDefault();
-    var draftId = btn.getAttribute('data-id');
-    if (!confirm('Supprimer définitivement ce brouillon ?')) return;
+    var delBtn = e.target.closest('.draft-delete-btn');
+    if (delBtn) {
+      e.preventDefault();
+      var draftId = delBtn.getAttribute('data-id');
+      showConfirm(
+        'Mettre ce brouillon à la corbeille ?<br><small>Il restera récupérable pendant 7 jours.</small>',
+        function() { sendDelete('/api/upload/item/' + draftId, delBtn); }
+      );
+      return;
+    }
+
+    var restoreBtn = e.target.closest('.trash-restore-btn');
+    if (restoreBtn) {
+      e.preventDefault();
+      var restoreId = restoreBtn.getAttribute('data-id');
+      sendRestore('/api/upload/item/' + restoreId + '/restore', restoreBtn);
+      return;
+    }
+
+    var purgeBtn = e.target.closest('.trash-purge-btn');
+    if (purgeBtn) {
+      e.preventDefault();
+      var purgeId = purgeBtn.getAttribute('data-id');
+      showConfirm(
+        'Supprimer définitivement ce brouillon ?<br><small>Cette action est irréversible.</small>',
+        function() { sendDelete('/api/upload/item/' + purgeId + '/purge', purgeBtn); }
+      );
+      return;
+    }
+  });
+
+  function showConfirm(message, onConfirm) {
+    var overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = [
+      '<div class="confirm-dialog">',
+      '<p>' + message + '</p>',
+      '<div class="confirm-actions">',
+      '<button class="btn-cancel">Annuler</button>',
+      '<button class="btn-danger">Supprimer</button>',
+      '</div>',
+      '</div>'
+    ].join('');
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('.btn-cancel').addEventListener('click', function() {
+      overlay.remove();
+    });
+    overlay.querySelector('.btn-danger').addEventListener('click', function() {
+      overlay.remove();
+      onConfirm();
+    });
+    overlay.addEventListener('click', function(ev) {
+      if (ev.target === overlay) overlay.remove();
+    });
+  }
+
+  function sendDelete(url, btn) {
     var csrfToken = CsrfModule.getCsrfToken();
-    fetch('/api/upload/item/' + draftId, {
+    fetch(url, {
       method: 'DELETE',
       headers: { 'X-CSRF-Token': csrfToken },
     }).then(function(resp) {
       if (resp.ok) {
-        var li = btn.closest('.upload-history-item');
-        if (li) li.remove();
-        var badge = document.querySelector('.upload-tab[data-tab="drafts"]');
-        if (badge) {
-          var remaining = document.querySelectorAll('#tab-drafts .upload-history-item').length;
-          badge.textContent = 'Mes brouillons' + (remaining > 0 ? ' (' + remaining + ')' : '');
-        }
-        if (EDITING && EDIT_ITEM_ID == draftId) {
-          window.location.href = '/upload';
-        }
+        window.location.reload();
       }
     });
-  });
+  }
+
+  function sendRestore(url, btn) {
+    var csrfToken = CsrfModule.getCsrfToken();
+    fetch(url, {
+      method: 'POST',
+      headers: { 'X-CSRF-Token': csrfToken },
+    }).then(function(resp) {
+      if (resp.ok) {
+        window.location.reload();
+      }
+    });
+  }
 });

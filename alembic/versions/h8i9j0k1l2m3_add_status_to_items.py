@@ -19,9 +19,11 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     op.add_column('items', sa.Column('status', sa.String(), nullable=False, server_default='published'))
+    op.add_column('items', sa.Column('deleted_at', sa.DateTime(), nullable=True))
     op.add_column('organization_members', sa.Column('is_active', sa.Boolean(), nullable=False, server_default='true'))
 
 
 def downgrade() -> None:
     op.drop_column('organization_members', 'is_active')
+    op.drop_column('items', 'deleted_at')
     op.drop_column('items', 'status')

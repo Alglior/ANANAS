@@ -32,6 +32,11 @@
       position: 'top',
       text: '<strong>Publier ou brouillon</strong> — <strong>Publier</strong> rend votre contenu visible. <strong>Brouillon</strong> le sauvegarde pour le finir plus tard.',
     },
+    {
+      target: '.upload-tabs',
+      position: 'bottom',
+      text: '<strong>Mes brouillons</strong> — Retrouvez tous vos brouillons dans cet onglet. Vous pouvez les modifier ou les supprimer avant publication.',
+    },
   ];
 
   let currentStep = 0;

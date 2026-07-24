@@ -25,6 +25,7 @@ class Item(db.Model):
     data_format_level: Mapped[str] = mapped_column(default="individual")
     pdf_magnet_link: Mapped[str | None] = mapped_column(default=None)
     status: Mapped[str] = mapped_column(default="published")
+    deleted_at: Mapped[datetime.datetime | None]
     license_type: Mapped[str | None] = mapped_column(default=None)
     verifier_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     verified_at: Mapped[datetime.datetime | None]

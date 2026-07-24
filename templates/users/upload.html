@@ -21,6 +21,7 @@
       <div class="upload-tabs">
         <button class="upload-tab active" data-tab="publish">Publier</button>
         <button class="upload-tab" data-tab="drafts">Mes brouillons {% if drafts %}({{ drafts|length }}){% endif %}</button>
+        <button class="upload-tab" data-tab="trash">Corbeille {% if trashed %}({{ trashed|length }}){% endif %}</button>
       </div>
 
       <div class="upload-tab-content active" id="tab-publish">
@@ -220,6 +221,27 @@
         </ul>
         {% else %}
         <p class="no-data-message">Aucun brouillon pour le moment.</p>
+        {% endif %}
+      </div>
+
+      <div class="upload-tab-content" id="tab-trash">
+        {% if trashed %}
+        <p class="trash-hint">Les éléments supprimés restent ici 7 jours avant suppression définitive.</p>
+        <ul class="upload-history-list">
+          {% for item in trashed %}
+          <li class="upload-history-item" data-draft-id="{{ item.id }}">
+            <span class="upload-history-link trashed-title">{{ item.title }}</span>
+            <span class="upload-history-meta">
+              <span class="badge badge-trashed">Corbeille</span>
+              {{ item.deleted_at.strftime('%d/%m/%Y %H:%M') if item.deleted_at else '' }}
+              <button type="button" class="btn btn-sm btn-outline trash-restore-btn" data-id="{{ item.id }}">Restaurer</button>
+              <button type="button" class="btn btn-sm btn-outline trash-purge-btn" data-id="{{ item.id }}">Supprimer</button>
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="no-data-message">La corbeille est vide.</p>
         {% endif %}
       </div>
 

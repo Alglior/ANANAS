@@ -742,4 +742,90 @@
   color: var(--charcoal);
 }
 
+.badge-trashed {
+  background: var(--border-color);
+  color: var(--text-muted);
+}
+
+.trash-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.trashed-title {
+  opacity: 0.6;
+}
+
+.trash-purge-btn {
+  color: var(--error-red);
+  border-color: var(--error-red);
+}
+
+/* ── Confirm dialog ── */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-dialog {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  min-width: 320px;
+  max-width: 420px;
+  text-align: center;
+}
+
+.confirm-dialog p {
+  font-size: 1rem;
+  color: var(--charcoal);
+  margin: 0 0 1.5rem;
+  line-height: 1.5;
+}
+
+.confirm-dialog .confirm-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.confirm-dialog .btn-cancel {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 0.9rem;
+}
+
+.confirm-dialog .btn-cancel:hover {
+  border-color: var(--charcoal);
+  color: var(--charcoal);
+}
+
+.confirm-dialog .btn-danger {
+  background: var(--error-red);
+  border: none;
+  color: var(--white);
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.confirm-dialog .btn-danger:hover {
+  opacity: 0.9;
+}
+
 /* end upload page */

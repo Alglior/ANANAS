@@ -68,6 +68,11 @@ def upload_page():
         status="draft",
     ).order_by(Item.created_at.desc()).all()
 
+    trashed = Item.query.filter_by(
+        owner_user_id=current_user.id,
+        status="trashed",
+    ).order_by(Item.deleted_at.desc()).all()
+
     edit_id = request.args.get("edit", "")
     edit_data = None
     if edit_id and edit_id.isdigit():
@@ -85,6 +90,7 @@ def upload_page():
         meta_description="Publiez et partagez des géodonnées sur A.N.A.N.A.S.",
         current_user=current_user,
         drafts=drafts,
+        trashed=trashed,
         edit_data=edit_data,
     )
 
@@ -580,6 +586,42 @@ def delete_draft_item(item_id):
 
     if item.status != "draft":
         return jsonify({"error": "Seuls les brouillons peuvent être supprimés"}), 400
+
+    item.status = "trashed"
+    item.deleted_at = datetime.datetime.now()
+    db.session.commit()
+    return jsonify({"status": "trashed"})
+
+
+@bp.route("/api/upload/item/<int:item_id>/restore", methods=["POST"])
+@login_required
+def restore_draft_item(item_id):
+    current_user = get_current_user()
+    item = Item.query.get_or_404(item_id)
+
+    if not user_owns_item_or_admin(current_user, item):
+        return jsonify({"error": "Non autorisé"}), 403
+
+    if item.status != "trashed":
+        return jsonify({"error": "Seuls les éléments dans la corbeille peuvent être restaurés"}), 400
+
+    item.status = "draft"
+    item.deleted_at = None
+    db.session.commit()
+    return jsonify({"status": "restored"})
+
+
+@bp.route("/api/upload/item/<int:item_id>/purge", methods=["DELETE"])
+@login_required
+def purge_draft_item(item_id):
+    current_user = get_current_user()
+    item = Item.query.get_or_404(item_id)
+
+    if not user_owns_item_or_admin(current_user, item):
+        return jsonify({"error": "Non autorisé"}), 403
+
+    if item.status != "trashed":
+        return jsonify({"error": "Non autorisé"}), 403
 
     db.session.delete(item)
     db.session.commit()
