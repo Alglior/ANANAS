@@ -594,3 +594,136 @@ def delete_contact_message(msg_id):
     _log_audit("contact_message_deleted", "contact_message", msg_id, {"name": msg.name, "subject": msg.subject})
 
     return jsonify({"status": "deleted", "id": msg_id})
+
+
+@bp.route("/admin/mirrors")
+@login_required
+@require_admin
+def admin_mirrors():
+    return render_template(
+        "admin/mirrors.html",
+        title="Administration — Sites miroirs",
+        meta_description="Gestion des sites miroirs",
+    )
+
+
+@bp.route("/api/admin/mirrors", methods=["GET"])
+@login_required
+def list_mirrors():
+    from models import MirrorSite
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    mirrors = MirrorSite.query.order_by(MirrorSite.display_order, MirrorSite.id).all()
+    return jsonify({
+        "mirrors": [
+            {
+                "id": m.id,
+                "name": m.name,
+                "url": m.url,
+                "description": m.description,
+                "display_order": m.display_order,
+                "is_active": m.is_active,
+                "created_at": m.created_at.isoformat() if hasattr(m, "created_at") and m.created_at else None,
+            }
+            for m in mirrors
+        ],
+    })
+
+
+@bp.route("/api/admin/mirrors", methods=["POST"])
+@login_required
+def create_mirror():
+    from models import MirrorSite
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()
+    url = (data.get("url") or "").strip()
+    description = (data.get("description") or "").strip()
+
+    if not name or not url or not description:
+        return jsonify({"error": "Tous les champs sont requis."}), 400
+
+    if len(name) > 200 or len(url) > 500 or len(description) > 500:
+        return jsonify({"error": "Champs trop longs."}), 400
+
+    max_order = db.session.query(db.func.max(MirrorSite.display_order)).scalar() or 0
+    mirror = MirrorSite(
+        name=sanitize_html(name),
+        url=sanitize_html(url),
+        description=sanitize_html(description),
+        display_order=max_order + 1,
+        is_active=True,
+    )
+    db.session.add(mirror)
+    db.session.commit()
+    _log_audit("mirror_created", "mirror", mirror.id, {"name": mirror.name, "url": mirror.url})
+
+    return jsonify({"status": "created", "mirror": {
+        "id": mirror.id,
+        "name": mirror.name,
+        "url": mirror.url,
+        "description": mirror.description,
+        "display_order": mirror.display_order,
+        "is_active": mirror.is_active,
+    }})
+
+
+@bp.route("/api/admin/mirrors/<int:mirror_id>", methods=["PUT"])
+@login_required
+def update_mirror(mirror_id):
+    from models import MirrorSite
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    mirror = MirrorSite.query.get_or_404(mirror_id)
+    data = request.get_json(silent=True) or {}
+
+    if "name" in data:
+        mirror.name = sanitize_html(data["name"].strip())
+    if "url" in data:
+        mirror.url = sanitize_html(data["url"].strip())
+    if "description" in data:
+        mirror.description = sanitize_html(data["description"].strip())
+    if "display_order" in data:
+        mirror.display_order = int(data["display_order"])
+    if "is_active" in data:
+        mirror.is_active = bool(data["is_active"])
+
+    db.session.commit()
+    _log_audit("mirror_updated", "mirror", mirror_id, {"name": mirror.name})
+
+    return jsonify({"status": "updated", "mirror": {
+        "id": mirror.id,
+        "name": mirror.name,
+        "url": mirror.url,
+        "description": mirror.description,
+        "display_order": mirror.display_order,
+        "is_active": mirror.is_active,
+    }})
+
+
+@bp.route("/api/admin/mirrors/<int:mirror_id>", methods=["DELETE"])
+@login_required
+def delete_mirror(mirror_id):
+    from models import MirrorSite
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    mirror = MirrorSite.query.get_or_404(mirror_id)
+    name = mirror.name
+    db.session.delete(mirror)
+    db.session.commit()
+    _log_audit("mirror_deleted", "mirror", mirror_id, {"name": name})
+
+    return jsonify({"status": "deleted", "id": mirror_id})

@@ -1,13 +1,14 @@
 (function() {
-  const TUTO_KEY = 'admin_panel_tuto_v3';
-  const STEP_KEY = 'admin_panel_tuto_step_v3';
-  const ACTIVE_KEY = 'admin_panel_tuto_active_v3';
+  const TUTO_KEY = 'admin_panel_tuto_v4';
+  const STEP_KEY = 'admin_panel_tuto_step_v4';
+  const ACTIVE_KEY = 'admin_panel_tuto_active_v4';
 
   function currentPage() {
     var p = window.location.pathname;
     if (p.startsWith('/admin/reports')) return 'reports';
     if (p.startsWith('/admin/moderation')) return 'moderation';
     if (p.startsWith('/admin/contact-messages')) return 'contact-messages';
+    if (p.startsWith('/admin/mirrors')) return 'mirrors';
     if (p.startsWith('/admin/audit')) return 'audit';
     return 'users';
   }
@@ -17,7 +18,7 @@
       page: 'any',
       target: '.admin-nav',
       position: 'bottom',
-      text: '<strong>Navigation d\'administration</strong> — Cette barre donne accès aux 5 sections du panneau. Cliquez sur <strong>Suivant</strong> pour découvrir chaque section.',
+      text: '<strong>Navigation d\'administration</strong> — Cette barre donne accès aux 6 sections du panneau. Cliquez sur <strong>Suivant</strong> pour découvrir chaque section.',
     },
     {
       page: 'any',
@@ -74,6 +75,19 @@
     {
       page: 'contact-messages',
       target: '.admin-nav a:nth-child(5)',
+      position: 'bottom',
+      navigateTo: '/admin/mirrors',
+      text: '<strong>Sites miroirs</strong> — Ajoutez, modifiez ou supprimez les sites miroirs affichés sur la page d\'accueil.',
+    },
+    {
+      page: 'mirrors',
+      target: '#mirrors-table, .mirrors-header',
+      position: 'top',
+      text: '<strong>Sites miroirs</strong> — Gérez les liens affichés dans la section « Sites miroirs » de la page d\'accueil. <strong>Ajoutez</strong> un nouveau miroir, <strong>modifiez</strong> ou <strong>supprimez</strong> un miroir existant.',
+    },
+    {
+      page: 'mirrors',
+      target: '.admin-nav a:nth-child(6)',
       position: 'bottom',
       navigateTo: '/admin/audit',
       text: '<strong>Journal d\'audits</strong> — Consultez l\'historique complet de toutes les actions administratives.',

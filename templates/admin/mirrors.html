@@ -1,0 +1,70 @@
+{% extends 'base_admin.html' %}
+
+{% set title = "Administration — Sites miroirs" %}
+
+{% block admin_content %}
+<div class="mirrors-header">
+  <h2>Sites miroirs</h2>
+  <button type="button" class="btn btn-primary" id="add-mirror-btn">+ Ajouter un miroir</button>
+</div>
+
+<div class="table-wrapper">
+  <table id="mirrors-table">
+    <thead>
+      <tr>
+        <th>Ordre</th>
+        <th>Nom</th>
+        <th>URL</th>
+        <th>Description</th>
+        <th>Statut</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="mirrors-tbody">
+      <tr><td colspan="6" class="loading-cell">Chargement...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div id="mirror-modal" class="modal-overlay hidden-section">
+  <div class="modal-content mirror-modal-content">
+    <span class="modal-close" id="mirror-modal-close">&times;</span>
+    <h3 id="mirror-modal-title">Ajouter un site miroir</h3>
+    <form id="mirror-form" novalidate>
+      <input type="hidden" id="mirror-id" value="" />
+      <div class="form-group">
+        <label for="mirror-name">Nom</label>
+        <input type="text" id="mirror-name" maxlength="200" required placeholder="Ex: Mirror 1 — GitHub.io" />
+      </div>
+      <div class="form-group">
+        <label for="mirror-url">URL</label>
+        <input type="url" id="mirror-url" maxlength="500" required placeholder="https://..." />
+      </div>
+      <div class="form-group">
+        <label for="mirror-desc">Description</label>
+        <input type="text" id="mirror-desc" maxlength="500" required placeholder="Hébergement statique, CDN mondial..." />
+      </div>
+      <div class="form-group">
+        <label for="mirror-order">Ordre d'affichage</label>
+        <input type="number" id="mirror-order" min="0" value="0" />
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="mirror-active" checked />
+          Actif
+        </label>
+      </div>
+      <div id="mirror-error" class="form-error hidden-section"></div>
+      <div class="mirror-modal-actions">
+        <button type="submit" class="btn btn-primary" id="mirror-submit">Enregistrer</button>
+        <button type="button" class="btn btn-outline" id="mirror-cancel">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/mirrors.js') }}?v=1"></script>
+{% endblock %}

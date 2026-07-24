@@ -396,24 +396,14 @@
     </p>
 
     <ul class="mirror-list">
+      {% for mirror in mirrors %}
       <li>
-        <a class="mirror-link transition-hover" href="https://ananas.github.io">
-          <span class="mirror-name">Mirror 1 — GitHub.io</span>
-          <span class="mirror-desc">Hébergement statique, CDN mondial, haute disponibilité</span>
+        <a class="mirror-link transition-hover" href="{{ mirror.url }}">
+          <span class="mirror-name">{{ mirror.name }}</span>
+          <span class="mirror-desc">{{ mirror.description }}</span>
         </a>
       </li>
-      <li>
-        <a class="mirror-link transition-hover" href="https://gitlab.com/ananas">
-          <span class="mirror-name">Mirror 2 — GitLab</span>
-          <span class="mirror-desc">Instances publiques, intégration CI/CD, mirrors synchronisés</span>
-        </a>
-      </li>
-      <li>
-        <a class="mirror-link transition-hover" href="https://ananas.ovh">
-          <span class="mirror-name">Mirror 3 — OVH</span>
-          <span class="mirror-desc">Serveurs dédiés, souveraineté des données, bande passante illimitée</span>
-        </a>
-      </li>
+      {% endfor %}
     </ul>
   </div>
 </section>

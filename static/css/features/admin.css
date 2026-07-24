@@ -947,3 +947,88 @@
   color: #94a3b8;
   font-size: 0.82rem;
 }
+
+/* Mirror sites admin */
+.mirrors-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.mirrors-header h2 {
+  margin: 0;
+}
+
+.mirror-inactive {
+  opacity: 0.5;
+}
+
+/* Mirror modal */
+.mirror-modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 520px;
+  width: 92%;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
+}
+
+.mirror-modal-content h3 {
+  margin: 0 0 1.25rem;
+  font-size: 1.1rem;
+  color: #1e293b;
+  padding-right: 2rem;
+}
+
+.mirror-modal-content .form-group {
+  margin-bottom: 1rem;
+}
+
+.mirror-modal-content .form-group label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #334155;
+  margin-bottom: 0.35rem;
+}
+
+.mirror-modal-content .form-group input[type="text"],
+.mirror-modal-content .form-group input[type="url"],
+.mirror-modal-content .form-group input[type="number"] {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.mirror-modal-content .form-group input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.mirror-modal-content .checkbox-label {
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: 400 !important;
+}
+
+.mirror-modal-content .checkbox-label input[type="checkbox"] {
+  width: auto;
+  accent-color: #2563eb;
+}
+
+.mirror-modal-content .mirror-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}

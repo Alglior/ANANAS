@@ -196,14 +196,7 @@ def create_app(app_name="ANANAS"):
     app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # Limite de 10 Mo pour les uploads (Max-Content-Length)
 
     # Définition des routes statiques
-    routes = [
-        {
-            "rule": "/",
-            "template": "index.html",
-            "title": "A.N.A.N.A.S. | Accueil",
-            "meta": "Portail géoservices basé sur des liens magnet et torrents.",
-        },
-    ]
+    routes = []
 
     # Enregistrement dynamique des routes
     from src import _register_view, _legacy_catalogue, register_all_blueprints
@@ -224,6 +217,7 @@ def create_app(app_name="ANANAS"):
     from src.admin_routes import bp as admin_bp
     from src.user_routes import bp as user_bp
     from src.contact_routes import bp as contact_bp
+    from src.index_routes import bp as index_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(items_bp)
@@ -232,6 +226,7 @@ def create_app(app_name="ANANAS"):
     app.register_blueprint(admin_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(contact_bp)
+    app.register_blueprint(index_bp)
 
     # Route legacy /catalogue avec endpoint="catalogue" pour compatibilité templates
     @app.route("/catalogue", endpoint="catalogue")
