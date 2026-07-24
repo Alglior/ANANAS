@@ -33,9 +33,14 @@
       text: '<strong>Publier ou brouillon</strong> — <strong>Publier</strong> rend votre contenu visible. <strong>Brouillon</strong> le sauvegarde pour le finir plus tard.',
     },
     {
-      target: '.upload-tabs',
+      target: '.upload-tab[data-tab="drafts"]',
       position: 'bottom',
-      text: '<strong>Mes brouillons</strong> — Retrouvez tous vos brouillons dans cet onglet. Vous pouvez les modifier ou les supprimer avant publication.',
+      text: '<strong>Mes brouillons</strong> — Retrouvez tous vos brouillons en cours ici. Modifiez-les ou mettez-les à la corbeille.',
+    },
+    {
+      target: '.upload-tab[data-tab="trash"]',
+      position: 'bottom',
+      text: '<strong>Corbeille</strong> — Les brouillons supprimés restent 7 jours. Vous pouvez les restaurer ou les supprimer définitivement.',
     },
   ];
 
