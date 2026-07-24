@@ -18,6 +18,13 @@
         </p>
       </div>
 
+      <div class="upload-tabs">
+        <button class="upload-tab active" data-tab="publish">Publier</button>
+        <button class="upload-tab" data-tab="drafts">Mes brouillons {% if drafts %}({{ drafts|length }}){% endif %}</button>
+      </div>
+
+      <div class="upload-tab-content active" id="tab-publish">
+
       <form class="upload-form" id="uploadForm">
         <div class="upload-section" id="tutoSectionInfo">
           <h2>Informations de l'item</h2>
@@ -194,6 +201,28 @@
         </div>
       </form>
 
+      </div>
+
+      <div class="upload-tab-content" id="tab-drafts">
+        {% if drafts %}
+        <ul class="upload-history-list">
+          {% for draft in drafts %}
+          <li class="upload-history-item" data-draft-id="{{ draft.id }}">
+            <a href="/catalogue/item/{{ draft.id }}" class="upload-history-link">{{ draft.title }}</a>
+            <span class="upload-history-meta">
+              <span class="badge badge-draft">Brouillon</span>
+              {{ draft.created_at.strftime('%d/%m/%Y %H:%M') }}
+              <a href="/upload?edit={{ draft.id }}" class="btn btn-sm">Modifier</a>
+              <button type="button" class="btn btn-sm btn-outline draft-delete-btn" data-id="{{ draft.id }}">Supprimer</button>
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="no-data-message">Aucun brouillon pour le moment.</p>
+        {% endif %}
+      </div>
+
       {% if current_user.uploads %}
       <div class="upload-history-section">
         <h2>Mes téléversements récents</h2>
@@ -240,6 +269,11 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{% if edit_data %}
+<script nonce="{{ csp_nonce }}">
+  window.EDIT_DATA = {{ edit_data | tojson | safe }};
+</script>
+{% endif %}
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload_tuto.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload.js') }}"></script>
 {% endblock %}

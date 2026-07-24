@@ -86,14 +86,21 @@ def item_detail_view(item_id):
     from models import Item, User
 
     item = Item.query.get_or_404(item_id)
+
+    current_user = get_current_user()
+
+    if item.status == "draft":
+        if not current_user or item.owner_user_id != current_user.id:
+            from flask import abort
+            abort(404)
+
     related_items = Item.query.filter(
         Item.format_type == item.format_type,
         Item.id != item_id,
+        Item.status != "draft",
     ).limit(3).all()
 
     img_gallery = get_image_gallery(item)
-
-    current_user = get_current_user()
 
     from models import Comment
 

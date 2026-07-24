@@ -56,7 +56,7 @@ def _do_catalogue(catalogue_type, page, per_page=30):
     from models import Item, Organization
 
     item_type = type_map[catalogue]
-    query = Item.query.filter_by(type=item_type)
+    query = Item.query.filter_by(type=item_type).filter(Item.status != "draft")
     if org_slug:
         org = Organization.query.filter_by(slug=org_slug).first()
         if org:
@@ -179,7 +179,7 @@ def catalogue_json_view(catalogue_type, page):
 
     meta = _CATALOGUE_META[catalogue]
     base = "/catalogue/" + catalogue
-    query = Item.query.filter_by(type=item_type)
+    query = Item.query.filter_by(type=item_type).filter(Item.status != "draft")
     if org_slug:
         org = Organization.query.filter_by(slug=org_slug).first()
         if org:

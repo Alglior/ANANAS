@@ -690,4 +690,56 @@
   text-decoration: underline;
 }
 
+/* ── Upload tabs ── */
+.upload-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.upload-tab {
+  padding: 0.6rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  font-family: "Ubuntu", sans-serif;
+}
+
+.upload-tab:hover {
+  color: var(--charcoal);
+}
+
+.upload-tab.active {
+  color: var(--forest);
+  border-bottom-color: var(--forest);
+  font-weight: 600;
+}
+
+.upload-tab-content {
+  display: none;
+}
+
+.upload-tab-content.active {
+  display: block;
+}
+
+.no-data-message {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 2rem 0;
+  font-size: 0.95rem;
+}
+
+.badge-draft {
+  background: var(--mustard);
+  color: var(--charcoal);
+}
+
 /* end upload page */

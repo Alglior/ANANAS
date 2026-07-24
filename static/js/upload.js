@@ -1,4 +1,25 @@
 document.addEventListener('DOMContentLoaded', function() {
+  var EDITING = !!window.EDIT_DATA;
+  var EDIT_ITEM_ID = EDITING ? window.EDIT_DATA.id : null;
+
+  var tabs = document.querySelectorAll('.upload-tab');
+  var tabContents = document.querySelectorAll('.upload-tab-content');
+  tabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var target = this.getAttribute('data-tab');
+      tabs.forEach(function(t) { t.classList.remove('active'); });
+      tabContents.forEach(function(c) { c.classList.remove('active'); });
+      this.classList.add('active');
+      var content = document.getElementById('tab-' + target);
+      if (content) content.classList.add('active');
+    });
+  });
+
+  if (window.location.search.indexOf('drafts=1') !== -1) {
+    var draftsTab = document.querySelector('.upload-tab[data-tab="drafts"]');
+    if (draftsTab) draftsTab.click();
+  }
+
   var dataInput = document.getElementById('data_input');
   var dataLineCount = document.getElementById('dataLineCount');
   var MAX_LINES = 50;
@@ -490,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    if (!isNonData()) {
+    if (!EDITING && !isNonData()) {
       var dataText = dataInput ? dataInput.value : '';
       var lines = dataText.split('\n').filter(function(line) { return line.trim(); }).slice(0, MAX_LINES);
       if (!lines.length) {
@@ -502,13 +523,13 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    showSpinner('Envoi des données...', 'Étape 1/2');
+    showSpinner(EDITING ? 'Mise à jour en cours...' : 'Envoi des données...', EDITING ? '' : 'Étape 1/2');
 
     var csrfToken = CsrfModule.getCsrfToken();
 
     try {
       var chunkId = null;
-      if (!isNonData()) {
+      if (!EDITING && !isNonData()) {
         var formData = new FormData();
         var dataText = dataInput.value;
         var dataLines = dataText.split('\n').filter(function(line) { return line.trim(); }).slice(0, MAX_LINES);
@@ -545,13 +566,16 @@ document.addEventListener('DOMContentLoaded', function() {
         chunkId = fileResult.data.chunk_id;
       }
 
-      showSpinner('Création de l\'item...', 'Étape 2/2');
+      showSpinner(EDITING ? 'Publication du brouillon...' : 'Création de l\'item...', EDITING ? '' : 'Étape 2/2');
 
       var itemPayload = buildItemPayload(magnetLinks, false);
       if (chunkId) itemPayload.chunk_id = chunkId;
 
-      var itemResult = await safeFetchJson('/api/upload/item', {
-        method: 'POST',
+      var method = EDITING ? 'PUT' : 'POST';
+      var url = EDITING ? '/api/upload/item/' + EDIT_ITEM_ID : '/api/upload/item';
+
+      var itemResult = await safeFetchJson(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
           'X-CSRF-Token': csrfToken,
@@ -568,16 +592,17 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
 
+      var redirectId = itemResult.data.id || EDIT_ITEM_ID;
       var hasImages = itemPayload.image_magnets && itemPayload.image_magnets.length > 0;
       if (hasImages) {
         showSpinner('Publication réussie !', 'Téléchargement des images en arrière-plan...', true);
         setTimeout(function() {
-          window.location.href = '/catalogue/item/' + itemResult.data.id;
+          window.location.href = '/catalogue/item/' + redirectId;
         }, 2000);
       } else {
         showSpinner('Publication réussie !', 'Redirection...');
         setTimeout(function() {
-          window.location.href = '/catalogue/item/' + itemResult.data.id;
+          window.location.href = '/catalogue/item/' + redirectId;
         }, 1500);
       }
 
@@ -611,10 +636,12 @@ document.addEventListener('DOMContentLoaded', function() {
       payload.status = 'draft';
 
       var csrfToken = CsrfModule.getCsrfToken();
+      var method = EDITING ? 'PUT' : 'POST';
+      var url = EDITING ? '/api/upload/item/' + EDIT_ITEM_ID : '/api/upload/item';
 
       try {
-        var result = await safeFetchJson('/api/upload/item', {
-          method: 'POST',
+        var result = await safeFetchJson(url, {
+          method: method,
           headers: {
             'Content-Type': 'application/json',
             'X-CSRF-Token': csrfToken,
@@ -623,7 +650,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         if (result.response.ok) {
           hideSpinner();
-          window.location.href = '/catalogue/item/' + result.data.id;
+          window.location.href = '/upload?drafts=1';
         } else {
           hideSpinner();
           draftBtn.disabled = false;
@@ -651,4 +678,50 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   createMagnetEntry('', 'regions');
+
+  if (EDITING) {
+    var d = window.EDIT_DATA;
+    document.getElementById('title').value = d.title || '';
+    if (typeSelect && d.type) {
+      typeSelect.value = d.type;
+      typeSelect.dispatchEvent(new Event('change'));
+      if (formatTypeSelect) formatTypeSelect.value = d.format_type || '';
+    }
+    document.getElementById('description').value = d.description || '';
+    if (d.organization_id) document.getElementById('organization_id').value = d.organization_id;
+    if (d.license_type) {
+      var lt = document.getElementById('license_type');
+      lt.value = d.license_type;
+      lt.dispatchEvent(new Event('change'));
+    }
+    uploadBtn.textContent = 'Mettre à jour et publier';
+    draftBtn.textContent = 'Mettre à jour le brouillon';
+    document.querySelector('.upload-header h1').textContent = 'Modifier un brouillon';
+  }
+
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.draft-delete-btn');
+    if (!btn) return;
+    e.preventDefault();
+    var draftId = btn.getAttribute('data-id');
+    if (!confirm('Supprimer définitivement ce brouillon ?')) return;
+    var csrfToken = CsrfModule.getCsrfToken();
+    fetch('/api/upload/item/' + draftId, {
+      method: 'DELETE',
+      headers: { 'X-CSRF-Token': csrfToken },
+    }).then(function(resp) {
+      if (resp.ok) {
+        var li = btn.closest('.upload-history-item');
+        if (li) li.remove();
+        var badge = document.querySelector('.upload-tab[data-tab="drafts"]');
+        if (badge) {
+          var remaining = document.querySelectorAll('#tab-drafts .upload-history-item').length;
+          badge.textContent = 'Mes brouillons' + (remaining > 0 ? ' (' + remaining + ')' : '');
+        }
+        if (EDITING && EDIT_ITEM_ID == draftId) {
+          window.location.href = '/upload';
+        }
+      }
+    });
+  });
 });

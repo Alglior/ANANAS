@@ -63,11 +63,29 @@ def profil_page():
 def upload_page():
     current_user = get_current_user()
 
+    drafts = Item.query.filter_by(
+        owner_user_id=current_user.id,
+        status="draft",
+    ).order_by(Item.created_at.desc()).all()
+
+    edit_id = request.args.get("edit", "")
+    edit_data = None
+    if edit_id and edit_id.isdigit():
+        draft = Item.query.filter_by(
+            id=int(edit_id),
+            owner_user_id=current_user.id,
+            status="draft",
+        ).first()
+        if draft:
+            edit_data = draft.to_dict()
+
     return render_template(
         "users/upload.html",
         title="A.N.A.N.A.S. | Publier des données",
         meta_description="Publiez et partagez des géodonnées sur A.N.A.N.A.S.",
         current_user=current_user,
+        drafts=drafts,
+        edit_data=edit_data,
     )
 
 
@@ -467,7 +485,11 @@ def update_draft_item(item_id):
     item.data_format_level = data_format_level
     item.license_type = license_type or None
     item.pdf_magnet_link = pdf_magnet_link if validate_magnet_link(pdf_magnet_link) else None
-    item.status = "published"
+
+    new_status = data.get("status", "published").strip()
+    if new_status not in ("published", "draft"):
+        new_status = "published"
+    item.status = new_status
 
     chunk_id = data.get("chunk_id")
     if chunk_id:
@@ -545,3 +567,20 @@ def brouillons_page():
         drafts=drafts,
         current_user=current_user,
     )
+
+
+@bp.route("/api/upload/item/<int:item_id>", methods=["DELETE"])
+@login_required
+def delete_draft_item(item_id):
+    current_user = get_current_user()
+    item = Item.query.get_or_404(item_id)
+
+    if not user_owns_item_or_admin(current_user, item):
+        return jsonify({"error": "Non autorisé"}), 403
+
+    if item.status != "draft":
+        return jsonify({"error": "Seuls les brouillons peuvent être supprimés"}), 400
+
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify({"status": "deleted"})
