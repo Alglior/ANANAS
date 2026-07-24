@@ -673,6 +673,29 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  var downloadJsonBtn = document.getElementById('downloadJsonBtn');
+  if (downloadJsonBtn) {
+    downloadJsonBtn.addEventListener('click', function() {
+      var magnetLinks = collectMagnetLinks();
+      var payload = buildItemPayload(magnetLinks, false);
+
+      var imageMagnets = collectImageMagnets();
+      if (imageMagnets.length > 0) {
+        payload.image_magnets = imageMagnets;
+      }
+
+      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'fiche_info.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  }
+
   if (typeSelect) {
     populateFormats(typeSelect.value);
   }
