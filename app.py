@@ -203,13 +203,6 @@ def create_app(app_name="ANANAS"):
             "title": "A.N.A.N.A.S. | Accueil",
             "meta": "Portail géoservices basé sur des liens magnet et torrents.",
         },
-
-        {
-            "rule": "/contact",
-            "template": "contact.html",
-            "title": "A.N.A.N.A.S. | Contact",
-            "meta": "Contactez-nous pour toute question ou suggestion.",
-        },
     ]
 
     # Enregistrement dynamique des routes
@@ -230,6 +223,7 @@ def create_app(app_name="ANANAS"):
     from src.organization_routes import bp as org_bp
     from src.admin_routes import bp as admin_bp
     from src.user_routes import bp as user_bp
+    from src.contact_routes import bp as contact_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(items_bp)
@@ -237,6 +231,7 @@ def create_app(app_name="ANANAS"):
     app.register_blueprint(org_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(user_bp)
+    app.register_blueprint(contact_bp)
 
     # Route legacy /catalogue avec endpoint="catalogue" pour compatibilité templates
     @app.route("/catalogue", endpoint="catalogue")

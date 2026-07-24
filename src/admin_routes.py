@@ -502,3 +502,95 @@ def admin_moderation():
         title="Administration — Modération",
         meta_description="Modération des contenus et commentaires",
     )
+
+
+@bp.route("/admin/contact-messages")
+@login_required
+@require_admin
+def admin_contact_messages():
+    return render_template(
+        "admin/contact_messages.html",
+        title="Administration — Messages de contact",
+        meta_description="Messages reçus via la page contact",
+    )
+
+
+@bp.route("/api/admin/contact-messages", methods=["GET"])
+@login_required
+def list_contact_messages():
+    from models import ContactMessage
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    page = request.args.get("page", 1, type=int)
+    per_page = 30
+    status_filter = request.args.get("status", "all")
+
+    query = ContactMessage.query
+    if status_filter == "unread":
+        query = query.filter_by(is_read=False)
+    elif status_filter == "read":
+        query = query.filter_by(is_read=True)
+
+    total_items = query.count()
+    total_pages = max((total_items + per_page - 1) // per_page, 1)
+    page = min(max(page, 1), total_pages) or 1
+
+    paginated = query.order_by(ContactMessage.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+    page_numbers = _build_page_numbers(page, total_pages)
+
+    return jsonify({
+        "messages": [
+            {
+                "id": m.id,
+                "name": m.name,
+                "email": m.email,
+                "subject": m.subject,
+                "message": m.message,
+                "is_read": m.is_read,
+                "created_at": m.created_at.isoformat() if hasattr(m, "created_at") and m.created_at else None,
+            }
+            for m in paginated
+        ],
+        "page": page,
+        "total_pages": total_pages,
+        "total_items": total_items,
+        "page_numbers": page_numbers,
+    })
+
+
+@bp.route("/api/admin/contact-messages/<int:msg_id>/read", methods=["POST"])
+@login_required
+def mark_contact_message_read(msg_id):
+    from models import ContactMessage
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    msg = ContactMessage.query.get_or_404(msg_id)
+    data = request.get_json(silent=True) or {}
+    is_read = data.get("is_read", True)
+    msg.is_read = bool(is_read)
+    db.session.commit()
+
+    return jsonify({"status": "updated", "id": msg.id, "is_read": msg.is_read})
+
+
+@bp.route("/api/admin/contact-messages/<int:msg_id>", methods=["DELETE"])
+@login_required
+def delete_contact_message(msg_id):
+    from models import ContactMessage
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    msg = ContactMessage.query.get_or_404(msg_id)
+    db.session.delete(msg)
+    db.session.commit()
+    _log_audit("contact_message_deleted", "contact_message", msg_id, {"name": msg.name, "subject": msg.subject})
+
+    return jsonify({"status": "deleted", "id": msg_id})

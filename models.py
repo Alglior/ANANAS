@@ -456,6 +456,25 @@ class AdminAudit(db.Model):
     admin = relationship("User", foreign_keys=[admin_user_id])
 
 
+class ContactMessage(db.Model):
+    __tablename__ = "contact_messages"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    email: Mapped[str]
+    subject: Mapped[str]
+    message: Mapped[str]
+    is_read: Mapped[bool] = mapped_column(default=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.is_read is None:
+            self.is_read = False
+        if self.created_at is None:
+            self.created_at = datetime.datetime.now()
+
+
 # ─── Back-references sur User et Item ───
 
 User.data_chunks = relationship("DataChunk", back_populates="owner")

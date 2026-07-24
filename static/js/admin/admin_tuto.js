@@ -1,12 +1,13 @@
 (function() {
-  const TUTO_KEY = 'admin_panel_tuto_v2';
-  const STEP_KEY = 'admin_panel_tuto_step_v2';
-  const ACTIVE_KEY = 'admin_panel_tuto_active_v2';
+  const TUTO_KEY = 'admin_panel_tuto_v3';
+  const STEP_KEY = 'admin_panel_tuto_step_v3';
+  const ACTIVE_KEY = 'admin_panel_tuto_active_v3';
 
   function currentPage() {
     var p = window.location.pathname;
     if (p.startsWith('/admin/reports')) return 'reports';
     if (p.startsWith('/admin/moderation')) return 'moderation';
+    if (p.startsWith('/admin/contact-messages')) return 'contact-messages';
     if (p.startsWith('/admin/audit')) return 'audit';
     return 'users';
   }
@@ -16,7 +17,7 @@
       page: 'any',
       target: '.admin-nav',
       position: 'bottom',
-      text: '<strong>Navigation d\'administration</strong> — Cette barre donne accès aux 4 sections du panneau. Cliquez sur <strong>Suivant</strong> pour découvrir chaque section.',
+      text: '<strong>Navigation d\'administration</strong> — Cette barre donne accès aux 5 sections du panneau. Cliquez sur <strong>Suivant</strong> pour découvrir chaque section.',
     },
     {
       page: 'any',
@@ -60,6 +61,19 @@
     {
       page: 'moderation',
       target: '.admin-nav a:nth-child(4)',
+      position: 'bottom',
+      navigateTo: '/admin/contact-messages',
+      text: '<strong>Messages</strong> — Consultez les messages envoyés par les visiteurs via la page de contact.',
+    },
+    {
+      page: 'contact-messages',
+      target: '#contact-msg-filters, #contact-msgs-table',
+      position: 'top',
+      text: '<strong>Messages de contact</strong> — Filtrez par statut (<strong>Tous</strong>, <strong>Non lus</strong>, <strong>Lus</strong>). Cliquez sur <strong>Voir</strong> pour lire le message complet, ou <strong>Supprimer</strong> pour l\'effacer.',
+    },
+    {
+      page: 'contact-messages',
+      target: '.admin-nav a:nth-child(5)',
       position: 'bottom',
       navigateTo: '/admin/audit',
       text: '<strong>Journal d\'audits</strong> — Consultez l\'historique complet de toutes les actions administratives.',

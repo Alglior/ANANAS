@@ -1,5 +1,5 @@
 (function() {
-  const TUTO_KEY = 'upload_tuto_done_v3';
+  const TUTO_KEY = 'upload_tuto_done_v4';
 
   function currentTab() {
     var active = document.querySelector('.upload-tab.active');
@@ -28,21 +28,39 @@
     },
     {
       tab: 'publish',
-      target: '#type',
+      target: '#type, #format_type',
       position: 'bottom',
-      text: '<strong>Type et format</strong> — Choisissez la catégorie de contenu (géodonnées, carte, application) et le format technique.',
+      text: '<strong>Type et format</strong> — Choisissez la catégorie de contenu (géodonnées, carte, application) et le format technique du fichier.',
+    },
+    {
+      tab: 'publish',
+      target: '#description',
+      position: 'bottom',
+      text: '<strong>Description</strong> — Décrivez le contenu, la méthode de collecte et les conditions d\'utilisation. Cette description sera visible publiquement.',
+    },
+    {
+      tab: 'publish',
+      target: '#organization_id',
+      position: 'bottom',
+      text: '<strong>Organisation</strong> — Associez votre publication à une organisation (optionnel). Laissez vide pour une publication personnelle.',
+    },
+    {
+      tab: 'publish',
+      target: '#license_type',
+      position: 'bottom',
+      text: '<strong>Licence</strong> — Choisissez les conditions d\'utilisation de vos données (CC-BY, Licence Ouverte, Domaine Public, etc.).',
+    },
+    {
+      tab: 'publish',
+      target: '#dataInputGroup',
+      position: 'top',
+      text: '<strong>Données</strong> — Collez un aperçu de votre tableau en CSV (optionnel). Seules les 50 premières lignes seront affichées dans le catalogue.',
     },
     {
       tab: 'publish',
       target: '#magnetSection',
       position: 'top',
-      text: '<strong>Données</strong> — Collez un aperçu CSV (optionnel) et ajoutez vos liens Magnet. Le bouton <strong>+</strong> ajoute un lien, <strong>Ajouter en lot</strong> permet d\'en coller plusieurs d\'un coup.',
-    },
-    {
-      tab: 'publish',
-      target: '.zoom-pills',
-      position: 'top',
-      text: '<strong>Niveau de zoom</strong> — Pour chaque lien Magnet, cliquez sur le niveau géographique : IRIS, Communes, Départements, Régions ou Pays.',
+      text: '<strong>Liens Magnet</strong> — Ajoutez vos liens Magnet torrent. <strong>+ Ajouter un lien</strong> pour un seul lien, <strong>Ajouter en lot</strong> pour en coller plusieurs d\'un coup. Sélectionnez le niveau de zoom pour chaque lien.',
     },
     {
       tab: 'publish',
@@ -52,10 +70,16 @@
     },
     {
       tab: 'publish',
+      target: '#viz_name, #viz_url',
+      position: 'top',
+      text: '<strong>Visualisation</strong> — Optionnel. Ajoutez un lien vers un service de visualisation externe (WMS, WFS, Mapbox, etc.).',
+    },
+    {
+      tab: 'publish',
       target: '.upload-actions',
       position: 'top',
       switchTab: 'drafts',
-      text: '<strong>Publier ou brouillon</strong> — <strong>Publier</strong> rend votre contenu visible. <strong>Brouillon</strong> le sauvegarde pour le finir plus tard. Cliquez sur <strong>Brouillons</strong> pour continuer.',
+      text: '<strong>Publier ou brouillon</strong> — <strong>Publier</strong> rend votre contenu visible. <strong>Brouillon</strong> le sauvegarde pour le finir plus tard. <strong>Télécharger la fiche</strong> exporte les métadonnées en JSON. Cliquez sur <strong>Brouillons</strong> pour continuer.',
     },
     {
       tab: 'drafts',
