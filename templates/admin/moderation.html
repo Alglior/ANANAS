@@ -73,6 +73,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{{ super() }}
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/moderation.js') }}?v=2">
 </script>
 {% endblock %}

@@ -1,46 +1,74 @@
 (function() {
-  const TUTO_KEY = 'upload_tuto_done_v2';
+  const TUTO_KEY = 'upload_tuto_done_v3';
+
+  function currentTab() {
+    var active = document.querySelector('.upload-tab.active');
+    return active ? active.getAttribute('data-tab') : 'publish';
+  }
+
+  function switchToTab(tabName) {
+    var tabs = document.querySelectorAll('.upload-tab');
+    var tabContents = document.querySelectorAll('.upload-tab-content');
+    var targetTab = document.querySelector('.upload-tab[data-tab="' + tabName + '"]');
+    if (!targetTab) return;
+
+    tabs.forEach(function(t) { t.classList.remove('active'); });
+    tabContents.forEach(function(c) { c.classList.remove('active'); });
+    targetTab.classList.add('active');
+    var content = document.getElementById('tab-' + tabName);
+    if (content) content.classList.add('active');
+  }
 
   const steps = [
     {
+      tab: 'publish',
       target: '#title',
       position: 'bottom',
       text: '<strong>Titre</strong> — Donnez un nom à votre publication. C\'est le titre qui apparaîtra dans le catalogue.',
     },
     {
+      tab: 'publish',
       target: '#type',
       position: 'bottom',
       text: '<strong>Type et format</strong> — Choisissez la catégorie de contenu (géodonnées, carte, application) et le format technique.',
     },
     {
+      tab: 'publish',
       target: '#magnetSection',
       position: 'top',
       text: '<strong>Données</strong> — Collez un aperçu CSV (optionnel) et ajoutez vos liens Magnet. Le bouton <strong>+</strong> ajoute un lien, <strong>Ajouter en lot</strong> permet d\'en coller plusieurs d\'un coup.',
     },
     {
+      tab: 'publish',
       target: '.zoom-pills',
       position: 'top',
       text: '<strong>Niveau de zoom</strong> — Pour chaque lien Magnet, cliquez sur le niveau géographique : IRIS, Communes, Départements, Régions ou Pays.',
     },
     {
+      tab: 'publish',
       target: '#imageMagnetEntries',
       position: 'top',
       text: '<strong>Images</strong> — Optionnel. Ajoutez des liens Magnet pointant vers des images (PNG, JPG...). Elles seront téléchargées automatiquement par le serveur.',
     },
     {
+      tab: 'publish',
       target: '.upload-actions',
       position: 'top',
-      text: '<strong>Publier ou brouillon</strong> — <strong>Publier</strong> rend votre contenu visible. <strong>Brouillon</strong> le sauvegarde pour le finir plus tard.',
+      switchTab: 'drafts',
+      text: '<strong>Publier ou brouillon</strong> — <strong>Publier</strong> rend votre contenu visible. <strong>Brouillon</strong> le sauvegarde pour le finir plus tard. Cliquez sur <strong>Brouillons</strong> pour continuer.',
     },
     {
-      target: '.upload-tab[data-tab="drafts"]',
-      position: 'bottom',
-      text: '<strong>Mes brouillons</strong> — Retrouvez tous vos brouillons en cours ici. Modifiez-les ou mettez-les à la corbeille.',
+      tab: 'drafts',
+      target: '#tab-drafts .upload-history-list, #tab-drafts .no-data-message',
+      position: 'top',
+      switchTab: 'trash',
+      text: '<strong>Mes brouillons</strong> — Retrouvez tous vos brouillons en cours ici. Modifiez-les ou mettez-les à la corbeille. Cliquez sur <strong>Corbeille</strong> pour voir les éléments supprimés.',
     },
     {
-      target: '.upload-tab[data-tab="trash"]',
-      position: 'bottom',
-      text: '<strong>Corbeille</strong> — Les brouillons supprimés restent 7 jours. Vous pouvez les restaurer ou les supprimer définitivement.',
+      tab: 'trash',
+      target: '#tab-trash .trash-hint, #tab-trash .upload-history-list, #tab-trash .no-data-message',
+      position: 'top',
+      text: '<strong>Corbeille</strong> — Les brouillons supprimés restent 7 jours. Vous pouvez les <strong>restaurer</strong> ou les <strong>supprimer définitivement</strong>.',
     },
   ];
 
@@ -98,16 +126,30 @@
     tooltip.className = 'tuto-tooltip pos-' + preferred;
   }
 
+  function clearHighlights() {
+    document.querySelectorAll('.tuto-highlight').forEach(function(el) {
+      el.classList.remove('tuto-highlight');
+    });
+  }
+
   function showStep(index) {
     if (index < 0) index = 0;
     if (index >= steps.length) { endTutorial(); return; }
     currentStep = index;
 
-    document.querySelectorAll('.tuto-highlight').forEach(function(el) { el.classList.remove('tuto-highlight'); });
+    clearHighlights();
 
     var step = steps[index];
+
+    if (step.tab && step.tab !== currentTab()) {
+      switchToTab(step.tab);
+    }
+
     var target = document.querySelector(step.target);
-    if (!target) { showStep(index + 1); return; }
+    if (!target) {
+      setTimeout(function() { showStep(currentStep); }, 200);
+      return;
+    }
 
     target.classList.add('tuto-highlight');
     stepCur.textContent = index + 1;
@@ -119,30 +161,59 @@
     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     btnPrev.style.visibility = index === 0 ? 'hidden' : 'visible';
-    btnNext.textContent = index === steps.length - 1 ? 'Terminer ✓' : 'Suivant →';
+
+    if (step.switchTab) {
+      var tabLabel = step.switchTab === 'drafts' ? 'Brouillons' : 'Corbeille';
+      btnNext.textContent = tabLabel + ' →';
+    } else if (index === steps.length - 1) {
+      btnNext.textContent = 'Terminer ✓';
+    } else {
+      btnNext.textContent = 'Suivant →';
+    }
 
     tooltip.style.top = '-9999px';
     tooltip.style.left = '-9999px';
     requestAnimationFrame(function() { positionTooltip(target); });
   }
 
+  function nextStep() {
+    var step = steps[currentStep];
+    if (step.switchTab) {
+      switchToTab(step.switchTab);
+    }
+    showStep(currentStep + 1);
+  }
+
+  function prevStep() {
+    var prevIdx = currentStep - 1;
+    if (prevIdx < 0) return;
+
+    var prevStepObj = steps[prevIdx];
+    if (prevStepObj.tab && prevStepObj.tab !== currentTab()) {
+      switchToTab(prevStepObj.tab);
+    }
+
+    showStep(prevIdx);
+  }
+
   function endTutorial() {
     overlay.classList.add('hidden-section');
     tooltip.classList.add('hidden-section');
-    document.querySelectorAll('.tuto-highlight').forEach(function(el) { el.classList.remove('tuto-highlight'); });
+    clearHighlights();
     if (dontShow.checked) {
       localStorage.setItem(TUTO_KEY, '1');
     }
   }
 
-  if (btnNext) btnNext.addEventListener('click', function() { showStep(currentStep + 1); });
-  if (btnPrev) btnPrev.addEventListener('click', function() { showStep(currentStep - 1); });
+  if (btnNext) btnNext.addEventListener('click', nextStep);
+  if (btnPrev) btnPrev.addEventListener('click', prevStep);
   if (btnSkip) btnSkip.addEventListener('click', endTutorial);
 
   var relaunch = document.getElementById('relaunchTuto');
   if (relaunch) {
     relaunch.addEventListener('click', function(e) {
       e.preventDefault();
+      switchToTab('publish');
       showStep(0);
     });
   }
