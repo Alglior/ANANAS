@@ -213,7 +213,8 @@ class OrganizationMember(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     organization_id: Mapped[int] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"))
-    role: Mapped[str] = mapped_column(default="member")  # member, editor, admin, owner
+    role: Mapped[str] = mapped_column(default="member")  # member, moderator, editor, admin, owner
+    custom_role_id: Mapped[int | None] = mapped_column(ForeignKey("organization_roles.id", ondelete="SET NULL"), default=None)
     joined_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
     is_active: Mapped[bool] = True
 
@@ -226,7 +227,53 @@ class OrganizationMember(db.Model):
         if self.joined_at is None:
             self.joined_at = datetime.datetime.now()
 
+    DEFAULT_ROLE_PERMISSIONS = {
+        "member": [],
+        "moderator": ["remove_members", "moderate_content"],
+        "editor": ["manage_items"],
+        "admin": ["invite_members", "remove_members", "edit_org", "manage_items", "moderate_content"],
+        "owner": ["invite_members", "remove_members", "edit_org", "manage_items", "moderate_content", "manage_roles", "delete_org"],
+    }
+
+    ALL_PERMISSIONS = [
+        ("invite_members", "Inviter des membres"),
+        ("remove_members", "Retirer des membres"),
+        ("edit_org", "Modifier l'organisation"),
+        ("manage_items", "Gérer les données"),
+        ("moderate_content", "Modérer le contenu"),
+        ("manage_roles", "Gérer les rôles"),
+        ("delete_org", "Supprimer l'organisation"),
+    ]
+
+    def get_permissions(self):
+        if self.custom_role_id and self.custom_role:
+            return self.custom_role.permissions or []
+        return self.DEFAULT_ROLE_PERMISSIONS.get(self.role, [])
+
+    def has_permission(self, permission):
+        return permission in self.get_permissions()
+
     user = relationship("User", back_populates="organizations")
+    organization = relationship("Organization")
+    custom_role = relationship("OrganizationRole", foreign_keys=[custom_role_id])
+
+
+class OrganizationRole(db.Model):
+    __tablename__ = "organization_roles"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    organization_id: Mapped[int] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"))
+    name: Mapped[str]
+    permissions: Mapped[dict | None] = mapped_column(JSON, server_default="[]")
+    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.created_at is None:
+            self.created_at = datetime.datetime.now()
+        if self.permissions is None:
+            self.permissions = []
+
     organization = relationship("Organization")
 
 

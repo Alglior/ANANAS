@@ -1,0 +1,432 @@
+.org-page {
+  padding: var(--space-xl) 0;
+}
+
+.org-header h1 {
+  color: var(--forest);
+  margin-bottom: 0.5rem;
+}
+
+.org-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.org-header-row h1 {
+  margin-bottom: 0;
+}
+
+.org-logo {
+  max-width: 120px;
+  max-height: 80px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+}
+
+.org-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.org-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.org-card .org-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  background: var(--surface-gray);
+  flex-shrink: 0;
+  margin-bottom: 0;
+}
+
+.org-card-info {
+  min-width: 0;
+}
+
+.org-card-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--forest);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.org-card-desc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.org-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.org-members {
+  margin-top: 2rem;
+}
+
+.org-members h2 {
+  color: var(--forest);
+  margin-bottom: 1rem;
+}
+
+.member-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--surface-gray);
+  border-radius: var(--radius-md);
+  margin-bottom: 0.5rem;
+}
+
+.member-card span:first-child {
+  font-weight: 600;
+  flex: 1;
+}
+
+.role-select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  color: var(--charcoal);
+  background: var(--white);
+  cursor: pointer;
+}
+
+.org-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.org-items {
+  margin-top: 2rem;
+}
+
+.org-items h2 {
+  color: var(--forest);
+  margin-bottom: 0.5rem;
+}
+
+.org-items a {
+  color: var(--forest);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.org-items a:hover {
+  color: var(--mustard);
+}
+
+.org-items-list {
+  margin-top: 2rem;
+}
+
+.create-org-form {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.create-org-form h3 {
+  color: var(--forest);
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.create-org-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.create-org-form label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.create-org-form .required {
+  color: var(--color-danger);
+}
+
+.create-org-form .form-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--charcoal);
+  transition: border-color 0.15s ease;
+}
+
+.create-org-form .form-input:focus {
+  outline: none;
+  border-color: var(--forest);
+  box-shadow: 0 0 0 3px rgba(34, 139, 34, 0.12);
+}
+
+.create-org-form textarea.form-input {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.create-org-form .form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.create-org-form .form-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 1rem 0 0;
+}
+
+.btn-danger {
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.btn-danger:hover {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  background: rgba(220, 53, 69, 0.08);
+}
+
+.form-hidden {
+  display: none !important;
+}
+
+.invite-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.invite-form .form-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--charcoal);
+  flex: 1;
+  min-width: 200px;
+  transition: border-color 0.15s ease;
+}
+
+.invite-form .form-input:focus {
+  outline: none;
+  border-color: var(--forest);
+  box-shadow: 0 0 0 3px rgba(34, 139, 34, 0.12);
+}
+
+.btn-remove-member {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 0.35rem;
+  line-height: 1;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.btn-remove-member:hover {
+  color: var(--color-danger);
+  background: rgba(220, 53, 69, 0.1);
+}
+
+.btn-sm {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+}
+
+.roles-panel {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.roles-panel h3 {
+  color: var(--forest);
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.roles-panel h4 {
+  color: var(--forest);
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.custom-roles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.custom-role-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-gray);
+  border-radius: var(--radius-md);
+}
+
+.custom-role-name {
+  font-weight: 600;
+  min-width: 120px;
+}
+
+.custom-role-perms {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.5rem;
+}
+
+.perm-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.3rem 0;
+}
+
+.perm-checkbox input[type="checkbox"] {
+  accent-color: var(--forest);
+  width: 16px;
+  height: 16px;
+}
+
+.create-role-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.create-role-form label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.create-role-form .form-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--charcoal);
+  transition: border-color 0.15s ease;
+}
+
+.create-role-form .form-input:focus {
+  outline: none;
+  border-color: var(--forest);
+  box-shadow: 0 0 0 3px rgba(34, 139, 34, 0.12);
+}
+
+.create-role-form .form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.role-select optgroup {
+  font-weight: 700;
+  font-style: normal;
+  color: var(--forest);
+}
+
+.badge-info {
+  background: var(--color-info);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  display: inline-block;
+}
+
+.badge-moderator {
+  background: var(--color-purple);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  display: inline-block;
+}
+
+.badge-editor {
+  background: var(--color-blue);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  display: inline-block;
+}
+
+.btn-solid-forest {
+  background: var(--forest);
+  color: var(--white);
+  border: 1px solid var(--forest);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-md);
+}
+
+.btn-solid-forest:hover {
+  background: var(--hover-forest);
+  border-color: var(--hover-forest);
+}
+
+.btn-sm-form {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}

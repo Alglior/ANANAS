@@ -4,7 +4,7 @@
 {% block meta_description %}{{ meta_description }}{% endblock %}
 
 {% block content %}
-{% if current_user.is_authenticated %}
+{% if current_user %}
 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 {% endif %}
 <main class="org-page">
@@ -17,25 +17,117 @@
       {% if org.website_url %}
         <a href="{{ org.website_url|e }}">{{ org.website_url|e }}</a>
       {% endif %}
-      <p>{{ (org.description|e) or 'Aucune description.'|e }}</p>
+      <p>{{ (org.description|e) or "Aucune description."|e }}</p>
+
+      {% set user_membership = (org.organization_members | selectattr("is_active", "equalto", True) | list | selectattr("user_id", "equalto", current_user.id) | list | first) if current_user else None %}
 
       <div class="org-members">
-        <h2>Membres ({{ org.members | length }})</h2>
-        {% for m in org.organization_members | selectattr('is_active', 'equalto', True) %}
+        <h2>Membres ({{ org.organization_members | selectattr("is_active", "equalto", True) | list | length }})</h2>
+        {% for m in org.organization_members | selectattr("is_active", "equalto", True) %}
           <div class="member-card">
             <span>{{ m.user.prenom|e }} {{ m.user.nom|e }}</span>
-            <span class="badge badge-{{ 'verified' if m.role == 'owner' else 'pending' }}">{{ m.role }}</span>
+            {% set display_role = m.custom_role.name if (m.custom_role_id and m.custom_role) else m.role %}
+            <span class="badge badge-{{ 'verified' if m.role == 'owner' else ('info' if m.role == 'admin' else ('moderator' if m.role == 'moderator' else ('editor' if m.role == 'editor' else 'pending'))) }}">{{ display_role }}</span>
+            {% if user_membership and user_membership.user_id != m.user_id and m.role != 'owner' %}
+              {% if user_membership.has_permission("manage_roles") %}
+              <select class="role-select" data-user-id="{{ m.user_id }}" data-slug="{{ org.slug }}">
+                <optgroup label="Rôles standards">
+                  <option value="member" {% if m.role == 'member' and not m.custom_role_id %}selected{% endif %}>Membre</option>
+                  <option value="moderator" {% if m.role == 'moderator' %}selected{% endif %}>Modérateur</option>
+                  <option value="editor" {% if m.role == 'editor' %}selected{% endif %}>Éditeur</option>
+                  <option value="admin" {% if m.role == 'admin' %}selected{% endif %}>Admin</option>
+                </optgroup>
+                {% set custom_roles = org.organization_roles | list %}
+                {% if custom_roles %}
+                <optgroup label="Rôles personnalisés">
+                  {% for cr in custom_roles %}
+                  <option value="custom:{{ cr.id }}" {% if m.custom_role_id == cr.id %}selected{% endif %}>{{ cr.name }}</option>
+                  {% endfor %}
+                </optgroup>
+                {% endif %}
+              </select>
+              {% endif %}
+              {% if user_membership.has_permission("remove_members") %}
+              <button class="btn-remove-member" data-user-id="{{ m.user_id }}" data-slug="{{ org.slug }}" title="Retirer ce membre">&times;</button>
+              {% endif %}
+            {% endif %}
           </div>
         {% endfor %}
+
         {% if current_user %}
-          {% set user_membership = org.organization_members | selectattr('is_active', 'equalto', True) | list | selectattr('user_id', 'equalto', current_user.id) | list | first %}
-          <button class="btn btn-outline org-action-btn" id="orgActionBtn" data-slug="{{ org.slug }}" {% if user_membership and user_membership.user_id == current_user.id %}data-joined="1"{% else %}data-joined="0"{% endif %}>
-            {% if user_membership and user_membership.user_id == current_user.id %}
-              Quitter
-            {% else %}
-              Rejoindre
+          <div class="org-actions">
+            <button class="btn btn-outline org-action-btn" id="orgActionBtn" data-slug="{{ org.slug }}" {% if user_membership %}data-joined="1"{% else %}data-joined="0"{% endif %}>
+              {% if user_membership %}
+                Quitter
+              {% else %}
+                Rejoindre
+              {% endif %}
+            </button>
+            {% if user_membership and user_membership.has_permission("invite_members") %}
+            <button class="btn btn-outline" id="inviteToggleBtn">Inviter un membre</button>
+            <form class="invite-form form-hidden" id="inviteForm">
+              <input type="email" id="inviteEmail" class="form-input" placeholder="email@exemple.fr" required>
+              <button type="submit" class="btn btn-upload">Inviter</button>
+              <button type="button" class="btn btn-outline" id="cancelInviteBtn">Annuler</button>
+            </form>
             {% endif %}
-          </button>
+            {% if user_membership and user_membership.has_permission("manage_roles") %}
+            <button class="btn btn-outline" id="rolesToggleBtn">Gérer les rôles</button>
+            {% endif %}
+            {% if user_membership and user_membership.has_permission("delete_org") %}
+            <button class="btn btn-outline btn-danger org-action-btn" id="orgDeleteBtn" data-slug="{{ org.slug }}">
+              Supprimer l'organisation
+            </button>
+            {% endif %}
+          </div>
+
+          {% if user_membership and user_membership.has_permission("manage_roles") %}
+          <div class="roles-panel form-hidden" id="rolesPanel">
+            <h3>Rôles personnalisés</h3>
+            <div class="custom-roles-list" id="customRolesList">
+              {% for cr in org.organization_roles %}
+              <div class="custom-role-item" data-role-id="{{ cr.id }}">
+                <span class="custom-role-name">{{ cr.name|e }}</span>
+                <span class="custom-role-perms">{{ cr.permissions | length }} permission(s)</span>
+                <button class="btn btn-outline btn-sm edit-role-btn" data-role-id="{{ cr.id }}">Modifier</button>
+                <button class="btn btn-outline btn-danger btn-sm delete-role-btn" data-role-id="{{ cr.id }}">Supprimer</button>
+              </div>
+              {% endfor %}
+              {% if not org.organization_roles %}
+              <p class="empty-hint">Aucun rôle personnalisé. Créez-en un ci-dessous.</p>
+              {% endif %}
+            </div>
+            <form class="create-role-form" id="createRoleForm">
+              <h4>Nouveau rôle personnalisé</h4>
+              <div class="form-group">
+                <label for="roleName">Nom du rôle</label>
+                <input type="text" id="roleName" class="form-input" placeholder="Ex: Contributeur senior" maxlength="50" required>
+              </div>
+              <div class="form-group">
+                <label>Permissions</label>
+                <div class="permissions-grid">
+                  {% for perm_key, perm_label in [
+                    ("invite_members", "Inviter des membres"),
+                    ("remove_members", "Retirer des membres"),
+                    ("edit_org", "Modifier l'organisation"),
+                    ("manage_items", "Gérer les données"),
+                    ("moderate_content", "Modérer le contenu"),
+                    ("manage_roles", "Gérer les rôles"),
+                    ("delete_org", "Supprimer l'organisation"),
+                  ] %}
+                  <label class="perm-checkbox">
+                    <input type="checkbox" name="permissions" value="{{ perm_key }}">
+                    {{ perm_label }}
+                  </label>
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-upload">Créer le rôle</button>
+              </div>
+            </form>
+          </div>
+          {% endif %}
         {% endif %}
       </div>
 
@@ -66,25 +158,183 @@
   </section>
   {% endif %}
 
-<script>
+<script nonce="{{ csp_nonce }}">
 document.addEventListener('DOMContentLoaded', function () {
   var btn = document.getElementById('orgActionBtn');
-  if (!btn) return;
-
-  btn.addEventListener('click', function () {
-    var slug = btn.getAttribute('data-slug');
-    var joined = btn.getAttribute('data-joined') === '1';
-    var action = joined ? 'leave' : 'join';
-    var url = '/api/organizations/' + slug + '/' + action;
-
-    fetch(url, { method: 'POST', headers: { 'X-CSRF-TOKEN': CsrfModule.getCsrfToken() } })
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
-        if (data.error) { alert(data.error); return; }
-        btn.setAttribute('data-joined', joined ? '0' : '1');
-        btn.textContent = joined ? 'Rejoindre' : 'Quitter';
+  var slug = btn ? btn.getAttribute('data-slug') : '';
+  if (btn) {
+    btn.addEventListener('click', function () {
+      var joined = btn.getAttribute('data-joined') === '1';
+      var action = joined ? 'leave' : 'join';
+      fetch('/api/organizations/' + slug + '/' + action, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': CsrfModule.getCsrfToken() }
       })
-      .catch(function () { alert('Erreur réseau'); });
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data.error) { alert(data.error); return; }
+          location.reload();
+        })
+        .catch(function () { alert('Erreur réseau'); });
+    });
+  }
+
+  var deleteBtn = document.getElementById('orgDeleteBtn');
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', function () {
+      if (!confirm('Supprimer définitivement cette organisation ? Cette action est irréversible.')) return;
+      fetch('/api/organizations/' + slug, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': CsrfModule.getCsrfToken() }
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data.error) { alert(data.error); return; }
+          window.location.href = '/organizations';
+        })
+        .catch(function () { alert('Erreur réseau'); });
+    });
+  }
+
+  document.querySelectorAll('.role-select').forEach(function (sel) {
+    sel.addEventListener('change', function () {
+      var userId = sel.getAttribute('data-user-id');
+      var val = sel.value;
+      var body = {};
+      if (val.startsWith('custom:')) {
+        body.custom_role_id = parseInt(val.split(':')[1]);
+      } else {
+        body.role = val;
+      }
+      fetch('/api/organizations/' + slug + '/members/' + userId + '/role', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': CsrfModule.getCsrfToken()
+        },
+        body: JSON.stringify(body)
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data.error) { alert(data.error); return; }
+          location.reload();
+        })
+        .catch(function () { alert('Erreur réseau'); });
+    });
+  });
+
+  document.querySelectorAll('.btn-remove-member').forEach(function (rmBtn) {
+    rmBtn.addEventListener('click', function () {
+      if (!confirm('Retirer ce membre de l\'organisation ?')) return;
+      var userId = rmBtn.getAttribute('data-user-id');
+      fetch('/api/organizations/' + slug + '/members/' + userId, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': CsrfModule.getCsrfToken() }
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data.error) { alert(data.error); return; }
+          location.reload();
+        })
+        .catch(function () { alert('Erreur réseau'); });
+    });
+  });
+
+  var inviteToggle = document.getElementById('inviteToggleBtn');
+  var inviteForm = document.getElementById('inviteForm');
+  var cancelInvite = document.getElementById('cancelInviteBtn');
+
+  if (inviteToggle && inviteForm) {
+    inviteToggle.addEventListener('click', function () {
+      inviteForm.classList.remove('form-hidden');
+      inviteToggle.classList.add('form-hidden');
+    });
+  }
+  if (cancelInvite && inviteForm) {
+    cancelInvite.addEventListener('click', function () {
+      inviteForm.classList.add('form-hidden');
+      inviteToggle.classList.remove('form-hidden');
+      inviteForm.reset();
+    });
+  }
+  if (inviteForm) {
+    inviteForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = document.getElementById('inviteEmail').value.trim();
+      if (!email) return;
+      fetch('/api/organizations/' + slug + '/invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': CsrfModule.getCsrfToken()
+        },
+        body: JSON.stringify({ email: email })
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data.error) { alert(data.error); return; }
+          location.reload();
+        })
+        .catch(function () { alert('Erreur réseau'); });
+    });
+  }
+
+  var rolesToggle = document.getElementById('rolesToggleBtn');
+  var rolesPanel = document.getElementById('rolesPanel');
+  if (rolesToggle && rolesPanel) {
+    rolesToggle.addEventListener('click', function () {
+      if (rolesPanel.classList.contains('form-hidden')) {
+        rolesPanel.classList.remove('form-hidden');
+        rolesToggle.textContent = 'Masquer les rôles';
+      } else {
+        rolesPanel.classList.add('form-hidden');
+        rolesToggle.textContent = 'Gérer les rôles';
+      }
+    });
+  }
+
+  var createRoleForm = document.getElementById('createRoleForm');
+  if (createRoleForm) {
+    createRoleForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = document.getElementById('roleName').value.trim();
+      if (!name) return;
+      var perms = [];
+      createRoleForm.querySelectorAll('input[name="permissions"]:checked').forEach(function (cb) {
+        perms.push(cb.value);
+      });
+      fetch('/api/organizations/' + slug + '/roles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': CsrfModule.getCsrfToken()
+        },
+        body: JSON.stringify({ name: name, permissions: perms })
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data.error) { alert(data.error); return; }
+          location.reload();
+        })
+        .catch(function () { alert('Erreur réseau'); });
+    });
+  }
+
+  document.querySelectorAll('.delete-role-btn').forEach(function (delBtn) {
+    delBtn.addEventListener('click', function () {
+      if (!confirm('Supprimer ce rôle personnalisé ? Les membres concernés redeviendront "membre".')) return;
+      var roleId = delBtn.getAttribute('data-role-id');
+      fetch('/api/organizations/' + slug + '/roles/' + roleId, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': CsrfModule.getCsrfToken() }
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data.error) { alert(data.error); return; }
+          location.reload();
+        })
+        .catch(function () { alert('Erreur réseau'); });
+    });
   });
 });
 </script>

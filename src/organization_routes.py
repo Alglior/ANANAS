@@ -6,7 +6,7 @@ from app import db
 from src.shared import login_required, get_current_user, ITEMS_PER_PAGE
 
 ALLOWED_SLUG_CHARS = set(string.ascii_lowercase + string.digits + "-")
-ALLOWED_MEMBER_ROLES = {"member", "admin", "owner"}
+ALLOWED_MEMBER_ROLES = {"member", "moderator", "editor", "admin", "owner"}
 
 bp = Blueprint("organizations", __name__)
 
@@ -108,7 +108,7 @@ def update_member_role(slug, user_id):
     member = OrganizationMember.query.filter_by(
         user_id=current_user.id, organization_id=org.id
     ).first()
-    if not member or member.role not in ("admin", "owner"):
+    if not member or not member.has_permission("manage_roles"):
         return jsonify({"error": "Non autorisé"}), 403
 
     data = request.get_json(silent=True) or {}
@@ -116,13 +116,218 @@ def update_member_role(slug, user_id):
         user_id=user_id, organization_id=org.id
     ).first_or_404()
 
-    role = data.get("role", "member")
-    if role not in ALLOWED_MEMBER_ROLES:
-        return jsonify({"error": "Role invalide"}), 400
-    target_member.role = role
+    if target_member.role == "owner":
+        return jsonify({"error": "Impossible de modifier le rôle du propriétaire"}), 403
+
+    custom_role_id = data.get("custom_role_id")
+    if custom_role_id is not None:
+        from models import OrganizationRole
+        custom_role = OrganizationRole.query.filter_by(
+            id=custom_role_id, organization_id=org.id
+        ).first()
+        if not custom_role:
+            return jsonify({"error": "Rôle personnalisé introuvable"}), 404
+        target_member.role = "member"
+        target_member.custom_role_id = custom_role.id
+    else:
+        role = data.get("role", "member")
+        if role not in ALLOWED_MEMBER_ROLES:
+            return jsonify({"error": "Rôle invalide"}), 400
+        target_member.role = role
+        target_member.custom_role_id = None
     db.session.commit()
 
-    return jsonify({"status": "updated", "role": role})
+    return jsonify({"status": "updated", "role": target_member.role})
+
+
+@bp.route("/api/organizations/<slug>/members/<int:user_id>", methods=["DELETE"])
+@login_required
+def remove_member(slug, user_id):
+    from models import Organization, OrganizationMember
+
+    current_user = get_current_user()
+    org = Organization.query.filter_by(slug=slug).first_or_404()
+
+    member = OrganizationMember.query.filter_by(
+        user_id=current_user.id, organization_id=org.id
+    ).first()
+    if not member or not member.has_permission("remove_members"):
+        return jsonify({"error": "Non autorisé"}), 403
+
+    target_member = OrganizationMember.query.filter_by(
+        user_id=user_id, organization_id=org.id
+    ).first_or_404()
+
+    if target_member.role == "owner":
+        return jsonify({"error": "Impossible de retirer le propriétaire"}), 403
+    if target_member.role in ("admin",) and not member.has_permission("manage_roles"):
+        return jsonify({"error": "Non autorisé"}), 403
+
+    db.session.delete(target_member)
+    db.session.commit()
+
+    return jsonify({"status": "removed"})
+
+
+@bp.route("/api/organizations/<slug>/invite", methods=["POST"])
+@login_required
+def invite_member(slug):
+    from models import Organization, OrganizationMember, User
+
+    current_user = get_current_user()
+    org = Organization.query.filter_by(slug=slug).first_or_404()
+
+    member = OrganizationMember.query.filter_by(
+        user_id=current_user.id, organization_id=org.id
+    ).first()
+    if not member or not member.has_permission("invite_members"):
+        return jsonify({"error": "Non autorisé"}), 403
+
+    data = request.get_json(silent=True) or {}
+    email = data.get("email", "").strip().lower()
+    if not email:
+        return jsonify({"error": "Email requis"}), 400
+
+    invited_user = User.query.filter_by(email=email).first()
+    if not invited_user:
+        return jsonify({"error": "Aucun utilisateur trouvé avec cet email"}), 404
+
+    existing = OrganizationMember.query.filter_by(
+        user_id=invited_user.id, organization_id=org.id
+    ).first()
+    if existing:
+        return jsonify({"error": "Cet utilisateur est déjà membre"}), 409
+
+    new_member = OrganizationMember(
+        user_id=invited_user.id,
+        organization_id=org.id,
+        role="member",
+    )
+    db.session.add(new_member)
+    db.session.commit()
+
+    return jsonify({"status": "invited", "name": f"{invited_user.prenom} {invited_user.nom}"})
+
+
+@bp.route("/api/organizations/<slug>/roles", methods=["GET"])
+@login_required
+def list_roles(slug):
+    from models import Organization, OrganizationMember, OrganizationRole
+
+    current_user = get_current_user()
+    org = Organization.query.filter_by(slug=slug).first_or_404()
+
+    member = OrganizationMember.query.filter_by(
+        user_id=current_user.id, organization_id=org.id
+    ).first()
+    if not member or not member.has_permission("manage_roles"):
+        return jsonify({"error": "Non autorisé"}), 403
+
+    roles = OrganizationRole.query.filter_by(organization_id=org.id).all()
+    return jsonify([
+        {"id": r.id, "name": r.name, "permissions": r.permissions or []}
+        for r in roles
+    ])
+
+
+@bp.route("/api/organizations/<slug>/roles", methods=["POST"])
+@login_required
+def create_role(slug):
+    from models import Organization, OrganizationMember, OrganizationRole
+
+    current_user = get_current_user()
+    org = Organization.query.filter_by(slug=slug).first_or_404()
+
+    member = OrganizationMember.query.filter_by(
+        user_id=current_user.id, organization_id=org.id
+    ).first()
+    if not member or not member.has_permission("manage_roles"):
+        return jsonify({"error": "Non autorisé"}), 403
+
+    data = request.get_json(silent=True) or {}
+    name = data.get("name", "").strip()
+    if not name or len(name) < 2 or len(name) > 50:
+        return jsonify({"error": "Le nom du rôle doit contenir entre 2 et 50 caractères"}), 400
+
+    existing = OrganizationRole.query.filter_by(
+        organization_id=org.id, name=name
+    ).first()
+    if existing:
+        return jsonify({"error": "Un rôle avec ce nom existe déjà"}), 409
+
+    permissions = data.get("permissions", [])
+    if not isinstance(permissions, list):
+        permissions = []
+    valid_perms = [p[0] for p in OrganizationMember.ALL_PERMISSIONS]
+    permissions = [p for p in permissions if p in valid_perms]
+
+    role = OrganizationRole(
+        organization_id=org.id,
+        name=name,
+        permissions=permissions,
+    )
+    db.session.add(role)
+    db.session.commit()
+
+    return jsonify({"id": role.id, "name": role.name, "permissions": permissions})
+
+
+@bp.route("/api/organizations/<slug>/roles/<int:role_id>", methods=["PUT"])
+@login_required
+def update_role(slug, role_id):
+    from models import Organization, OrganizationMember, OrganizationRole
+
+    current_user = get_current_user()
+    org = Organization.query.filter_by(slug=slug).first_or_404()
+
+    member = OrganizationMember.query.filter_by(
+        user_id=current_user.id, organization_id=org.id
+    ).first()
+    if not member or not member.has_permission("manage_roles"):
+        return jsonify({"error": "Non autorisé"}), 403
+
+    role = OrganizationRole.query.filter_by(
+        id=role_id, organization_id=org.id
+    ).first_or_404()
+
+    data = request.get_json(silent=True) or {}
+    name = data.get("name", "").strip()
+    if name and len(name) >= 2:
+        role.name = name
+
+    permissions = data.get("permissions")
+    if isinstance(permissions, list):
+        valid_perms = [p[0] for p in OrganizationMember.ALL_PERMISSIONS]
+        role.permissions = [p for p in permissions if p in valid_perms]
+
+    db.session.commit()
+    return jsonify({"id": role.id, "name": role.name, "permissions": role.permissions})
+
+
+@bp.route("/api/organizations/<slug>/roles/<int:role_id>", methods=["DELETE"])
+@login_required
+def delete_role(slug, role_id):
+    from models import Organization, OrganizationMember, OrganizationRole
+
+    current_user = get_current_user()
+    org = Organization.query.filter_by(slug=slug).first_or_404()
+
+    member = OrganizationMember.query.filter_by(
+        user_id=current_user.id, organization_id=org.id
+    ).first()
+    if not member or not member.has_permission("manage_roles"):
+        return jsonify({"error": "Non autorisé"}), 403
+
+    role = OrganizationRole.query.filter_by(
+        id=role_id, organization_id=org.id
+    ).first_or_404()
+
+    OrganizationMember.query.filter_by(custom_role_id=role.id).update(
+        {"custom_role_id": None}
+    )
+    db.session.delete(role)
+    db.session.commit()
+    return jsonify({"status": "deleted"})
 
 
 @bp.route("/organizations")
@@ -161,6 +366,7 @@ def organization_items_view(slug):
     )
 
 
+@bp.route("/organizations/<slug>")
 def organization_detail_view(slug):
     from models import Organization, Item
 
@@ -177,3 +383,22 @@ def organization_detail_view(slug):
         org=org,
         items=[i.to_dict() for i in items],
     )
+
+
+@bp.route("/api/organizations/<slug>", methods=["DELETE"])
+@login_required
+def delete_organization(slug):
+    from models import Organization, OrganizationMember
+
+    current_user = get_current_user()
+    org = Organization.query.filter_by(slug=slug).first_or_404()
+
+    member = OrganizationMember.query.filter_by(
+        user_id=current_user.id, organization_id=org.id
+    ).first()
+    if not member or not member.has_permission("delete_org"):
+        return jsonify({"error": "Seul le propriétaire peut supprimer l'organisation"}), 403
+
+    db.session.delete(org)
+    db.session.commit()
+    return jsonify({"status": "deleted"})

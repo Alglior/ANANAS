@@ -29,15 +29,15 @@
             {% if current_user.is_admin %}
             <a href="/admin/users" class="dropdown-item">Panneau d'administration</a>
             {% endif %}
+            <a href="/organizations" class="dropdown-item">Organisations</a>
             {% set user_orgs = current_user.organizations | selectattr('is_active', 'equalto', True) | list %}
             {% if user_orgs|length > 0 %}
+            <div class="dropdown-divider"></div>
             {% for org_member in user_orgs %}
             <a href="/organizations/{{ org_member.organization.slug }}" class="dropdown-item">
               {{ org_member.organization.name|e }}
             </a>
             {% endfor %}
-            {% else %}
-            <a href="/organizations" class="dropdown-item">Organisations</a>
             {% endif %}
             <div class="dropdown-divider"></div>
             <a href="/logout" class="dropdown-item">Déconnexion</a>
@@ -82,6 +82,7 @@
       </div>
 
       <a href="/contact">Contact</a>
+      <a href="/organizations">Organisations</a>
 
       {% if current_user %}
       {% set user_orgs = current_user.organizations | selectattr('is_active', 'equalto', True) | list %}

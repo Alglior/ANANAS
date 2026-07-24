@@ -4,10 +4,42 @@
 {% block meta_description %}{{ meta_description }}{% endblock %}
 
 {% block content %}
+{% if current_user %}
+<input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+{% endif %}
 <main class="org-page">
   <section class="org-header">
     <div class="container">
-      <h1>{{ "Toutes les organisations" }}</h1>
+      <div class="org-header-row">
+        <h1>{{ "Toutes les organisations" }}</h1>
+        {% if current_user %}
+        <button class="btn btn-solid-forest" id="createOrgBtn">Créer une organisation</button>
+        {% endif %}
+      </div>
+
+      {% if current_user %}
+      <form class="create-org-form form-hidden" id="createOrgForm">
+        <h3>Nouvelle organisation</h3>
+        <div class="form-group">
+          <label for="orgName">Nom de l'organisation <span class="required">*</span></label>
+          <input type="text" id="orgName" name="name" class="form-input" placeholder="Ex: Institut Géographique de Paris" maxlength="100" required>
+        </div>
+        <div class="form-group">
+          <label for="orgDescription">Description</label>
+          <textarea id="orgDescription" name="description" class="form-input" rows="3" placeholder="Décrivez votre organisation..." maxlength="500"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="orgWebsite">Site web</label>
+          <input type="url" id="orgWebsite" name="website_url" class="form-input" placeholder="https://...">
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-solid-forest btn-sm-form">Créer</button>
+          <button type="button" class="btn btn-outline btn-sm-form" id="cancelCreateOrgBtn">Annuler</button>
+        </div>
+        <p class="form-hint">En créant une organisation, vous en devenez automatiquement propriétaire. Vous pourrez ensuite inviter d'autres membres.</p>
+      </form>
+      {% endif %}
+
       {% if organizations %}
       <div class="org-list">
         {% for org in organizations %}
@@ -28,4 +60,61 @@
     </div>
   </section>
 </main>
+
+{% if current_user %}
+<script nonce="{{ csp_nonce }}">
+document.addEventListener('DOMContentLoaded', function () {
+  var createBtn = document.getElementById('createOrgBtn');
+  var cancelBtn = document.getElementById('cancelCreateOrgBtn');
+  var form = document.getElementById('createOrgForm');
+
+  if (createBtn && form) {
+    createBtn.addEventListener('click', function () {
+      form.classList.remove('form-hidden');
+      createBtn.classList.add('form-hidden');
+    });
+  }
+
+  if (cancelBtn && form) {
+    cancelBtn.addEventListener('click', function () {
+      form.classList.add('form-hidden');
+      createBtn.classList.remove('form-hidden');
+      form.reset();
+    });
+  }
+
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = document.getElementById('orgName').value.trim();
+      if (!name || name.length < 2) {
+        alert('Le nom doit contenir au moins 2 caractères.');
+        return;
+      }
+
+      var payload = {
+        name: name,
+        description: document.getElementById('orgDescription').value.trim(),
+        website_url: document.getElementById('orgWebsite').value.trim()
+      };
+
+      fetch('/api/organizations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': CsrfModule.getCsrfToken()
+        },
+        body: JSON.stringify(payload)
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data.error) { alert(data.error); return; }
+          window.location.href = '/organizations/' + data.slug;
+        })
+        .catch(function () { alert('Erreur réseau'); });
+    });
+  }
+});
+</script>
+{% endif %}
 {% endblock %}
