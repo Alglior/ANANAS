@@ -86,38 +86,18 @@
       
       <!-- Collections disponibles -->
       <div class="gp-collections">
+        {% for pkg in geo_packages %}
         <div class="gp-collection-card">
           <div class="gp-card-header">
-            <h4>Pack Cartographie Historique</h4>
+            <h4>{{ pkg.title }}</h4>
           </div>
-          <p class="gp-card-desc">Cartes historiques, plans anciens et évolution territoriale</p>
+          <p class="gp-card-desc">{{ pkg.description }}</p>
           <div class="gp-card-footer">
-            <span class="gp-meta">Format: GPKG • Taille: ~250 MB</span>
-            <a href="{{ url_for('catalogue') }}?collection=Historique" class="gp-explore-link">Explorer →</a>
+            <span class="gp-meta">{{ pkg.format_info }}</span>
+            <a href="{{ pkg.link_url }}" class="gp-explore-link">Explorer →</a>
           </div>
         </div>
-        
-        <div class="gp-collection-card">
-          <div class="gp-card-header">
-            <h4>Pack Urbanisme & Aménagement</h4>
-          </div>
-          <p class="gp-card-desc">PLU, zonages, réseaux urbains et infrastructures</p>
-          <div class="gp-card-footer">
-            <span class="gp-meta">Format: GPKG • Taille: ~180 MB</span>
-            <a href="{{ url_for('catalogue') }}?collection=Urbanisme" class="gp-explore-link">Explorer →</a>
-          </div>
-        </div>
-        
-        <div class="gp-collection-card">
-          <div class="gp-card-header">
-            <h4>Pack Géographie Physique</h4>
-          </div>
-          <p class="gp-card-desc">Relief, hydrographie, géologie et espaces naturels</p>
-          <div class="gp-card-footer">
-            <span class="gp-meta">Format: GPKG • Taille: ~320 MB</span>
-            <a href="{{ url_for('catalogue') }}?collection=Geographie" class="gp-explore-link">Explorer →</a>
-          </div>
-        </div>
+        {% endfor %}
       </div>
       
       <div class="gp-cta-wrap">

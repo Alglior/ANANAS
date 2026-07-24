@@ -1,7 +1,7 @@
 (function() {
-  const TUTO_KEY = 'admin_panel_tuto_v5';
-  const STEP_KEY = 'admin_panel_tuto_step_v5';
-  const ACTIVE_KEY = 'admin_panel_tuto_active_v5';
+  const TUTO_KEY = 'admin_panel_tuto_v6';
+  const STEP_KEY = 'admin_panel_tuto_step_v6';
+  const ACTIVE_KEY = 'admin_panel_tuto_active_v6';
 
   function currentPage() {
     var p = window.location.pathname;
@@ -10,6 +10,7 @@
     if (p.startsWith('/admin/contact-messages')) return 'contact-messages';
     if (p.startsWith('/admin/mirrors')) return 'mirrors';
     if (p.startsWith('/admin/featured')) return 'featured';
+    if (p.startsWith('/admin/geopackages')) return 'geopackages';
     if (p.startsWith('/admin/audit')) return 'audit';
     return 'users';
   }
@@ -19,7 +20,7 @@
       page: 'any',
       target: '.admin-nav',
       position: 'bottom',
-      text: '<strong>Navigation d\'administration</strong> — Cette barre donne accès aux 7 sections du panneau. Cliquez sur <strong>Suivant</strong> pour découvrir chaque section.',
+      text: '<strong>Navigation d\'administration</strong> — Cette barre donne accès aux 8 sections du panneau. Cliquez sur <strong>Suivant</strong> pour découvrir chaque section.',
     },
     {
       page: 'any',
@@ -97,11 +98,24 @@
       page: 'featured',
       target: '#featured-table, .mirrors-header',
       position: 'top',
-      text: '<strong>Données en avant</strong> — Recherchez un item du catalogue et ajoutez-le à la section « Exemples de Données Disponibles » de la page d\'accueil. Activez ou retirez les données facilement.',
+      text: '<strong>Données en avant</strong> — Recherchez un item du catalogue et ajoutez-le à la section « Exemples de Données Disponibles ». Activez ou retirez les données facilement.',
     },
     {
       page: 'featured',
       target: '.admin-nav a:nth-child(7)',
+      position: 'bottom',
+      navigateTo: '/admin/geopackages',
+      text: '<strong>Packs GeoPackage</strong> — Créez et gérez les packs affichés dans la section « Packs de Données GeoPackage » de la page d\'accueil.',
+    },
+    {
+      page: 'geopackages',
+      target: '#geopackages-table, .mirrors-header',
+      position: 'top',
+      text: '<strong>Packs GeoPackage</strong> — Chaque pack a un <strong>titre</strong>, une <strong>description</strong>, des <strong>infos format</strong> et un <strong>lien</strong> vers le catalogue. Ajoutez, modifiez ou supprimez des packs.',
+    },
+    {
+      page: 'geopackages',
+      target: '.admin-nav a:nth-child(8)',
       position: 'bottom',
       navigateTo: '/admin/audit',
       text: '<strong>Journal d\'audits</strong> — Consultez l\'historique complet de toutes les actions administratives.',

@@ -889,3 +889,134 @@ def delete_featured(featured_id):
     _log_audit("featured_deleted", "featured", featured_id, {"title": title})
 
     return jsonify({"status": "deleted", "id": featured_id})
+
+
+@bp.route("/admin/geopackages")
+@login_required
+@require_admin
+def admin_geopackages():
+    return render_template(
+        "admin/geopackages.html",
+        title="Administration — GeoPackages",
+        meta_description="Gestion des packs GeoPackage affichés sur la page d'accueil",
+    )
+
+
+@bp.route("/api/admin/geopackages", methods=["GET"])
+@login_required
+def list_geopackages():
+    from models import GeoPackage
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    packages = GeoPackage.query.order_by(GeoPackage.display_order, GeoPackage.id).all()
+    return jsonify({
+        "packages": [
+            {
+                "id": p.id,
+                "title": p.title,
+                "description": p.description,
+                "format_info": p.format_info,
+                "link_url": p.link_url,
+                "display_order": p.display_order,
+                "is_active": p.is_active,
+            }
+            for p in packages
+        ],
+    })
+
+
+@bp.route("/api/admin/geopackages", methods=["POST"])
+@login_required
+def create_geopackage():
+    from models import GeoPackage
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    data = request.get_json(silent=True) or {}
+    title = (data.get("title") or "").strip()
+    description = (data.get("description") or "").strip()
+    format_info = (data.get("format_info") or "").strip()
+    link_url = (data.get("link_url") or "").strip()
+
+    if not title or not description or not format_info or not link_url:
+        return jsonify({"error": "Tous les champs sont requis."}), 400
+
+    if len(title) > 200 or len(description) > 500 or len(format_info) > 200 or len(link_url) > 500:
+        return jsonify({"error": "Champs trop longs."}), 400
+
+    max_order = db.session.query(db.func.max(GeoPackage.display_order)).scalar() or 0
+    pkg = GeoPackage(
+        title=sanitize_html(title),
+        description=sanitize_html(description),
+        format_info=sanitize_html(format_info),
+        link_url=sanitize_html(link_url),
+        display_order=max_order + 1,
+        is_active=True,
+    )
+    db.session.add(pkg)
+    db.session.commit()
+    _log_audit("geopackage_created", "geopackage", pkg.id, {"title": pkg.title})
+
+    return jsonify({"status": "created", "package": {
+        "id": pkg.id, "title": pkg.title, "description": pkg.description,
+        "format_info": pkg.format_info, "link_url": pkg.link_url,
+        "display_order": pkg.display_order, "is_active": pkg.is_active,
+    }})
+
+
+@bp.route("/api/admin/geopackages/<int:pkg_id>", methods=["PUT"])
+@login_required
+def update_geopackage(pkg_id):
+    from models import GeoPackage
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    pkg = GeoPackage.query.get_or_404(pkg_id)
+    data = request.get_json(silent=True) or {}
+
+    if "title" in data:
+        pkg.title = sanitize_html(data["title"].strip())
+    if "description" in data:
+        pkg.description = sanitize_html(data["description"].strip())
+    if "format_info" in data:
+        pkg.format_info = sanitize_html(data["format_info"].strip())
+    if "link_url" in data:
+        pkg.link_url = sanitize_html(data["link_url"].strip())
+    if "display_order" in data:
+        pkg.display_order = int(data["display_order"])
+    if "is_active" in data:
+        pkg.is_active = bool(data["is_active"])
+
+    db.session.commit()
+    _log_audit("geopackage_updated", "geopackage", pkg_id, {"title": pkg.title})
+
+    return jsonify({"status": "updated", "package": {
+        "id": pkg.id, "title": pkg.title, "description": pkg.description,
+        "format_info": pkg.format_info, "link_url": pkg.link_url,
+        "display_order": pkg.display_order, "is_active": pkg.is_active,
+    }})
+
+
+@bp.route("/api/admin/geopackages/<int:pkg_id>", methods=["DELETE"])
+@login_required
+def delete_geopackage(pkg_id):
+    from models import GeoPackage
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    pkg = GeoPackage.query.get_or_404(pkg_id)
+    title = pkg.title
+    db.session.delete(pkg)
+    db.session.commit()
+    _log_audit("geopackage_deleted", "geopackage", pkg_id, {"title": title})
+
+    return jsonify({"status": "deleted", "id": pkg_id})

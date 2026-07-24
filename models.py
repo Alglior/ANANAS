@@ -517,6 +517,28 @@ class FeaturedItem(db.Model):
             self.created_at = datetime.datetime.now()
 
 
+class GeoPackage(db.Model):
+    __tablename__ = "geo_packages"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str]
+    description: Mapped[str]
+    format_info: Mapped[str]
+    link_url: Mapped[str]
+    display_order: Mapped[int] = mapped_column(default=0)
+    is_active: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.is_active is None:
+            self.is_active = True
+        if self.display_order is None:
+            self.display_order = 0
+        if self.created_at is None:
+            self.created_at = datetime.datetime.now()
+
+
 # ─── Back-references sur User et Item ───
 
 User.data_chunks = relationship("DataChunk", back_populates="owner")

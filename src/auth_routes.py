@@ -48,7 +48,7 @@ def connexion_post():
         session["user_id"] = user.id
         session["_auth_time"] = datetime.datetime.now().isoformat()
         session.modified = True
-        return redirect(url_for("home"))
+        return redirect(url_for("index.home"))
 
     if user and (not user.is_active or user.banned):
         return render_template("connexion.html", error="banned"), 401
@@ -101,4 +101,4 @@ def inscription_post():
 @bp.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for("home"))
+    return redirect(url_for("index.home"))

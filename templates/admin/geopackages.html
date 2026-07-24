@@ -1,0 +1,76 @@
+{% extends 'base_admin.html' %}
+
+{% set title = "Administration — GeoPackages" %}
+
+{% block admin_content %}
+<div class="mirrors-header">
+  <h2>Packs GeoPackage</h2>
+  <button type="button" class="btn btn-primary" id="add-gp-btn">+ Ajouter un pack</button>
+</div>
+<p class="admin-hint">Ces packs apparaissent dans la section « Packs de Données GeoPackage » sur la page d'accueil.</p>
+
+<div class="table-wrapper">
+  <table id="geopackages-table">
+    <thead>
+      <tr>
+        <th>Ordre</th>
+        <th>Titre</th>
+        <th>Description</th>
+        <th>Format</th>
+        <th>Lien</th>
+        <th>Statut</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="geopackages-tbody">
+      <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div id="gp-modal" class="modal-overlay hidden-section">
+  <div class="modal-content mirror-modal-content">
+    <span class="modal-close" id="gp-modal-close">&times;</span>
+    <h3 id="gp-modal-title">Ajouter un pack</h3>
+    <form id="gp-form" novalidate>
+      <input type="hidden" id="gp-id" value="" />
+      <div class="form-group">
+        <label for="gp-title">Titre</label>
+        <input type="text" id="gp-title" maxlength="200" required placeholder="Ex: Pack Cartographie Historique" />
+      </div>
+      <div class="form-group">
+        <label for="gp-desc">Description</label>
+        <input type="text" id="gp-desc" maxlength="500" required placeholder="Cartes historiques, plans anciens..." />
+      </div>
+      <div class="form-group">
+        <label for="gp-format">Infos format</label>
+        <input type="text" id="gp-format" maxlength="200" required placeholder="Format: GPKG • Taille: ~250 MB" />
+      </div>
+      <div class="form-group">
+        <label for="gp-link">URL du lien</label>
+        <input type="text" id="gp-link" maxlength="500" required placeholder="/catalogue?collection=Historique" />
+      </div>
+      <div class="form-group">
+        <label for="gp-order">Ordre d'affichage</label>
+        <input type="number" id="gp-order" min="0" value="0" />
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="gp-active" checked />
+          Actif
+        </label>
+      </div>
+      <div id="gp-error" class="form-error hidden-section"></div>
+      <div class="mirror-modal-actions">
+        <button type="submit" class="btn btn-primary" id="gp-submit">Enregistrer</button>
+        <button type="button" class="btn btn-outline" id="gp-cancel">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/geopackages.js') }}?v=1"></script>
+{% endblock %}
