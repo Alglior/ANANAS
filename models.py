@@ -496,6 +496,27 @@ class MirrorSite(db.Model):
             self.created_at = datetime.datetime.now()
 
 
+class FeaturedItem(db.Model):
+    __tablename__ = "featured_items"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    item_id: Mapped[int] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
+    display_order: Mapped[int] = mapped_column(default=0)
+    is_active: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
+
+    item = relationship("Item")
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.is_active is None:
+            self.is_active = True
+        if self.display_order is None:
+            self.display_order = 0
+        if self.created_at is None:
+            self.created_at = datetime.datetime.now()
+
+
 # ─── Back-references sur User et Item ───
 
 User.data_chunks = relationship("DataChunk", back_populates="owner")

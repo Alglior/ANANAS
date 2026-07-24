@@ -175,37 +175,15 @@
       <h3 class="di-examples-title">Exemples de Données Disponibles</h3>
       
       <div class="di-example-grid">
-        <div class="di-example-card">
+        {% for fi in featured_items %}
+        <a href="{{ url_for('items.item_detail_view', item_id=fi.item.id) }}" class="di-example-card">
           <div class="di-example-header">
-            <span class="di-example-name">Cours d'eau</span>
+            <span class="di-example-name">{{ fi.item.title }}</span>
           </div>
-          <p class="di-example-desc">Réseau hydrographique détaillé</p>
-          <span class="di-format-tag">GPKG</span>
-        </div>
-        
-        <div class="di-example-card">
-          <div class="di-example-header">
-            <span class="di-example-name">Altimétrie</span>
-          </div>
-          <p class="di-example-desc">Modèles numériques de terrain</p>
-          <span class="di-format-tag">GPKG</span>
-        </div>
-        
-        <div class="di-example-card">
-          <div class="di-example-header">
-            <span class="di-example-name">Communes</span>
-          </div>
-          <p class="di-example-desc">Limites administratives</p>
-          <span class="di-format-tag">GPKG</span>
-        </div>
-        
-        <div class="di-example-card">
-          <div class="di-example-header">
-            <span class="di-example-name">Voirie</span>
-          </div>
-          <p class="di-example-desc">Réseau routier complet</p>
-          <span class="di-format-tag">GPKG</span>
-        </div>
+          <p class="di-example-desc">{{ fi.item.description[:80] }}{% if fi.item.description|length > 80 %}...{% endif %}</p>
+          <span class="di-format-tag">{{ fi.item.format_type or 'GPKG' }}</span>
+        </a>
+        {% endfor %}
       </div>
     </div>
     

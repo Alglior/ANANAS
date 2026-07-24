@@ -1,7 +1,7 @@
 (function() {
-  const TUTO_KEY = 'admin_panel_tuto_v4';
-  const STEP_KEY = 'admin_panel_tuto_step_v4';
-  const ACTIVE_KEY = 'admin_panel_tuto_active_v4';
+  const TUTO_KEY = 'admin_panel_tuto_v5';
+  const STEP_KEY = 'admin_panel_tuto_step_v5';
+  const ACTIVE_KEY = 'admin_panel_tuto_active_v5';
 
   function currentPage() {
     var p = window.location.pathname;
@@ -9,6 +9,7 @@
     if (p.startsWith('/admin/moderation')) return 'moderation';
     if (p.startsWith('/admin/contact-messages')) return 'contact-messages';
     if (p.startsWith('/admin/mirrors')) return 'mirrors';
+    if (p.startsWith('/admin/featured')) return 'featured';
     if (p.startsWith('/admin/audit')) return 'audit';
     return 'users';
   }
@@ -18,7 +19,7 @@
       page: 'any',
       target: '.admin-nav',
       position: 'bottom',
-      text: '<strong>Navigation d\'administration</strong> — Cette barre donne accès aux 6 sections du panneau. Cliquez sur <strong>Suivant</strong> pour découvrir chaque section.',
+      text: '<strong>Navigation d\'administration</strong> — Cette barre donne accès aux 7 sections du panneau. Cliquez sur <strong>Suivant</strong> pour découvrir chaque section.',
     },
     {
       page: 'any',
@@ -88,6 +89,19 @@
     {
       page: 'mirrors',
       target: '.admin-nav a:nth-child(6)',
+      position: 'bottom',
+      navigateTo: '/admin/featured',
+      text: '<strong>Données en avant</strong> — Choisissez les items du catalogue à afficher dans la section « Exemples de Données » de la page d\'accueil.',
+    },
+    {
+      page: 'featured',
+      target: '#featured-table, .mirrors-header',
+      position: 'top',
+      text: '<strong>Données en avant</strong> — Recherchez un item du catalogue et ajoutez-le à la section « Exemples de Données Disponibles » de la page d\'accueil. Activez ou retirez les données facilement.',
+    },
+    {
+      page: 'featured',
+      target: '.admin-nav a:nth-child(7)',
       position: 'bottom',
       navigateTo: '/admin/audit',
       text: '<strong>Journal d\'audits</strong> — Consultez l\'historique complet de toutes les actions administratives.',

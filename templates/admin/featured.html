@@ -1,0 +1,61 @@
+{% extends 'base_admin.html' %}
+
+{% set title = "Administration — Données en avant" %}
+
+{% block admin_content %}
+<div class="mirrors-header">
+  <h2>Données en avant</h2>
+  <button type="button" class="btn btn-primary" id="add-featured-btn">+ Ajouter une donnée</button>
+</div>
+<p class="admin-hint">Ces données apparaissent dans la section « Exemples de Données Disponibles » sur la page d'accueil.</p>
+
+<div class="table-wrapper">
+  <table id="featured-table">
+    <thead>
+      <tr>
+        <th>Ordre</th>
+        <th>ID</th>
+        <th>Titre</th>
+        <th>Type</th>
+        <th>Format</th>
+        <th>Statut</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="featured-tbody">
+      <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div id="featured-modal" class="modal-overlay hidden-section">
+  <div class="modal-content mirror-modal-content">
+    <span class="modal-close" id="featured-modal-close">&times;</span>
+    <h3>Ajouter une donnée en avant</h3>
+    <form id="featured-form" novalidate>
+      <div class="form-group search-group">
+        <label for="featured-search">Rechercher un item</label>
+        <input type="text" id="featured-search" placeholder="Tapez le titre de l'item..." autocomplete="off" />
+        <div id="featured-search-results" class="search-results-dropdown hidden-section"></div>
+      </div>
+      <input type="hidden" id="featured-item-id" value="" />
+      <div id="featured-selected" class="hidden-section">
+        <div class="featured-selected-item">
+          <span id="featured-selected-title"></span>
+          <span id="featured-selected-info"></span>
+        </div>
+      </div>
+      <div id="featured-error" class="form-error hidden-section"></div>
+      <div class="mirror-modal-actions">
+        <button type="submit" class="btn btn-primary" id="featured-submit">Ajouter</button>
+        <button type="button" class="btn btn-outline" id="featured-cancel">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/featured.js') }}?v=1"></script>
+{% endblock %}

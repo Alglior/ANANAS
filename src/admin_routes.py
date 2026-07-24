@@ -727,3 +727,165 @@ def delete_mirror(mirror_id):
     _log_audit("mirror_deleted", "mirror", mirror_id, {"name": name})
 
     return jsonify({"status": "deleted", "id": mirror_id})
+
+
+@bp.route("/admin/featured")
+@login_required
+@require_admin
+def admin_featured():
+    return render_template(
+        "admin/featured.html",
+        title="Administration — Données en avant",
+        meta_description="Gestion des données mises en avant sur la page d'accueil",
+    )
+
+
+@bp.route("/api/admin/featured", methods=["GET"])
+@login_required
+def list_featured():
+    from models import FeaturedItem
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    featured = FeaturedItem.query.order_by(FeaturedItem.display_order, FeaturedItem.id).all()
+    return jsonify({
+        "featured": [
+            {
+                "id": f.id,
+                "item_id": f.item_id,
+                "item_title": f.item.title if f.item else None,
+                "item_type": f.item.type if f.item else None,
+                "item_format": f.item.format_type if f.item else None,
+                "item_description": f.item.description[:100] if f.item else None,
+                "display_order": f.display_order,
+                "is_active": f.is_active,
+            }
+            for f in featured
+        ],
+    })
+
+
+@bp.route("/api/admin/items/search", methods=["GET"])
+@login_required
+def search_items():
+    """Search items for autocomplete in featured item selector."""
+    from models import Item
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    q = (request.args.get("q") or "").strip()
+    limit = int(request.args.get("limit", 20))
+
+    query = Item.query.filter(Item.status == "published")
+    if q:
+        query = query.filter(Item.title.ilike(f"%{q}%"))
+
+    items = query.order_by(Item.title).limit(limit).all()
+    return jsonify({
+        "items": [
+            {
+                "id": it.id,
+                "title": it.title,
+                "type": it.type,
+                "format_type": it.format_type,
+                "description": it.description[:100] if it.description else "",
+            }
+            for it in items
+        ],
+    })
+
+
+@bp.route("/api/admin/featured", methods=["POST"])
+@login_required
+def create_featured():
+    from models import FeaturedItem, Item
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    data = request.get_json(silent=True) or {}
+    item_id = data.get("item_id")
+
+    if not item_id:
+        return jsonify({"error": "item_id requis."}), 400
+
+    item = Item.query.get(item_id)
+    if not item:
+        return jsonify({"error": "Item introuvable."}), 404
+
+    existing = FeaturedItem.query.filter_by(item_id=item_id).first()
+    if existing:
+        return jsonify({"error": "Cet item est déjà mis en avant."}), 409
+
+    max_order = db.session.query(db.func.max(FeaturedItem.display_order)).scalar() or 0
+    featured = FeaturedItem(
+        item_id=item_id,
+        display_order=max_order + 1,
+        is_active=True,
+    )
+    db.session.add(featured)
+    db.session.commit()
+    _log_audit("featured_created", "featured", featured.id, {"item_id": item_id, "title": item.title})
+
+    return jsonify({"status": "created", "featured": {
+        "id": featured.id,
+        "item_id": featured.item_id,
+        "item_title": item.title,
+        "item_type": item.type,
+        "item_format": item.format_type,
+        "item_description": item.description[:100] if item.description else "",
+        "display_order": featured.display_order,
+        "is_active": featured.is_active,
+    }})
+
+
+@bp.route("/api/admin/featured/<int:featured_id>", methods=["PUT"])
+@login_required
+def update_featured(featured_id):
+    from models import FeaturedItem
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    featured = FeaturedItem.query.get_or_404(featured_id)
+    data = request.get_json(silent=True) or {}
+
+    if "display_order" in data:
+        featured.display_order = int(data["display_order"])
+    if "is_active" in data:
+        featured.is_active = bool(data["is_active"])
+
+    db.session.commit()
+    _log_audit("featured_updated", "featured", featured_id, {"item_id": featured.item_id})
+
+    return jsonify({"status": "updated", "featured": {
+        "id": featured.id,
+        "item_id": featured.item_id,
+        "item_title": featured.item.title if featured.item else None,
+        "display_order": featured.display_order,
+        "is_active": featured.is_active,
+    }})
+
+
+@bp.route("/api/admin/featured/<int:featured_id>", methods=["DELETE"])
+@login_required
+def delete_featured(featured_id):
+    from models import FeaturedItem
+
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    featured = FeaturedItem.query.get_or_404(featured_id)
+    title = featured.item.title if featured.item else None
+    db.session.delete(featured)
+    db.session.commit()
+    _log_audit("featured_deleted", "featured", featured_id, {"title": title})
+
+    return jsonify({"status": "deleted", "id": featured_id})
