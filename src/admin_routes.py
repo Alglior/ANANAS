@@ -1,9 +1,38 @@
 import datetime as dt
+import json
+import os
 
 from flask import Blueprint, request, render_template, jsonify, redirect, url_for
 from app import db
 from src.shared import login_required, get_current_user, _build_page_numbers, ITEMS_PER_PAGE
 from utils.security import sanitize_html
+
+CATALOGUES_CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "catalogues_config.json")
+
+_CATALOGUES_INFO = [
+    {"type": "donnees", "label": "Géodonnées"},
+    {"type": "cartes", "label": "Cartes"},
+    {"type": "applications", "label": "Applications"},
+]
+
+
+def get_catalogues_status():
+    try:
+        with open(CATALOGUES_CONFIG_PATH, "r") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {"donnees": True, "cartes": True, "applications": True}
+
+
+def _save_catalogues_status(data):
+    os.makedirs(os.path.dirname(CATALOGUES_CONFIG_PATH), exist_ok=True)
+    with open(CATALOGUES_CONFIG_PATH, "w") as f:
+        json.dump(data, f, indent=2)
+
+
+def is_catalogue_enabled(catalogue_type):
+    status = get_catalogues_status()
+    return status.get(catalogue_type, True)
 
 bp = Blueprint("admin", __name__)
 
@@ -83,19 +112,73 @@ def ban_user(user_id):
     else:
         data = request.form
     action = data.get("action", "")
+    duration = data.get("duration")
 
-    if action not in ("ban", "unban"):
-        return jsonify({"error": "Action invalide"}), 400
+    if action == "ban":
+        target_user.banned = True
+        target_user.is_active = False
+        db.session.commit()
+        _log_audit("ban", "user", user_id, {"email": target_user.email, "duration": "permanent"})
+        return jsonify({"status": "updated", "user_id": user_id, "action": "ban"})
 
-    target_user.banned = (action == "ban")
-    db.session.commit()
-    _log_audit("ban" if action == "ban" else "unban", "user", user_id, {"email": target_user.email})
+    elif action == "unban":
+        target_user.banned = False
+        target_user.is_active = True
+        db.session.commit()
+        _log_audit("unban", "user", user_id, {"email": target_user.email})
+        return jsonify({"status": "updated", "user_id": user_id, "action": "unban"})
 
-    return jsonify({
-        "status": "updated",
-        "user_id": user_id,
-        "action": action,
-    })
+    elif action == "tempban":
+        try:
+            hours = int(duration)
+        except (TypeError, ValueError):
+            return jsonify({"error": "Durée invalide"}), 400
+        ban_until = dt.datetime.now() + dt.timedelta(hours=hours)
+        target_user.banned = True
+        target_user.is_active = False
+        db.session.commit()
+        _log_audit("tempban", "user", user_id, {"email": target_user.email, "duration_hours": hours, "ban_until": ban_until.isoformat()})
+        return jsonify({"status": "updated", "user_id": user_id, "action": "tempban", "ban_until": ban_until.isoformat()})
+
+    elif action == "mute":
+        try:
+            hours = int(duration)
+        except (TypeError, ValueError):
+            return jsonify({"error": "Durée invalide"}), 400
+        target_user.muted_until = dt.datetime.now() + dt.timedelta(hours=hours)
+        db.session.commit()
+        _log_audit("mute", "user", user_id, {"email": target_user.email, "duration_hours": hours, "muted_until": target_user.muted_until.isoformat()})
+        return jsonify({"status": "updated", "user_id": user_id, "action": "mute", "muted_until": target_user.muted_until.isoformat()})
+
+    elif action == "unmute":
+        target_user.muted_until = None
+        db.session.commit()
+        _log_audit("unmute", "user", user_id, {"email": target_user.email})
+        return jsonify({"status": "updated", "user_id": user_id, "action": "unmute"})
+
+    elif action == "warn":
+        reason = data.get("reason", "")
+        target_user.warned = True
+        target_user.warnings = (target_user.warnings or "") + f"[{dt.datetime.now().strftime('%Y-%m-%d %H:%M')}] {reason}\n"
+        db.session.commit()
+        _log_audit("warn", "user", user_id, {"email": target_user.email, "reason": reason})
+        return jsonify({"status": "updated", "user_id": user_id, "action": "warn"})
+
+    elif action == "unwarn":
+        target_user.warned = False
+        target_user.warnings = None
+        db.session.commit()
+        _log_audit("unwarn", "user", user_id, {"email": target_user.email})
+        return jsonify({"status": "updated", "user_id": user_id, "action": "unwarn"})
+
+    elif action == "kick":
+        from flask import session as sess
+        sess_id = target_user.id
+        db.session.commit()
+        _log_audit("kick", "user", user_id, {"email": target_user.email})
+        return jsonify({"status": "updated", "user_id": user_id, "action": "kick"})
+
+    return jsonify({"error": "Action invalide"}), 400
 
 
 @bp.route("/api/users/banned", methods=["GET"])
@@ -277,6 +360,7 @@ def admin_users(page=None):
         total_pages=total_pages,
         page_numbers=page_numbers,
         total_items=total_items,
+        now=dt.datetime.now(),
     )
 
 
@@ -1020,3 +1104,62 @@ def delete_geopackage(pkg_id):
     _log_audit("geopackage_deleted", "geopackage", pkg_id, {"title": title})
 
     return jsonify({"status": "deleted", "id": pkg_id})
+
+
+@bp.route("/admin/catalogues")
+@login_required
+@require_admin
+def admin_catalogues():
+    status = get_catalogues_status()
+    catalogues = []
+    for info in _CATALOGUES_INFO:
+        catalogues.append({
+            "type": info["type"],
+            "label": info["label"],
+            "active": status.get(info["type"], True),
+        })
+    return render_template(
+        "admin/catalogues.html",
+        title="Administration — Catalogues",
+        meta_description="Activer ou désactiver les catalogues",
+        catalogues=catalogues,
+    )
+
+
+@bp.route("/api/admin/catalogues/<catalogue_type>/toggle", methods=["POST"])
+@login_required
+def toggle_catalogue(catalogue_type):
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    valid_types = [info["type"] for info in _CATALOGUES_INFO]
+    if catalogue_type not in valid_types:
+        return jsonify({"error": "Type de catalogue invalide"}), 400
+
+    data = request.get_json(silent=True) or {}
+    active = data.get("active", True)
+
+    status = get_catalogues_status()
+    status[catalogue_type] = bool(active)
+    _save_catalogues_status(status)
+
+    _log_audit(
+        "catalogue_toggle" if not active else "catalogue_enable",
+        "catalogue",
+        target_type=catalogue_type,
+        details={"catalogue": catalogue_type, "active": bool(active)},
+    )
+
+    return jsonify({"status": "updated", "catalogue": catalogue_type, "active": bool(active)})
+
+
+@bp.route("/admin/accueil")
+@login_required
+@require_admin
+def admin_home():
+    return render_template(
+        "admin/home.html",
+        title="Administration — Accueil",
+        meta_description="Gestion de la page d'accueil (miroirs, données en avant, packs GeoPackage)",
+    )

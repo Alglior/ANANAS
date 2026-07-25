@@ -54,6 +54,11 @@
         </a>
         {% endfor %}
       </div>
+
+      {% if total_pages > 1 %}
+      {% set base_url = '/organizations' %}
+      {% include 'partials/pagination.html' %}
+      {% endif %}
       {% else %}
       <p>Aucune organisation disponible.</p>
       {% endif %}

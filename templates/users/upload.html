@@ -38,9 +38,16 @@
             <div class="form-group">
               <label for="type" class="label-with-help">Type <span class="help-icon" data-tooltip="Catégorie principale du contenu : un jeu de données brutes, une carte numérisée, une application">?</span></label>
               <select id="type" name="type">
-                <option value="geodonnee">Géodonnées</option>
-                <option value="carte">Carte</option>
-                <option value="application">Application</option>
+                {% set catalogues_upload = [
+                  ('geodonnee', 'donnees', 'Géodonnées'),
+                  ('carte', 'cartes', 'Carte'),
+                  ('application', 'applications', 'Application')
+                ] %}
+                {% for value, cat, label in catalogues_upload %}
+                  {% if is_catalogue_enabled(cat) %}
+                <option value="{{ value }}">{{ label }}</option>
+                  {% endif %}
+                {% endfor %}
               </select>
             </div>
 

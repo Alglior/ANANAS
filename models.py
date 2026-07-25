@@ -164,12 +164,16 @@ class User(db.Model):
     banned: Mapped[bool]
     is_admin: Mapped[bool]
     created_at: Mapped[datetime.datetime]
+    muted_until: Mapped[datetime.datetime | None]
+    warned: Mapped[bool] = mapped_column(default=False)
+    warnings: Mapped[str | None]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.is_active = True if getattr(self, "is_active", None) is None else self.is_active
         self.banned = False if getattr(self, "banned", None) is None else bool(self.banned)
         self.is_admin = False if getattr(self, "is_admin", None) is None else bool(self.is_admin)
+        self.warned = False if getattr(self, "warned", None) is None else bool(self.warned)
         if self.created_at is None:
             self.created_at = datetime.datetime.now()
 

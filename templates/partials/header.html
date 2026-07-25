@@ -57,9 +57,16 @@
         <form class="search-bar" role="search" action="/catalogue/donnees" method="get">
           <label class="sr-only" for="site-search">Rechercher dans le catalogue</label>
           <select class="search-catalogue-select" name="catalogue" aria-label="Type de catalogue">
-            <option value="donnees">Géodonnées</option>
-            <option value="cartes">Cartes</option>
-            <option value="applications">Applications</option>
+            {% set search_catalogues = [
+              ('donnees', 'Géodonnées'),
+              ('cartes', 'Cartes'),
+              ('applications', 'Applications')
+            ] %}
+            {% for cat, label in search_catalogues %}
+              {% if is_catalogue_enabled(cat) %}
+            <option value="{{ cat }}">{{ label }}</option>
+              {% endif %}
+            {% endfor %}
           </select>
           <input
             id="site-search"
@@ -80,9 +87,16 @@
           Catalogue &#9662;
         </button>
         <div class="catalogue-dropdown" id="catalogueDropdown">
-          <a href="/catalogue/donnees" class="dropdown-item">Géodonnées</a>
-          <a href="/catalogue/cartes" class="dropdown-item">Cartes</a>
-          <a href="/catalogue/applications" class="dropdown-item">Applications</a>
+          {% set header_catalogues = [
+            ('donnees', 'Géodonnées'),
+            ('cartes', 'Cartes'),
+            ('applications', 'Applications')
+          ] %}
+          {% for cat, label in header_catalogues %}
+            {% if is_catalogue_enabled(cat) %}
+          <a href="/catalogue/{{ cat }}" class="dropdown-item">{{ label }}</a>
+            {% endif %}
+          {% endfor %}
         </div>
       </div>
 

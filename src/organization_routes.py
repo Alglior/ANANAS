@@ -3,7 +3,7 @@ import string
 
 from flask import Blueprint, request, render_template, jsonify
 from app import db
-from src.shared import login_required, get_current_user, ITEMS_PER_PAGE
+from src.shared import login_required, get_current_user, ITEMS_PER_PAGE, _build_page_numbers
 
 ALLOWED_SLUG_CHARS = set(string.ascii_lowercase + string.digits + "-")
 ALLOWED_MEMBER_ROLES = {"member", "moderator", "editor", "admin", "owner"}
@@ -331,17 +331,35 @@ def delete_role(slug, role_id):
 
 
 @bp.route("/organizations")
-def organization_list_view():
+@bp.route("/organizations/<int:page>")
+def organization_list_view(page=1):
     from models import Organization
+
+    if "page" in request.args:
+        page = request.args.get("page", 1, type=int)
+    per_page = ITEMS_PER_PAGE
+    total = Organization.query.filter_by(is_active=True).count()
+    total_pages = max((total + per_page - 1) // per_page, 1)
+
+    if page < 1:
+        page = 1
+    elif page > total_pages:
+        page = total_pages
 
     orgs = Organization.query.filter_by(is_active=True).order_by(
         Organization.created_at.desc()
-    ).all()
+    ).offset((page - 1) * per_page).limit(per_page).all()
+
+    page_numbers = _build_page_numbers(page, total_pages)
+
     return render_template(
         "organization_list.html",
         title="Toutes les organisations — A.N.A.N.A.S.",
         meta_description="Parcourez toutes les organisations de la plateforme.",
         organizations=orgs,
+        page=page,
+        total_pages=total_pages,
+        page_numbers=page_numbers,
     )
 
 

@@ -1,6 +1,7 @@
 from flask import Blueprint, request, render_template, redirect, url_for
 from werkzeug.routing import BaseConverter
 from models import Organization
+from src.admin_routes import is_catalogue_enabled, _CATALOGUES_INFO
 
 _CATALOGUE_META = {
     "donnees": {
@@ -44,6 +45,9 @@ def _make_response(data, format_param=""):
 def _do_catalogue(catalogue_type, page, per_page=30):
     catalogue = catalogue_type
     if catalogue not in type_map:
+        return redirect(url_for("catalogue.catalogue_index"))
+
+    if not is_catalogue_enabled(catalogue):
         return redirect(url_for("catalogue.catalogue_index"))
 
     filter_verified = request.args.get("verified") == "1"

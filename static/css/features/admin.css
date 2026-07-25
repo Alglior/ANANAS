@@ -1112,3 +1112,83 @@
   color: #4ade80;
   font-size: 0.8rem;
 }
+
+/* ── Admin catalogues ── */
+
+.admin-section-desc {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.admin-table-sub {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 0.2rem;
+}
+
+.badge-success {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: var(--forest);
+  background: rgba(34, 139, 34, 0.11);
+  border: 1px solid rgba(34, 139, 34, 0.35);
+}
+
+.badge-danger {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: var(--color-danger);
+  background: rgba(220, 53, 69, 0.11);
+  border: 1px solid rgba(220, 53, 69, 0.35);
+}
+
+.badge-warning {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: var(--mustard);
+  background: rgba(218, 165, 32, 0.11);
+  border: 1px solid rgba(218, 165, 32, 0.35);
+}
+
+.badge-verified {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: var(--forest);
+  background: rgba(34, 139, 34, 0.11);
+  border: 1px solid rgba(34, 139, 34, 0.35);
+}
+
+.badge-pending {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: var(--color-blue);
+  background: rgba(45, 140, 255, 0.11);
+  border: 1px solid rgba(45, 140, 255, 0.35);
+}
+
+.badge-rejected {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: var(--color-danger);
+  background: rgba(220, 53, 69, 0.11);
+  border: 1px solid rgba(220, 53, 69, 0.35);
+}

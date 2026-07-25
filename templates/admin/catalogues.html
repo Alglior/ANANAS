@@ -1,0 +1,65 @@
+{% extends 'base_admin.html' %}
+
+{% block admin_content %}
+<div class="admin-catalogues">
+  <p class="admin-section-desc">Activer ou désactiver les catalogues de la plateforme. Un catalogue désactivé n'est plus accessible et n'apparaît plus dans la navigation.</p>
+
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Catalogue</th>
+        <th>Statut</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for catalogue in catalogues %}
+      <tr>
+        <td>
+          <strong>{{ catalogue.label }}</strong>
+          <br>
+          <span class="admin-table-sub">Slug : {{ catalogue.type }}</span>
+        </td>
+        <td>
+          {% if catalogue.active %}
+          <span class="badge badge-success">Actif</span>
+          {% else %}
+          <span class="badge badge-danger">Inactif</span>
+          {% endif %}
+        </td>
+        <td>
+          <button class="btn btn-sm btn-outline toggle-catalogue-btn"
+                  data-type="{{ catalogue.type }}"
+                  data-active="{{ catalogue.active|lower }}">
+            {% if catalogue.active %}Désactiver{% else %}Activer{% endif %}
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script nonce="{{ csp_nonce }}">
+document.addEventListener('DOMContentLoaded', function () {
+  var csrfToken = '{{ csrf_token() }}';
+  document.querySelectorAll('.toggle-catalogue-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var type = btn.getAttribute('data-type');
+      var active = btn.getAttribute('data-active') === 'true';
+
+      fetch('/api/admin/catalogues/' + type + '/toggle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify({ active: !active })
+      })
+      .then(function () { location.reload(); })
+      .catch(function () { location.reload(); });
+    });
+  });
+});
+</script>
+{% endblock %}

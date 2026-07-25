@@ -35,6 +35,7 @@ services:
         condition: service_healthy
     volumes:
       - secret_key:/app/.secret   # persist .secret file across container rebuilds
+      - catalogue_config:/app/data   # persist catalogue config across container rebuilds
     healthcheck:
       test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:5000/health')\" || exit 1"]
       interval: 10s
@@ -66,3 +67,4 @@ services:
 volumes:
   pg_data:       # Postgres data directory
   secret_key:    # Flask .secret file persistence
+  catalogue_config:  # Catalogue enabled/disabled config

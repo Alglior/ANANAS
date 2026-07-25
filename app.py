@@ -184,8 +184,13 @@ def create_app(app_name="ANANAS"):
     # Inject CSP nonce + current user into all templates
     @app.context_processor
     def inject_vars():
+        from src.admin_routes import is_catalogue_enabled
         cu = get_current_user()
-        return {"csp_nonce": getattr(g, "csp_nonce", ""), "current_user": cu}
+        return {
+            "csp_nonce": getattr(g, "csp_nonce", ""),
+            "current_user": cu,
+            "is_catalogue_enabled": is_catalogue_enabled,
+        }
 
     # Configuration des cookies sécurisés
     app.config["SESSION_COOKIE_HTTPONLY"] = True  # Empêche les scripts JavaScript de lire le cookie de session
