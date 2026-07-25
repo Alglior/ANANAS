@@ -73,6 +73,11 @@
   color: var(--text-muted);
 }
 
+.badge-published {
+  background: rgba(70, 130, 180, 0.15);
+  color: steelblue;
+}
+
 .trash-hint {
   font-size: 0.8rem;
   color: var(--text-muted);

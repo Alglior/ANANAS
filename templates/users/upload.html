@@ -21,6 +21,7 @@
       <div class="upload-tabs">
         <button class="upload-tab active" data-tab="publish">Publier</button>
         <button class="upload-tab" data-tab="drafts">Mes brouillons {% if draft_total %}({{ draft_total }}){% endif %}</button>
+        <button class="upload-tab" data-tab="publications">Mes publications ({{ publications | length }})</button>
         <button class="upload-tab" data-tab="trash">Corbeille {% if trash_total %}({{ trash_total }}){% endif %}</button>
       </div>
 
@@ -259,6 +260,52 @@
         {% else %}
         <p class="no-data-message" id="drafts-empty">Aucun brouillon pour le moment.</p>
         <div class="draft-pagination" id="draft-pagination"></div>
+        {% endif %}
+      </div>
+
+      <div class="upload-tab-content" id="tab-publications">
+        {% if publications %}
+        <ul class="upload-history-list" id="publications-list">
+          {% for item in publications %}
+          <li class="upload-history-item">
+            <a href="/catalogue/item/{{ item.id }}" class="upload-history-link">{{ item.title }}</a>
+            <span class="upload-history-meta">
+              <span class="badge badge-published">{{ item.type | replace('geodonnee', 'Géodonnée') | replace('carte', 'Carte') | replace('application', 'Application') }}</span>
+              {{ item.created_at.strftime('%d/%m/%Y') }}
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% if publications_total_pages > 1 %}
+        <nav class="pagination publications-pagination" id="publications-pagination" aria-label="Pagination des publications">
+          {% if publications_page > 1 %}
+            <a class="btn btn-outline transition-hover pagination-prev" href="#" data-page="{{ publications_page - 1 }}">&#9664;&nbsp;Précédent</a>
+          {% else %}
+            <span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>
+          {% endif %}
+          <div class="pagination-numbers">
+            {% for p in publications_page_numbers %}
+              {% if p == "..." %}
+                <span class="pagination-ellipsis">&hellip;</span>
+              {% elif p == publications_page %}
+                <span class="pagination-link active">{{ p }}</span>
+              {% else %}
+                <a class="pagination-link" href="#" data-page="{{ p }}">{{ p }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% if publications_page < publications_total_pages %}
+            <a class="btn btn-outline transition-hover pagination-next" href="#" data-page="{{ publications_page + 1 }}">Suivant&nbsp;&#9658;</a>
+          {% else %}
+            <span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>
+          {% endif %}
+        </nav>
+        {% else %}
+        <div class="publications-pagination" id="publications-pagination"></div>
+        {% endif %}
+        {% else %}
+        <p class="no-data-message">Vous n'avez pas encore publié de données.</p>
+        <div class="publications-pagination" id="publications-pagination"></div>
         {% endif %}
       </div>
 

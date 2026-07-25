@@ -393,6 +393,7 @@
   font-weight: 600;
   color: var(--text-secondary);
   cursor: pointer;
+  text-decoration: none;
   transition: all 0.15s ease;
 }
 
@@ -457,6 +458,11 @@
 .comment-badge {
   background: rgba(34, 139, 34, 0.15);
   color: var(--forest);
+}
+
+.publication-badge {
+  background: rgba(70, 130, 180, 0.15);
+  color: steelblue;
 }
 
 .activity-content {

@@ -973,4 +973,61 @@ document.addEventListener('DOMContentLoaded', function() {
     var page = parseInt(link.dataset.page);
     loadTrashPage(page);
   });
+
+  function renderPublicationItem(item) {
+    return '<li class="upload-history-item">' +
+      '<a href="/catalogue/item/' + item.id + '" class="upload-history-link">' + escapeHtml(item.title) + '</a>' +
+      '<span class="upload-history-meta">' +
+        '<span class="badge badge-published">' + escapeHtml(item.type_label) + '</span> ' +
+        item.created_at +
+      '</span>' +
+    '</li>';
+  }
+
+  function loadPublicationsPage(page) {
+    var list = document.getElementById('publications-list');
+    var empty = document.getElementById('publications-empty');
+
+    fetch('/api/upload/publications?page=' + page, {
+      headers: { 'X-CSRF-Token': CsrfModule.getCsrfToken() }
+    }).then(function(resp) { return resp.json(); })
+    .then(function(data) {
+      if (data.total_items === 0 || data.publications.length === 0) {
+        if (list) list.style.display = 'none';
+        if (!empty) {
+          empty = document.createElement('p');
+          empty.className = 'no-data-message';
+          empty.id = 'publications-empty';
+          var pagDiv = document.getElementById('publications-pagination');
+          var tabPubs = document.getElementById('tab-publications');
+          if (tabPubs && pagDiv) tabPubs.insertBefore(empty, pagDiv);
+        }
+        empty.style.display = '';
+        empty.textContent = 'Vous n\'avez pas encore publié de données.';
+      } else {
+        if (empty) empty.style.display = 'none';
+        if (!list) {
+          list = document.createElement('ul');
+          list.className = 'upload-history-list';
+          list.id = 'publications-list';
+          var pagDiv = document.getElementById('publications-pagination');
+          var tabPubs = document.getElementById('tab-publications');
+          if (tabPubs && pagDiv) tabPubs.insertBefore(list, pagDiv);
+        }
+        list.style.display = '';
+        list.innerHTML = data.publications.map(renderPublicationItem).join('');
+      }
+      renderPagination(data, 'publications-pagination');
+    }).catch(function() {
+      console.error('Failed to load publications');
+    });
+  }
+
+  document.getElementById('publications-pagination').addEventListener('click', function(e) {
+    e.preventDefault();
+    var link = e.target.closest('a.pagination-link, a.pagination-prev, a.pagination-next');
+    if (!link) return;
+    var page = parseInt(link.dataset.page);
+    loadPublicationsPage(page);
+  });
 });

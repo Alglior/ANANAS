@@ -66,6 +66,7 @@ def upload_page():
 
     draft_page = request.args.get("draft_page", 1, type=int)
     trash_page = request.args.get("trash_page", 1, type=int)
+    publications_page = request.args.get("publications_page", 1, type=int)
 
     drafts_query = Item.query.filter_by(
         owner_user_id=current_user.id,
@@ -89,6 +90,17 @@ def upload_page():
     drafts = drafts_query.limit(ITEMS_PER_PAGE).offset((draft_page - 1) * ITEMS_PER_PAGE).all()
     trashed = trashed_query.limit(ITEMS_PER_PAGE).offset((trash_page - 1) * ITEMS_PER_PAGE).all()
 
+    publications_query = Item.query.filter_by(
+        owner_user_id=current_user.id,
+        status="published",
+    ).order_by(Item.created_at.desc())
+
+    total_publications = publications_query.count()
+    max_publications_page = max((total_publications + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE, 1) if total_publications else 1
+    publications_page = max(1, min(publications_page, max_publications_page))
+    publications = publications_query.limit(ITEMS_PER_PAGE).offset((publications_page - 1) * ITEMS_PER_PAGE).all()
+    publications_page_numbers = _build_page_numbers(publications_page, max_publications_page)
+
     draft_page_numbers = _build_page_numbers(draft_page, max_draft_page)
     trash_page_numbers = _build_page_numbers(trash_page, max_trash_page)
 
@@ -110,6 +122,11 @@ def upload_page():
         current_user=current_user,
         drafts=drafts,
         trashed=trashed,
+        publications=publications,
+        publications_page=publications_page,
+        publications_total_pages=max_publications_page,
+        publications_total=total_publications,
+        publications_page_numbers=publications_page_numbers,
         draft_page=draft_page,
         draft_total_pages=max_draft_page,
         draft_total=total_drafts,
@@ -128,29 +145,73 @@ def upload_page():
 def activite_page():
     current_user = get_current_user()
 
+    active_tab = request.args.get("tab", "ratings")
+    if active_tab not in ("ratings", "comments", "publications"):
+        active_tab = "ratings"
+
+    per_page = ITEMS_PER_PAGE
+
+    page = request.args.get("page", 1, type=int)
+
     ratings_query = (
         db.session.query(Rating, Item.title.label("item_title"), Item.type.label("item_type"))
         .join(Item, Rating.item_id == Item.id)
         .filter(Rating.user_id == current_user.id)
         .order_by(Rating.rating.desc())
-        .all()
     )
+    total_ratings = ratings_query.count()
+    ratings_max_page = max((total_ratings + per_page - 1) // per_page, 1) if total_ratings else 1
+    ratings_page = max(1, min(page, ratings_max_page))
+    ratings = ratings_query.limit(per_page).offset((ratings_page - 1) * per_page).all()
+    ratings_page_numbers = _build_page_numbers(ratings_page, ratings_max_page)
 
     comments_query = (
         db.session.query(Comment, Item.title.label("item_title"), Item.type.label("item_type"))
         .join(Item, Comment.item_id == Item.id)
         .filter(Comment.user_id == current_user.id)
         .order_by(Comment.created_at.desc())
-        .all()
     )
+    total_comments = comments_query.count()
+    comments_max_page = max((total_comments + per_page - 1) // per_page, 1) if total_comments else 1
+    comments_page = max(1, min(page, comments_max_page))
+    comments = comments_query.limit(per_page).offset((comments_page - 1) * per_page).all()
+    comments_page_numbers = _build_page_numbers(comments_page, comments_max_page)
+
+    publications_query = (
+        db.session.query(Item)
+        .filter(
+            Item.owner_user_id == current_user.id,
+            Item.status == "published",
+        )
+        .order_by(Item.created_at.desc())
+    )
+    total_publications = publications_query.count()
+    publications_max_page = max((total_publications + per_page - 1) // per_page, 1) if total_publications else 1
+    publications_page = max(1, min(page, publications_max_page))
+    publications = publications_query.limit(per_page).offset((publications_page - 1) * per_page).all()
+    publications_page_numbers = _build_page_numbers(publications_page, publications_max_page)
 
     return render_template(
         "users/activite.html",
         title="A.N.A.N.A.S. | Mon activité",
         meta_description="Consultez votre historique d'activité A.N.A.N.A.S.",
         current_user=current_user,
-        ratings=ratings_query,
-        comments=comments_query,
+        active_tab=active_tab,
+        ratings=ratings,
+        ratings_page=ratings_page,
+        ratings_total_pages=ratings_max_page,
+        ratings_total=total_ratings,
+        ratings_page_numbers=ratings_page_numbers,
+        comments=comments,
+        comments_page=comments_page,
+        comments_total_pages=comments_max_page,
+        comments_total=total_comments,
+        comments_page_numbers=comments_page_numbers,
+        publications=publications,
+        publications_page=publications_page,
+        publications_total_pages=publications_max_page,
+        publications_total=total_publications,
+        publications_page_numbers=publications_page_numbers,
     )
 
 
@@ -718,6 +779,44 @@ def list_trash():
                 "status": t.status,
             }
             for t in items
+        ],
+        "page": page,
+        "total_pages": total_pages,
+        "total_items": total,
+        "page_numbers": page_numbers,
+    })
+
+
+@bp.route("/api/upload/publications")
+@login_required
+def list_publications():
+    current_user = get_current_user()
+    page = request.args.get("page", 1, type=int)
+
+    query = Item.query.filter_by(
+        owner_user_id=current_user.id,
+        status="published",
+    ).order_by(Item.created_at.desc())
+
+    total = query.count()
+    total_pages = max((total + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE, 1) if total else 1
+    page = max(1, min(page, total_pages))
+
+    items = query.limit(ITEMS_PER_PAGE).offset((page - 1) * ITEMS_PER_PAGE).all()
+    page_numbers = _build_page_numbers(page, total_pages)
+
+    type_labels = {"geodonnee": "Géodonnée", "carte": "Carte", "application": "Application"}
+
+    return jsonify({
+        "publications": [
+            {
+                "id": p.id,
+                "title": p.title,
+                "type": p.type,
+                "type_label": type_labels.get(p.type, p.type),
+                "created_at": p.created_at.strftime("%d/%m/%Y") if p.created_at else "",
+            }
+            for p in items
         ],
         "page": page,
         "total_pages": total_pages,
