@@ -31,15 +31,16 @@ var MainModule = (function () {
   function initSearch() {
     const form = document.querySelector(".search-bar");
     const input = document.getElementById("site-search");
+    const select = form ? form.querySelector(".search-catalogue-select") : null;
 
     if (!form || !input) return;
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const term = input.value.trim();
-      if (term) {
-        showToast("Recherche : " + term);
-      }
+      if (!term) return;
+      const catalogue = select ? select.value : "donnees";
+      window.location.href = "/catalogue/" + catalogue + "?q=" + encodeURIComponent(term);
     });
   }
 
