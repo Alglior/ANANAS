@@ -1,7 +1,7 @@
 from flask import Blueprint, request, render_template, redirect, url_for
 from werkzeug.routing import BaseConverter
 from models import Organization
-from src.admin_routes import is_catalogue_enabled
+from src.admin import is_catalogue_enabled
 
 _CATALOGUE_META = {
     "donnees": {

@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
 from app import db, limiter
 from src.shared import login_required, get_current_user, user_owns_item_or_admin, _build_page_numbers, ITEMS_PER_PAGE, validate_password_strength
-from src.admin_routes import is_catalogue_enabled
+from src.admin import is_catalogue_enabled
 from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, OrganizationMember, ItemGallery
 from utils.security import sanitize_html, validate_magnet_link
 

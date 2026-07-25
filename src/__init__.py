@@ -12,7 +12,7 @@ def register_all_blueprints(app):
     from src.item_routes import bp as items_bp
     from src.interactions import bp as interactions_bp
     from src.organization_routes import bp as org_bp
-    from src.admin_routes import bp as admin_bp
+    from src.admin import bp as admin_bp
     from src.user_routes import bp as user_bp
     from src.contact_routes import bp as contact_bp
     from src.privacy_routes import bp as privacy_bp
