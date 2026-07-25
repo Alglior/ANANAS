@@ -258,7 +258,7 @@ UploadModule.submit = (function () {
 
   function initEditing() {
     if (!UploadModule.EDITING) return;
-    var d = window.EDIT_DATA;
+    var d = UploadModule.getEditData();
     var typeSelect = document.getElementById('type');
     var formatTypeSelect = document.getElementById('format_type');
 

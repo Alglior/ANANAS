@@ -37,6 +37,7 @@
     {% include 'partials/footer.html' %}
 
     <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/utils/clipboard.js') }}"></script>
+    <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/utils/pagination.js') }}"></script>
     <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/app.js') }}"></script>
     {% block extra_scripts %}{% endblock %}

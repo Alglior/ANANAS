@@ -10,12 +10,9 @@
   var msgPage = 1;
   var activeFilter = 'all';
 
-  function renderPagination(data) {
-    var container = document.getElementById('contact-msgs-pagination');
-    if (!container || data.total_pages <= 1) {
-      if (container) container.innerHTML = '';
-      return;
-    }
+function renderPagination(data) {
+    PaginationModule.renderPagination(data, 'contact-msgs-pagination', { navClass: 'mod-pagination-nav', ariaLabel: 'Pagination des messages' });
+  }
     var html = '<nav class="pagination mod-pagination-nav" aria-label="Pagination des messages">';
 
     if (data.page > 1) {

@@ -70,9 +70,9 @@
     let html = '<nav class="pagination" aria-label="Pagination">';
 
     if (page > 1) {
-      html += `<a class="btn btn-outline transition-hover pagination-prev" href="${base_url}/${page - 1}">&#9664;&nbsp;Précédent</a>`;
+      html += '<a class="btn btn-outline transition-hover pagination-prev" href="' + base_url + '/' + (page - 1) + '">&#9664;&nbsp;Pr\u00e9c\u00e9dent</a>';
     } else {
-      html += `<span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>`;
+      html += '<span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Pr\u00e9c\u00e9dent</span>';
     }
 
     html += '<div class="pagination-numbers">';
@@ -80,21 +80,21 @@
       if (p === '...') {
         html += '<span class="pagination-ellipsis">&hellip;</span>';
       } else if (p === page) {
-        html += `<span class="pagination-link active">${p}</span>`;
+        html += '<span class="pagination-link active">' + p + '</span>';
       } else {
-        html += `<a class="pagination-link" href="${base_url}/${p}">${p}</a>`;
+        html += '<a class="pagination-link" href="' + base_url + '/' + p + '">' + p + '</a>';
       }
     }
     html += '</div>';
 
     if (page < total) {
-      html += `<a class="btn btn-outline transition-hover pagination-next" href="${base_url}/${page + 1}">Suivant&nbsp;&#9658;</a>`;
+      html += '<a class="btn btn-outline transition-hover pagination-next" href="' + base_url + '/' + (page + 1) + '">Suivant&nbsp;&#9658;</a>';
     } else {
-      html += `<span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>`;
+      html += '<span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>';
     }
 
     html += '</nav>';
-    html += `<p style="margin-top: 12px; color: #666; font-size: 0.85rem;">Page ${page} sur ${total}</p>`;
+    html += '<p style="margin-top: 12px; color: #666; font-size: 0.85rem;">Page ' + page + ' sur ' + total + '</p>';
 
     return html;
   }

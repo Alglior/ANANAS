@@ -56,12 +56,9 @@
     return reports.map(r => renderReportRow(r)).join('');
   }
 
-  function renderReportPagination(data) {
-    const container = document.getElementById('report-pagination');
-    if (!container || data.total_pages <= 1) {
-      if (container) container.innerHTML = '';
-      return;
-    }
+function renderReportPagination(data) {
+    PaginationModule.renderPagination(data, 'report-pagination', { navClass: 'mod-pagination-nav', ariaLabel: 'Pagination des signalements' });
+  }
     let html = '<nav class="pagination mod-pagination-nav" aria-label="Pagination des signalements">';
 
     if (data.page > 1) {

@@ -40,26 +40,6 @@
   </table>
 </div>
 
-<script nonce="{{ csp_nonce }}">
-document.addEventListener('DOMContentLoaded', function () {
-  var csrfToken = '{{ csrf_token() }}';
-  document.querySelectorAll('.toggle-catalogue-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var type = btn.getAttribute('data-type');
-      var active = btn.getAttribute('data-active') === 'true';
-
-      fetch('/api/admin/catalogues/' + type + '/toggle', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken
-        },
-        body: JSON.stringify({ active: !active })
-      })
-      .then(function () { location.reload(); })
-      .catch(function () { location.reload(); });
-    });
-  });
-});
-</script>
+{% block extra_scripts %}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/catalogues.js') }}"></script>
 {% endblock %}

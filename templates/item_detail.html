@@ -5,7 +5,11 @@
 
 
 {% block content %}
-<main class="detail-page">
+<main class="detail-page"
+  data-item-id="{{ item.id }}"
+  data-comment-page="{{ comment_page }}"
+  data-comment-total-pages="{{ comment_total_pages or 1 }}"
+  data-comment-page-numbers="{{ comment_page_numbers | join(',') }}">
 
   <section class="detail-header">
     <div class="container">
@@ -481,64 +485,4 @@
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/gallery/starRating.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/gallery/reportModal.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/item/detail.js') }}"></script>
-<script nonce="{{ csp_nonce }}">
-(function() {
-  const item = {{ item.id }};
-  if (!item) return;
-
-  function renderPagination(pag) {
-    const container = document.getElementById('comment-pagination');
-    if (!container || pag.total_pages <= 1) { container && container.remove(); return; }
-    let html = '<nav class="mod-pagination-nav" aria-label="Pagination des commentaires">';
-    if (pag.page > 1) {
-      html += `<a class="btn btn-outline transition-hover pagination-prev" href="?page=${pag.page - 1}">&#9664;&nbsp;Précédent</a>`;
-    } else {
-      html += '<span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>';
-    }
-    html += '<div class="pagination-numbers">';
-    for (let p of pag.page_numbers) {
-      if (p === '...') { html += '<span class="pagination-ellipsis">&hellip;</span>'; }
-      else if (p === pag.page) { html += `<span class="pagination-link active">${p}</span>`; }
-      else { html += `<a class="pagination-link" href="?page=${p}">${p}</a>`; }
-    }
-    html += '</div>';
-    if (pag.page < pag.total_pages) {
-      html += `<a class="btn btn-outline transition-hover pagination-next" href="?page=${pag.page + 1}">Suivant&nbsp;&#9658;</a>`;
-    } else {
-      html += '<span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>';
-    }
-    html += '</nav>';
-    container.innerHTML = html;
-  }
-
-  function loadComments(page) {
-    const url = `/catalogue/item/${item}/comments/json?page=${page}`;
-    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-      .then(r => r.json())
-      .then(data => {
-        const list = document.getElementById('comments-list');
-        if (data.comment_count === 0 || !data.comments.length) {
-          list.innerHTML = '';
-          return;
-        }
-        list.innerHTML = data.comments.map(c =>
-          `<li class="comment-item"><div class="comment-header"><span class="comment-author">${c.author_name}</span><span class="comment-date">${c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}</span></div><p class="comment-text">${c.content}</p></li>`
-        ).join('');
-        renderPagination(data);
-      });
-  }
-
-  document.addEventListener('click', function(e) {
-    const link = e.target.closest('.pagination-prev, .pagination-next, .pagination-link');
-    if (!link || !e.target.closest('#comment-pagination')) return;
-    e.preventDefault();
-    const href = link.getAttribute('href');
-    if (href) { loadComments(href.split('?page=')[1] || 1); }
-  });
-
-  window.commentPageNum = {{ comment_page }};
-  window.commentTotalPages = {{ comment_total_pages or 1 }};
-  renderPagination({ page: {{ comment_page }}, total_pages: {{ comment_total_pages or 1 }}, page_numbers: [{{ comment_page_numbers | join(', ') }}] });
-})();
-</script>
 {% endblock %}

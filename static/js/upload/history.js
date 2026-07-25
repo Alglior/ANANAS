@@ -91,40 +91,7 @@ UploadModule.history = (function () {
   }
 
   function renderPagination(data, containerId) {
-    var container = document.getElementById(containerId);
-    if (!container || data.total_pages <= 1) {
-      if (container) container.innerHTML = '';
-      return;
-    }
-    var html = '<nav class="pagination" aria-label="Pagination">';
-
-    if (data.page > 1) {
-      html += '<a class="btn btn-outline transition-hover pagination-prev" href="#" data-page="' + (data.page - 1) + '">&#9664;&nbsp;Pr\u00e9c\u00e9dent</a>';
-    } else {
-      html += '<span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Pr\u00e9c\u00e9dent</span>';
-    }
-
-    html += '<div class="pagination-numbers">';
-    for (var i = 0; i < data.page_numbers.length; i++) {
-      var p = data.page_numbers[i];
-      if (p === '...') {
-        html += '<span class="pagination-ellipsis">&hellip;</span>';
-      } else if (p === data.page) {
-        html += '<span class="pagination-link active">' + p + '</span>';
-      } else {
-        html += '<a class="pagination-link" href="#" data-page="' + p + '">' + p + '</a>';
-      }
-    }
-    html += '</div>';
-
-    if (data.page < data.total_pages) {
-      html += '<a class="btn btn-outline transition-hover pagination-next" href="#" data-page="' + (data.page + 1) + '">Suivant&nbsp;&#9658;</a>';
-    } else {
-      html += '<span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>';
-    }
-
-    html += '</nav>';
-    container.innerHTML = html;
+    PaginationModule.renderPagination(data, containerId);
   }
 
   function loadDraftsPage(page) {

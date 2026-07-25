@@ -130,12 +130,9 @@
     return renderItemsRows(items);
   }
 
-  function renderItemPagination(data) {
-    const container = document.getElementById('items-pagination');
-    if (!container || data.total_pages <= 1) {
-      if (container) container.innerHTML = '';
-      return;
-    }
+function renderItemPagination(data) {
+    PaginationModule.renderPagination(data, 'items-pagination', { navClass: 'mod-pagination-nav', ariaLabel: 'Pagination des \u00e9l\u00e9ments' });
+  }
     let html = '<nav class="pagination mod-pagination-nav" aria-label="Pagination des éléments">';
 
     if (data.page > 1) {

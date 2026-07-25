@@ -405,8 +405,8 @@
 
 {% block extra_scripts %}
 {% if edit_data %}
-<script nonce="{{ csp_nonce }}">
-  window.EDIT_DATA = {{ edit_data | tojson | safe }};
+<script id="edit-data-json" type="application/json" nonce="{{ csp_nonce }}">
+{{ edit_data | tojson | safe }}
 </script>
 {% endif %}
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/upload_tuto.js') }}"></script>

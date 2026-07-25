@@ -189,22 +189,8 @@
 
 {% block extra_scripts %}
 {{ super() }}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/home.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/mirrors.js') }}?v=1"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/featured.js') }}?v=1"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/geopackages.js') }}?v=1"></script>
-<script nonce="{{ csp_nonce }}">
-document.addEventListener('DOMContentLoaded', function () {
-  var tabs = document.querySelectorAll('.admin-home-tabs .mod-tab');
-  var contents = document.querySelectorAll('.admin-home-tabs .tab-content');
-
-  tabs.forEach(function (tab) {
-    tab.addEventListener('click', function () {
-      tabs.forEach(function (t) { t.classList.remove('active'); });
-      contents.forEach(function (c) { c.classList.remove('active'); });
-      tab.classList.add('active');
-      document.getElementById('tab-' + tab.getAttribute('data-tab')).classList.add('active');
-    });
-  });
-});
-</script>
 {% endblock %}
