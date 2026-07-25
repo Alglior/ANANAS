@@ -87,7 +87,7 @@ def _do_catalogue(catalogue_type, page, per_page=30):
         page = requested_page
 
     items = query.offset((page - 1) * per_page).limit(per_page).all()
-    result_items = [item.to_dict() for item in items]
+    result_items = [item.to_dict(include_details=True) for item in items]
     from src.shared import _build_page_numbers
     page_numbers = _build_page_numbers(page, total_pages)
 

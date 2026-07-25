@@ -1,0 +1,61 @@
+{% extends 'base_admin.html' %}
+
+{% block admin_content %}
+<div class="replication-page">
+  <p class="admin-section-desc">
+    Répliquez les items d'un catalogue depuis une autre instance A.N.A.N.A.S. en fournissant son URL.
+    Les items seront importés avec leurs fiches, tags et galeries.
+  </p>
+
+  <div class="replication-form-section">
+    <div class="form-group">
+      <label for="remote-url">URL de l'instance distante</label>
+      <input type="url" id="remote-url" class="form-input" placeholder="https://exemple.ananas.fr" required />
+      <p class="form-help">L'instance distante doit exposer les endpoints JSON des catalogues (ex: /catalogue/donnees/1/json).</p>
+    </div>
+
+    <div class="form-group">
+      <label>Types de catalogues à répliquer</label>
+      <div class="replication-types" id="replication-types">
+        <label class="checkbox-label">
+          <input type="checkbox" value="donnees" checked /> Géodonnées
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" value="cartes" checked /> Cartes
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" value="applications" checked /> Applications
+        </label>
+      </div>
+    </div>
+
+    <div class="replication-actions">
+      <button type="button" class="btn btn-outline" id="preview-btn">Aperçu des catalogues distants</button>
+      <button type="button" class="btn btn-primary" id="fetch-btn" disabled>Lancer la réplication</button>
+    </div>
+  </div>
+
+  <div id="replication-preview" class="hidden-section replication-preview-section">
+    <h3>Aperçu des catalogues distants</h3>
+    <div id="preview-results"></div>
+  </div>
+
+  <div class="replication-progress hidden-section" id="replication-progress">
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <p id="progress-text">Récupération en cours...</p>
+  </div>
+
+  <div id="replication-results" class="hidden-section replication-results-section">
+    <h3>Résultats de la réplication</h3>
+    <div id="results-content"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/features/admin/replication.css') }}" />
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/replication.js') }}?v=1"></script>
+{% endblock %}

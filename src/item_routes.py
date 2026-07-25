@@ -81,6 +81,22 @@ def item_comments_json(item_id):
     })
 
 
+@bp.route("/catalogue/item/<int:item_id>/details/json")
+def item_details_json(item_id):
+    from models import Item, DataChunk, VisualizationLink
+
+    item = Item.query.get_or_404(item_id)
+    item_dict = item.to_dict()
+    viz_links = [vl.to_dict() for vl in VisualizationLink.query.filter_by(parent_item_id=item_id).all()]
+    all_chunks = [c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=item_id).all()]
+
+    return jsonify({
+        "item": item_dict,
+        "visualization_links": viz_links,
+        "data_chunks": all_chunks,
+    })
+
+
 @bp.route("/catalogue/item/<int:item_id>")
 def item_detail_view(item_id):
     from models import Item, User

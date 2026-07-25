@@ -45,13 +45,13 @@ class Item(db.Model):
     verifier = relationship("User", foreign_keys=[verifier_user_id])
     organization = relationship("Organization")
 
-    def to_dict(self):
+    def to_dict(self, include_details=False):
         catalogue_map = {
             "geodonnee": "/catalogue/donnees",
             "carte": "/catalogue/cartes",
             "application": "/catalogue/applications",
         }
-        return {
+        result = {
             "id": self.id,
             "title": self.title,
             "description": self.description,
@@ -84,6 +84,10 @@ class Item(db.Model):
                 if validate_magnet_link(c.magnet_link or "")
             ] if self.data_format_level == "individual" else None,
         }
+        if include_details:
+            result["visualization_links"] = [vl.to_dict() for vl in self.visualization_links]
+            result["data_chunks"] = [c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=self.id).all()]
+        return result
 
     def _get_rating_avg(self):
         ratings = [r.rating for r in self.ratings if r.rating is not None]
