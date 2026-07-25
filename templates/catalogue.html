@@ -61,3 +61,7 @@
 
 </main>
 {% endblock %}
+
+{% block extra_scripts %}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/catalogue/catalogue.js') }}"></script>
+{% endblock %}

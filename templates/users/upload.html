@@ -409,6 +409,14 @@
   window.EDIT_DATA = {{ edit_data | tojson | safe }};
 </script>
 {% endif %}
-<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload_tuto.js') }}"></script>
-<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/upload_tuto.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/upload.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/tabs.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/data-input.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/form-controls.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/magnets.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/image-magnets.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/payload.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/submit.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/history.js') }}"></script>
 {% endblock %}

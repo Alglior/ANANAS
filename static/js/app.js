@@ -8,10 +8,10 @@ document.addEventListener("DOMContentLoaded", function () {
   MainModule.validatePasswordMatch();
   MainModule.initDropdown();
   MainModule.initUserDropdown();
-  CatalogueModule.init();
-  InlineGalleryModule.init();
-  ImageModalModule.init();
-  CopyMagnetModule.init();
-  StarRatingModule.init();
-  ReportModalModule.init();
+  if (typeof CatalogueModule !== "undefined") CatalogueModule.init();
+  if (typeof InlineGalleryModule !== "undefined") InlineGalleryModule.init();
+  if (typeof ImageModalModule !== "undefined") ImageModalModule.init();
+  if (typeof CopyMagnetModule !== "undefined") CopyMagnetModule.init();
+  if (typeof StarRatingModule !== "undefined") StarRatingModule.init();
+  if (typeof ReportModalModule !== "undefined") ReportModalModule.init();
 });
