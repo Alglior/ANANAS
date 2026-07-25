@@ -7,11 +7,15 @@ from sqlalchemy.orm import relationship, Mapped, mapped_column
 from utils.security import sanitize_gallery_data, sanitize_value, validate_external_url, validate_magnet_link
 
 
-class Item(db.Model):
+class TimestampMixin:
+    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
+
+
+class Item(db.Model, TimestampMixin):
     __tablename__ = "items"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    type: Mapped[str]  # 'geodonnee', 'carte', 'application'
+    type: Mapped[str]
     title: Mapped[str]
     description: Mapped[str]
     format_type: Mapped[str | None]
@@ -20,7 +24,6 @@ class Item(db.Model):
     owner_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     author_name: Mapped[str | None]
     organization_id: Mapped[int | None] = mapped_column(ForeignKey("organizations.id"))
-    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
     verification_status: Mapped[str] = mapped_column(default="unofficial")
     data_format_level: Mapped[str] = mapped_column(default="individual")
     pdf_magnet_link: Mapped[str | None] = mapped_column(default=None)
@@ -31,13 +34,6 @@ class Item(db.Model):
     verified_at: Mapped[datetime.datetime | None]
     verification_notes: Mapped[str | None]
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if self.verification_status is None:
-            self.verification_status = "unofficial"
-        if self.created_at is None:
-            self.created_at = datetime.datetime.now()
-
     tags = relationship("ItemTag", back_populates="item", cascade="all, delete-orphan")
     gallery_items = relationship("ItemGallery", back_populates="item", cascade="all, delete-orphan")
     ratings = relationship("Rating", back_populates="item", cascade="all, delete-orphan")
@@ -45,12 +41,13 @@ class Item(db.Model):
     verifier = relationship("User", foreign_keys=[verifier_user_id])
     organization = relationship("Organization")
 
+    CATALOGUE_MAP = {
+        "geodonnee": "/catalogue/donnees",
+        "carte": "/catalogue/cartes",
+        "application": "/catalogue/applications",
+    }
+
     def to_dict(self, include_details=False):
-        catalogue_map = {
-            "geodonnee": "/catalogue/donnees",
-            "carte": "/catalogue/cartes",
-            "application": "/catalogue/applications",
-        }
         result = {
             "id": self.id,
             "title": self.title,
@@ -71,18 +68,14 @@ class Item(db.Model):
             "verifier_nom": f"{self.verifier.prenom} {self.verifier.nom}" if (self.verifier and getattr(self.verifier, "prenom", None)) else None,
             "verified_at": self.verified_at.strftime("%Y-%m-%d") if self.verified_at else None,
             "verification_notes": self.verification_notes,
-            "catalogue_link": catalogue_map.get(self.type, "/catalogue"),
-          "report_type": self.type.replace("geodonnee", "geodonnee").replace("carte", "carte").replace("application", "application"),
-             "rating": self._get_rating_avg(),
-             "review_count": len(self.ratings),
-             "license_type": self.license_type,
+            "catalogue_link": self.CATALOGUE_MAP.get(self.type, "/catalogue"),
+            "report_type": self.type,
+            "rating": self._get_rating_avg(),
+            "review_count": len(self.ratings),
+            "license_type": self.license_type,
             "data_format_level": self.data_format_level,
             "status": self.status,
-            "download_levels": [
-                {"name": c.name, "magnet": c.magnet_link}
-                for c in DataChunk.query.filter_by(parent_item_id=self.id).all()
-                if validate_magnet_link(c.magnet_link or "")
-            ] if self.data_format_level == "individual" else None,
+            "download_levels": self._get_download_levels(),
         }
         if include_details:
             result["visualization_links"] = [vl.to_dict() for vl in self.visualization_links]
@@ -95,6 +88,15 @@ class Item(db.Model):
             return 0
         return sum(ratings) / len(ratings)
 
+    def _get_download_levels(self):
+        if self.data_format_level != "individual":
+            return None
+        return [
+            {"name": c.name, "magnet": c.magnet_link}
+            for c in DataChunk.query.filter_by(parent_item_id=self.id).all()
+            if validate_magnet_link(c.magnet_link or "")
+        ]
+
     def _build_gallery_dict(self):
         result = []
         for g in self.gallery_items:
@@ -102,36 +104,39 @@ class Item(db.Model):
             if g.src:
                 entry["src"] = sanitize_value(g.src) if isinstance(g.src, str) else g.src
             if g.data_json:
-                if isinstance(g.data_json, dict):
-                    rows = g.data_json.get("rows", [])
-                    metrics = g.data_json.get("metrics", [])
-                    if g.media_type == "csv" and rows:
-                        if not isinstance(rows, list):
-                            rows = []
-                        entry["data"] = sanitize_gallery_data(rows)
-                    elif g.media_type == "dashboard" and metrics:
-                        if not isinstance(metrics, list):
-                            metrics = []
-                        sanitized_metrics = []
-                        for m in metrics:
-                            if isinstance(m, dict):
-                                clean_m = {}
-                                for k, v in m.items():
-                                    sk = sanitize_value(str(k))
-                                    clean_m[sk] = sanitize_value(v) if isinstance(v, str) else v
-                                sanitized_metrics.append(clean_m)
-                            elif isinstance(m, (str, int, float)):
-                                sanitized_metrics.append(sanitize_value(m) if isinstance(m, str) else m)
-                        entry["metrics"] = sanitized_metrics
-                    else:
-                        # For any other media_type with data_json, sanitize the whole dict
-                        clean_dict = {}
-                        for k, v in g.data_json.items():
-                            sk = sanitize_value(str(k))
-                            clean_dict[sk] = sanitize_gallery_data(v) if isinstance(v, list) else (sanitize_value(v) if isinstance(v, str) else v)
-                        entry["data"] = clean_dict
+                self._add_gallery_data(entry, g)
             result.append(entry)
         return result
+
+    @staticmethod
+    def _add_gallery_data(entry, g):
+        if isinstance(g.data_json, dict):
+            rows = g.data_json.get("rows", [])
+            metrics = g.data_json.get("metrics", [])
+            if g.media_type == "csv" and rows:
+                entry["data"] = sanitize_gallery_data(rows) if isinstance(rows, list) else []
+            elif g.media_type == "dashboard" and metrics:
+                entry["metrics"] = _sanitize_metrics(metrics) if isinstance(metrics, list) else []
+            else:
+                clean_dict = {}
+                for k, v in g.data_json.items():
+                    sk = sanitize_value(str(k))
+                    clean_dict[sk] = sanitize_gallery_data(v) if isinstance(v, list) else (sanitize_value(v) if isinstance(v, str) else v)
+                entry["data"] = clean_dict
+
+
+def _sanitize_metrics(metrics):
+    sanitized = []
+    for m in metrics:
+        if isinstance(m, dict):
+            clean_m = {}
+            for k, v in m.items():
+                sk = sanitize_value(str(k))
+                clean_m[sk] = sanitize_value(v) if isinstance(v, str) else v
+            sanitized.append(clean_m)
+        elif isinstance(m, (str, int, float)):
+            sanitized.append(sanitize_value(m) if isinstance(m, str) else m)
+    return sanitized
 
 
 class ItemTag(db.Model):
@@ -149,7 +154,7 @@ class ItemGallery(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
-    media_type: Mapped[str]  # image, csv, dashboard, interactive_map
+    media_type: Mapped[str]
     src: Mapped[str | None]
     data_json: Mapped[dict | None] = mapped_column(JSON, server_default="{}")
     label: Mapped[str | None]
@@ -164,22 +169,13 @@ class User(db.Model):
     nom: Mapped[str]
     email: Mapped[str] = mapped_column(unique=True)
     password_hash: Mapped[str]
-    is_active: Mapped[bool]
-    banned: Mapped[bool]
-    is_admin: Mapped[bool]
-    created_at: Mapped[datetime.datetime]
+    is_active: Mapped[bool] = mapped_column(default=True)
+    banned: Mapped[bool] = mapped_column(default=False)
+    is_admin: Mapped[bool] = mapped_column(default=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
     muted_until: Mapped[datetime.datetime | None]
     warned: Mapped[bool] = mapped_column(default=False)
     warnings: Mapped[str | None]
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.is_active = True if getattr(self, "is_active", None) is None else self.is_active
-        self.banned = False if getattr(self, "banned", None) is None else bool(self.banned)
-        self.is_admin = False if getattr(self, "is_admin", None) is None else bool(self.is_admin)
-        self.warned = False if getattr(self, "warned", None) is None else bool(self.warned)
-        if self.created_at is None:
-            self.created_at = datetime.datetime.now()
 
     def __str__(self):
         return f"{self.prenom} {self.nom}"
@@ -187,7 +183,7 @@ class User(db.Model):
     organizations = relationship("OrganizationMember", back_populates="user")
 
 
-class Organization(db.Model):
+class Organization(db.Model, TimestampMixin):
     __tablename__ = "organizations"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -197,15 +193,7 @@ class Organization(db.Model):
     logo_url: Mapped[str | None]
     website_url: Mapped[str | None]
     created_by: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    is_active: Mapped[bool] = True
-    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if self.is_active is None or self.is_active is False:
-            self.is_active = True
-        if self.created_at is None:
-            self.created_at = datetime.datetime.now()
+    is_active: Mapped[bool] = mapped_column(default=True)
 
     creator = relationship("User", foreign_keys=[created_by])
     organization_members = relationship(
@@ -221,19 +209,10 @@ class OrganizationMember(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     organization_id: Mapped[int] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"))
-    role: Mapped[str] = mapped_column(default="member")  # member, moderator, editor, admin, owner
+    role: Mapped[str] = mapped_column(default="member")
     custom_role_id: Mapped[int | None] = mapped_column(ForeignKey("organization_roles.id", ondelete="SET NULL"), default=None)
     joined_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
-    is_active: Mapped[bool] = True
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if self.role is None or not self.role:
-            self.role = "member"
-        if self.is_active is None:
-            self.is_active = True
-        if self.joined_at is None:
-            self.joined_at = datetime.datetime.now()
+    is_active: Mapped[bool] = mapped_column(default=True)
 
     DEFAULT_ROLE_PERMISSIONS = {
         "member": [],
@@ -266,21 +245,13 @@ class OrganizationMember(db.Model):
     custom_role = relationship("OrganizationRole", foreign_keys=[custom_role_id])
 
 
-class OrganizationRole(db.Model):
+class OrganizationRole(db.Model, TimestampMixin):
     __tablename__ = "organization_roles"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     organization_id: Mapped[int] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"))
     name: Mapped[str]
     permissions: Mapped[dict | None] = mapped_column(JSON, server_default="[]")
-    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if self.created_at is None:
-            self.created_at = datetime.datetime.now()
-        if self.permissions is None:
-            self.permissions = []
 
     organization = relationship("Organization")
 
@@ -295,25 +266,19 @@ class Rating(db.Model):
     item = relationship("Item", back_populates="ratings")
 
 
-class Comment(db.Model):
+class Comment(db.Model, TimestampMixin):
     __tablename__ = "comments"
     id: Mapped[int] = mapped_column(primary_key=True)
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     author_name: Mapped[str | None]
     content: Mapped[str]
-    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if self.created_at is None:
-            self.created_at = datetime.datetime.now()
 
     item = relationship("Item", back_populates="comments")
     user = relationship("User", back_populates="comments")
 
 
-class DataChunk(db.Model):
+class DataChunk(db.Model, TimestampMixin):
     __tablename__ = "data_chunks"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -326,34 +291,12 @@ class DataChunk(db.Model):
     organization_id: Mapped[int | None] = mapped_column(ForeignKey("organizations.id"))
     data_url: Mapped[str | None]
     metadata_json: Mapped[dict | None] = mapped_column(JSON, server_default="{}")
-    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
     upload_status: Mapped[str] = mapped_column(default="uploaded")
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if self.created_at is None:
-            self.created_at = datetime.datetime.now()
-        if not hasattr(self, "upload_status") or self.upload_status is None:
-            self.upload_status = "uploaded"
-
     published_at: Mapped[datetime.datetime | None]
 
     def to_dict(self):
         meta = self.metadata_json or {}
-        if isinstance(meta, dict):
-            clean_meta = {}
-            for k, v in meta.items():
-                ck = sanitize_value(str(k))
-                if isinstance(v, list):
-                    cv = sanitize_gallery_data(v)
-                elif isinstance(v, str):
-                    cv = sanitize_value(v)
-                else:
-                    cv = v
-                clean_meta[ck] = cv
-            meta_json = clean_meta
-        else:
-            meta_json = {}
+        meta_json = _sanitize_metadata(meta) if isinstance(meta, dict) else {}
         return {
             "id": self.id,
             "name": self.name,
@@ -367,6 +310,20 @@ class DataChunk(db.Model):
 
     owner = relationship("User", back_populates="data_chunks")
     organization = relationship("Organization")
+
+
+def _sanitize_metadata(meta):
+    clean = {}
+    for k, v in meta.items():
+        ck = sanitize_value(str(k))
+        if isinstance(v, list):
+            cv = sanitize_gallery_data(v)
+        elif isinstance(v, str):
+            cv = sanitize_value(v)
+        else:
+            cv = v
+        clean[ck] = cv
+    return clean
 
 
 class UserUpload(db.Model):
@@ -390,7 +347,7 @@ class UserUpload(db.Model):
     organization = relationship("Organization")
 
 
-class VisualizationLink(db.Model):
+class VisualizationLink(db.Model, TimestampMixin):
     __tablename__ = "visualization_links"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -398,21 +355,11 @@ class VisualizationLink(db.Model):
     name: Mapped[str]
     url: Mapped[str]
     owner_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
-    link_type: Mapped[str] = mapped_column(default="external")  # external, internal, embed, widget
+    link_type: Mapped[str] = mapped_column(default="external")
     display_order: Mapped[int] = mapped_column(default=0)
     description: Mapped[str | None]
     thumbnail_url: Mapped[str | None]
     is_active: Mapped[bool] = mapped_column(default=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if self.link_type is None:
-            self.link_type = "external"
-        if self.is_active is None:
-            self.is_active = True
-        if self.created_at is None:
-            self.created_at = datetime.datetime.now()
 
     def to_dict(self):
         return {
@@ -429,20 +376,19 @@ class VisualizationLink(db.Model):
     item = relationship("Item", back_populates="visualization_links")
 
 
-class Report(db.Model):
+class Report(db.Model, TimestampMixin):
     __tablename__ = "reports"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     reporter_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     reported_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
-    report_type: Mapped[str]  # 'user', 'item_geodonnee', 'item_carte', 'item_application'
+    report_type: Mapped[str]
     target_item_id: Mapped[int | None] = mapped_column(ForeignKey("items.id"))
-    reason: Mapped[str]  # spam, contenu_inapproprié, fake_data, other
+    reason: Mapped[str]
     description: Mapped[str | None]
-    status: Mapped[str] = mapped_column(default="pending")  # pending, reviewed, dismissed, resolved
+    status: Mapped[str] = mapped_column(default="pending")
     reviewed_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     reviewed_at: Mapped[datetime.datetime | None]
-    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
 
     reporter = relationship("User", foreign_keys=[reporter_id], overlaps="made_reports,reports_by")
     reported_user = relationship("User", foreign_keys=[reported_user_id], overlaps="reported_reports,reports_made_against_me")
@@ -450,21 +396,20 @@ class Report(db.Model):
     reviewer = relationship("User", foreign_keys=[reviewed_by])
 
 
-class AdminAudit(db.Model):
+class AdminAudit(db.Model, TimestampMixin):
     __tablename__ = "admin_audit"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     admin_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
-    action_type: Mapped[str]  # ban, unban, report_resolve, report_dismiss, item_publish, item_unpublish, user_verify
-    target_type: Mapped[str | None]  # 'user', 'item', 'report'
+    action_type: Mapped[str]
+    target_type: Mapped[str | None]
     target_id: Mapped[int | None]
     details: Mapped[str | None] = mapped_column(JSON, server_default="{}")
-    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
 
     admin = relationship("User", foreign_keys=[admin_user_id])
 
 
-class ContactMessage(db.Model):
+class ContactMessage(db.Model, TimestampMixin):
     __tablename__ = "contact_messages"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -473,17 +418,9 @@ class ContactMessage(db.Model):
     subject: Mapped[str]
     message: Mapped[str]
     is_read: Mapped[bool] = mapped_column(default=False)
-    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if self.is_read is None:
-            self.is_read = False
-        if self.created_at is None:
-            self.created_at = datetime.datetime.now()
 
 
-class MirrorSite(db.Model):
+class MirrorSite(db.Model, TimestampMixin):
     __tablename__ = "mirror_sites"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -492,40 +429,20 @@ class MirrorSite(db.Model):
     description: Mapped[str]
     display_order: Mapped[int] = mapped_column(default=0)
     is_active: Mapped[bool] = mapped_column(default=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if self.is_active is None:
-            self.is_active = True
-        if self.display_order is None:
-            self.display_order = 0
-        if self.created_at is None:
-            self.created_at = datetime.datetime.now()
 
 
-class FeaturedItem(db.Model):
+class FeaturedItem(db.Model, TimestampMixin):
     __tablename__ = "featured_items"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
     display_order: Mapped[int] = mapped_column(default=0)
     is_active: Mapped[bool] = mapped_column(default=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
 
     item = relationship("Item")
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if self.is_active is None:
-            self.is_active = True
-        if self.display_order is None:
-            self.display_order = 0
-        if self.created_at is None:
-            self.created_at = datetime.datetime.now()
 
-
-class GeoPackage(db.Model):
+class GeoPackage(db.Model, TimestampMixin):
     __tablename__ = "geo_packages"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -535,20 +452,9 @@ class GeoPackage(db.Model):
     link_url: Mapped[str]
     display_order: Mapped[int] = mapped_column(default=0)
     is_active: Mapped[bool] = mapped_column(default=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if self.is_active is None:
-            self.is_active = True
-        if self.display_order is None:
-            self.display_order = 0
-        if self.created_at is None:
-            self.created_at = datetime.datetime.now()
 
 
-# ─── Back-references sur User et Item ───
-
+# Back-references
 User.data_chunks = relationship("DataChunk", back_populates="owner")
 User.user_uploads = relationship("UserUpload", back_populates="owner")
 User.comments = relationship("Comment", back_populates="user")

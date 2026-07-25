@@ -1,15 +1,13 @@
 import datetime
 import os
-import re
 import threading
 from pathlib import Path
 
 from flask import Blueprint, request, render_template, redirect, url_for, session, flash, jsonify
-from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
 from app import db, limiter
-from src.shared import login_required, get_current_user, user_owns_item_or_admin, _build_page_numbers, ITEMS_PER_PAGE
+from src.shared import login_required, get_current_user, user_owns_item_or_admin, _build_page_numbers, ITEMS_PER_PAGE, validate_password_strength
 from src.admin_routes import is_catalogue_enabled
 from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, OrganizationMember, ItemGallery
 from utils.security import sanitize_html, validate_magnet_link
@@ -17,6 +15,7 @@ from utils.security import sanitize_html, validate_magnet_link
 ALLOWED_ITEM_TYPES = {"geodonnee", "carte", "application"}
 
 bp = Blueprint("users", __name__)
+
 
 @bp.route("/profil")
 @login_required
@@ -69,13 +68,11 @@ def upload_page():
     publications_page = request.args.get("publications_page", 1, type=int)
 
     drafts_query = Item.query.filter_by(
-        owner_user_id=current_user.id,
-        status="draft",
+        owner_user_id=current_user.id, status="draft",
     ).order_by(Item.created_at.desc())
 
     trashed_query = Item.query.filter_by(
-        owner_user_id=current_user.id,
-        status="trashed",
+        owner_user_id=current_user.id, status="trashed",
     ).order_by(Item.deleted_at.desc())
 
     total_drafts = drafts_query.count()
@@ -91,8 +88,7 @@ def upload_page():
     trashed = trashed_query.limit(ITEMS_PER_PAGE).offset((trash_page - 1) * ITEMS_PER_PAGE).all()
 
     publications_query = Item.query.filter_by(
-        owner_user_id=current_user.id,
-        status="published",
+        owner_user_id=current_user.id, status="published",
     ).order_by(Item.created_at.desc())
 
     total_publications = publications_query.count()
@@ -108,9 +104,7 @@ def upload_page():
     edit_data = None
     if edit_id and edit_id.isdigit():
         draft = Item.query.filter_by(
-            id=int(edit_id),
-            owner_user_id=current_user.id,
-            status="draft",
+            id=int(edit_id), owner_user_id=current_user.id, status="draft",
         ).first()
         if draft:
             edit_data = draft.to_dict()
@@ -120,21 +114,15 @@ def upload_page():
         title="A.N.A.N.A.S. | Publier des données",
         meta_description="Publiez et partagez des géodonnées sur A.N.A.N.A.S.",
         current_user=current_user,
-        drafts=drafts,
-        trashed=trashed,
-        publications=publications,
+        drafts=drafts, trashed=trashed, publications=publications,
         publications_page=publications_page,
         publications_total_pages=max_publications_page,
         publications_total=total_publications,
         publications_page_numbers=publications_page_numbers,
-        draft_page=draft_page,
-        draft_total_pages=max_draft_page,
-        draft_total=total_drafts,
-        draft_page_numbers=draft_page_numbers,
-        trash_page=trash_page,
-        trash_total_pages=max_trash_page,
-        trash_total=total_trash,
-        trash_page_numbers=trash_page_numbers,
+        draft_page=draft_page, draft_total_pages=max_draft_page,
+        draft_total=total_drafts, draft_page_numbers=draft_page_numbers,
+        trash_page=trash_page, trash_total_pages=max_trash_page,
+        trash_total=total_trash, trash_page_numbers=trash_page_numbers,
         edit_data=edit_data,
         is_catalogue_enabled=is_catalogue_enabled,
     )
@@ -150,7 +138,6 @@ def activite_page():
         active_tab = "ratings"
 
     per_page = ITEMS_PER_PAGE
-
     page = request.args.get("page", 1, type=int)
 
     ratings_query = (
@@ -179,10 +166,7 @@ def activite_page():
 
     publications_query = (
         db.session.query(Item)
-        .filter(
-            Item.owner_user_id == current_user.id,
-            Item.status == "published",
-        )
+        .filter(Item.owner_user_id == current_user.id, Item.status == "published")
         .order_by(Item.created_at.desc())
     )
     total_publications = publications_query.count()
@@ -197,103 +181,107 @@ def activite_page():
         meta_description="Consultez votre historique d'activité A.N.A.N.A.S.",
         current_user=current_user,
         active_tab=active_tab,
-        ratings=ratings,
-        ratings_page=ratings_page,
-        ratings_total_pages=ratings_max_page,
-        ratings_total=total_ratings,
+        ratings=ratings, ratings_page=ratings_page,
+        ratings_total_pages=ratings_max_page, ratings_total=total_ratings,
         ratings_page_numbers=ratings_page_numbers,
-        comments=comments,
-        comments_page=comments_page,
-        comments_total_pages=comments_max_page,
-        comments_total=total_comments,
+        comments=comments, comments_page=comments_page,
+        comments_total_pages=comments_max_page, comments_total=total_comments,
         comments_page_numbers=comments_page_numbers,
-        publications=publications,
-        publications_page=publications_page,
-        publications_total_pages=publications_max_page,
-        publications_total=total_publications,
+        publications=publications, publications_page=publications_page,
+        publications_total_pages=publications_max_page, publications_total=total_publications,
         publications_page_numbers=publications_page_numbers,
     )
 
 
-@bp.route("/api/users/profile", methods=["PUT"])
-@login_required
-@limiter.limit("10 per hour")
-def update_profile():
-    data = request.get_json()
-
-    current_user = get_current_user()
-    if not current_user:
-        return jsonify({"error": "Utilisateur non trouvé"}), 401
-
-    prenom = sanitize_html(data.get("prenom", "").strip())
-    nom = sanitize_html(data.get("nom", "").strip())
-    email = data.get("email", "").strip()
-
-    if not prenom or not nom:
-        return jsonify({"error": "Le prénom et le nom sont requis"}), 400
-
-    existing_user = User.query.filter(User.email == email, User.id != current_user.id).first()
-    if existing_user:
-        return jsonify({"error": "Cet e-mail est déjà utilisé par un autre compte"}), 400
-
-    current_user.prenom = prenom
-    current_user.nom = nom
-    current_user.email = email
-
-    db.session.commit()
-
-    return jsonify({
-        "message": "Profil mis à jour avec succès",
-        "user": {
-            "prenom": current_user.prenom,
-            "nom": current_user.nom,
-            "email": current_user.email,
-        },
-    })
+def _parse_item_data(data):
+    title = data.get("title", "").strip()
+    item_type = data.get("type", "geodonnee").strip()
+    format_type = data.get("format_type", "").strip()
+    description = data.get("description", "").strip()
+    data_format_level = data.get("data_format_level", "individual").strip()
+    organization_id = data.get("organization_id", "").strip()
+    license_type = data.get("license_type", "").strip() or None
+    custom_license_text = data.get("custom_license_text", "").strip() or None
+    if license_type == "other" and custom_license_text:
+        license_type = custom_license_text
+    elif license_type == "other":
+        license_type = None
+    pdf_magnet_link = data.get("pdf_magnet_link", "").strip() or None
+    status = data.get("status", "published").strip()
+    if status not in ("published", "draft"):
+        status = "published"
+    return title, item_type, format_type, description, data_format_level, organization_id, license_type, pdf_magnet_link, status
 
 
-@bp.route("/api/users/change-password", methods=["POST"])
-@login_required
-@limiter.limit("3 per hour")
-def change_password():
-    data = request.get_json()
-
-    current_user = get_current_user()
-    if not current_user:
-        return jsonify({"error": "Utilisateur non trouvé"}), 401
-
-    current_pw = data.get("current_password", "")
-    new_pw = data.get("new_password", "")
-
-    if not current_pw or not new_pw:
-        return jsonify({"error": "Mot de passe actuel et nouveau mot de passe requis"}), 400
-
-    if not check_password_hash(current_user.password_hash, current_pw):
-        return jsonify({"error": "Mot de passe actuel incorrect"}), 401
-
-    strength_ok, errors = validate_password_strength(new_pw)
-    if not strength_ok:
-        return jsonify({"error": "Mot de passe trop faible", "details": errors}), 400
-
-    current_user.password_hash = generate_password_hash(new_pw, method="scrypt")
-    db.session.commit()
-
-    return jsonify({"message": "Mot de passe modifié avec succès"})
+def _check_org_membership(current_user, organization_id):
+    org_id = int(organization_id) if organization_id and str(organization_id).isdigit() else None
+    if org_id:
+        membership = OrganizationMember.query.filter_by(
+            user_id=current_user.id, organization_id=org_id, is_active=True,
+        ).first()
+        if not membership:
+            return None, jsonify({"error": "Organisation non autorisée"}), 403
+    return org_id, None, None
 
 
-def validate_password_strength(password: str):
-    errors = []
-    if len(password) < 8:
-        errors.append("Le mot de passe doit contenir au moins 8 caractères")
-    if not re.search(r"[A-Z]", password):
-        errors.append("Le mot de passe doit contenir au moins une majuscule")
-    if not re.search(r"[a-z]", password):
-        errors.append("Le mot de passe doit contenir au moins une minuscule")
-    if not re.search(r"\d", password):
-        errors.append("Le mot de passe doit contenir au moins un chiffre")
-    if not re.search(r"[!@#$%^&*()_+\-={}\[\];':\"\\|,.<>/?~`]", password):
-        errors.append("Le mot de passe doit contenir au moins un caractère spécial (!@#$%^&*...)")
-    return len(errors) == 0, errors
+def _link_chunk(current_user, chunk_id, item_id):
+    if not chunk_id:
+        return
+    try:
+        chunk_id_int = int(chunk_id)
+    except (TypeError, ValueError):
+        return
+    chunk = DataChunk.query.filter_by(id=chunk_id_int, owner_user_id=current_user.id).first()
+    if chunk:
+        chunk.parent_item_id = item_id
+        upload_row = UserUpload.query.filter_by(chunk_id=chunk.id, owner_user_id=current_user.id).first()
+        if upload_row:
+            upload_row.parent_item_id = item_id
+
+
+def _create_viz_link(data, item_id):
+    viz_link_name = data.get("viz_link_name", "").strip()
+    viz_link_url = data.get("viz_link_url", "").strip()
+    if viz_link_name and viz_link_url:
+        from app import validate_external_url
+        if not validate_external_url(viz_link_url):
+            return jsonify({"error": "URL invalide ou non sécurisée"}), 400
+        db.session.add(VisualizationLink(
+            parent_item_id=item_id, name=viz_link_name[:200], url=viz_link_url,
+            owner_user_id=get_current_user().id, link_type=data.get("link_type", "external"),
+        ))
+    return None
+
+
+def _process_magnets(item, data_format_level, data):
+    if data_format_level == "pack":
+        magnet = data.get("magnet_link", "").strip()
+        if magnet:
+            if not validate_magnet_link(magnet):
+                return jsonify({"error": "Lien magnet invalide"}), 400
+            item.magnet_link = magnet
+    else:
+        magnet_links = data.get("magnet_links", [])
+        if magnet_links:
+            item.metadata_json = [
+                {"magnet_link": ml.get("magnet_link", ""), "zoom_level": ml.get("zoom_level", "")}
+                for ml in magnet_links if validate_magnet_link(ml.get("magnet_link", ""))
+            ]
+    return None
+
+
+def _process_image_magnets_async(item_id, image_magnets):
+    if not image_magnets:
+        return
+    _item_id = item_id
+    _image_magnets = list(image_magnets)
+
+    def _process_images():
+        from src.image_cache import process_image_magnets
+        process_image_magnets(_item_id, _image_magnets)
+
+    thread = threading.Thread(target=_process_images, daemon=True)
+    thread.start()
 
 
 @bp.route("/api/items/<int:item_id>/viz-links", methods=["POST"])
@@ -418,50 +406,23 @@ def create_upload_item():
     current_user = get_current_user()
 
     data = request.get_json(silent=True) or {}
-    title = data.get("title", "").strip()
+    title, item_type, format_type, description, data_format_level, organization_id, license_type, pdf_magnet_link, status = _parse_item_data(data)
     chunk_id = data.get("chunk_id")
-    item_type = data.get("type", "geodonnee").strip()
-    format_type = data.get("format_type", "").strip()
-    description = data.get("description", "").strip()
-    data_format_level = data.get("data_format_level", "individual").strip()
-    organization_id = data.get("organization_id", "").strip()
-    license_type = data.get("license_type", "").strip() or None
-    custom_license_text = data.get("custom_license_text", "").strip() or None
-    if license_type == "other" and custom_license_text:
-        license_type = custom_license_text
-    elif license_type == "other":
-        license_type = None
-    pdf_magnet_link = data.get("pdf_magnet_link", "").strip() or None
-
-    status = data.get("status", "published").strip()
-    if status not in ("published", "draft"):
-        status = "published"
 
     if not title:
         return jsonify({"error": "Le titre est requis"}), 400
     if item_type not in ALLOWED_ITEM_TYPES:
         return jsonify({"error": "Type de contenu invalide"}), 400
 
-    org_id = int(organization_id) if organization_id and str(organization_id).isdigit() else None
-    if org_id:
-        membership = OrganizationMember.query.filter_by(
-            user_id=current_user.id,
-            organization_id=org_id,
-            is_active=True,
-        ).first()
-        if not membership:
-            return jsonify({"error": "Organisation non autorisée"}), 403
+    org_id, error, code = _check_org_membership(current_user, organization_id)
+    if error:
+        return error, code
 
     item = Item(
-        type=item_type,
-        title=title,
-        description=description or "",
-        format_type=format_type or None,
-        magnet_link="",
-        owner_user_id=current_user.id,
-        author_name=f"{current_user.prenom} {current_user.nom}",
-           organization_id=org_id,
-            verification_status="unofficial",
+        type=item_type, title=title, description=description or "",
+        format_type=format_type or None, magnet_link="",
+        owner_user_id=current_user.id, author_name=f"{current_user.prenom} {current_user.nom}",
+        organization_id=org_id, verification_status="unofficial",
         data_format_level=data_format_level,
         license_type=license_type or None,
         pdf_magnet_link=pdf_magnet_link if validate_magnet_link(pdf_magnet_link) else None,
@@ -470,66 +431,18 @@ def create_upload_item():
     db.session.add(item)
     db.session.flush()
 
-    if chunk_id:
-        try:
-            chunk_id_int = int(chunk_id)
-        except (TypeError, ValueError):
-            chunk_id_int = None
-        if chunk_id_int:
-            chunk = DataChunk.query.filter_by(id=chunk_id_int, owner_user_id=current_user.id).first()
-            if chunk:
-                chunk.parent_item_id = item.id
-                upload_row = UserUpload.query.filter_by(chunk_id=chunk.id, owner_user_id=current_user.id).first()
-                if upload_row:
-                    upload_row.parent_item_id = item.id
-
-    viz_link_name = data.get("viz_link_name", "").strip()
-    viz_link_url = data.get("viz_link_url", "").strip()
-    if viz_link_name and viz_link_url:
-        from app import validate_external_url
-        if not validate_external_url(viz_link_url):
-            return jsonify({"error": "URL invalide ou non sécurisée"}), 400
-        link = VisualizationLink(
-            parent_item_id=item.id,
-            name=viz_link_name[:200],
-            url=viz_link_url,
-            owner_user_id=current_user.id,
-            link_type=data.get("link_type", "external"),
-        )
-        db.session.add(link)
+    _link_chunk(current_user, chunk_id, item.id)
+    err = _create_viz_link(data, item.id)
+    if err:
+        return err
 
     if status != "draft":
-        if data_format_level == "pack":
-            magnet = data.get("magnet_link", "").strip()
-            if magnet:
-                if not validate_magnet_link(magnet):
-                    return jsonify({"error": "Lien magnet invalide"}), 400
-                item.magnet_link = magnet
-        else:
-            magnet_links = data.get("magnet_links", [])
-            if magnet_links:
-                links_json = [
-                    {
-                        "magnet_link": ml.get("magnet_link", ""),
-                        "zoom_level": ml.get("zoom_level", ""),
-                    }
-                    for ml in magnet_links
-                    if validate_magnet_link(ml.get("magnet_link", ""))
-                ]
-                item.metadata_json = links_json
-
-        image_magnets = data.get("image_magnets", [])
-        if image_magnets:
-            _item_id = item.id
-            _image_magnets = list(image_magnets)
-            def _process_images():
-                from src.image_cache import process_image_magnets
-                process_image_magnets(_item_id, _image_magnets)
-            thread = threading.Thread(target=_process_images, daemon=True)
-            thread.start()
+        err = _process_magnets(item, data_format_level, data)
+        if err:
+            return err
+        _process_image_magnets_async(item.id, data.get("image_magnets", []))
 
     db.session.commit()
-
     return jsonify({"status": "created", "id": item.id})
 
 
@@ -543,34 +456,17 @@ def update_draft_item(item_id):
         return jsonify({"error": "Non autorisé"}), 403
 
     data = request.get_json(silent=True) or {}
-    title = data.get("title", "").strip()
-    item_type = data.get("type", "geodonnee").strip()
-    format_type = data.get("format_type", "").strip()
-    description = data.get("description", "").strip()
-    data_format_level = data.get("data_format_level", "individual").strip()
-    organization_id = data.get("organization_id", "").strip()
-    license_type = data.get("license_type", "").strip() or None
-    custom_license_text = data.get("custom_license_text", "").strip() or None
-    if license_type == "other" and custom_license_text:
-        license_type = custom_license_text
-    elif license_type == "other":
-        license_type = None
-    pdf_magnet_link = data.get("pdf_magnet_link", "").strip() or None
+    title, item_type, format_type, description, data_format_level, organization_id, license_type, pdf_magnet_link, status = _parse_item_data(data)
+    chunk_id = data.get("chunk_id")
 
     if not title:
         return jsonify({"error": "Le titre est requis"}), 400
     if item_type not in ALLOWED_ITEM_TYPES:
         return jsonify({"error": "Type de contenu invalide"}), 400
 
-    org_id = int(organization_id) if organization_id and str(organization_id).isdigit() else None
-    if org_id:
-        membership = OrganizationMember.query.filter_by(
-            user_id=current_user.id,
-            organization_id=org_id,
-            is_active=True,
-        ).first()
-        if not membership:
-            return jsonify({"error": "Organisation non autorisée"}), 403
+    org_id, error, code = _check_org_membership(current_user, organization_id)
+    if error:
+        return error, code
 
     item.type = item_type
     item.title = title
@@ -580,69 +476,17 @@ def update_draft_item(item_id):
     item.data_format_level = data_format_level
     item.license_type = license_type or None
     item.pdf_magnet_link = pdf_magnet_link if validate_magnet_link(pdf_magnet_link) else None
+    item.status = status
 
-    new_status = data.get("status", "published").strip()
-    if new_status not in ("published", "draft"):
-        new_status = "published"
-    item.status = new_status
+    _link_chunk(current_user, chunk_id, item.id)
+    err = _create_viz_link(data, item.id)
+    if err:
+        return err
 
-    chunk_id = data.get("chunk_id")
-    if chunk_id:
-        try:
-            chunk_id_int = int(chunk_id)
-        except (TypeError, ValueError):
-            chunk_id_int = None
-        if chunk_id_int:
-            chunk = DataChunk.query.filter_by(id=chunk_id_int, owner_user_id=current_user.id).first()
-            if chunk:
-                chunk.parent_item_id = item.id
-                upload_row = UserUpload.query.filter_by(chunk_id=chunk.id, owner_user_id=current_user.id).first()
-                if upload_row:
-                    upload_row.parent_item_id = item.id
-
-    viz_link_name = data.get("viz_link_name", "").strip()
-    viz_link_url = data.get("viz_link_url", "").strip()
-    if viz_link_name and viz_link_url:
-        from app import validate_external_url
-        if not validate_external_url(viz_link_url):
-            return jsonify({"error": "URL invalide ou non sécurisée"}), 400
-        link = VisualizationLink(
-            parent_item_id=item.id,
-            name=viz_link_name[:200],
-            url=viz_link_url,
-            owner_user_id=current_user.id,
-            link_type=data.get("link_type", "external"),
-        )
-        db.session.add(link)
-
-    if data_format_level == "pack":
-        magnet = data.get("magnet_link", "").strip()
-        if magnet:
-            if not validate_magnet_link(magnet):
-                return jsonify({"error": "Lien magnet invalide"}), 400
-            item.magnet_link = magnet
-    else:
-        magnet_links = data.get("magnet_links", [])
-        if magnet_links:
-            links_json = [
-                {
-                    "magnet_link": ml.get("magnet_link", ""),
-                    "zoom_level": ml.get("zoom_level", ""),
-                }
-                for ml in magnet_links
-                if validate_magnet_link(ml.get("magnet_link", ""))
-            ]
-            item.metadata_json = links_json
-
-    image_magnets = data.get("image_magnets", [])
-    if image_magnets:
-        _item_id = item.id
-        _image_magnets = list(image_magnets)
-        def _process_images():
-            from src.image_cache import process_image_magnets
-            process_image_magnets(_item_id, _image_magnets)
-        thread = threading.Thread(target=_process_images, daemon=True)
-        thread.start()
+    err = _process_magnets(item, data_format_level, data)
+    if err:
+        return err
+    _process_image_magnets_async(item.id, data.get("image_magnets", []))
 
     db.session.commit()
     return jsonify({"status": "updated", "id": item.id})

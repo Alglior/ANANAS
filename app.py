@@ -4,7 +4,7 @@ import hashlib
 import os
 import secrets
 
-from src.shared import Config, _build_page_numbers, ITEMS_PER_PAGE, SECRET_FILE, login_required, get_current_user
+from src.shared import Config, login_required, get_current_user
 
 from flask import Flask, render_template, redirect, url_for, request, session, jsonify, g, current_app
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -203,7 +203,7 @@ def create_app(app_name="ANANAS"):
     # Définition des routes statiques
     routes = []
 
-    # Enregistrement dynamique des routes
+    # Enregistrer tous les blueprints
     from src import _register_view, _legacy_catalogue, register_all_blueprints
 
     for route_cfg in routes:
@@ -211,35 +211,7 @@ def create_app(app_name="ANANAS"):
         endpoint = rule.lstrip("/") or "home"
         _register_view(app, rule, route_cfg["template"], route_cfg["title"], route_cfg["meta"])
 
-    # Enregistrer tous les blueprints (catalogue convertisseur + routes)
     register_all_blueprints(app)
-
-    # Enregistrer les autres blueprints
-    from src.auth_routes import bp as auth_bp
-    from src.item_routes import bp as items_bp
-    from src.interactions import bp as interactions_bp
-    from src.organization_routes import bp as org_bp
-    from src.admin_routes import bp as admin_bp
-    from src.user_routes import bp as user_bp
-    from src.contact_routes import bp as contact_bp
-    from src.privacy_routes import bp as privacy_bp
-    from src.legal_routes import bp as legal_bp
-    from src.tos_routes import bp as tos_bp
-    from src.doc_routes import bp as doc_bp
-    from src.index_routes import bp as index_bp
-
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(items_bp)
-    app.register_blueprint(interactions_bp)
-    app.register_blueprint(org_bp)
-    app.register_blueprint(admin_bp)
-    app.register_blueprint(user_bp)
-    app.register_blueprint(contact_bp)
-    app.register_blueprint(privacy_bp)
-    app.register_blueprint(legal_bp)
-    app.register_blueprint(tos_bp)
-    app.register_blueprint(doc_bp)
-    app.register_blueprint(index_bp)
 
     # Route legacy /catalogue avec endpoint="catalogue" pour compatibilité templates
     @app.route("/catalogue", endpoint="catalogue")

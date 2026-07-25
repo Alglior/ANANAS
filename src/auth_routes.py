@@ -1,27 +1,12 @@
 import datetime
-import re
 
 from flask import Blueprint, request, render_template, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, limiter
 from utils.security import sanitize_html
+from src.shared import validate_password_strength
 
 bp = Blueprint("auth", __name__)
-
-
-def validate_password_strength(password: str) -> tuple[bool, list[str]]:
-    errors = []
-    if len(password) < 8:
-        errors.append("Le mot de passe doit contenir au moins 8 caractères")
-    if not re.search(r"[A-Z]", password):
-        errors.append("Le mot de passe doit contenir au moins une majuscule")
-    if not re.search(r"[a-z]", password):
-        errors.append("Le mot de passe doit contenir au moins une minuscule")
-    if not re.search(r"\d", password):
-        errors.append("Le mot de passe doit contenir au moins un chiffre")
-    if not re.search(r"[!@#$%^&*()_+\-={}\[\];':\"\\|,.<>/?~`]", password):
-        errors.append("Le mot de passe doit contenir au moins un caractère spécial (!@#$%^&*...)")
-    return len(errors) == 0, errors
 
 
 @bp.route("/connexion")
