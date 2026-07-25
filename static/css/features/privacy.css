@@ -1,0 +1,53 @@
+.legal-page {
+  padding: 3rem 0;
+}
+
+.legal-page h1 {
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+  color: var(--text-primary);
+}
+
+.legal-update {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+.legal-page section {
+  margin-bottom: 2rem;
+}
+
+.legal-page section h2 {
+  font-size: 1.3rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 0.4rem;
+}
+
+.legal-page p {
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.legal-page ul {
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.legal-page ul li {
+  line-height: 1.7;
+  margin-bottom: 0.3rem;
+  color: var(--text-secondary);
+}
+
+.legal-page a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.legal-page a:hover {
+  color: var(--color-primary-hover);
+}
