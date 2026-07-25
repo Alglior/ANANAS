@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/features/doc.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="doc-page">
+  <div class="container doc-layout">
+    <aside class="doc-sidebar">
+      <h2>Documentation</h2>
+      <nav class="doc-nav">
+        <ul>
+          {% for doc in docs %}
+          <li>
+            <a href="/docs/{{ doc.slug }}">{{ doc.title }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </nav>
+    </aside>
+    <article class="doc-content">
+      <h1>Documentation</h1>
+      <p class="doc-intro">Bienvenue dans la documentation d'A.N.A.N.A.S. Sélectionnez un article dans le menu de gauche.</p>
+      <div class="doc-card-list">
+        {% for doc in docs %}
+        <a href="/docs/{{ doc.slug }}" class="doc-card">
+          <h2>{{ doc.title }}</h2>
+          <p>Consulter la documentation</p>
+        </a>
+        {% endfor %}
+      </div>
+    </article>
+  </div>
+</main>
+{% endblock %}

@@ -220,6 +220,7 @@ def create_app(app_name="ANANAS"):
     from src.privacy_routes import bp as privacy_bp
     from src.legal_routes import bp as legal_bp
     from src.tos_routes import bp as tos_bp
+    from src.doc_routes import bp as doc_bp
     from src.index_routes import bp as index_bp
 
     app.register_blueprint(auth_bp)
@@ -232,6 +233,7 @@ def create_app(app_name="ANANAS"):
     app.register_blueprint(privacy_bp)
     app.register_blueprint(legal_bp)
     app.register_blueprint(tos_bp)
+    app.register_blueprint(doc_bp)
     app.register_blueprint(index_bp)
 
     # Route legacy /catalogue avec endpoint="catalogue" pour compatibilité templates
