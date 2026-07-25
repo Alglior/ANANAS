@@ -1,0 +1,128 @@
+/* ── Custom file upload ── */
+.file-upload-group {
+  margin-bottom: 1rem;
+}
+
+.file-drop-zone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 2rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--forest);
+  background: var(--white);
+  border: 2px solid var(--forest);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.file-drop-zone:hover {
+  background: var(--forest);
+  color: var(--white);
+  border-color: var(--forest);
+}
+
+.file-drop-zone.drag-over {
+  background: rgba(34, 139, 32, 0.1);
+  border-color: var(--mustard);
+  color: var(--charcoal);
+}
+
+.file-drop-text {
+  margin: 0;
+}
+
+/* ── Zoom pills ── */
+.zoom-pills {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 0.35rem;
+}
+
+.zoom-pill {
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--white);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.zoom-pill:hover {
+  border-color: var(--mustard);
+  background: rgba(212, 175, 55, 0.1);
+}
+
+.zoom-pill.active {
+  background: var(--mustard);
+  border-color: var(--mustard);
+  color: var(--charcoal);
+  font-weight: 600;
+}
+
+/* ── Magnet entry ── */
+.magnet-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.magnet-entry-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.magnet-entry .form-control {
+  flex: 1;
+}
+
+.magnet-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* ── Bulk magnet ── */
+.bulk-magnet-group {
+  background: var(--white);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 0.75rem;
+}
+
+.bulk-magnet-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
+.bulk-magnet-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+/* ── Image magnet entry ── */
+.image-magnet-entry {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.image-magnet-entry .form-control.flex-3 {
+  flex: 3;
+}
+
+.image-magnet-entry .form-control.flex-2 {
+  flex: 2;
+}

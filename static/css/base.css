@@ -74,6 +74,12 @@
   --forest-btn-hover: #2a9f2a;
   --forest-active-hover: #3ab83a;
 
+  /* Shadow tokens */
+  --shadow-color-soft: rgba(0, 0, 0, 0.08);
+  --shadow-mustard-btn: 0 6px 14px rgba(218, 165, 32, 0.28);
+  --shadow-mustard-btn-hover: 0 9px 18px rgba(218, 165, 32, 0.32);
+  --shadow-mustard-focus: 0 0 0 3px rgba(218, 165, 32, 0.15);
+
   /* Spacing tokens */
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;

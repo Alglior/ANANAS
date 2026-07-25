@@ -83,6 +83,89 @@
   border: 1px solid rgba(155, 89, 182, 0.35);
 }
 
+/* Status badges — filled variant */
+.badge-verified {
+  background: var(--color-success);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  display: inline-block;
+}
+
+.badge-pending {
+  background: var(--color-warning);
+  color: var(--charcoal);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  display: inline-block;
+}
+
+.badge-unofficial {
+  background: var(--color-muted);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  display: inline-block;
+}
+
+.badge-rejected {
+  background: var(--color-danger);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  display: inline-block;
+  opacity: 0.7;
+}
+
+/* Status badges — outline variant */
+.badge-outline-success {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: var(--forest);
+  background: rgba(34, 139, 34, 0.11);
+  border: 1px solid rgba(34, 139, 34, 0.35);
+}
+
+.badge-outline-danger {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: var(--color-danger);
+  background: rgba(220, 53, 69, 0.11);
+  border: 1px solid rgba(220, 53, 69, 0.35);
+}
+
+.badge-outline-warning {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: var(--mustard);
+  background: rgba(218, 165, 32, 0.11);
+  border: 1px solid rgba(218, 165, 32, 0.35);
+}
+
+.badge-outline-info {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: var(--color-blue);
+  background: rgba(45, 140, 255, 0.11);
+  border: 1px solid rgba(45, 140, 255, 0.35);
+}
+
 .status-processing {
   color: var(--color-blue);
 }
@@ -93,10 +176,6 @@
 
 .status-pending {
   color: var(--mustard);
-}
-
-.status-processing {
-  color: #2d8cff;
 }
 
 .status-completed {

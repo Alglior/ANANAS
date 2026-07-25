@@ -83,3 +83,57 @@
 .copy-feedback-visible {
   opacity: 1 !important;
 }
+
+/* Small button variant */
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* Danger button variant */
+.btn-danger {
+  background: var(--color-danger);
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btn-danger:hover {
+  opacity: 0.85;
+}
+
+/* Green/forest button variant */
+.btn-green {
+  background: var(--forest);
+  color: var(--white);
+  text-decoration: none;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
+}
+
+.btn-green:hover {
+  opacity: 0.85;
+}
+
+/* Verify / Unverify action buttons */
+.btn-verify {
+  background: var(--color-success);
+  color: var(--white);
+}
+
+.btn-verify:hover {
+  opacity: 0.85;
+}
+
+.btn-unverify {
+  background: var(--color-muted);
+  color: var(--white);
+}
+
+.btn-unverify:hover {
+  opacity: 0.85;
+}

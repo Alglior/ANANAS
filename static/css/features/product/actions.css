@@ -1,0 +1,192 @@
+/* ==========================================================================
+   Product actions — banderolle, buy box, download buttons
+   ========================================================================== */
+
+/* Banderolle — horizontal banner sous breadcrumb */
+.banderolle {
+  margin-top: 1rem;
+  padding: 0;
+  background: var(--forest);
+  color: var(--white);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  width: 100%;
+  min-height: 75px;
+  display: flex;
+  align-items: center;
+}
+
+.banderolle-spacer {
+  flex: 1;
+}
+
+/* Band style buttons */
+.btn-band {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 75px;
+  padding: 0 1.8rem;
+  text-decoration: none;
+  color: var(--white);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: filter 0.2s ease;
+}
+
+.btn-band:hover {
+  background-color: var(--forest-btn-hover);
+}
+
+.btn-band:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 4px 12px rgba(218, 165, 32, 0.3);
+}
+
+.apercu-btn:hover {
+  background-color: var(--forest-active-hover);
+}
+
+.visu-btn:hover {
+  background-color: var(--forest-btn-hover);
+}
+
+.apercu-btn {
+  background: var(--forest-active);
+  color: var(--charcoal);
+  border-bottom: 3px solid var(--white);
+  margin-left: 1rem;
+}
+
+.visu-btn {
+  background: var(--forest-band);
+  color: var(--white);
+  border-bottom: 3px solid transparent;
+}
+
+.donnee_btn {
+  background: transparent;
+}
+
+/* Buy / Download box */
+.buy-box {
+  background: var(--light-gray);
+  border-radius: 8px;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid var(--border-color);
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.65rem;
+}
+
+.price-label {
+  font-size: 0.875rem;
+  color: var(--specs-gray);
+  font-weight: 500;
+}
+
+.price-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.price-value.mono {
+  font-family: var(--mono);
+  font-size: 1rem;
+}
+
+.buy-divider {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 1rem 0 0.75rem;
+}
+
+.download-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.btn-download {
+  background: var(--mustard);
+  color: var(--charcoal);
+  border: none;
+  padding: 0.85rem 1.6rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow-mustard-btn);
+}
+
+.btn-download:hover {
+  box-shadow: var(--shadow-mustard-btn-hover);
+}
+
+.scroll-btn {
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+  line-height: 1.4;
+  transition: box-shadow 0.2s ease;
+  font-size: 1rem;
+}
+
+.btn-copy-secondary {
+  border-width: 2px;
+  padding: 0.8rem 1.4rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.btn-copy-secondary:hover {
+  background: rgba(34, 139, 34, 0.08);
+}
+
+.no-download {
+  color: var(--specs-gray);
+  font-style: italic;
+  margin-top: 0.75rem;
+}
+
+/* PDF buttons */
+.btn-pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--forest);
+  color: var(--white);
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.btn-pdf:hover {
+  background: var(--hover-forest);
+}
+
+.btn-pdf-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-width: 2px;
+  padding: 0.7rem 1.2rem;
+  text-decoration: none;
+}
+
+.btn-pdf-download:hover {
+  background: rgba(34, 139, 34, 0.08);
+}
