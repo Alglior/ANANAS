@@ -6,6 +6,9 @@ var ImageModalModule = (function () {
     var modal = document.getElementById("imageModal");
     if (!modal) return;
 
+    var mainEl = document.querySelector(".detail-page");
+    var isPending = mainEl && mainEl.getAttribute("data-image-pending") === "true";
+
     var mainImg = document.getElementById("mainProductImg");
     if (!mainImg) return;
 
@@ -51,6 +54,8 @@ var ImageModalModule = (function () {
       images.push(rawSrc);
     }
 
+    var pendingMessage = modal.querySelector(".modal-pending-msg");
+
     function updateActiveThumb() {
       if (!thumbContainer) return;
       var thumbs = thumbContainer.querySelectorAll(".modal-thumb");
@@ -74,10 +79,19 @@ var ImageModalModule = (function () {
     }
 
     function showModal(index) {
+      if (isPending) {
+        if (pendingMessage) pendingMessage.classList.remove("hidden-section");
+        modalImg.classList.add("hidden-section");
+        modal.classList.add("open");
+        document.body.classList.add("modal-open");
+        return;
+      }
       if (typeof index === "number" && !isNaN(index)) {
         currentIndex = Math.min(index, images.length - 1);
       }
       modalImg.setAttribute("src", images[currentIndex]);
+      if (pendingMessage) pendingMessage.classList.add("hidden-section");
+      modalImg.classList.remove("hidden-section");
       modal.classList.add("open");
       document.body.classList.add("modal-open");
       updateActiveThumb();
@@ -95,27 +109,29 @@ var ImageModalModule = (function () {
       updateActiveThumb();
     }
 
-    mainImg.addEventListener("click", function () {
-      currentIndex = 0;
-      showModal();
-    });
+    if (!isPending) {
+      mainImg.addEventListener("click", function () {
+        currentIndex = 0;
+        showModal();
+      });
+
+      if (thumbContainer) {
+        var allThumbs = thumbContainer.querySelectorAll(".modal-thumb");
+        for (var k = 0; k < allThumbs.length; k++) {
+          (function (idx) {
+            allThumbs[idx].addEventListener("click", function () {
+              currentIndex = Math.min(idx, images.length - 1);
+              showModal();
+            });
+          })(k);
+        }
+      }
+    }
 
     if (backdrop) backdrop.addEventListener("click", hideModal);
     if (closeBtn) closeBtn.addEventListener("click", hideModal);
     if (prevBtn) prevBtn.addEventListener("click", function () { navigate(-1); });
     if (nextBtn) nextBtn.addEventListener("click", function () { navigate(1); });
-
-    if (thumbContainer) {
-      var allThumbs = thumbContainer.querySelectorAll(".modal-thumb");
-      for (var k = 0; k < allThumbs.length; k++) {
-        (function (idx) {
-          allThumbs[idx].addEventListener("click", function () {
-            currentIndex = Math.min(idx, images.length - 1);
-            showModal();
-          });
-        })(k);
-      }
-    }
 
     document.addEventListener("keydown", function (e) {
       if (!modal.classList.contains("open")) return;

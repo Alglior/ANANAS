@@ -277,8 +277,11 @@ def _process_image_magnets_async(item_id, image_magnets):
     _image_magnets = list(image_magnets)
 
     def _process_images():
-        from src.image_cache import process_image_magnets
-        process_image_magnets(_item_id, _image_magnets)
+        from app import create_app
+        _app = create_app()
+        with _app.app_context():
+            from src.image_cache import process_image_magnets
+            process_image_magnets(_item_id, _image_magnets)
 
     thread = threading.Thread(target=_process_images, daemon=True)
     thread.start()
@@ -440,7 +443,11 @@ def create_upload_item():
         err = _process_magnets(item, data_format_level, data)
         if err:
             return err
-        _process_image_magnets_async(item.id, data.get("image_magnets", []))
+        image_magnets = data.get("image_magnets", [])
+        if image_magnets:
+            item.image_magnets_pending = True
+            item.image_magnets_total = len(image_magnets)
+        _process_image_magnets_async(item.id, image_magnets)
 
     db.session.commit()
     return jsonify({"status": "created", "id": item.id})
@@ -486,7 +493,11 @@ def update_draft_item(item_id):
     err = _process_magnets(item, data_format_level, data)
     if err:
         return err
-    _process_image_magnets_async(item.id, data.get("image_magnets", []))
+    image_magnets = data.get("image_magnets", [])
+    if image_magnets:
+        item.image_magnets_pending = True
+        item.image_magnets_total = len(image_magnets)
+    _process_image_magnets_async(item.id, image_magnets)
 
     db.session.commit()
     return jsonify({"status": "updated", "id": item.id})

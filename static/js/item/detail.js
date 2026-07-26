@@ -68,4 +68,21 @@
     'comment-pagination',
     { navClass: 'mod-pagination-nav', ariaLabel: 'Pagination des commentaires' }
   );
+
+  var imagePending = mainEl.getAttribute('data-image-pending') === 'true';
+  if (imagePending) {
+    var pollInterval = setInterval(function () {
+      fetch('/api/items/' + itemId + '/image-status', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data.pending) {
+            clearInterval(pollInterval);
+            window.location.reload();
+          }
+        })
+        .catch(function () {});
+    }, 2000);
+  }
 })();

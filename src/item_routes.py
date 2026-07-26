@@ -97,6 +97,18 @@ def item_details_json(item_id):
     })
 
 
+@bp.route("/api/items/<int:item_id>/image-status")
+def item_image_status(item_id):
+    from models import Item
+
+    item = Item.query.get_or_404(item_id)
+    return jsonify({
+        "pending": item.image_magnets_pending,
+        "total": item.image_magnets_total,
+        "current": len(item.gallery_items),
+    })
+
+
 @bp.route("/catalogue/item/<int:item_id>")
 def item_detail_view(item_id):
     from models import Item, User

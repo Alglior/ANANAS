@@ -28,6 +28,9 @@ services:
     env_file: .env          # reads POSTGRES_*, FLASK_SECRET_KEY from .env
     environment:
       - FLASK_ENV=development
+      - QBITTORRENT_URL=http://qbittorrent:8081
+      - QBITTORRENT_USERNAME=${QBITTORRENT_USERNAME-admin}
+      - QBITTORRENT_PASSWORD=${QBITTORRENT_PASSWORD-adminadmin}
     expose:
       - "5000"              # internal only, behind nginx
     depends_on:
@@ -36,6 +39,8 @@ services:
     volumes:
       - secret_key:/app/.secret   # persist .secret file across container rebuilds
       - catalogue_config:/app/data   # persist catalogue config across container rebuilds
+      - qbittorrent_downloads:/qbittorrent_downloads:ro  # read qBittorrent completed downloads
+      - image_cache:/app/instance/image_cache  # persist downloaded image cache
     healthcheck:
       test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:5000/health')\" || exit 1"]
       interval: 10s
@@ -63,8 +68,34 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql
 
-# ─── Named volumes (survive container deletion) ───
+  # ─── qBittorrent (torrent downloader/seeder for image magnets) ───
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: ananas_qbittorrent
+    env_file: .env
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Paris
+      - WEBUI_PORT=8081
+      - TORRENTING_PORT=6881
+      - QBT_USERNAME=admin
+      - QBT_PASSWORD=adminadmin
+    expose:
+      - "8081"              # Web UI, internal only
+    ports:
+      - "6881:6881"
+      - "6881:6881/udp"
+    volumes:
+      - qbittorrent_config:/config
+      - qbittorrent_downloads:/downloads
+    restart: unless-stopped
+
+  # ─── Named volumes (survive container deletion) ───
 volumes:
   pg_data:       # Postgres data directory
   secret_key:    # Flask .secret file persistence
   catalogue_config:  # Catalogue enabled/disabled config
+  qbittorrent_config:   # qBittorrent config
+  qbittorrent_downloads:  # qBittorrent downloads
+  image_cache:  # Downloaded image cache

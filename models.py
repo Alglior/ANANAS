@@ -30,6 +30,8 @@ class Item(db.Model, TimestampMixin):
     status: Mapped[str] = mapped_column(default="published")
     deleted_at: Mapped[datetime.datetime | None]
     license_type: Mapped[str | None] = mapped_column(default=None)
+    image_magnets_pending: Mapped[bool] = mapped_column(default=False)
+    image_magnets_total: Mapped[int] = mapped_column(default=0)
     verifier_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     verified_at: Mapped[datetime.datetime | None]
     verification_notes: Mapped[str | None]
@@ -76,6 +78,8 @@ class Item(db.Model, TimestampMixin):
             "data_format_level": self.data_format_level,
             "status": self.status,
             "download_levels": self._get_download_levels(),
+            "image_magnets_pending": self.image_magnets_pending,
+            "image_magnets_total": self.image_magnets_total,
         }
         if include_details:
             result["visualization_links"] = [vl.to_dict() for vl in self.visualization_links]

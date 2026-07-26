@@ -282,6 +282,12 @@ UploadModule.submit = (function () {
   }
 
   function init() {
+    UploadModule.formControls.init();
+    UploadModule.dataInput.init();
+    UploadModule.magnets.init();
+    UploadModule.imageMagnets.init();
+    UploadModule.tabs.init();
+    UploadModule.history.init();
     initFormSubmission();
     initDraftBtn();
     initDownloadJson();
@@ -290,3 +296,5 @@ UploadModule.submit = (function () {
 
   return { init: init };
 })();
+
+UploadModule.submit.init();

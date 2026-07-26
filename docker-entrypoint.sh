@@ -64,5 +64,8 @@ fi
 echo "[entrypoint] Running flask db upgrade..."
 flask db upgrade
 
+echo "[entrypoint] Ensuring image cache directory..."
+mkdir -p /app/instance/image_cache
+
 echo "[entrypoint] Starting Gunicorn..."
 exec gunicorn -b 0.0.0.0:5000 --workers 3 --timeout 30 'app:create_app()'

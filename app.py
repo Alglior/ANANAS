@@ -3,6 +3,7 @@ import datetime
 import hashlib
 import os
 import secrets
+from pathlib import Path
 
 from src.shared import Config, login_required, get_current_user
 
@@ -33,6 +34,22 @@ def _is_production_env():
 db = SQLAlchemy()
 migrate = Migrate()
 limiter = Limiter(key_func=_get_client_ip, default_limits=["100 per hour"])
+
+
+def _run_migrations():
+    from sqlalchemy import inspect
+
+    inspector = inspect(db.engine)
+    columns = [col["name"] for col in inspector.get_columns("items")]
+
+    if "image_magnets_pending" not in columns:
+        print("Migration: adding image_magnets_pending column...")
+        db.session.execute(db.text("ALTER TABLE items ADD COLUMN image_magnets_pending BOOLEAN NOT NULL DEFAULT FALSE"))
+    if "image_magnets_total" not in columns:
+        print("Migration: adding image_magnets_total column...")
+        db.session.execute(db.text("ALTER TABLE items ADD COLUMN image_magnets_total INTEGER NOT NULL DEFAULT 0"))
+
+    db.session.commit()
 
 
 def create_app(app_name="ANANAS"):
@@ -139,9 +156,22 @@ def create_app(app_name="ANANAS"):
     db.init_app(app)
     migrate.init_app(app, db=db)
 
+    with app.app_context():
+        _run_migrations()
+
     @app.route("/health")
     def health_check():
         return {"status": "ok"}
+
+    @app.route("/static/cache/img/<filename>")
+    def serve_cached_image(filename):
+        cache_dir = Path(os.path.dirname(__file__)) / "instance" / "image_cache"
+        name = Path(filename).stem
+        file_path = cache_dir / name
+        if file_path.exists():
+            from flask import send_file
+            return send_file(str(file_path))
+        return ("", 404)
 
     # ────────────────────────────────────────────
     #  Security Headers & Cookie Settings

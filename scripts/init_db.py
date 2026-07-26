@@ -14,6 +14,17 @@ def init_db():
 
         if existing_tables:
             print(f"Tables already exist: {', '.join(existing_tables)}")
+
+            columns = [col["name"] for col in inspector.get_columns("items")]
+
+            if "image_magnets_pending" not in columns:
+                print("Adding image_magnets_pending column...")
+                db.session.execute(db.text("ALTER TABLE items ADD COLUMN image_magnets_pending BOOLEAN NOT NULL DEFAULT 0"))
+            if "image_magnets_total" not in columns:
+                print("Adding image_magnets_total column...")
+                db.session.execute(db.text("ALTER TABLE items ADD COLUMN image_magnets_total INTEGER NOT NULL DEFAULT 0"))
+
+            db.session.commit()
             return
 
         print("Creating database tables...")
