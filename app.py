@@ -77,16 +77,14 @@ def create_app(app_name="ANANAS"):
     @app.before_request
     def combined_before_request():
         g.csp_nonce = base64.b64encode(secrets.token_bytes(16)).decode()
-        try:
-            generate_csrf()
-        except RuntimeError:
-            pass
+
+        # For API JSON requests, validate CSRF header exists
         if request.method in ("POST", "PUT", "PATCH", "DELETE"):
             content_type = request.content_type or ""
             if "/api/" in request.path and "application/json" in content_type:
                 if current_app.config.get("TESTING") or not current_app.config.get("WTF_CSRF_ENABLED", True):
-                    return
-                if not request.headers.get("X-CSRF-Token"):
+                    pass
+                elif not request.headers.get("X-CSRF-Token"):
                     return jsonify({"error": "Token CSRF requis pour les requêtes API"}), 422
 
     # Chargement de la configuration
@@ -95,6 +93,7 @@ def create_app(app_name="ANANAS"):
     app.config.update(config.__dict__)
 
     # Protection CSRF: formulaires HTML protégés, routes /api/* exemptées (X-CSRF-Token header requis)
+    app.config["WTF_CSRF_FIELD_NAME"] = "_csrf_token"
     csrf = CSRFProtect(app)
 
     # Patch Flask-WTF : seul le healthcheck est exempté de CSRF
@@ -110,6 +109,9 @@ def create_app(app_name="ANANAS"):
             return
         endpoint = req.endpoint or ""
         if endpoint in EXEMPTED_ENDPOINTS:
+            return
+        # API JSON requests are validated in combined_before_request (X-CSRF-Token header check)
+        if "/api/" in req.path and "application/json" in (req.content_type or ""):
             return
         return _original_protect()
 

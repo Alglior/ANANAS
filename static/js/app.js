@@ -13,5 +13,4 @@ document.addEventListener("DOMContentLoaded", function () {
   if (typeof ImageModalModule !== "undefined") ImageModalModule.init();
   if (typeof CopyMagnetModule !== "undefined") CopyMagnetModule.init();
   if (typeof StarRatingModule !== "undefined") StarRatingModule.init();
-  if (typeof ReportModalModule !== "undefined") ReportModalModule.init();
 });

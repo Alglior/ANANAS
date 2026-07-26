@@ -399,9 +399,6 @@
         {% if current_user %}
         <form class="comment-form" method="POST" action="/catalogue/item/{{ item.id }}/comment">
           <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"/>
-          <div class="comment-form-fields">
-            <input class="comment-input" type="text" name="author" value="{{ current_user.prenom }} {{ current_user.nom }}" readonly>
-          </div>
           <div class="comment-form-textarea-wrap">
             <textarea name="text" placeholder="Ajouter un commentaire..." required></textarea>
           </div>
@@ -418,7 +415,7 @@
       <!-- Report section -->
       {% if current_user %}
       <section class="report-section">
-        <button id="open-report-modal">🚩 Signaler ce contenu</button>
+        <button id="open-report-modal">Signaler ce contenu</button>
 
         <div id="reportModal" class="modal modal-backdrop" data-target-type="{{ item.report_type or 'geodonnee' }}" data-target-id="{{ item.id }}">
           <div class="modal-box">
