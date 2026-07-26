@@ -59,35 +59,6 @@
 function renderReportPagination(data) {
     PaginationModule.renderPagination(data, 'report-pagination', { navClass: 'mod-pagination-nav', ariaLabel: 'Pagination des signalements' });
   }
-    let html = '<nav class="pagination mod-pagination-nav" aria-label="Pagination des signalements">';
-
-    if (data.page > 1) {
-      html += `<a class="btn btn-outline transition-hover pagination-prev" href="#" data-page="${data.page - 1}">&#9664;&nbsp;Précédent</a>`;
-    } else {
-      html += `<span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>`;
-    }
-
-    html += '<div class="pagination-numbers">';
-    for (const p of data.page_numbers) {
-      if (p === '...') {
-        html += '<span class="pagination-ellipsis">&hellip;</span>';
-      } else if (p === data.page) {
-        html += `<span class="pagination-link active">${p}</span>`;
-      } else {
-        html += `<a class="pagination-link" href="#" data-page="${p}">${p}</a>`;
-      }
-    }
-    html += '</div>';
-
-    if (data.page < data.total_pages) {
-      html += `<a class="btn btn-outline transition-hover pagination-next" href="#" data-page="${data.page + 1}">Suivant&nbsp;&#9658;</a>`;
-    } else {
-      html += `<span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>`;
-    }
-
-    html += '</nav>';
-    container.innerHTML = html;
-  }
 
   async function loadReportsPage(page) {
     if (page !== undefined) reportPage = page;

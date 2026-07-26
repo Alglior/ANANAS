@@ -67,5 +67,35 @@ flask db upgrade
 echo "[entrypoint] Ensuring image cache directory..."
 mkdir -p /app/instance/image_cache
 
+echo "[entrypoint] Setting qBittorrent password..."
+QB_PASS="${QBITTORRENT_PASSWORD:-adminadmin}"
+python3 -c "
+import requests, os, time
+qb_url = os.environ.get('QBITTORRENT_URL', 'http://qbittorrent:8081')
+qb_user = os.environ.get('QBITTORRENT_USERNAME', 'admin')
+qb_pass_new = '$QB_PASS'
+
+s = requests.Session()
+for attempt in range(30):
+    try:
+        r = s.post(f'{qb_url}/api/v2/auth/login', data={'username': qb_user, 'password': 'adminadmin'}, timeout=5)
+        if r.status_code == 204:
+            r = s.post(f'{qb_url}/api/v2/app/setPreferences', data={'json': '{\"web_ui_password\": \"' + qb_pass_new + '\"}'}, timeout=5)
+            if r.status_code == 200:
+                print('qBittorrent password set successfully')
+                break
+            else:
+                print(f'Failed to set password: {r.status_code}')
+        elif r.status_code == 401:
+            # password already changed, try new password
+            r = s.post(f'{qb_url}/api/v2/auth/login', data={'username': qb_user, 'password': qb_pass_new}, timeout=5)
+            if r.status_code == 204:
+                print('qBittorrent password already configured')
+                break
+    except Exception as e:
+        pass
+    time.sleep(2)
+"
+
 echo "[entrypoint] Starting Gunicorn..."
 exec gunicorn -b 0.0.0.0:5000 --workers 3 --timeout 30 'app:create_app()'

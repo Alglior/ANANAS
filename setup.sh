@@ -14,6 +14,10 @@ generate_random() {
     python3 -c "import secrets; print(secrets.token_hex(128))"   # 256 hex chars (cryptographic)
 }
 
+generate_password() {
+    python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+}
+
 # ──────────────────────────────────────────────
 #  Docker mode — generates .env if missing, then docker compose up
 # ──────────────────────────────────────────────
@@ -25,6 +29,7 @@ docker_setup() {
         local flask_key=$(generate_random)
 
         local admin_pass=$(python3 -c "import secrets; print(secrets.token_urlsafe(24))")
+        local qb_pass=$(generate_password)
 
         cat > "$ENV_FILE" <<EOF
 # ─── Postgres (generated automatically — SAVE THESE!) ───
@@ -39,6 +44,11 @@ ADMIN_PASSWORD=${admin_pass}
 
 # ─── Flask ───
 FLASK_SECRET_KEY=${flask_key}
+
+# ─── qBittorrent (image magnet downloads) ───
+QBITTORRENT_URL=http://qbittorrent:8081
+QBITTORRENT_USERNAME=admin
+QBITTORRENT_PASSWORD=${qb_pass}
 EOF
         chmod 600 "$ENV_FILE"
 
@@ -51,6 +61,9 @@ EOF
         printf "ADMIN_EMAIL         : %s\n" "system@ananas.local"
         printf "ADMIN_PASSWORD      : %s\n" "${admin_pass}"
         printf "FLASK_SECRET_KEY    : %s\n" "${flask_key}"
+        printf "QBITTORRENT_URL     : %s\n" "http://qbittorrent:8081"
+        printf "QBITTORRENT_USERNAME: %s\n" "admin"
+        printf "QBITTORRENT_PASSWORD: %s\n" "${qb_pass}"
         echo "=============================================="
     else
         echo "[SKIP] .env already exists."
