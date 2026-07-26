@@ -21,24 +21,17 @@
         </a>
         <div class="user-dropdown-wrapper" id="userDropdownWrapper">
           <button class="user-dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
+            {% if current_user.avatar_path %}
+            <img class="user-avatar-thumb" src="{{ current_user.avatar_path }}" alt="" />
+            {% endif %}
             {{ current_user.prenom|e }} {{ current_user.nom|e }}
           </button>
           <div class="user-dropdown" id="userDropdown">
-            <a href="/profil" class="dropdown-item">Mon profil</a>
-            <a href="/activite" class="dropdown-item">Mon activité</a>
+            <a href="/compte" class="dropdown-item">Mon compte</a>
             {% if current_user.is_admin %}
             <a href="/admin/users" class="dropdown-item">Panneau d'administration</a>
             {% endif %}
             <a href="/organizations" class="dropdown-item">Organisations</a>
-            {% set user_orgs = current_user.organizations | selectattr('is_active', 'equalto', True) | list %}
-            {% if user_orgs|length > 0 %}
-            <div class="dropdown-divider"></div>
-            {% for org_member in user_orgs %}
-            <a href="/organizations/{{ org_member.organization.slug }}" class="dropdown-item">
-              {{ org_member.organization.name|e }}
-            </a>
-            {% endfor %}
-            {% endif %}
             <div class="dropdown-divider"></div>
             <a href="/logout" class="dropdown-item">Déconnexion</a>
           </div>
@@ -105,12 +98,6 @@
       <a href="/organizations">Organisations</a>
 
       {% if current_user %}
-      {% set user_orgs = current_user.organizations | selectattr('is_active', 'equalto', True) | list %}
-      {% for org_member in user_orgs %}
-      <a href="/organizations/{{ org_member.organization.slug }}">
-        {{ org_member.organization.name|e }}
-      </a>
-      {% endfor %}
       {% endif %}
     </nav>
   </div>

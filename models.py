@@ -184,11 +184,13 @@ class ItemGallery(db.Model):
 
 class User(db.Model):
     __tablename__ = "users"
+
     id: Mapped[int] = mapped_column(primary_key=True)
     prenom: Mapped[str]
     nom: Mapped[str]
     email: Mapped[str] = mapped_column(unique=True)
     password_hash: Mapped[str]
+    avatar_path: Mapped[str | None] = mapped_column(default=None)
     is_active: Mapped[bool] = mapped_column(default=True)
     banned: Mapped[bool] = mapped_column(default=False)
     is_admin: Mapped[bool] = mapped_column(default=False)

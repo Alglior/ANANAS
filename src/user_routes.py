@@ -3,7 +3,7 @@ import os
 import threading
 from pathlib import Path
 
-from flask import Blueprint, request, render_template, redirect, url_for, session, flash, jsonify
+from flask import Blueprint, request, render_template, redirect, url_for, session, flash, jsonify, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
 from app import db, limiter
@@ -17,44 +17,140 @@ ALLOWED_ITEM_TYPES = {"geodonnee", "carte", "application"}
 bp = Blueprint("users", __name__)
 
 
-@bp.route("/profil")
+@bp.route("/api/users/profile", methods=["PUT"])
 @login_required
-def profil_page():
+def update_profile():
+    current_user = get_current_user()
+    data = request.get_json(silent=True) or {}
+    prenom = data.get("prenom", "").strip()
+    nom = data.get("nom", "").strip()
+    email = data.get("email", "").strip()
+
+    if not prenom or not nom or not email:
+        return jsonify({"error": "Tous les champs sont requis"}), 400
+
+    existing = User.query.filter(User.email == email, User.id != current_user.id).first()
+    if existing:
+        return jsonify({"error": "Cet email est déjà utilisé"}), 400
+
+    current_user.prenom = prenom
+    current_user.nom = nom
+    current_user.email = email
+    db.session.commit()
+    return jsonify({"status": "updated"})
+
+
+@bp.route("/api/users/change-password", methods=["POST"])
+@login_required
+def change_password():
+    current_user = get_current_user()
+    data = request.get_json(silent=True) or {}
+    current_password = data.get("current_password", "")
+    new_password = data.get("new_password", "")
+
+    from werkzeug.security import generate_password_hash, check_password_hash
+
+    if not check_password_hash(current_user.password_hash, current_password):
+        return jsonify({"error": "Mot de passe actuel incorrect"}), 400
+
+    errors = validate_password_strength(new_password)
+    if errors:
+        return jsonify({"error": "Mot de passe invalide", "details": errors}), 400
+
+    current_user.password_hash = generate_password_hash(new_password)
+    db.session.commit()
+    return jsonify({"status": "updated"})
+
+
+@bp.route("/api/users/avatar", methods=["POST"])
+@login_required
+def upload_avatar():
+    current_user = get_current_user()
+    if "avatar" not in request.files:
+        return jsonify({"error": "Aucun fichier fourni"}), 400
+    file = request.files["avatar"]
+    if not file.filename:
+        return jsonify({"error": "Fichier invalide"}), 400
+
+    import secrets
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in (".png", ".jpg", ".jpeg", ".gif", ".webp"):
+        return jsonify({"error": "Format d'image non supporté (png, jpg, gif, webp)"}), 400
+
+    upload_dir = os.path.join(current_app.root_path, "static", "uploads", "avatars")
+    os.makedirs(upload_dir, exist_ok=True)
+
+    filename = f"avatar_{current_user.id}_{secrets.token_hex(8)}{ext}"
+    filepath = os.path.join(upload_dir, filename)
+    file.save(filepath)
+
+    current_user.avatar_path = f"/static/uploads/avatars/{filename}"
+    db.session.commit()
+    return jsonify({"status": "updated", "avatar_path": current_user.avatar_path})
+
+
+@bp.route("/compte")
+@login_required
+def compte_page():
     current_user = get_current_user()
 
-    rating_count = (
-        db.session.query(func.count(Rating.id))
-        .filter(Rating.user_id == current_user.id)
-        .scalar()
-    )
-
+    rating_count = db.session.query(func.count(Rating.id)).filter(Rating.user_id == current_user.id).scalar()
+    comment_count = db.session.query(func.count(Comment.id)).filter(Comment.user_id == current_user.id).scalar()
+    publication_count = Item.query.filter_by(owner_user_id=current_user.id, status="published").count()
     org_memberships = [m for m in current_user.organizations if m.is_active]
+    org_count = len(org_memberships)
 
-    data_chunks = (
-        db.session.query(DataChunk, Item.title.label("parent_title"), Item.type.label("parent_type"))
-        .outerjoin(Item, DataChunk.parent_item_id == Item.id)
-        .filter(DataChunk.owner_user_id == current_user.id)
-        .order_by(DataChunk.created_at.desc())
-        .all()
-    )
+    per_page = ITEMS_PER_PAGE
+    page = request.args.get("page", 1, type=int)
+    active_tab = request.args.get("tab", "infos")
+    if active_tab not in ("infos", "securite", "activite", "organisations"):
+        active_tab = "infos"
 
-    uploaded_items = (
-        db.session.query(Item)
-        .filter(Item.author_name == f"{current_user.prenom} {current_user.nom}")
-        .order_by(Item.created_at.desc())
-        .all()
-    )
+    ratings_query = db.session.query(Rating, Item.title.label("item_title"), Item.type.label("item_type")).join(Item, Rating.item_id == Item.id).filter(Rating.user_id == current_user.id).order_by(Rating.rating.desc())
+    total_ratings = ratings_query.count()
+    ratings_max_page = max((total_ratings + per_page - 1) // per_page, 1) if total_ratings else 1
+    ratings_page = max(1, min(page, ratings_max_page))
+    ratings = ratings_query.limit(per_page).offset((ratings_page - 1) * per_page).all()
+    ratings_page_numbers = _build_page_numbers(ratings_page, ratings_max_page)
+
+    comments_query = db.session.query(Comment, Item.title.label("item_title"), Item.type.label("item_type")).join(Item, Comment.item_id == Item.id).filter(Comment.user_id == current_user.id).order_by(Comment.created_at.desc())
+    total_comments = comments_query.count()
+    comments_max_page = max((total_comments + per_page - 1) // per_page, 1) if total_comments else 1
+    comments_page = max(1, min(page, comments_max_page))
+    comments = comments_query.limit(per_page).offset((comments_page - 1) * per_page).all()
+    comments_page_numbers = _build_page_numbers(comments_page, comments_max_page)
+
+    publications_query = Item.query.filter(Item.owner_user_id == current_user.id, Item.status == "published").order_by(Item.created_at.desc())
+    total_publications = publications_query.count()
+    publications_max_page = max((total_publications + per_page - 1) // per_page, 1) if total_publications else 1
+    publications_page = max(1, min(page, publications_max_page))
+    publications = publications_query.limit(per_page).offset((publications_page - 1) * per_page).all()
+    publications_page_numbers = _build_page_numbers(publications_page, publications_max_page)
+
+    data_chunks = db.session.query(DataChunk, Item.title.label("parent_title"), Item.type.label("parent_type")).outerjoin(Item, DataChunk.parent_item_id == Item.id).filter(DataChunk.owner_user_id == current_user.id).order_by(DataChunk.created_at.desc()).limit(10).all()
 
     return render_template(
-        "users/profil.html",
-        title="A.N.A.N.A.S. | Mon profil",
-        meta_description="Consultez et modifiez votre profil A.N.A.N.A.S.",
+        "users/compte.html",
+        title="A.N.A.N.A.S. | Mon compte",
+        meta_description="Gérez votre compte A.N.A.N.A.S.",
         user=current_user,
         current_user=current_user,
         rating_count=rating_count,
+        comment_count=comment_count,
+        publication_count=publication_count,
+        active_tab=active_tab,
+        ratings=ratings, ratings_page=ratings_page,
+        ratings_total_pages=ratings_max_page, ratings_total=total_ratings,
+        ratings_page_numbers=ratings_page_numbers,
+        comments=comments, comments_page=comments_page,
+        comments_total_pages=comments_max_page, comments_total=total_comments,
+        comments_page_numbers=comments_page_numbers,
+        publications=publications, publications_page=publications_page,
+        publications_total_pages=publications_max_page, publications_total=total_publications,
+        publications_page_numbers=publications_page_numbers,
         org_memberships=org_memberships,
+        org_count=org_count,
         data_chunks=data_chunks,
-        uploaded_items=uploaded_items,
     )
 
 
@@ -125,71 +221,6 @@ def upload_page():
         trash_total=total_trash, trash_page_numbers=trash_page_numbers,
         edit_data=edit_data,
         is_catalogue_enabled=is_catalogue_enabled,
-    )
-
-
-@bp.route("/activite")
-@login_required
-def activite_page():
-    current_user = get_current_user()
-
-    active_tab = request.args.get("tab", "ratings")
-    if active_tab not in ("ratings", "comments", "publications"):
-        active_tab = "ratings"
-
-    per_page = ITEMS_PER_PAGE
-    page = request.args.get("page", 1, type=int)
-
-    ratings_query = (
-        db.session.query(Rating, Item.title.label("item_title"), Item.type.label("item_type"))
-        .join(Item, Rating.item_id == Item.id)
-        .filter(Rating.user_id == current_user.id)
-        .order_by(Rating.rating.desc())
-    )
-    total_ratings = ratings_query.count()
-    ratings_max_page = max((total_ratings + per_page - 1) // per_page, 1) if total_ratings else 1
-    ratings_page = max(1, min(page, ratings_max_page))
-    ratings = ratings_query.limit(per_page).offset((ratings_page - 1) * per_page).all()
-    ratings_page_numbers = _build_page_numbers(ratings_page, ratings_max_page)
-
-    comments_query = (
-        db.session.query(Comment, Item.title.label("item_title"), Item.type.label("item_type"))
-        .join(Item, Comment.item_id == Item.id)
-        .filter(Comment.user_id == current_user.id)
-        .order_by(Comment.created_at.desc())
-    )
-    total_comments = comments_query.count()
-    comments_max_page = max((total_comments + per_page - 1) // per_page, 1) if total_comments else 1
-    comments_page = max(1, min(page, comments_max_page))
-    comments = comments_query.limit(per_page).offset((comments_page - 1) * per_page).all()
-    comments_page_numbers = _build_page_numbers(comments_page, comments_max_page)
-
-    publications_query = (
-        db.session.query(Item)
-        .filter(Item.owner_user_id == current_user.id, Item.status == "published")
-        .order_by(Item.created_at.desc())
-    )
-    total_publications = publications_query.count()
-    publications_max_page = max((total_publications + per_page - 1) // per_page, 1) if total_publications else 1
-    publications_page = max(1, min(page, publications_max_page))
-    publications = publications_query.limit(per_page).offset((publications_page - 1) * per_page).all()
-    publications_page_numbers = _build_page_numbers(publications_page, publications_max_page)
-
-    return render_template(
-        "users/activite.html",
-        title="A.N.A.N.A.S. | Mon activité",
-        meta_description="Consultez votre historique d'activité A.N.A.N.A.S.",
-        current_user=current_user,
-        active_tab=active_tab,
-        ratings=ratings, ratings_page=ratings_page,
-        ratings_total_pages=ratings_max_page, ratings_total=total_ratings,
-        ratings_page_numbers=ratings_page_numbers,
-        comments=comments, comments_page=comments_page,
-        comments_total_pages=comments_max_page, comments_total=total_comments,
-        comments_page_numbers=comments_page_numbers,
-        publications=publications, publications_page=publications_page,
-        publications_total_pages=publications_max_page, publications_total=total_publications,
-        publications_page_numbers=publications_page_numbers,
     )
 
 

@@ -1,0 +1,252 @@
+/* ==========================================
+   Compte page (Google Account-style)
+   ========================================== */
+
+.compte-page {
+  padding: var(--space-xl) 0;
+  min-height: 60vh;
+}
+
+.compte-container {
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .compte-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sidebar */
+.compte-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  position: sticky;
+  top: 1rem;
+}
+
+.compte-avatar-section {
+  text-align: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.compte-avatar-wrapper {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 0.75rem;
+}
+
+.compte-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--border-light);
+  display: block;
+}
+
+.compte-avatar-edit {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--forest);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border: 2px solid var(--white);
+}
+
+.compte-avatar-edit:hover {
+  background: var(--hover-forest);
+}
+
+.compte-avatar-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin: 0 0 0.25rem;
+}
+
+.compte-avatar-email {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Navigation */
+.compte-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.compte-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--charcoal);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.compte-nav-link:hover {
+  background: var(--surface-gray);
+}
+
+.compte-nav-link.active {
+  background: rgba(34, 139, 34, 0.08);
+  color: var(--forest);
+  font-weight: 600;
+}
+
+.compte-nav-link svg {
+  flex-shrink: 0;
+}
+
+/* Stats */
+.compte-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.compte-stat {
+  text-align: center;
+  padding: 0.5rem;
+  background: var(--surface-gray);
+  border-radius: 8px;
+}
+
+.compte-stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--mustard);
+}
+
+.compte-stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+/* Orgs */
+.compte-orgs h3 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 0.5rem;
+}
+
+.compte-org-link {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-gray);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: var(--charcoal);
+  text-decoration: none;
+  margin-bottom: 0.35rem;
+  transition: background 0.15s ease;
+}
+
+.compte-org-link:hover {
+  background: var(--light-gray);
+}
+
+.compte-admin-btn {
+  text-align: center;
+}
+
+/* Main content area */
+.compte-main {
+  min-height: 400px;
+}
+
+.compte-section {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+}
+
+.compte-section h2 {
+  color: var(--forest);
+  margin: 0 0 1.5rem;
+  font-size: 1.3rem;
+}
+
+/* Activity subtabs */
+.compte-activite-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border-light);
+  margin-bottom: 1.5rem;
+}
+
+.compte-subtab {
+  padding: 0.75rem 1.25rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.compte-subtab:hover {
+  color: var(--forest);
+  background: var(--surface-gray);
+}
+
+.compte-subtab.active {
+  color: var(--forest);
+  border-bottom-color: var(--mustard);
+}
+
+/* Forms */
+.compte-form .form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.compte-form .form-group {
+  margin-bottom: 1rem;
+  flex: 1;
+}
+
+.compte-form .form-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
