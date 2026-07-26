@@ -32,6 +32,7 @@ class Item(db.Model, TimestampMixin):
     license_type: Mapped[str | None] = mapped_column(default=None)
     image_magnets_pending: Mapped[bool] = mapped_column(default=False)
     image_magnets_total: Mapped[int] = mapped_column(default=0)
+    metadata_json: Mapped[list | None] = mapped_column(JSON, server_default="[]", nullable=True)
     verifier_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     verified_at: Mapped[datetime.datetime | None]
     verification_notes: Mapped[str | None]
@@ -53,9 +54,13 @@ class Item(db.Model, TimestampMixin):
         result = {
             "id": self.id,
             "title": self.title,
+            "type": self.type,
             "description": self.description,
+            "format_type": self.format_type,
             "format": self.format_type,
             "magnet": self.magnet_link if validate_magnet_link(self.magnet_link) else "",
+            "magnet_link": self.magnet_link if validate_magnet_link(self.magnet_link) else "",
+            "magnet_links": self.metadata_json if isinstance(self.metadata_json, list) else [],
             "image": self.image_path,
             "author": self.author_name,
             "organization_id": self.organization_id,
@@ -65,6 +70,7 @@ class Item(db.Model, TimestampMixin):
             "tags": [t.tag for t in self.tags],
             "gallery": self._build_gallery_dict(),
             "pdf_doc": self.pdf_magnet_link if self.pdf_magnet_link and validate_magnet_link(self.pdf_magnet_link) else "",
+            "pdf_magnet_link": self.pdf_magnet_link if self.pdf_magnet_link and validate_magnet_link(self.pdf_magnet_link) else "",
             "verification_status": self.verification_status,
             "is_official_verified": self.verification_status == "verified",
             "verifier_nom": f"{self.verifier.prenom} {self.verifier.nom}" if (self.verifier and getattr(self.verifier, "prenom", None)) else None,
@@ -80,9 +86,10 @@ class Item(db.Model, TimestampMixin):
             "download_levels": self._get_download_levels(),
             "image_magnets_pending": self.image_magnets_pending,
             "image_magnets_total": self.image_magnets_total,
+            "image_magnets": self._get_image_magnets(),
+            "visualization_links": [vl.to_dict() for vl in self.visualization_links],
         }
         if include_details:
-            result["visualization_links"] = [vl.to_dict() for vl in self.visualization_links]
             result["data_chunks"] = [c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=self.id).all()]
         return result
 
@@ -111,6 +118,15 @@ class Item(db.Model, TimestampMixin):
                 self._add_gallery_data(entry, g)
             result.append(entry)
         return result
+
+    def _get_image_magnets(self):
+        magnets = []
+        for g in self.gallery_items:
+            if g.media_type == "image" and isinstance(g.data_json, dict):
+                magnet = g.data_json.get("magnet_link", "")
+                if magnet:
+                    magnets.append({"magnet_link": magnet, "label": g.label or ""})
+        return magnets
 
     @staticmethod
     def _add_gallery_data(entry, g):

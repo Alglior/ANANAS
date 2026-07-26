@@ -9,7 +9,7 @@ from sqlalchemy import func
 from app import db, limiter
 from src.shared import login_required, get_current_user, user_owns_item_or_admin, _build_page_numbers, ITEMS_PER_PAGE, validate_password_strength
 from src.admin import is_catalogue_enabled
-from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, OrganizationMember, ItemGallery
+from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, OrganizationMember, ItemGallery, ItemGallery
 from utils.security import sanitize_html, validate_magnet_link
 
 ALLOWED_ITEM_TYPES = {"geodonnee", "carte", "application"}
@@ -104,8 +104,8 @@ def upload_page():
     edit_data = None
     if edit_id and edit_id.isdigit():
         draft = Item.query.filter_by(
-            id=int(edit_id), owner_user_id=current_user.id, status="draft",
-        ).first()
+            id=int(edit_id), owner_user_id=current_user.id,
+        ).filter(Item.status.in_(["draft", "published"])).first()
         if draft:
             edit_data = draft.to_dict()
 
@@ -495,8 +495,13 @@ def update_draft_item(item_id):
         return err
     image_magnets = data.get("image_magnets", [])
     if image_magnets:
+        # Remove existing image gallery entries before re-processing
+        ItemGallery.query.filter_by(item_id=item.id, media_type="image").delete()
         item.image_magnets_pending = True
         item.image_magnets_total = len(image_magnets)
+    else:
+        item.image_magnets_pending = False
+        item.image_magnets_total = 0
     _process_image_magnets_async(item.id, image_magnets)
 
     db.session.commit()
@@ -528,8 +533,8 @@ def delete_draft_item(item_id):
     if not user_owns_item_or_admin(current_user, item):
         return jsonify({"error": "Non autorisé"}), 403
 
-    if item.status != "draft":
-        return jsonify({"error": "Seuls les brouillons peuvent être supprimés"}), 400
+    if item.status not in ("draft", "published"):
+        return jsonify({"error": "Seuls les brouillons et publications peuvent être supprimés"}), 400
 
     item.status = "trashed"
     item.deleted_at = datetime.datetime.now()

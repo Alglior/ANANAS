@@ -275,10 +275,55 @@ UploadModule.submit = (function () {
       lt.value = d.license_type;
       lt.dispatchEvent(new Event('change'));
     }
+
+    // Restore magnet links
+    if (d.data_format_level === 'pack' && d.magnet_link) {
+      var magnetEntries = document.getElementById('magnetEntries');
+      if (magnetEntries) {
+        magnetEntries.innerHTML = '';
+        UploadModule.magnets.createEntry(d.magnet_link, 'regions');
+      }
+    } else if (d.data_format_level === 'individual' && d.magnet_links && d.magnet_links.length > 0) {
+      var magnetEntries = document.getElementById('magnetEntries');
+      if (magnetEntries) {
+        magnetEntries.innerHTML = '';
+        d.magnet_links.forEach(function(ml) {
+          UploadModule.magnets.createEntry(ml.magnet_link || '', ml.zoom_level || 'regions');
+        });
+      }
+    }
+
+    // Restore visualization links
+    if (d.visualization_links && d.visualization_links.length > 0) {
+      var vln = document.getElementById('viz_name');
+      var vlu = document.getElementById('viz_url');
+      if (vln && vlu) {
+        vln.value = d.visualization_links[0].name || '';
+        vlu.value = d.visualization_links[0].url || '';
+      }
+    }
+
+    // Restore image magnets
+    if (d.image_magnets && d.image_magnets.length > 0) {
+      var imageContainer = document.getElementById('imageMagnetEntries');
+      if (imageContainer) {
+        imageContainer.innerHTML = '';
+        d.image_magnets.forEach(function(im) {
+          UploadModule.imageMagnets.createEntry(im.magnet_link || '', im.label || '');
+        });
+      }
+    }
+
     uploadBtn.textContent = 'Mettre \u00e0 jour et publier';
     draftBtn.textContent = 'Mettre \u00e0 jour le brouillon';
     var h1 = document.querySelector('.upload-header h1');
-    if (h1) h1.textContent = 'Modifier un brouillon';
+    if (h1) {
+      if (d.status === 'published') {
+        h1.textContent = 'Modifier la publication';
+      } else {
+        h1.textContent = 'Modifier un brouillon';
+      }
+    }
   }
 
   function init() {

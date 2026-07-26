@@ -272,6 +272,8 @@
             <span class="upload-history-meta">
               <span class="badge badge-published">{{ item.type | replace('geodonnee', 'Géodonnée') | replace('carte', 'Carte') | replace('application', 'Application') }}</span>
               {{ item.created_at.strftime('%d/%m/%Y') }}
+              <a href="/upload?edit={{ item.id }}" class="btn btn-sm">Modifier</a>
+              <button type="button" class="btn btn-sm btn-outline publication-delete-btn" data-id="{{ item.id }}">Supprimer</button>
             </span>
           </li>
           {% endfor %}

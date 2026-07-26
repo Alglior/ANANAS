@@ -81,11 +81,13 @@ UploadModule.history = (function () {
   }
 
   function renderPublicationItem(item) {
-    return '<li class="upload-history-item">' +
+    return '<li class="upload-history-item" data-pub-id="' + item.id + '">' +
       '<a href="/catalogue/item/' + item.id + '" class="upload-history-link">' + escapeHtml(item.title) + '</a>' +
       '<span class="upload-history-meta">' +
         '<span class="badge badge-published">' + escapeHtml(item.type_label) + '</span> ' +
         item.created_at +
+        ' <a href="/upload?edit=' + item.id + '" class="btn btn-sm">Modifier</a>' +
+        ' <button type="button" class="btn btn-sm btn-outline publication-delete-btn" data-id="' + item.id + '">Supprimer</button>' +
       '</span>' +
     '</li>';
   }
@@ -222,6 +224,17 @@ UploadModule.history = (function () {
         showConfirm(
           'Mettre ce brouillon \u00e0 la corbeille ?<br><small>Il restera r\u00e9cup\u00e9rable pendant 7 jours.</small>',
           function() { sendDelete('/api/upload/item/' + draftId); }
+        );
+        return;
+      }
+
+      var pubDelBtn = e.target.closest('.publication-delete-btn');
+      if (pubDelBtn) {
+        e.preventDefault();
+        var pubId = pubDelBtn.getAttribute('data-id');
+        showConfirm(
+          'Mettre cette publication \u00e0 la corbeille ?<br><small>Elle ne sera plus visible dans le catalogue et restera r\u00e9cup\u00e9rable pendant 7 jours.</small>',
+          function() { sendDelete('/api/upload/item/' + pubId); }
         );
         return;
       }

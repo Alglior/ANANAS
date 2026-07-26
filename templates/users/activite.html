@@ -86,6 +86,8 @@
                     {% else %}
                       <span class="badge badge-unofficial">Non officiel</span>
                     {% endif %}
+                    <a href="/upload?edit={{ item.id }}" class="btn btn-sm">Modifier</a>
+                    <button type="button" class="btn btn-sm btn-outline publication-delete-btn" data-id="{{ item.id }}">Supprimer</button>
                   </div>
                 </div>
               </div>
@@ -159,4 +161,8 @@
     </div>
   </section>
 </main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/users/activite.js') }}"></script>
 {% endblock %}
