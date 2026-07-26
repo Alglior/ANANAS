@@ -293,11 +293,14 @@ class Comment(db.Model, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True)
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("comments.id", ondelete="CASCADE"))
     author_name: Mapped[str | None]
     content: Mapped[str]
 
     item = relationship("Item", back_populates="comments")
     user = relationship("User", back_populates="comments")
+    parent = relationship("Comment", remote_side="Comment.id", back_populates="replies")
+    replies = relationship("Comment", back_populates="parent", cascade="all, delete-orphan")
 
 
 class DataChunk(db.Model, TimestampMixin):

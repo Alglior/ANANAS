@@ -17,6 +17,22 @@ ALLOWED_ITEM_TYPES = {"geodonnee", "carte", "application"}
 bp = Blueprint("users", __name__)
 
 
+@bp.route("/profile/<int:user_id>")
+def public_profile(user_id):
+    user = User.query.get_or_404(user_id)
+    comment_count = db.session.query(func.count(Comment.id)).filter(Comment.user_id == user_id).scalar()
+    publication_count = Item.query.filter_by(owner_user_id=user_id, status="published").count()
+    return render_template(
+        "users/public_profile.html",
+        title=f"A.N.A.N.A.S. | {user.prenom} {user.nom}",
+        meta_description=f"Profil de {user.prenom} {user.nom}",
+        profile_user=user,
+        comment_count=comment_count,
+        publication_count=publication_count,
+        current_user=get_current_user(),
+    )
+
+
 @bp.route("/api/users/profile", methods=["PUT"])
 @login_required
 def update_profile():

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<main class="profile-page">
+  <div class="profile-card">
+    <div class="profile-avatar">
+      {% if profile_user.avatar_path %}
+        <img src="{{ profile_user.avatar_path }}" alt="Avatar">
+      {% else %}
+        <div class="profile-avatar-initials">{{ profile_user.prenom[0] }}{{ profile_user.nom[0] }}</div>
+      {% endif %}
+    </div>
+    <h1 class="profile-name">{{ profile_user.prenom }} {{ profile_user.nom }}</h1>
+    <p class="profile-email">{{ profile_user.email }}</p>
+    <p class="profile-member">Membre depuis {{ profile_user.created_at.strftime('%B %Y') if profile_user.created_at else '' }}</p>
+    <div class="profile-stats">
+      <div class="profile-stat">
+        <span class="profile-stat-value">{{ publication_count }}</span>
+        <span class="profile-stat-label">publications</span>
+      </div>
+      <div class="profile-stat">
+        <span class="profile-stat-value">{{ comment_count }}</span>
+        <span class="profile-stat-label">commentaires</span>
+      </div>
+    </div>
+    {% if current_user and current_user.id == profile_user.id %}
+    <a href="/compte" class="profile-edit-btn">Modifier mon profil</a>
+    {% endif %}
+  </div>
+</main>
+{% endblock %}

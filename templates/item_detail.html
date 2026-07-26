@@ -374,22 +374,16 @@
 
       <!-- Comments -->
       <section class="comments-section">
-        <h2>Commentaires</h2>
+        <h2>Commentaires {% if comment_count %}<span class="comment-count-badge">{{ comment_count }}</span>{% endif %}</h2>
 
         {% if comment_count and comment_count > 0 %}
         <ul class="comments-list" id="comments-list">
           {% for comment in comments %}
-          <li class="comment-item">
-            <div class="comment-header">
-              <span class="comment-author">{{ comment.author_name|e }}</span>
-              <span class="comment-date">{{ comment.created_at.strftime('%d/%m/%Y') if comment.created_at else '' }}</span>
-            </div>
-            <p class="comment-text">{{ comment.content|e }}</p>
-          </li>
+          {% include "partials/comment_thread.html" %}
           {% endfor %}
         </ul>
         {% elif comment_count == 0 %}
-        <p class="comments-empty">Aucun commentaire pour ce géodonnées.</p>
+        <p class="comments-empty">Aucun commentaire pour ce géodonnées. Soyez le premier à donner votre avis !</p>
         {% endif %}
 
         {% if comment_total_pages and comment_total_pages > 1 %}

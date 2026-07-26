@@ -41,19 +41,70 @@ def add_comment(item_id):
     raw_author = request.form.get("author", "").strip() or (f"{current_user.prenom} {current_user.nom}" if current_user else "")
     author_name = sanitize_html(raw_author)
     content = sanitize_html(request.form.get("text", ""))
+    parent_id = request.form.get("parent_id", type=int)
 
     if not content:
         page = request.args.get("page", 1, type=int)
         return redirect(f"{url_for('items.item_detail_view', item_id=item_id)}?page={page}")
 
+    if parent_id:
+        parent = Comment.query.filter_by(id=parent_id, item_id=item_id).first()
+        if not parent:
+            parent_id = None
+
     db.session.add(Comment(
         item_id=item_id, user_id=current_user.id if current_user else None,
-        author_name=author_name, content=content,
+        author_name=author_name, content=content, parent_id=parent_id,
     ))
     db.session.commit()
 
     page = request.args.get("page", 1, type=int)
     return redirect(f"{url_for('items.item_detail_view', item_id=item_id)}?page={page}")
+
+
+@bp.route("/api/catalogue/item/<int:item_id>/reply", methods=["POST"])
+@login_required
+def reply_comment_json(item_id):
+    from models import Item, Comment
+
+    current_user = get_current_user()
+    item = Item.query.get_or_404(item_id)
+
+    data = request.get_json(silent=True) or {}
+    parent_id = data.get("parent_id")
+    if parent_id is not None:
+        try:
+            parent_id = int(parent_id)
+        except (TypeError, ValueError):
+            parent_id = None
+    content = sanitize_html(data.get("text", ""))
+
+    if not content:
+        return jsonify({"error": "Le commentaire ne peut pas être vide"}), 400
+
+    if parent_id:
+        parent = Comment.query.filter_by(id=parent_id, item_id=item_id).first()
+        if not parent:
+            return jsonify({"error": "Commentaire parent introuvable"}), 404
+
+    raw_author = f"{current_user.prenom} {current_user.nom}" if current_user else ""
+    author_name = sanitize_html(raw_author)
+
+    comment = Comment(
+        item_id=item_id, user_id=current_user.id if current_user else None,
+        author_name=author_name, content=content, parent_id=parent_id,
+    )
+    db.session.add(comment)
+    db.session.commit()
+
+    return jsonify({
+        "id": comment.id,
+        "author_name": comment.author_name,
+        "content": comment.content,
+        "created_at": comment.created_at.strftime("%d/%m/%Y") if comment.created_at else "",
+        "parent_id": comment.parent_id,
+        "user_id": comment.user_id,
+    })
 
 
 @bp.route("/api/items/<int:item_id>/verify", methods=["POST"])

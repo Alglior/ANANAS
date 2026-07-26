@@ -22,29 +22,60 @@ def get_image_gallery(item):
     return result
 
 
+def _serialize_comment(c):
+    return {
+        "id": c.id,
+        "author_name": c.author_name,
+        "content": c.content,
+        "created_at": c.created_at,
+        "parent_id": c.parent_id,
+        "user_id": c.user_id,
+    }
+
+
+def _build_comment_tree(comments):
+    comment_map = {}
+    roots = []
+    for c in comments:
+        d = _serialize_comment(c)
+        d["replies"] = []
+        comment_map[c.id] = d
+    for c in comments:
+        d = comment_map[c.id]
+        if c.parent_id and c.parent_id in comment_map:
+            comment_map[c.parent_id]["replies"].append(d)
+        else:
+            d["parent_id"] = None
+            roots.append(d)
+    return roots
+
+
 def _paginate_comments(item_id, page=1):
     from models import Comment
 
-    total = Comment.query.filter_by(item_id=item_id).count()
+    total = Comment.query.filter_by(item_id=item_id, parent_id=None).count()
     total_pages = max((total + COMMENTS_PER_PAGE - 1) // COMMENTS_PER_PAGE, 1)
     page = min(max(page, 1), total_pages) or 1
-    comments = (
-        Comment.query.filter_by(item_id=item_id)
+    top_comments = (
+        Comment.query.filter_by(item_id=item_id, parent_id=None)
         .order_by(Comment.created_at.desc())
         .offset((page - 1) * COMMENTS_PER_PAGE)
         .limit(COMMENTS_PER_PAGE)
         .all()
     )
-    comment_dicts = [
-        {
-            "author_name": c.author_name,
-            "content": c.content,
-            "created_at": c.created_at,
-        }
-        for c in comments
-    ]
+    top_ids = [c.id for c in top_comments]
+    replies = (
+        Comment.query.filter(
+            Comment.item_id == item_id,
+            Comment.parent_id.in_(top_ids),
+        )
+        .order_by(Comment.created_at.asc())
+        .all()
+    ) if top_ids else []
+    all_comments = top_comments + replies
+    comment_tree = _build_comment_tree(all_comments)
     page_numbers = _build_page_numbers(page, total_pages)
-    return comment_dicts, {
+    return comment_tree, {
         "page": page,
         "per_page": COMMENTS_PER_PAGE,
         "total_items": total,
