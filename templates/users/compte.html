@@ -23,18 +23,10 @@
         </div>
 
         <nav class="compte-nav">
-          <a href="/compte?tab=infos" class="compte-nav-link {% if active_tab == 'infos' %}active{% endif %}" data-tab="infos">
-            Informations
-          </a>
-          <a href="/compte?tab=securite" class="compte-nav-link {% if active_tab == 'securite' %}active{% endif %}" data-tab="securite">
-            Sécurité
-          </a>
-          <a href="/compte?tab=activite" class="compte-nav-link {% if active_tab == 'activite' %}active{% endif %}" data-tab="activite">
-            Activité
-          </a>
-          <a href="/compte?tab=organisations" class="compte-nav-link {% if active_tab == 'organisations' %}active{% endif %}" data-tab="organisations">
-            Organisations{% if org_count %} ({{ org_count }}){% endif %}
-          </a>
+          <a href="/compte?tab=infos" class="compte-nav-link {% if active_tab == 'infos' %}active{% endif %}" data-tab="infos">Informations</a>
+          <a href="/compte?tab=securite" class="compte-nav-link {% if active_tab == 'securite' %}active{% endif %}" data-tab="securite">Sécurité</a>
+          <a href="/compte?tab=activite" class="compte-nav-link {% if active_tab == 'activite' %}active{% endif %}" data-tab="activite">Activité</a>
+          <a href="/compte?tab=organisations" class="compte-nav-link {% if active_tab == 'organisations' %}active{% endif %}" data-tab="organisations">Organisations{% if org_count %} ({{ org_count }}){% endif %}</a>
         </nav>
 
         <div class="compte-stats">
@@ -82,6 +74,7 @@
             </div>
           </form>
         </section>
+
         {% elif active_tab == 'securite' %}
         <section class="compte-section">
           <h2>Mot de passe</h2>
@@ -111,6 +104,7 @@
             </div>
           </form>
         </section>
+
         {% elif active_tab == 'activite' %}
         <section class="compte-section">
           <div class="compte-activite-tabs">
@@ -125,15 +119,15 @@
             {% if ratings %}
             <div class="activity-list">
               {% for r in ratings %}
-              <div class="activity-item activity-item-rating">
-                <div class="activity-icon rating-badge">{{ r[2] | replace('geodonnee', 'Geo') | replace('carte', 'Carte') | replace('application', 'App') }}</div>
-                <div class="activity-content">
-                  <h3 class="activity-title"><a href="/catalogue/item/{{ r[0].item_id }}">{{ r[1] }}</a></h3>
-                  <div class="activity-meta">
-                    <span class="rating-stars">{% for i in range(5) %}{% if i < r[0].rating | int %}<span class="star filled">&#9733;</span>{% else %}<span class="star empty">&#9734;</span>{% endif %}{% endfor %}</span>
+              <a href="/catalogue/item/{{ r[0].item_id }}" class="activity-card">
+                <div class="activity-card-icon rating-badge">{{ r[2] | replace('geodonnee', 'Geo') | replace('carte', 'Carte') | replace('application', 'App') }}</div>
+                <div class="activity-card-content">
+                  <div class="activity-card-title">{{ r[1] }}</div>
+                  <div class="activity-card-meta">
+                    <span>{% for i in range(5) %}{% if i < r[0].rating | int %}<span class="star filled">&#9733;</span>{% else %}<span class="star empty">&#9734;</span>{% endif %}{% endfor %}</span>
                   </div>
                 </div>
-              </div>
+              </a>
               {% endfor %}
             </div>
             {% if ratings_total_pages > 1 %}
@@ -151,14 +145,14 @@
             {% if comments %}
             <div class="activity-list">
               {% for c in comments %}
-              <div class="activity-item activity-item-comment">
-                <div class="activity-icon comment-badge">{{ c[2] | replace('geodonnee', 'Geo') | replace('carte', 'Carte') | replace('application', 'App') }}</div>
-                <div class="activity-content">
-                  <h3 class="activity-title"><a href="/catalogue/item/{{ c[0].item_id }}">{{ c[1] }}</a></h3>
-                  <p class="activity-text">{{ c[0].content[:200]|e }}{% if c[0].content | length > 200 %}...{% endif %}</p>
-                  <div class="activity-meta"><span class="activity-date">{{ c[0].created_at.strftime('%d/%m/%Y') }}</span></div>
+              <a href="/catalogue/item/{{ c[0].item_id }}" class="activity-card">
+                <div class="activity-card-icon comment-badge">{{ c[2] | replace('geodonnee', 'Geo') | replace('carte', 'Carte') | replace('application', 'App') }}</div>
+                <div class="activity-card-content">
+                  <div class="activity-card-title">{{ c[1] }}</div>
+                  <div class="activity-card-text">{{ c[0].content[:200]|e }}{% if c[0].content | length > 200 %}...{% endif %}</div>
+                  <div class="activity-card-meta"><span>{{ c[0].created_at.strftime('%d/%m/%Y') }}</span></div>
                 </div>
-              </div>
+              </a>
               {% endfor %}
             </div>
             {% if comments_total_pages > 1 %}
@@ -176,13 +170,15 @@
             {% if publications %}
             <div class="activity-list">
               {% for item in publications %}
-              <div class="activity-item activity-item-publication">
-                <div class="activity-icon publication-badge">{{ item.type | replace('geodonnee', 'Geo') | replace('carte', 'Carte') | replace('application', 'App') }}</div>
-                <div class="activity-content">
-                  <h3 class="activity-title"><a href="/catalogue/item/{{ item.id }}">{{ item.title }}</a></h3>
-                  <div class="activity-meta">
-                    <span class="activity-date">{{ item.created_at.strftime('%d/%m/%Y') }}</span>
+              <div class="activity-card">
+                <div class="activity-card-icon publication-badge">{{ item.type | replace('geodonnee', 'Geo') | replace('carte', 'Carte') | replace('application', 'App') }}</div>
+                <div class="activity-card-content">
+                  <a href="/catalogue/item/{{ item.id }}" class="activity-card-title">{{ item.title }}</a>
+                  <div class="activity-card-meta">
+                    <span>{{ item.created_at.strftime('%d/%m/%Y') }}</span>
                     {% if item.verification_status == 'verified' %}<span class="badge badge-verified">Vérifié</span>{% elif item.verification_status == 'rejected' %}<span class="badge badge-rejected">Rejeté</span>{% else %}<span class="badge badge-unofficial">Non officiel</span>{% endif %}
+                  </div>
+                  <div class="activity-card-actions">
                     <a href="/upload?edit={{ item.id }}" class="btn btn-sm">Modifier</a>
                     <button type="button" class="btn btn-sm btn-outline publication-delete-btn" data-id="{{ item.id }}">Supprimer</button>
                   </div>
@@ -202,21 +198,30 @@
             {% endif %}
           {% endif %}
         </section>
+
         {% elif active_tab == 'organisations' %}
         <section class="compte-section">
           <h2>Mes organisations</h2>
           {% if org_memberships %}
           <div class="activity-list">
             {% for m in org_memberships %}
-            <div class="activity-item">
-              <div class="activity-content">
-                <h3 class="activity-title"><a href="/organizations/{{ m.organization.slug }}">{{ m.organization.name|e }}</a></h3>
-                <div class="activity-meta">
-                  <span class="badge badge-{{ m.role | lower }}">{{ m.role | capitalize }}</span>
-                  <span class="activity-date">Membre depuis {{ m.created_at.strftime('%d/%m/%Y') if m.created_at else '' }}</span>
+            <a href="/organizations/{{ m.organization.slug }}" class="activity-card">
+              <div class="activity-card-icon activity-card-org-icon">
+                {% if m.organization.logo_url %}
+                  <img src="{{ m.organization.logo_url }}" alt="">
+                {% else %}
+                  <span>{{ m.organization.name[:2]|e }}</span>
+                {% endif %}
+              </div>
+              <div class="activity-card-content">
+                <div class="activity-card-title">{{ m.organization.name|e }}</div>
+                <div class="activity-card-meta">
+                  {% set display_role = m.custom_role.name if (m.custom_role_id and m.custom_role) else m.role %}
+                  <span class="org-role-badge role-{{ m.role }}">{{ display_role }}</span>
+                  <span>Membre depuis {{ m.joined_at.strftime('%d/%m/%Y') if m.joined_at else '' }}</span>
                 </div>
               </div>
-            </div>
+            </a>
             {% endfor %}
           </div>
           {% else %}

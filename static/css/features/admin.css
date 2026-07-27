@@ -1,0 +1,14 @@
+/* ── Admin layout ── */
+.admin-page {
+  padding: 2rem 0;
+}
+
+.admin-section {
+  margin-bottom: 2rem;
+}
+
+.admin-page h1 {
+  font-size: 1.5rem;
+  color: var(--charcoal);
+  margin-bottom: 1.5rem;
+}
