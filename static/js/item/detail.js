@@ -41,9 +41,17 @@
   function renderCommentHTML(c, depth) {
     if (depth === undefined) depth = 0;
     var dateStr = c.created_at || '';
+    var avatarHtml = '';
+    if (c.user_id && c.user_avatar) {
+      avatarHtml = '<img src="' + c.user_avatar + '" alt="" class="comment-avatar">';
+    } else if (c.user_id) {
+      avatarHtml = '<span class="comment-avatar-initials">' + escapeHtml(c.author_name.charAt(0)) + '</span>';
+    } else {
+      avatarHtml = '<span class="comment-avatar-initials">' + escapeHtml(c.author_name.charAt(0)) + '</span>';
+    }
     var authorHtml = c.user_id
-      ? '<a href="/profile/' + c.user_id + '" class="comment-author">' + escapeHtml(c.author_name) + '</a>'
-      : '<span class="comment-author">' + escapeHtml(c.author_name) + '</span>';
+      ? '<a href="/profile/' + c.user_id + '" class="comment-author-wrap">' + avatarHtml + '<span class="comment-author-name">' + escapeHtml(c.author_name) + '</span></a>'
+      : '<span class="comment-author-wrap">' + avatarHtml + '<span class="comment-author-name">' + escapeHtml(c.author_name) + '</span></span>';
     var html = '<li class="comment-item" data-comment-id="' + c.id + '">' +
       '<div class="comment-body">' +
       '<div class="comment-header">' +

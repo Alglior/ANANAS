@@ -20,7 +20,7 @@ RUN python3 -m pytest tests/ -v --tb=short || true
 # ─── Production ───
 FROM base AS production
 
-RUN mkdir -p /app/instance/image_cache && groupadd -r appuser && useradd -r -g appuser -m -s /bin/bash appuser \
+RUN mkdir -p /app/instance/image_cache /app/static/uploads/avatars && groupadd -r appuser && useradd -r -g appuser -m -s /bin/bash appuser \
     && ln -sf /app/alembic /app/migrations \
     && chown -R appuser:appuser /app /app/alembic /app/migrations
 

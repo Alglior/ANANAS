@@ -30,6 +30,7 @@ def _serialize_comment(c):
         "created_at": c.created_at,
         "parent_id": c.parent_id,
         "user_id": c.user_id,
+        "user_avatar": c.user.avatar_path if c.user else None,
     }
 
 
@@ -52,12 +53,14 @@ def _build_comment_tree(comments):
 
 def _paginate_comments(item_id, page=1):
     from models import Comment
+    from sqlalchemy.orm import joinedload
 
     total = Comment.query.filter_by(item_id=item_id, parent_id=None).count()
     total_pages = max((total + COMMENTS_PER_PAGE - 1) // COMMENTS_PER_PAGE, 1)
     page = min(max(page, 1), total_pages) or 1
     top_comments = (
-        Comment.query.filter_by(item_id=item_id, parent_id=None)
+        Comment.query.options(joinedload(Comment.user))
+        .filter_by(item_id=item_id, parent_id=None)
         .order_by(Comment.created_at.desc())
         .offset((page - 1) * COMMENTS_PER_PAGE)
         .limit(COMMENTS_PER_PAGE)
@@ -65,7 +68,8 @@ def _paginate_comments(item_id, page=1):
     )
     top_ids = [c.id for c in top_comments]
     replies = (
-        Comment.query.filter(
+        Comment.query.options(joinedload(Comment.user))
+        .filter(
             Comment.item_id == item_id,
             Comment.parent_id.in_(top_ids),
         )

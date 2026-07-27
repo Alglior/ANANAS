@@ -3,6 +3,8 @@
  */
 (function () {
   var csrfToken = CsrfModule.getCsrfToken();
+  var csrfInput = document.querySelector('input[name="_csrf_token"]');
+  var csrfTokenForm = csrfInput ? csrfInput.value : csrfToken;
 
   /* ── Avatar upload ── */
   var avatarInput = document.getElementById('avatarInput');
@@ -12,14 +14,9 @@
       var file = this.files[0];
       if (!file) return;
 
-      var reader = new FileReader();
-      reader.onload = function (e) {
-        avatarPreview.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-
       var formData = new FormData();
       formData.append('avatar', file);
+      formData.append('_csrf_token', csrfTokenForm);
 
       fetch('/api/users/avatar', {
         method: 'POST',
@@ -28,7 +25,7 @@
       }).then(function (resp) { return resp.json(); })
         .then(function (data) {
           if (data.avatar_path) {
-            avatarPreview.src = data.avatar_path;
+            avatarPreview.src = data.avatar_path + '?t=' + Date.now();
           }
         }).catch(function () {});
     });

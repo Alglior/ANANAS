@@ -104,6 +104,7 @@ def reply_comment_json(item_id):
         "created_at": comment.created_at.strftime("%d/%m/%Y") if comment.created_at else "",
         "parent_id": comment.parent_id,
         "user_id": comment.user_id,
+        "user_avatar": comment.user.avatar_path if comment.user else None,
     })
 
 

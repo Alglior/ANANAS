@@ -120,7 +120,13 @@
             <div class="activity-list">
               {% for r in ratings %}
               <a href="/catalogue/item/{{ r[0].item_id }}" class="activity-card">
-                <div class="activity-card-icon rating-badge">{{ r[2] | replace('geodonnee', 'Geo') | replace('carte', 'Carte') | replace('application', 'App') }}</div>
+                <div class="activity-card-icon activity-card-user-icon">
+                  {% if current_user.avatar_path %}
+                    <img src="{{ current_user.avatar_path }}" alt="">
+                  {% else %}
+                    <span>{{ current_user.prenom[:1] }}{{ current_user.nom[:1] }}</span>
+                  {% endif %}
+                </div>
                 <div class="activity-card-content">
                   <div class="activity-card-title">{{ r[1] }}</div>
                   <div class="activity-card-meta">
@@ -146,7 +152,13 @@
             <div class="activity-list">
               {% for c in comments %}
               <a href="/catalogue/item/{{ c[0].item_id }}" class="activity-card">
-                <div class="activity-card-icon comment-badge">{{ c[2] | replace('geodonnee', 'Geo') | replace('carte', 'Carte') | replace('application', 'App') }}</div>
+                <div class="activity-card-icon activity-card-user-icon">
+                  {% if current_user.avatar_path %}
+                    <img src="{{ current_user.avatar_path }}" alt="">
+                  {% else %}
+                    <span>{{ current_user.prenom[:1] }}{{ current_user.nom[:1] }}</span>
+                  {% endif %}
+                </div>
                 <div class="activity-card-content">
                   <div class="activity-card-title">{{ c[1] }}</div>
                   <div class="activity-card-text">{{ c[0].content[:200]|e }}{% if c[0].content | length > 200 %}...{% endif %}</div>
@@ -171,7 +183,13 @@
             <div class="activity-list">
               {% for item in publications %}
               <div class="activity-card">
-                <div class="activity-card-icon publication-badge">{{ item.type | replace('geodonnee', 'Geo') | replace('carte', 'Carte') | replace('application', 'App') }}</div>
+                <div class="activity-card-icon activity-card-user-icon">
+                  {% if current_user.avatar_path %}
+                    <img src="{{ current_user.avatar_path }}" alt="">
+                  {% else %}
+                    <span>{{ current_user.prenom[:1] }}{{ current_user.nom[:1] }}</span>
+                  {% endif %}
+                </div>
                 <div class="activity-card-content">
                   <a href="/catalogue/item/{{ item.id }}" class="activity-card-title">{{ item.title }}</a>
                   <div class="activity-card-meta">

@@ -78,10 +78,13 @@ def create_app(app_name="ANANAS"):
     def combined_before_request():
         g.csp_nonce = base64.b64encode(secrets.token_bytes(16)).decode()
 
-        # For API JSON requests, validate CSRF header exists
+        # Ensure CSRF token is always generated
+        from flask_wtf.csrf import generate_csrf
+        g.csrf_token = generate_csrf()
+
+        # For API requests, validate CSRF header exists
         if request.method in ("POST", "PUT", "PATCH", "DELETE"):
-            content_type = request.content_type or ""
-            if "/api/" in request.path and "application/json" in content_type:
+            if "/api/" in request.path:
                 if current_app.config.get("TESTING") or not current_app.config.get("WTF_CSRF_ENABLED", True):
                     pass
                 elif not request.headers.get("X-CSRF-Token"):
@@ -110,8 +113,8 @@ def create_app(app_name="ANANAS"):
         endpoint = req.endpoint or ""
         if endpoint in EXEMPTED_ENDPOINTS:
             return
-        # API JSON requests are validated in combined_before_request (X-CSRF-Token header check)
-        if "/api/" in req.path and "application/json" in (req.content_type or ""):
+        # API requests are validated in combined_before_request (X-CSRF-Token header check)
+        if "/api/" in req.path:
             return
         return _original_protect()
 

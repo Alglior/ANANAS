@@ -325,6 +325,21 @@
   object-fit: cover;
 }
 
+.activity-card-user-icon {
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--light-gray);
+  color: var(--forest);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.activity-card-user-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .rating-badge {
   background: var(--mustard);
 }

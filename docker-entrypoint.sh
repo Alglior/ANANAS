@@ -65,7 +65,7 @@ echo "[entrypoint] Running flask db upgrade..."
 flask db upgrade
 
 echo "[entrypoint] Ensuring image cache directory..."
-mkdir -p /app/instance/image_cache
+mkdir -p /app/instance/image_cache /app/static/uploads/avatars
 
 echo "[entrypoint] Setting qBittorrent password..."
 QB_PASS="${QBITTORRENT_PASSWORD:-adminadmin}"
