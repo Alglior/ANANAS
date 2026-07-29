@@ -492,6 +492,7 @@ def create_upload_item():
             return err
         image_magnets = data.get("image_magnets", [])
         if image_magnets:
+            item.image_magnet_links = image_magnets
             item.image_magnets_pending = True
             item.image_magnets_total = len(image_magnets)
         _process_image_magnets_async(item.id, image_magnets)
@@ -542,6 +543,7 @@ def update_draft_item(item_id):
         return err
     image_magnets = data.get("image_magnets", [])
     if image_magnets:
+        item.image_magnet_links = image_magnets
         # Remove existing image gallery entries before re-processing
         ItemGallery.query.filter_by(item_id=item.id, media_type="image").delete()
         item.image_magnets_pending = True

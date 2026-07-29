@@ -40,6 +40,11 @@ def _run_migrations():
     from sqlalchemy import inspect
 
     inspector = inspect(db.engine)
+
+    # Ensure all tables exist before running migrations
+    if not inspector.has_table("items"):
+        return
+
     columns = [col["name"] for col in inspector.get_columns("items")]
 
     if "image_magnets_pending" not in columns:

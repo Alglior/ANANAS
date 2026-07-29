@@ -51,9 +51,15 @@ def _qb_login():
     return session
 
 
-def _extract_info_hash(magnet_link):
-    m = re.search(r"btih:([a-fA-F0-9]{40})", magnet_link)
-    return m.group(1).lower() if m else None
+def _extract_info_hashes(magnet_link):
+    v1 = re.search(r"btih:([a-fA-F0-9]{40})", magnet_link)
+    v2 = re.search(r"btmh:1220([a-fA-F0-9]{64})", magnet_link)
+    hashes = []
+    if v1:
+        hashes.append(v1.group(1).lower())
+    if v2:
+        hashes.append(v2.group(1)[:40].lower())
+    return hashes
 
 
 def _qb_await_complete(session, info_hash, timeout=300):
@@ -95,9 +101,20 @@ def _qb_delete_torrent(session, info_hash):
     )
 
 
+def _qb_get_torrent(session, info_hash):
+    resp = session.get(
+        f"{QBITTORRENT_URL}/api/v2/torrents/info",
+        params={"hashes": info_hash},
+        timeout=10,
+    )
+    resp.raise_for_status()
+    torrents = resp.json()
+    return torrents[0] if torrents else None
+
+
 def download_image_from_magnet(magnet_link, timeout=300):
-    info_hash = _extract_info_hash(magnet_link)
-    if not info_hash:
+    info_hashes = _extract_info_hashes(magnet_link)
+    if not info_hashes:
         return None, None
 
     try:
@@ -114,14 +131,33 @@ def download_image_from_magnet(magnet_link, timeout=300):
         )
         resp.raise_for_status()
     except Exception as e:
-        print(f"qBittorrent add magnet failed: {e}")
-        return None, None
+        if hasattr(e, "response") and e.response is not None and e.response.status_code == 409:
+            torrent = None
+            for h in info_hashes:
+                existing = _qb_get_torrent(session, h)
+                if existing and existing.get("progress", 0) >= 1:
+                    torrent = existing
+                    break
+                elif existing:
+                    torrent = _qb_await_complete(session, h, timeout)
+                    if torrent:
+                        break
+            if torrent is None:
+                print(f"qBittorrent add magnet failed (409 but torrent not found): {e}")
+                return None, None
+        else:
+            print(f"qBittorrent add magnet failed: {e}")
+            return None, None
+    else:
+        torrent = None
+        for h in info_hashes:
+            torrent = _qb_await_complete(session, h, timeout)
+            if torrent:
+                break
+        if torrent is None:
+            return None, None
 
-    torrent = _qb_await_complete(session, info_hash, timeout)
-    if torrent is None:
-        return None, None
-
-    files = _qb_get_file_paths(session, info_hash)
+    files = _qb_get_file_paths(session, torrent["hash"])
     image_extensions = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".tiff"}
     image_file = None
     for f in files:
@@ -153,6 +189,12 @@ def download_image_from_magnet(magnet_link, timeout=300):
         return None, None
 
     data = abs_path.read_bytes()
+
+    try:
+        _qb_delete_torrent(session, torrent["hash"])
+    except Exception:
+        pass
+
     return data, ext
 
 

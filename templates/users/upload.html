@@ -154,6 +154,7 @@
           <div class="form-group">
             <label class="label-with-help">Liens Magnet vers des images <span class="help-icon" data-tooltip="Collez un ou plusieurs liens Magnet pointant vers des images (PNG, JPG, WebP...). Les images seront téléchargées une fois et mises en cache sur le serveur. Les liens Magnet restent visibles sur la fiche.">?</span></label>
           </div>
+          <p class="upload-info">Taille recommandée : au moins <strong>800×800 px</strong>, idéalement <strong>1200×1200 px</strong> (carré). Les images sont affichées en 160×160 px dans la liste et remplissent une colonne de 420 px sur la page détail.</p>
           <div id="imageMagnetEntries"></div>
           <div class="magnet-actions">
             <button type="button" class="btn btn-outline" id="addImageMagnetBtn">+ Ajouter une image</button>
@@ -198,6 +199,10 @@
           <button type="button" class="btn btn-outline" id="downloadJsonBtn" title="Télécharger la fiche info au format JSON">
             Télécharger la fiche (JSON)
           </button>
+          <label class="btn btn-outline" id="uploadJsonLabel" title="Importer une fiche JSON pour remplir le formulaire">
+            Importer une fiche (JSON)
+            <input type="file" id="uploadJsonInput" accept=".json,application/json" hidden>
+          </label>
           <span class="form-status" id="uploadStatus"></span>
         </div>
 

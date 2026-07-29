@@ -256,9 +256,7 @@ UploadModule.submit = (function () {
     });
   }
 
-  function initEditing() {
-    if (!UploadModule.EDITING) return;
-    var d = UploadModule.getEditData();
+  function populateFormFromJSON(d) {
     var typeSelect = document.getElementById('type');
     var formatTypeSelect = document.getElementById('format_type');
 
@@ -274,6 +272,9 @@ UploadModule.submit = (function () {
       var lt = document.getElementById('license_type');
       lt.value = d.license_type;
       lt.dispatchEvent(new Event('change'));
+      if (d.license_type === 'other' && d.custom_license_text) {
+        document.getElementById('custom_license_text').value = d.custom_license_text;
+      }
     }
 
     // Restore magnet links
@@ -293,7 +294,7 @@ UploadModule.submit = (function () {
       }
     }
 
-    // Restore visualization links
+    // Restore visualization links (supports both formats)
     if (d.visualization_links && d.visualization_links.length > 0) {
       var vln = document.getElementById('viz_name');
       var vlu = document.getElementById('viz_url');
@@ -301,6 +302,11 @@ UploadModule.submit = (function () {
         vln.value = d.visualization_links[0].name || '';
         vlu.value = d.visualization_links[0].url || '';
       }
+    } else if (d.viz_link_name || d.viz_link_url) {
+      var vln = document.getElementById('viz_name');
+      var vlu = document.getElementById('viz_url');
+      if (vln) vln.value = d.viz_link_name || '';
+      if (vlu) vlu.value = d.viz_link_url || '';
     }
 
     // Restore image magnets
@@ -313,6 +319,49 @@ UploadModule.submit = (function () {
         });
       }
     }
+  }
+
+  function initUploadJson() {
+    var uploadJsonInput = document.getElementById('uploadJsonInput');
+    if (!uploadJsonInput) return;
+
+    uploadJsonInput.addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+
+      if (!file.name.endsWith('.json')) {
+        uploadStatus.textContent = 'Veuillez s\u00e9lectionner un fichier JSON';
+        uploadStatus.className = 'form-status form-error';
+        uploadJsonInput.value = '';
+        return;
+      }
+
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        try {
+          var data = JSON.parse(ev.target.result);
+          if (!data.title && !data.type) {
+            uploadStatus.textContent = 'Le fichier JSON ne contient pas les champs attendus (title, type)';
+            uploadStatus.className = 'form-status form-error';
+            return;
+          }
+          populateFormFromJSON(data);
+          uploadStatus.textContent = 'Formulaire rempli depuis le fichier JSON';
+          uploadStatus.className = 'form-status form-success';
+        } catch (err) {
+          uploadStatus.textContent = 'Erreur de lecture du fichier JSON';
+          uploadStatus.className = 'form-status form-error';
+        }
+      };
+      reader.readAsText(file);
+      uploadJsonInput.value = '';
+    });
+  }
+
+  function initEditing() {
+    if (!UploadModule.EDITING) return;
+    var d = UploadModule.getEditData();
+    populateFormFromJSON(d);
 
     uploadBtn.textContent = 'Mettre \u00e0 jour et publier';
     draftBtn.textContent = 'Mettre \u00e0 jour le brouillon';
@@ -336,6 +385,7 @@ UploadModule.submit = (function () {
     initFormSubmission();
     initDraftBtn();
     initDownloadJson();
+    initUploadJson();
     initEditing();
   }
 

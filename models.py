@@ -32,6 +32,7 @@ class Item(db.Model, TimestampMixin):
     license_type: Mapped[str | None] = mapped_column(default=None)
     image_magnets_pending: Mapped[bool] = mapped_column(default=False)
     image_magnets_total: Mapped[int] = mapped_column(default=0)
+    image_magnet_links: Mapped[list | None] = mapped_column(JSON, server_default="[]", nullable=True)
     metadata_json: Mapped[list | None] = mapped_column(JSON, server_default="[]", nullable=True)
     verifier_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     verified_at: Mapped[datetime.datetime | None]
@@ -126,6 +127,8 @@ class Item(db.Model, TimestampMixin):
                 magnet = g.data_json.get("magnet_link", "")
                 if magnet:
                     magnets.append({"magnet_link": magnet, "label": g.label or ""})
+        if not magnets and isinstance(self.image_magnet_links, list):
+            magnets = list(self.image_magnet_links)
         return magnets
 
     @staticmethod

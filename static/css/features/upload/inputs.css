@@ -92,6 +92,17 @@
   opacity: 0.7;
 }
 
+.upload-info {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: -0.5rem 0 0.75rem;
+  line-height: 1.5;
+}
+
+.upload-info strong {
+  color: var(--charcoal);
+}
+
 .upload-form .form-row {
   display: flex;
   gap: 1rem;
@@ -221,6 +232,11 @@
 
 .color-error {
   color: var(--error-red);
+}
+
+.form-success {
+  color: var(--forest);
+  font-weight: 600;
 }
 
 .hidden-file {
