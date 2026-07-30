@@ -29,6 +29,7 @@ docker_setup() {
         local flask_key=$(generate_random)
 
         local admin_pass=$(python3 -c "import secrets; print(secrets.token_urlsafe(24))")
+        local admin_pseudo="systeme-ananas"
         local qb_pass=$(generate_password)
 
         cat > "$ENV_FILE" <<EOF
@@ -40,6 +41,7 @@ SQLALCHEMY_DATABASE_URI=postgresql://${pg_user}:${pg_pass}@postgres/${pg_db}
 
 # ─── Admin Account ───
 ADMIN_EMAIL=system@ananas.local
+ADMIN_PSEUDO=${admin_pseudo}
 ADMIN_PASSWORD=${admin_pass}
 
 # ─── Flask ───
@@ -59,6 +61,7 @@ EOF
         printf "POSTGRES_USER       : %s\n" "${pg_user}"
         printf "POSTGRES_PASSWORD   : %s\n" "${pg_pass}"
         printf "ADMIN_EMAIL         : %s\n" "system@ananas.local"
+        printf "ADMIN_PSEUDO        : %s\n" "${admin_pseudo}"
         printf "ADMIN_PASSWORD      : %s\n" "${admin_pass}"
         printf "FLASK_SECRET_KEY    : %s\n" "${flask_key}"
         printf "QBITTORRENT_URL     : %s\n" "http://qbittorrent:8081"

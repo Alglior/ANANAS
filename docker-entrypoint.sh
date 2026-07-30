@@ -36,9 +36,10 @@ app = create_app()
 with app.app_context():
     from werkzeug.security import generate_password_hash
     pw = os.environ.get('ADMIN_PASSWORD', 'system')
+    pseudo = os.environ.get('ADMIN_PSEUDO', 'systeme-ananas')
     user = User(
         prenom='Système', nom='ANANAS',
-        pseudo='systeme-ananas',
+        pseudo=pseudo,
         email='system@ananas.local',
         password_hash=generate_password_hash(pw),
         is_active=True, banned=False, is_admin=True
@@ -64,6 +65,27 @@ fi
 
 echo "[entrypoint] Running flask db upgrade..."
 flask db upgrade
+
+echo "[entrypoint] Syncing admin credentials from .env..."
+python3 -c "
+import os, sys
+sys.path.insert(0, '/app')
+from app import create_app, db
+from models import User
+from werkzeug.security import generate_password_hash
+app = create_app()
+with app.app_context():
+    admin = User.query.filter_by(email='system@ananas.local').first()
+    if admin:
+        pw = os.environ.get('ADMIN_PASSWORD', 'system')
+        pseudo = os.environ.get('ADMIN_PSEUDO', 'systeme-ananas')
+        admin.pseudo = pseudo
+        admin.password_hash = generate_password_hash(pw)
+        db.session.commit()
+        print(f'Admin synced: pseudo={pseudo}')
+    else:
+        print('No admin user found, skipping sync.')
+"
 
 echo "[entrypoint] Ensuring image cache directory..."
 mkdir -p /app/instance/image_cache /app/static/uploads/avatars

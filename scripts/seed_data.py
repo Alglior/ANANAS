@@ -129,9 +129,10 @@ def _ensure_system_user():
         except ImportError:
             generate_password_hash = lambda x: x
         admin_password = os.environ.get("ADMIN_PASSWORD", "system")
+        admin_pseudo = os.environ.get("ADMIN_PSEUDO", "systeme-ananas")
         user = User(
             prenom="Système", nom="ANANAS",
-            pseudo="systeme-ananas",
+            pseudo=admin_pseudo,
             email="system@ananas.local",
             password_hash=generate_password_hash(admin_password),
             is_active=True, banned=False, is_admin=True
