@@ -178,9 +178,14 @@ def create_app(app_name="ANANAS"):
             f"connect-src 'self' https://unpkg.com https://*.tile.openstreetmap.org; "
             f"object-src 'none'; "
             f"base-uri 'none'; "
-            f"form-action 'self'"
+            f"form-action 'self'; "
+            f"upgrade-insecure-requests"
         )
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Access-Control-Allow-Origin"] = request.origin if request.origin else request.host_url.rstrip("/")
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-CSRF-Token"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
 
         csrf_signed = g.get("csrf_token", "")
         if csrf_signed:

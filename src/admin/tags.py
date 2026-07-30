@@ -36,6 +36,8 @@ def create_tag_category():
     from models import PredefinedTagCategory
 
     data = _get_json_data()
+    if data is None:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
     name = (data.get("name") or "").strip()
 
     if not name:
@@ -68,6 +70,8 @@ def update_tag_category(category_id):
 
     cat = PredefinedTagCategory.query.get_or_404(category_id)
     data = _get_json_data()
+    if data is None:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
 
     if "name" in data:
         name = data["name"].strip()
@@ -110,6 +114,8 @@ def create_tag(category_id):
 
     cat = PredefinedTagCategory.query.get_or_404(category_id)
     data = _get_json_data()
+    if data is None:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
     name = (data.get("name") or "").strip()
 
     if not name:
@@ -159,6 +165,8 @@ def update_tag(category_id, tag_id):
         id=tag_id, category_id=category_id
     ).first_or_404()
     data = _get_json_data()
+    if data is None:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
 
     if "name" in data:
         name = data["name"].strip()

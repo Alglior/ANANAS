@@ -22,6 +22,8 @@ def create_mirror():
     from models import MirrorSite
 
     data = _get_json_data()
+    if data is None:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
     name = (data.get("name") or "").strip()
     url = (data.get("url") or "").strip()
     description = (data.get("description") or "").strip()
@@ -51,6 +53,8 @@ def update_mirror(mirror_id):
 
     mirror = MirrorSite.query.get_or_404(mirror_id)
     data = _get_json_data()
+    if data is None:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
 
     if "name" in data:
         mirror.name = sanitize_html(data["name"].strip())

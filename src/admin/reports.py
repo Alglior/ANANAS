@@ -14,6 +14,8 @@ def create_report():
 
     current_user = get_current_user()
     data = _get_json_data()
+    if data is None:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
 
     target_type = data.get("target_type")
     target_id = data.get("target_id")
@@ -87,6 +89,8 @@ def resolve_report(report_id):
 
     report = Report.query.get_or_404(report_id)
     data = _get_json_data()
+    if data is None:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
     new_status = data.get("status", "")
 
     if new_status not in ("resolved", "dismissed"):

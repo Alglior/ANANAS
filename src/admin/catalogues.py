@@ -12,6 +12,8 @@ def toggle_catalogue(catalogue_type):
         return jsonify({"error": "Type de catalogue invalide"}), 400
 
     data = _get_json_data()
+    if data is None:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
     active = data.get("active", True)
 
     status = get_catalogues_status()

@@ -64,8 +64,6 @@ def change_password():
     current_password = data.get("current_password", "")
     new_password = data.get("new_password", "")
 
-    from werkzeug.security import generate_password_hash, check_password_hash
-
     if not check_password_hash(current_user.password_hash, current_password):
         return jsonify({"error": "Mot de passe actuel incorrect"}), 400
 
@@ -110,7 +108,7 @@ def upload_avatar():
     upload_dir = os.path.join(current_app.root_path, "static", "uploads", "avatars")
     os.makedirs(upload_dir, exist_ok=True)
 
-    filename = f"avatar_{current_user.id}_{secrets.token_hex(8)}{ext}"
+    filename = secure_filename(f"avatar_{current_user.id}_{secrets.token_hex(8)}{ext}")
     filepath = os.path.join(upload_dir, filename)
     file.save(filepath)
 

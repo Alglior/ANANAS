@@ -91,6 +91,8 @@ def _paginate(query, page=1, per_page=30):
 
 
 def _get_json_data():
+    if not request.is_json:
+        return None
     return request.get_json(silent=True) or {}
 
 

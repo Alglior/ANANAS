@@ -44,6 +44,8 @@ def create_featured():
     from models import FeaturedItem, Item
 
     data = _get_json_data()
+    if data is None:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
     item_id = data.get("item_id")
 
     if not item_id:
@@ -71,6 +73,8 @@ def update_featured(featured_id):
 
     featured = FeaturedItem.query.get_or_404(featured_id)
     data = _get_json_data()
+    if data is None:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
 
     if "display_order" in data:
         featured.display_order = int(data["display_order"])

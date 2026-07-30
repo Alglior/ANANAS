@@ -37,6 +37,8 @@ def mark_contact_message_read(msg_id):
 
     msg = ContactMessage.query.get_or_404(msg_id)
     data = _get_json_data()
+    if data is None:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
     msg.is_read = bool(data.get("is_read", True))
     db.session.commit()
     return jsonify({"status": "updated", "id": msg.id, "is_read": msg.is_read})

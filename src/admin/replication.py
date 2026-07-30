@@ -14,6 +14,8 @@ def replication_fetch():
     from models import Item, ItemTag, ItemGallery, DataChunk, VisualizationLink
 
     data = _get_json_data()
+    if data is None:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
     remote_url = (data.get("url") or "").strip().rstrip("/")
     selected_types = data.get("types", [])
 
@@ -140,6 +142,8 @@ def replication_fetch():
 @api_admin_required
 def replication_preview():
     data = _get_json_data()
+    if data is None:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
     remote_url = (data.get("url") or "").strip().rstrip("/")
 
     if not remote_url:

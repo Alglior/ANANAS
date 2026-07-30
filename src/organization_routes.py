@@ -415,7 +415,7 @@ def delete_organization(slug):
         user_id=current_user.id, organization_id=org.id
     ).first()
     if not member or not member.has_permission("delete_org"):
-        return jsonify({"error": "Seul le propriétaire peut supprimer l'organisation"}), 403
+        return jsonify({"error": "Vous n'avez pas la permission de supprimer l'organisation"}), 403
 
     db.session.delete(org)
     db.session.commit()

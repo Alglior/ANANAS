@@ -22,6 +22,8 @@ def create_geopackage():
     from models import GeoPackage
 
     data = _get_json_data()
+    if data is None:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
     title = (data.get("title") or "").strip()
     description = (data.get("description") or "").strip()
     format_info = (data.get("format_info") or "").strip()
@@ -52,6 +54,8 @@ def update_geopackage(pkg_id):
 
     pkg = GeoPackage.query.get_or_404(pkg_id)
     data = _get_json_data()
+    if data is None:
+        return jsonify({"error": "Content-Type must be application/json"}), 415
 
     if "title" in data:
         pkg.title = sanitize_html(data["title"].strip())
