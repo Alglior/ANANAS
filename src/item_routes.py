@@ -167,6 +167,8 @@ def item_detail_view(item_id):
 
     from models import Comment
 
+    from models import VisualizationLink
+
     comment_page = 1
     try:
         comment_page = int(request.args.get("page", 1))
@@ -176,6 +178,7 @@ def item_detail_view(item_id):
     comments, pag_info = _paginate_comments(item_id, comment_page)
     item_dict = item.to_dict()
     item_dict["comment_count"] = Comment.query.filter_by(item_id=item_id).count()
+    viz_links = [vl.to_dict() for vl in VisualizationLink.query.filter_by(parent_item_id=item_id).all()]
 
     return render_template(
         "item_detail.html",
@@ -191,6 +194,7 @@ def item_detail_view(item_id):
         image_gallery=img_gallery,
         current_user=current_user,
         show_data_visualization_tabs=item.type == "geodonnee",
+        viz_links=viz_links,
     )
 
 

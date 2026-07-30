@@ -27,15 +27,21 @@
           {% if active_data_tab %}
             <a href="/catalogue/item/{{ item.id }}" class="tab-btn">Aperçu</a>
             <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn active">Données</a>
+            {% if viz_links and viz_links|length > 0 %}
             <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Réutilisation</a>
+            {% endif %}
           {% elif active_reuse_tab %}
             <a href="/catalogue/item/{{ item.id }}" class="tab-btn">Aperçu</a>
             <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn">Données</a>
+            {% if viz_links and viz_links|length > 0 %}
             <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn active">Réutilisation</a>
+            {% endif %}
           {% else %}
             <a href="#" class="tab-btn active">Aperçu</a>
             <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn">Données</a>
+            {% if viz_links and viz_links|length > 0 %}
             <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Réutilisation</a>
+            {% endif %}
           {% endif %}
         {% endif %}
       </nav>
