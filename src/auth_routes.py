@@ -72,6 +72,11 @@ def connexion_post():
         authenticated = True
 
     if authenticated:
+        if user.totp_enabled:
+            session["pending_2fa_user_id"] = user.id
+            session.modified = True
+            return redirect(url_for("auth.connexion_2fa_page"))
+
         session.clear()
         session.pop("_csrf_token", None)
         session["user_id"] = user.id
@@ -121,4 +126,55 @@ def inscription_post():
 @bp.route("/logout")
 def logout():
     session.clear()
+    return redirect(url_for("index.home"))
+
+
+@bp.route("/connexion/2fa")
+def connexion_2fa_page():
+    pending_id = session.get("pending_2fa_user_id")
+    if not pending_id:
+        return redirect(url_for("auth.connexion_page"))
+
+    from models import User
+    user = db.session.get(User, pending_id)
+    if not user or not user.totp_enabled:
+        session.pop("pending_2fa_user_id", None)
+        return redirect(url_for("auth.connexion_page"))
+
+    return render_template(
+        "connexion_2fa.html",
+        title="A.N.A.N.A.S | Double authentification",
+        meta_description="Vérification à deux facteurs",
+    )
+
+
+@bp.route("/connexion/2fa", methods=["POST"])
+@limiter.limit("10 per hour")
+def connexion_2fa_post():
+    pending_id = session.get("pending_2fa_user_id")
+    if not pending_id:
+        return redirect(url_for("auth.connexion_page"))
+
+    import pyotp
+
+    from models import User
+    user = db.session.get(User, pending_id)
+    if not user or not user.totp_enabled or not user.totp_secret:
+        session.pop("pending_2fa_user_id", None)
+        return redirect(url_for("auth.connexion_page"))
+
+    code = request.form.get("code", "").strip()
+    if not code:
+        return render_template("connexion_2fa.html", error="Code requis"), 400
+
+    totp = pyotp.TOTP(user.totp_secret)
+    if not totp.verify(code, valid_window=1):
+        return render_template("connexion_2fa.html", error="Code invalide. Vérifiez l'heure de votre appareil."), 401
+
+    session.clear()
+    session.pop("_csrf_token", None)
+    session["user_id"] = user.id
+    session["session_version"] = user.session_version
+    session["_auth_time"] = datetime.datetime.now().isoformat()
+    session.modified = True
     return redirect(url_for("index.home"))

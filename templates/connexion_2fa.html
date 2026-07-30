@@ -1,0 +1,41 @@
+{% extends 'auth_base.html' %}
+
+{% set section_id = 'connexion-2fa' %}
+{% set title = 'Double authentification' %}
+{% set subtitle = "Entrez le code à 6 chiffres généré par votre application d'authentification." %}
+{% set form_id = 'connexion2faForm' %}
+{% set form_action = '/connexion/2fa' %}
+{% set submit_text = 'Vérifier' %}
+
+{% block auth_error %}
+{% if error %}
+<div class="alert alert-danger">
+  {{ error|e }}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block auth_fields %}
+<input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"/>
+<div class="form-group">
+  <label for="code">Code d'authentification</label>
+  <input
+    type="text"
+    id="code"
+    name="code"
+    placeholder="000000"
+    required
+    autocomplete="off"
+    inputmode="numeric"
+    pattern="[0-9]*"
+    maxlength="6"
+    class="input-2fa-code"
+  />
+</div>
+{% endblock %}
+
+{% block auth_footer %}
+<p class="auth-footer">
+  <a href="/connexion">Retour à la connexion</a>
+</p>
+{% endblock %}

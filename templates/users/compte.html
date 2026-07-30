@@ -105,18 +105,65 @@
           </form>
         </section>
 
-        <section class="compte-section" style="margin-top: 1.5rem;">
+        <section class="compte-section section-margin-top">
           <h2>Codes de récupération</h2>
           <p class="recovery-info">Générez 10 codes de récupération à utiliser en cas de perte de mot de passe. Chaque code est à usage unique : une fois utilisé, il ne pourra plus être réemployé. Ces codes ne sont affichés qu'une seule fois. Téléchargez-les et conservez-les en lieu sûr.</p>
           <div id="recoveryCodesContainer">
             <button type="button" class="btn btn-primary" id="generateRecoveryCodesBtn">Générer mes codes de récupération</button>
             <span class="form-status" id="recoveryStatus"></span>
           </div>
-          <div id="recoveryCodesList" class="recovery-codes-list" style="display: none;">
+          <div id="recoveryCodesList" class="recovery-codes-list is-hidden">
             <ol id="recoveryCodesOl"></ol>
             <div class="form-actions">
               <button type="button" class="btn btn-primary" id="downloadRecoveryCodesBtn">Télécharger en .txt</button>
               <button type="button" class="btn btn-outline" id="closeRecoveryCodesBtn">Fermer</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="compte-section section-margin-top">
+          <h2>Double authentification (2FA)</h2>
+          <p class="recovery-info">Ajoutez une couche de sécurité supplémentaire à votre compte en utilisant une application d'authentification comme Google Authenticator, Authy ou FreeOTP.</p>
+
+          <div id="tfaEnabledSection" class="{% if not user.totp_enabled %}is-hidden{% endif %}">
+            <div class="alert alert-success">
+              <strong>✓ La double authentification est activée.</strong>
+            </div>
+            <div class="form-group tfa-margin-top">
+              <label for="tfa_disable_password">Mot de passe actuel</label>
+              <input type="password" id="tfa_disable_password" placeholder="Entrez votre mot de passe" />
+            </div>
+            <div class="form-group">
+              <label for="tfa_disable_code">Code 2FA</label>
+              <input type="text" id="tfa_disable_code" placeholder="000000" inputmode="numeric" maxlength="6" />
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline" id="disableTfaBtn">Désactiver la 2FA</button>
+              <span class="form-status" id="tfaDisableStatus"></span>
+            </div>
+          </div>
+
+          <div id="tfaSetupSection" class="{% if user.totp_enabled %}is-hidden{% endif %}">
+            <button type="button" class="btn btn-primary" id="setupTfaBtn">Configurer la double authentification</button>
+            <span class="form-status" id="tfaSetupStatus"></span>
+          </div>
+
+          <div id="tfaVerifySection" class="is-hidden">
+            <div class="tfa-qr-wrapper">
+              <img id="tfaQrCode" src="" alt="QR Code 2FA" class="tfa-qr-code" />
+            </div>
+            <p class="recovery-info tfa-text-center">
+              Scannez ce QR code avec votre application d'authentification.<br>
+              Ou saisissez manuellement la clé : <code id="tfaSecretKey" class="tfa-secret-key"></code>
+            </p>
+            <div class="form-group">
+              <label for="tfa_verify_code">Code de vérification</label>
+              <input type="text" id="tfa_verify_code" placeholder="000000" inputmode="numeric" maxlength="6" />
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-primary" id="verifyTfaBtn">Activer la 2FA</button>
+              <button type="button" class="btn btn-outline" id="cancelTfaBtn">Annuler</button>
+              <span class="form-status" id="tfaVerifyStatus"></span>
             </div>
           </div>
         </section>

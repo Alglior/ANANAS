@@ -122,3 +122,8 @@
 .error-list li {
   margin-bottom: 0.2rem;
 }
+
+/* Utility: hide elements (CSP-safe alternative to style="display:none") */
+.is-hidden {
+  display: none !important;
+}

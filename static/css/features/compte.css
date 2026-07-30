@@ -547,3 +547,30 @@ a.activity-card-title:hover {
   font-weight: 600;
   letter-spacing: 0.5px;
 }
+
+/* Utility classes for CSP-safe show/hide */
+.tfa-qr-wrapper {
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.tfa-qr-code {
+  max-width: 200px;
+  image-rendering: pixelated;
+}
+
+.tfa-secret-key {
+  user-select: all;
+}
+
+.tfa-text-center {
+  text-align: center;
+}
+
+.tfa-margin-top {
+  margin-top: 1rem;
+}
+
+.section-margin-top {
+  margin-top: 1.5rem;
+}

@@ -92,6 +92,87 @@ def generate_recovery_codes():
     return jsonify({"codes": codes})
 
 
+@bp.route("/api/users/2fa/setup", methods=["POST"])
+@login_required
+def setup_2fa():
+    import io
+    import pyotp
+    import qrcode
+    from base64 import b64encode
+
+    current_user = get_current_user()
+
+    secret = pyotp.random_base32()
+    current_user.totp_secret = secret
+    db.session.commit()
+
+    issuer = "A.N.A.N.A.S"
+    uri = pyotp.totp.TOTP(secret).provisioning_uri(
+        name=current_user.pseudo,
+        issuer_name=issuer,
+    )
+
+    qr = qrcode.make(uri, box_size=6)
+    buf = io.BytesIO()
+    qr.save(buf, format="PNG")
+    qr_b64 = b64encode(buf.getvalue()).decode()
+
+    return jsonify({
+        "secret": secret,
+        "qr_data_uri": f"data:image/png;base64,{qr_b64}",
+        "uri": uri,
+    })
+
+
+@bp.route("/api/users/2fa/enable", methods=["POST"])
+@login_required
+def enable_2fa():
+    import pyotp
+
+    current_user = get_current_user()
+    data = request.get_json(silent=True) or {}
+    code = data.get("code", "").strip()
+
+    if not current_user.totp_secret:
+        return jsonify({"error": "Aucune clé secrète configurée. Commencez par configurer la 2FA."}), 400
+
+    if not code:
+        return jsonify({"error": "Code requis"}), 400
+
+    totp = pyotp.TOTP(current_user.totp_secret)
+    if not totp.verify(code, valid_window=1):
+        return jsonify({"error": "Code invalide. Vérifiez l'heure de votre appareil et réessayez."}), 400
+
+    current_user.totp_enabled = True
+    db.session.commit()
+
+    return jsonify({"status": "enabled"})
+
+
+@bp.route("/api/users/2fa/disable", methods=["POST"])
+@login_required
+def disable_2fa():
+    current_user = get_current_user()
+    data = request.get_json(silent=True) or {}
+    code = data.get("code", "").strip()
+    password = data.get("password", "").strip()
+
+    if not check_password_hash(current_user.password_hash, password):
+        return jsonify({"error": "Mot de passe incorrect"}), 400
+
+    if current_user.totp_enabled and current_user.totp_secret and code:
+        import pyotp
+        totp = pyotp.TOTP(current_user.totp_secret)
+        if not totp.verify(code, valid_window=1):
+            return jsonify({"error": "Code 2FA invalide"}), 400
+
+    current_user.totp_secret = None
+    current_user.totp_enabled = False
+    db.session.commit()
+
+    return jsonify({"status": "disabled"})
+
+
 @bp.route("/api/users/avatar", methods=["POST"])
 @login_required
 def upload_avatar():

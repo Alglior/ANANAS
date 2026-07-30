@@ -188,8 +188,8 @@
             li.className = 'recovery-code-item';
             ol.appendChild(li);
           });
-          container.style.display = 'none';
-          listEl.style.display = 'block';
+          container.classList.add('is-hidden');
+          listEl.classList.remove('is-hidden');
           status.textContent = '';
         } else {
           status.textContent = data.error || 'Erreur lors de la génération';
@@ -237,9 +237,137 @@
     });
 
     closeBtn.addEventListener('click', function () {
-      listEl.style.display = 'none';
-      container.style.display = 'block';
+      listEl.classList.add('is-hidden');
+      container.classList.remove('is-hidden');
       currentCodes = [];
+    });
+  }
+
+  /* ── 2FA ── */
+  function init2FA() {
+    var setupBtn = document.getElementById('setupTfaBtn');
+    var verifySection = document.getElementById('tfaVerifySection');
+    var verifyBtn = document.getElementById('verifyTfaBtn');
+    var cancelBtn = document.getElementById('cancelTfaBtn');
+    var tfaQr = document.getElementById('tfaQrCode');
+    var tfaSecret = document.getElementById('tfaSecretKey');
+    var tfaVerifyCode = document.getElementById('tfa_verify_code');
+    var tfaVerifyStatus = document.getElementById('tfaVerifyStatus');
+    var tfaSetupStatus = document.getElementById('tfaSetupStatus');
+    var tfaSetupSection = document.getElementById('tfaSetupSection');
+    var tfaEnabledSection = document.getElementById('tfaEnabledSection');
+    var disableBtn = document.getElementById('disableTfaBtn');
+    var tfaDisablePw = document.getElementById('tfa_disable_password');
+    var tfaDisableCode = document.getElementById('tfa_disable_code');
+    var tfaDisableStatus = document.getElementById('tfaDisableStatus');
+
+    if (!setupBtn) return;
+
+    var currentSecret = null;
+
+    setupBtn.addEventListener('click', async function () {
+      tfaSetupStatus.textContent = 'Configuration...';
+      tfaSetupStatus.className = 'form-status';
+
+      try {
+        var resp = await fetch('/api/users/2fa/setup', {
+          method: 'POST',
+          headers: { 'X-CSRF-Token': csrfToken },
+        });
+        var data = await resp.json();
+        if (resp.ok) {
+          currentSecret = data.secret;
+          tfaQr.src = data.qr_data_uri;
+          tfaSecret.textContent = data.secret;
+          tfaSetupSection.classList.add('is-hidden');
+          verifySection.classList.remove('is-hidden');
+          tfaSetupStatus.textContent = '';
+        } else {
+          tfaSetupStatus.textContent = data.error || 'Erreur';
+          tfaSetupStatus.className = 'form-status form-error';
+        }
+      } catch (err) {
+        tfaSetupStatus.textContent = 'Erreur réseau';
+        tfaSetupStatus.className = 'form-status form-error';
+      }
+    });
+
+    verifyBtn.addEventListener('click', async function () {
+      var code = tfaVerifyCode.value.trim();
+      if (!code) {
+        tfaVerifyStatus.textContent = 'Entrez le code à 6 chiffres';
+        tfaVerifyStatus.className = 'form-status form-error';
+        return;
+      }
+
+      tfaVerifyStatus.textContent = 'Vérification...';
+      tfaVerifyStatus.className = 'form-status';
+
+      try {
+        var resp = await fetch('/api/users/2fa/enable', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+          body: JSON.stringify({ code: code }),
+        });
+        var data = await resp.json();
+        if (resp.ok) {
+          verifySection.classList.add('is-hidden');
+          tfaEnabledSection.classList.remove('is-hidden');
+          tfaSetupSection.classList.add('is-hidden');
+          tfaVerifyStatus.textContent = '';
+          currentSecret = null;
+        } else {
+          tfaVerifyStatus.textContent = data.error || 'Erreur';
+          tfaVerifyStatus.className = 'form-status form-error';
+        }
+      } catch (err) {
+        tfaVerifyStatus.textContent = 'Erreur réseau';
+        tfaVerifyStatus.className = 'form-status form-error';
+      }
+    });
+
+    cancelBtn.addEventListener('click', function () {
+      verifySection.classList.add('is-hidden');
+      tfaSetupSection.classList.remove('is-hidden');
+      tfaVerifyCode.value = '';
+      tfaVerifyStatus.textContent = '';
+      currentSecret = null;
+    });
+
+    disableBtn.addEventListener('click', async function () {
+      var password = tfaDisablePw.value.trim();
+      var code = tfaDisableCode.value.trim();
+
+      if (!password) {
+        tfaDisableStatus.textContent = 'Entrez votre mot de passe';
+        tfaDisableStatus.className = 'form-status form-error';
+        return;
+      }
+
+      tfaDisableStatus.textContent = 'Désactivation...';
+      tfaDisableStatus.className = 'form-status';
+
+      try {
+        var resp = await fetch('/api/users/2fa/disable', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+          body: JSON.stringify({ password: password, code: code }),
+        });
+        var data = await resp.json();
+        if (resp.ok) {
+          tfaEnabledSection.classList.add('is-hidden');
+          tfaSetupSection.classList.remove('is-hidden');
+          tfaDisablePw.value = '';
+          tfaDisableCode.value = '';
+          tfaDisableStatus.textContent = '';
+        } else {
+          tfaDisableStatus.textContent = data.error || 'Erreur';
+          tfaDisableStatus.className = 'form-status form-error';
+        }
+      } catch (err) {
+        tfaDisableStatus.textContent = 'Erreur réseau';
+        tfaDisableStatus.className = 'form-status form-error';
+      }
     });
   }
 
@@ -247,4 +375,5 @@
   initProfileForm();
   initPasswordForm();
   initRecoveryCodes();
+  init2FA();
 })();

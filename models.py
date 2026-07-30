@@ -204,6 +204,8 @@ class User(db.Model):
     warnings: Mapped[str | None]
     session_version: Mapped[int] = mapped_column(default=0)
     recovery_codes_hash: Mapped[dict | None] = mapped_column(JSON, default=None, nullable=True)
+    totp_secret: Mapped[str | None] = mapped_column(default=None, nullable=True)
+    totp_enabled: Mapped[bool] = mapped_column(default=False)
 
     def __str__(self):
         return f"{self.prenom} {self.nom}"

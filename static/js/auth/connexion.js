@@ -23,17 +23,17 @@
 
   if (toggleBtn && passwordField && recoveryField) {
     toggleBtn.addEventListener('click', function () {
-      var isPasswordMode = passwordField.style.display !== 'none';
+      var isPasswordMode = !passwordField.classList.contains('is-hidden');
       if (isPasswordMode) {
-        passwordField.style.display = 'none';
+        passwordField.classList.add('is-hidden');
         passwordInput.required = false;
-        recoveryField.style.display = '';
+        recoveryField.classList.remove('is-hidden');
         recoveryInput.required = true;
         toggleBtn.textContent = 'Utiliser le mot de passe';
       } else {
-        recoveryField.style.display = 'none';
+        recoveryField.classList.add('is-hidden');
         recoveryInput.required = false;
-        passwordField.style.display = '';
+        passwordField.classList.remove('is-hidden');
         passwordInput.required = true;
         toggleBtn.textContent = 'Utiliser un code de récupération';
       }

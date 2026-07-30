@@ -48,7 +48,7 @@
   />
 </div>
 
-<div id="passwordField" class="form-group" {% if recovery_code_mode %}style="display:none"{% endif %}>
+<div id="passwordField" class="form-group {% if recovery_code_mode %}is-hidden{% endif %}">
   <input
     type="password"
     id="password"
@@ -59,7 +59,7 @@
   />
 </div>
 
-<div id="recoveryCodeField" class="form-group" {% if not recovery_code_mode %}style="display:none"{% endif %}>
+<div id="recoveryCodeField" class="form-group {% if not recovery_code_mode %}is-hidden{% endif %}">
   <input
     type="text"
     id="recovery_code"
