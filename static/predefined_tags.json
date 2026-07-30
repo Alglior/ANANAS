@@ -1,0 +1,37 @@
+{
+  "categories": [
+    {
+      "name": "Démographie",
+      "tags": [
+        "Population",
+        "Densité",
+        "Recensement",
+        "Âge",
+        "Sexe",
+        "Revenus",
+        "Emploi",
+        "Chômage",
+        "Logement",
+        "Ménages"
+      ]
+    },
+    {
+      "name": "Climat & météo",
+      "tags": [
+        "Température",
+        "Précipitations",
+        "Vent",
+        "Humidité",
+        "Pression",
+        "Ensoleillement",
+        "Canicule",
+        "Sécheresse",
+        "Gel",
+        "Neige",
+        "Orage",
+        "Météo",
+        "Changement climatique"
+      ]
+    }
+  ]
+}

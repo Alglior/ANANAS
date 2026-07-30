@@ -27,10 +27,14 @@
 
       <div class="upload-tab-content active" id="tab-publish">
 
-      <label class="btn btn-outline" id="uploadJsonLabel" title="Importer une fiche JSON pour remplir le formulaire">
-            Importer une fiche (JSON)
-            <input type="file" id="uploadJsonInput" accept=".json,application/json" hidden>
-          </label>
+      <div class="json-drop-zone" id="jsonDropZone">
+        <div class="json-drop-content">
+          <p class="json-drop-text">Déposez vos fichiers JSON ici</p>
+          <p class="json-drop-subtext">ou cliquez pour sélectionner un ou plusieurs fichiers</p>
+          <input type="file" id="multiJsonInput" accept=".json,application/json" multiple hidden>
+        </div>
+      </div>
+      <div class="json-upload-results" id="jsonUploadResults"></div>
 
       <form class="upload-form" id="uploadForm">
         <div class="upload-section" id="tutoSectionInfo">

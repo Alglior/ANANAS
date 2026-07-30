@@ -325,40 +325,130 @@ UploadModule.submit = (function () {
     }
   }
 
-  function initUploadJson() {
-    var uploadJsonInput = document.getElementById('uploadJsonInput');
-    if (!uploadJsonInput) return;
+  function initMultiJsonUpload() {
+    var dropZone = document.getElementById('jsonDropZone');
+    var fileInput = document.getElementById('multiJsonInput');
+    var resultsContainer = document.getElementById('jsonUploadResults');
+    if (!dropZone || !fileInput) return;
 
-    uploadJsonInput.addEventListener('change', function(e) {
-      var file = e.target.files[0];
-      if (!file) return;
-
-      if (!file.name.endsWith('.json')) {
-        uploadStatus.textContent = 'Veuillez s\u00e9lectionner un fichier JSON';
+    function processFiles(files) {
+      var validFiles = [];
+      for (var i = 0; i < files.length; i++) {
+        var f = files[i];
+        if (f.name.endsWith('.json')) {
+          validFiles.push(f);
+        }
+      }
+      if (!validFiles.length) {
+        uploadStatus.textContent = 'Aucun fichier JSON valide s\u00e9lectionn\u00e9';
         uploadStatus.className = 'form-status form-error';
-        uploadJsonInput.value = '';
         return;
       }
 
-      var reader = new FileReader();
-      reader.onload = function(ev) {
-        try {
-          var data = JSON.parse(ev.target.result);
-          if (!data.title && !data.type) {
-            uploadStatus.textContent = 'Le fichier JSON ne contient pas les champs attendus (title, type)';
-            uploadStatus.className = 'form-status form-error';
-            return;
+      resultsContainer.innerHTML = '';
+
+      validFiles.forEach(function(file) {
+        var row = document.createElement('div');
+        row.className = 'json-upload-result';
+        row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + file.name + '</span><span class="file-status">Envoi...</span>';
+        resultsContainer.appendChild(row);
+
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+          try {
+            var data = JSON.parse(ev.target.result);
+            if (!data.title && !data.type) {
+              throw new Error('Champs title/type manquants');
+            }
+            var payload = {
+              title: data.title || '',
+              type: data.type || '',
+              format_type: data.format_type || '',
+              description: data.description || '',
+              organization_id: data.organization_id || '',
+              license_type: data.license_type || '',
+              custom_license_text: data.custom_license_text || '',
+              status: 'draft'
+            };
+            if (data.tags && data.tags.length > 0) {
+              payload.tags = data.tags;
+            }
+            if (data.data_format_level === 'pack' && data.magnet_link) {
+              payload.data_format_level = 'pack';
+              payload.magnet_link = data.magnet_link;
+            } else if (data.data_format_level === 'individual' && data.magnet_links && data.magnet_links.length > 0) {
+              payload.data_format_level = 'individual';
+              payload.magnet_links = data.magnet_links;
+            }
+            if (data.viz_link_name || data.viz_link_url) {
+              payload.viz_link_name = data.viz_link_name || '';
+              payload.viz_link_url = data.viz_link_url || '';
+            }
+            if (data.image_magnets && data.image_magnets.length > 0) {
+              payload.image_magnets = data.image_magnets;
+            }
+
+            var csrfToken = CsrfModule.getCsrfToken();
+            fetch('/api/upload/item', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken,
+              },
+              body: JSON.stringify(payload),
+            })
+            .then(function(resp) {
+              if (!resp.ok) {
+                return resp.json().then(function(d) { throw new Error(d.error || 'Erreur serveur'); });
+              }
+              return resp.json();
+            })
+            .then(function() {
+              row.className = 'json-upload-result success';
+              row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + file.name + '</span><span class="file-status">Brouillon cr\u00e9\u00e9</span>';
+            })
+            .catch(function(err) {
+              row.className = 'json-upload-result error';
+              row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + file.name + '</span><span class="file-status">' + err.message + '</span>';
+            });
+          } catch (err) {
+            row.className = 'json-upload-result error';
+            row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + file.name + '</span><span class="file-status">JSON invalide</span>';
           }
-          populateFormFromJSON(data);
-          uploadStatus.textContent = 'Formulaire rempli depuis le fichier JSON';
-          uploadStatus.className = 'form-status form-success';
-        } catch (err) {
-          uploadStatus.textContent = 'Erreur de lecture du fichier JSON';
-          uploadStatus.className = 'form-status form-error';
-        }
-      };
-      reader.readAsText(file);
-      uploadJsonInput.value = '';
+        };
+        reader.readAsText(file);
+      });
+    }
+
+    dropZone.addEventListener('click', function() {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', function(e) {
+      processFiles(e.target.files);
+      fileInput.value = '';
+    });
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function(eventName) {
+      dropZone.addEventListener(eventName, function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    });
+
+    dropZone.addEventListener('dragenter', function() {
+      dropZone.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+      if (!dropZone.contains(e.relatedTarget)) {
+        dropZone.classList.remove('drag-over');
+      }
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+      dropZone.classList.remove('drag-over');
+      processFiles(e.dataTransfer.files);
     });
   }
 
@@ -390,7 +480,7 @@ UploadModule.submit = (function () {
     initFormSubmission();
     initDraftBtn();
     initDownloadJson();
-    initUploadJson();
+    initMultiJsonUpload();
     initEditing();
   }
 
