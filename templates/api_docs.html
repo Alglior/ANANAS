@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/features/api-docs.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="api-docs-page">
+  <div class="container">
+
+    <header class="api-header">
+      <h1>API REST</h1>
+      <p class="api-subtitle">
+        Documentation complete des endpoints de la plateforme A.N.A.N.A.S
+      </p>
+      <div class="api-info-bar">
+        <span class="api-info-item">
+          <span class="info-label">Base URL</span>
+          <code class="mono">{{ request.host_url.rstrip('/') }}</code>
+        </span>
+        <span class="api-info-item">
+          <span class="info-label">Format</span>
+          <code class="mono">JSON / HTML</code>
+        </span>
+        <span class="api-info-item">
+          <span class="info-label">Auth</span>
+          <code class="mono">Session + CSRF Token</code>
+        </span>
+      </div>
+    </header>
+
+    <section class="api-auth-section">
+      <h2>Authentification</h2>
+      <div class="auth-card">
+        <p>L'API utilise l'authentification par <strong>session</strong> (cookie HTTP-only).</p>
+        <p>Pour les requetes API (POST, PUT, DELETE), incluez l'en-tete :</p>
+        <div class="code-block">
+          <code>X-CSRF-Token: &lt;valeur du meta tag "csrf-token"&gt;</code>
+        </div>
+        <p>Le token CSRF est present dans le HTML de chaque page via <code class="mono">&lt;meta name="csrf-token" content="..."&gt;</code>.</p>
+        <div class="auth-note">
+          <strong>Limites de debit :</strong> 100 requetes/heure par defaut.
+          Connexion : 5/h &middot; Inscription : 3/h &middot; Contact : 5/h &middot; Changement mot de passe : 5/h
+        </div>
+      </div>
+    </section>
+
+    <section class="api-search-section">
+      <input type="text" id="api-search" class="api-search-input" placeholder="Rechercher un endpoint..." autocomplete="off">
+    </section>
+
+    <div class="api-endpoints">
+      {% for category in endpoints %}
+      <article class="api-category">
+        <div class="api-category-header">
+          <button class="api-collapse-btn" aria-label="Deplier la categorie">
+            <span class="collapse-icon collapsed"></span>
+          </button>
+          <h2>{{ category.category }}</h2>
+          {% if category.admin %}
+          <span class="badge badge-admin">Admin</span>
+          {% endif %}
+        </div>
+        <div class="api-category-body is-collapsed">
+          <div class="api-table-wrap">
+            <table class="api-table">
+              <thead>
+                <tr>
+                  <th class="col-method">Methode</th>
+                  <th class="col-path">Endpoint</th>
+                  <th class="col-desc">Description</th>
+                  <th class="col-auth">Auth</th>
+                  <th class="col-rate">Limite</th>
+                  <th class="col-code">Code</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for ep in category.endpoints %}
+                <tr class="api-row" data-search="{{ ep.path | lower }} {{ ep.desc | lower }} {{ ep.method | lower }}">
+                  <td>
+                    <span class="method-badge method-{{ ep.method | lower }}">{{ ep.method }}</span>
+                  </td>
+                  <td><code class="mono endpoint-path">{{ ep.path }}</code></td>
+                  <td class="desc-cell">{{ ep.desc }}</td>
+                  <td>
+                    {% if ep.auth %}
+                    <span class="badge badge-yes">Oui</span>
+                    {% else %}
+                    <span class="badge badge-no">Non</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if ep.rate %}
+                    <code class="mono rate-badge">{{ ep.rate }}</code>
+                    {% else %}
+                    <span class="text-muted">&mdash;</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <button class="api-code-btn" data-target="code-{{ category.category | replace(' ', '-') | lower }}-{{ loop.index0 }}">Voir</button>
+                  </td>
+                </tr>
+                <tr class="api-code-row" id="code-{{ category.category | replace(' ', '-') | lower }}-{{ loop.index0 }}">
+                  <td colspan="6">
+                    <div class="code-examples">
+                      <div class="code-tabs">
+                        {% for ex in ep.examples %}
+                        <button class="code-tab{% if loop.first %} active{% endif %}" data-lang="{{ ex.lang }}">{{ ex.lang }}</button>
+                        {% endfor %}
+                      </div>
+                      {% for ex in ep.examples %}
+                      <div class="code-panel{% if loop.first %} active{% endif %}" data-lang="{{ ex.lang }}">
+                        <div class="code-panel-header">
+                          <button class="api-copy-btn" data-target="code-{{ category.category | replace(' ', '-') | lower }}-{{ loop.index0 }}-{{ ex.lang }}">Copier</button>
+                        </div>
+                        <pre id="code-{{ category.category | replace(' ', '-') | lower }}-{{ loop.index0 }}-{{ ex.lang }}"><code>{{ ex.code }}</code></pre>
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <div id="api-no-results" class="api-no-results is-hidden">
+      <p>Aucun endpoint ne correspond a votre recherche.</p>
+    </div>
+
+    <section class="api-extra-section">
+      <h2>Formats et types</h2>
+      <div class="extra-grid">
+        <div class="extra-card">
+          <h3>Types d'elements</h3>
+          <ul>
+            <li><code class="mono">geodonnee</code> &mdash; Donnees geospatiales</li>
+            <li><code class="mono">carte</code> &mdash; Produits cartographiques</li>
+            <li><code class="mono">application</code> &mdash; Applications et services</li>
+          </ul>
+        </div>
+        <div class="extra-card">
+          <h3>Statuts de verification</h3>
+          <ul>
+            <li><code class="mono">verified</code> &mdash; Verifye par un admin</li>
+            <li><code class="mono">unofficial</code> &mdash; Non officiel</li>
+            <li><code class="mono">rejected</code> &mdash; Rejete</li>
+          </ul>
+        </div>
+        <div class="extra-card">
+          <h3>Statuts de publication</h3>
+          <ul>
+            <li><code class="mono">published</code> &mdash; Publie</li>
+            <li><code class="mono">draft</code> &mdash; Brouillon</li>
+            <li><code class="mono">trashed</code> &mdash; Corbeille</li>
+          </ul>
+        </div>
+        <div class="extra-card">
+          <h3>Formats autorises (upload)</h3>
+          <p><code class="mono">{{ allowed_extensions }}</code></p>
+          <p class="text-muted">Taille maximale : 10 Mo. Validation par magic bytes.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/pages/api-docs.js') }}"></script>
+{% endblock %}

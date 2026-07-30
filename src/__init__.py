@@ -19,10 +19,11 @@ def register_all_blueprints(app):
     from src.legal_routes import bp as legal_bp
     from src.tos_routes import bp as tos_bp
     from src.doc_routes import bp as doc_bp
+    from src.api_docs import bp as api_docs_bp
     from src.index_routes import bp as index_bp
 
     for bp in (auth_bp, items_bp, interactions_bp, org_bp, admin_bp, user_bp,
-               contact_bp, privacy_bp, legal_bp, tos_bp, doc_bp, index_bp):
+               contact_bp, privacy_bp, legal_bp, tos_bp, doc_bp, api_docs_bp, index_bp):
         app.register_blueprint(bp)
 
 
