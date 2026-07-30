@@ -1,12 +1,10 @@
 import datetime as dt
-import json
 import os
 
 from flask import Blueprint, request, jsonify, redirect, url_for, render_template
 from app import db
 from src.shared import login_required, get_current_user, _build_page_numbers
-
-CATALOGUES_CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data", "catalogues_config.json")
+from models import CatalogueConfig
 
 _CATALOGUES_INFO = [
     {"type": "donnees", "label": "Géodonnées"},
@@ -14,24 +12,31 @@ _CATALOGUES_INFO = [
     {"type": "applications", "label": "Applications"},
 ]
 
+_DEFAULT_CATALOGUES = {"donnees": True, "cartes": True, "applications": True}
+
 
 def get_catalogues_status():
-    try:
-        with open(CATALOGUES_CONFIG_PATH, "r") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {"donnees": True, "cartes": True, "applications": True}
+    rows = CatalogueConfig.query.all()
+    if not rows:
+        return dict(_DEFAULT_CATALOGUES)
+    return {row.catalogue_type: row.enabled for row in rows}
 
 
 def _save_catalogues_status(data):
-    os.makedirs(os.path.dirname(CATALOGUES_CONFIG_PATH), exist_ok=True)
-    with open(CATALOGUES_CONFIG_PATH, "w") as f:
-        json.dump(data, f, indent=2)
+    for ctype, enabled in data.items():
+        row = CatalogueConfig.query.filter_by(catalogue_type=ctype).first()
+        if row:
+            row.enabled = bool(enabled)
+        else:
+            db.session.add(CatalogueConfig(catalogue_type=ctype, enabled=bool(enabled)))
+    db.session.commit()
 
 
 def is_catalogue_enabled(catalogue_type):
-    status = get_catalogues_status()
-    return status.get(catalogue_type, True)
+    row = CatalogueConfig.query.filter_by(catalogue_type=catalogue_type).first()
+    if row is None:
+        return _DEFAULT_CATALOGUES.get(catalogue_type, True)
+    return row.enabled
 
 
 bp = Blueprint("admin", __name__)

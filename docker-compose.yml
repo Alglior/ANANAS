@@ -37,7 +37,6 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - catalogue_config:/app/data   # persist catalogue config across container rebuilds
       - qbittorrent_downloads:/qbittorrent_downloads:ro  # read qBittorrent completed downloads
       - image_cache:/app/instance/image_cache  # persist downloaded image cache
     healthcheck:
@@ -90,6 +89,5 @@ services:
   # ─── Named volumes (survive container deletion) ───
 volumes:
   pg_data:       # Postgres data directory
-  catalogue_config:  # Catalogue enabled/disabled config
   qbittorrent_downloads:  # qBittorrent downloads
   image_cache:  # Downloaded image cache

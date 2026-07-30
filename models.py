@@ -492,6 +492,14 @@ class PredefinedTag(db.Model):
     category = relationship("PredefinedTagCategory", back_populates="tags")
 
 
+class CatalogueConfig(db.Model):
+    __tablename__ = "catalogue_config"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    catalogue_type: Mapped[str] = mapped_column(unique=True, nullable=False)
+    enabled: Mapped[bool] = mapped_column(default=True)
+
+
 class GeoPackage(db.Model, TimestampMixin):
     __tablename__ = "geo_packages"
 
