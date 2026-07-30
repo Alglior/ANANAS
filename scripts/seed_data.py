@@ -131,6 +131,7 @@ def _ensure_system_user():
         admin_password = os.environ.get("ADMIN_PASSWORD", "system")
         user = User(
             prenom="Système", nom="ANANAS",
+            pseudo="systeme-ananas",
             email="system@ananas.local",
             password_hash=generate_password_hash(admin_password),
             is_active=True, banned=False, is_admin=True

@@ -38,6 +38,7 @@ with app.app_context():
     pw = os.environ.get('ADMIN_PASSWORD', 'system')
     user = User(
         prenom='Système', nom='ANANAS',
+        pseudo='systeme-ananas',
         email='system@ananas.local',
         password_hash=generate_password_hash(pw),
         is_active=True, banned=False, is_admin=True

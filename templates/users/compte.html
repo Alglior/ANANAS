@@ -19,7 +19,7 @@
             <input type="file" id="avatarInput" accept="image/png,image/jpeg,image/gif,image/webp" hidden />
           </div>
           <h2 class="compte-avatar-name">{{ user.prenom|e }} {{ user.nom|e }}</h2>
-          <p class="compte-avatar-email">{{ user.email|e }}</p>
+          <p class="compte-avatar-pseudo">@{{ user.pseudo|e }}</p>
         </div>
 
         <nav class="compte-nav">
@@ -65,8 +65,8 @@
               </div>
             </div>
             <div class="form-group">
-              <label for="email">Adresse e-mail</label>
-              <input type="email" id="email" name="email" value="{{ user.email|e }}" required />
+              <label for="pseudo">Pseudo</label>
+              <input type="text" id="pseudo" name="pseudo" value="{{ user.pseudo|e }}" readonly class="input-readonly" />
             </div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary">Sauvegarder</button>

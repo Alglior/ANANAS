@@ -294,6 +294,13 @@ a.comment-author-wrap:hover .comment-author-name {
   margin: 0 0 0.25rem;
 }
 
+.profile-pseudo {
+  font-size: 1rem;
+  color: var(--primary);
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
 .profile-member {
   font-size: 0.85rem;
   color: var(--specs-gray);

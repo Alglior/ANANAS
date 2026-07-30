@@ -191,7 +191,8 @@ class User(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     prenom: Mapped[str]
     nom: Mapped[str]
-    email: Mapped[str] = mapped_column(unique=True)
+    pseudo: Mapped[str] = mapped_column(unique=True)
+    email: Mapped[str | None] = mapped_column(unique=True, nullable=True)
     password_hash: Mapped[str]
     avatar_path: Mapped[str | None] = mapped_column(default=None)
     is_active: Mapped[bool] = mapped_column(default=True)

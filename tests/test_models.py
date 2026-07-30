@@ -123,7 +123,7 @@ class TestItemModel:
 
     def test_item_verification_status(self):
         from models import Item, User
-        user = User(prenom="Verif", nom="Admin", email="verif@test.com", password_hash="pbkdf2:sha256:260000$xxx$yyy", is_active=True)
+        user = User(prenom="Verif", nom="Admin", pseudo="verif-admin", email="verif@test.com", password_hash="pbkdf2:sha256:260000$xxx$yyy", is_active=True)
         item = Item(type="carte", title="Verified Item", description="Desc", format_type="map", magnet_link="magnet:?xt=verif"
 )
         item.verification_status = "verified"
@@ -145,12 +145,12 @@ class TestItemModel:
 class TestUserModel:
     def test_user_str(self):
         from models import User
-        u = User(prenom="Jean", nom="Dupont", email="jean@test.com", password_hash="pbkdf2:test", is_active=True)
+        u = User(prenom="Jean", nom="Dupont", pseudo="jean-dupont", email="jean@test.com", password_hash="pbkdf2:test", is_active=True)
         assert str(u) == "Jean Dupont"
 
     def test_user_banned_default(self):
         from models import User
-        u = User(prenom="New", nom="User", email="banned@test.com", password_hash="pbkdf2:test")
+        u = User(prenom="New", nom="User", pseudo="new-user", email="banned@test.com", password_hash="pbkdf2:test")
         assert u.banned is False
 
 

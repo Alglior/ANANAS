@@ -39,18 +39,12 @@ def update_profile():
     data = request.get_json(silent=True) or {}
     prenom = data.get("prenom", "").strip()
     nom = data.get("nom", "").strip()
-    email = data.get("email", "").strip()
 
-    if not prenom or not nom or not email:
+    if not prenom or not nom:
         return jsonify({"error": "Tous les champs sont requis"}), 400
-
-    existing = User.query.filter(User.email == email, User.id != current_user.id).first()
-    if existing:
-        return jsonify({"error": "Cet email est déjà utilisé"}), 400
 
     current_user.prenom = prenom
     current_user.nom = nom
-    current_user.email = email
     db.session.commit()
     return jsonify({"status": "updated"})
 

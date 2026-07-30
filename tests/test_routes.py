@@ -131,21 +131,26 @@ class TestAuthRoutes:
     def test_inscription_creates_user(self, client):
         resp = client.post(
             "/inscription",
-            data={"prenom": "New", "nom": "User", "email": "newuser99@test.com", "password": "Str0ng@Pass1!"},
+            data={"prenom": "New", "nom": "User", "password": "Str0ng@Pass1!"},
             follow_redirects=True,
         )
         assert resp.status_code == 200
         from models import User
-        created = User.query.filter_by(email="newuser99@test.com").first()
+        created = User.query.filter(User.pseudo.like("new-user#%")).first()
         assert created is not None
+        assert created.prenom == "New"
+        assert created.nom == "User"
 
-    def test_inscription_duplicate_email(self, client):
+    def test_inscription_without_email(self, client):
         resp = client.post(
             "/inscription",
-            data={"prenom": "Dup", "nom": "User", "email": "admin@test.com", "password": "Test@Secure1"},
+            data={"prenom": "Dup", "nom": "User", "password": "Test@Secure1"},
             follow_redirects=True,
         )
         assert resp.status_code == 200
+        from models import User
+        created = User.query.filter(User.pseudo.like("dup-user#%")).first()
+        assert created is not None
 
     def test_logout(self, client):
         resp = client.get("/logout")

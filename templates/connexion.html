@@ -8,6 +8,19 @@
 {% set submit_text = 'Se connecter' %}
 
 {% block auth_error %}
+{% if pseudo %}
+<div class="success-box">
+  <strong>Compte cree avec succes !</strong><br>
+  <div class="pseudo-display">
+    <span id="newPseudo" class="pseudo-value">{{ pseudo|e }}</span>
+    <button type="button" id="copyPseudoBtn" class="btn-copy" title="Copier le pseudo">Copier</button>
+  </div>
+  <div class="warning-box">
+    <strong>Important :</strong> Notez ce pseudo et conservez-le en lieu sur. Sans lui, vous ne pourrez plus vous connecter a votre compte.
+  </div>
+</div>
+{% endif %}
+
 {% if error == "banned" %}
 <div class="alert alert-danger">
   Votre compte a été désactivé. Contactez l'administration pour plus d'informations.
@@ -24,12 +37,12 @@
 {% block auth_fields %}
 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"/>
 <div class="form-group">
-  <label for="email">Adresse e-mail</label>
+  <label for="pseudo">Pseudo</label>
   <input
-    type="email"
-    id="email"
-    name="email"
-    placeholder="votre@email.com"
+    type="text"
+    id="pseudo"
+    name="pseudo"
+    placeholder="Votre pseudo"
     required
     autocomplete="username"
   />
@@ -58,4 +71,10 @@
 <p class="auth-footer">
   Pas encore inscrit ? <a href="/inscription">Créer un compte</a>
 </p>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if pseudo %}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/auth/connexion.js') }}"></script>
+{% endif %}
 {% endblock %}

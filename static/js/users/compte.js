@@ -49,7 +49,6 @@
           body: JSON.stringify({
             prenom: document.getElementById('prenom').value,
             nom: document.getElementById('nom').value,
-            email: document.getElementById('email').value,
           }),
         });
         var data = await resp.json();

@@ -1,5 +1,8 @@
 import os
 import sys
+import random
+import string
+import unicodedata
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -30,9 +33,14 @@ NOMS = [
     "Picard", "Henry", "Carlier", "Bossant", "Clément", "Garnier", "Colson",
 ]
 
+def _normalize(text: str) -> str:
+    return unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
+
+
 def generate_fake_users(n=100):
     from werkzeug.security import generate_password_hash
     users = []
+    existing_pseudos = set()
     for i in range(1, n + 1):
         prenom = PRENOMS[i % len(PRENOMS)]
         nom = NOMS[i % len(NOMS)]
@@ -43,9 +51,19 @@ def generate_fake_users(n=100):
 
         password = generate_password_hash(f"password{i}")
 
+        base = f"{_normalize(prenom).lower()}-{_normalize(nom).lower().replace(' ', '-')}"
+        while True:
+            letters = ''.join(random.choices(string.ascii_lowercase, k=2))
+            digits = ''.join(random.choices(string.digits, k=4))
+            pseudo = f"{base}#{letters}{digits}"
+            if pseudo not in existing_pseudos:
+                existing_pseudos.add(pseudo)
+                break
+
         user = User(
             prenom=prenom,
             nom=nom,
+            pseudo=pseudo,
             email=email,
             password_hash=password,
             is_active=is_active,

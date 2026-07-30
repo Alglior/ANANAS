@@ -13,7 +13,7 @@
       {% endif %}
     </div>
     <h1 class="profile-name">{{ profile_user.prenom }} {{ profile_user.nom }}</h1>
-    <p class="profile-email">{{ profile_user.email }}</p>
+    <p class="profile-pseudo">@{{ profile_user.pseudo }}</p>
     <p class="profile-member">Membre depuis {{ profile_user.created_at.strftime('%B %Y') if profile_user.created_at else '' }}</p>
     <div class="profile-stats">
       <div class="profile-stat">
