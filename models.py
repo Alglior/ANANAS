@@ -201,6 +201,7 @@ class User(db.Model):
     muted_until: Mapped[datetime.datetime | None]
     warned: Mapped[bool] = mapped_column(default=False)
     warnings: Mapped[str | None]
+    session_version: Mapped[int] = mapped_column(default=0)
 
     def __str__(self):
         return f"{self.prenom} {self.nom}"

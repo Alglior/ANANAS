@@ -42,6 +42,7 @@ def ban_user(user_id):
 def _do_ban(user):
     user.banned = True
     user.is_active = False
+    user.session_version += 1
     db.session.commit()
     _log_audit("ban", "user", user.id, {"email": user.email, "duration": "permanent"})
     return jsonify({"status": "updated", "user_id": user.id, "action": "ban"})
@@ -63,6 +64,7 @@ def _do_tempban(user, duration):
     ban_until = dt.datetime.now() + dt.timedelta(hours=hours)
     user.banned = True
     user.is_active = False
+    user.session_version += 1
     db.session.commit()
     _log_audit("tempban", "user", user.id, {"email": user.email, "duration_hours": hours, "ban_until": ban_until.isoformat()})
     return jsonify({"status": "updated", "user_id": user.id, "action": "tempban", "ban_until": ban_until.isoformat()})

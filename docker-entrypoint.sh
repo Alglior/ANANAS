@@ -68,8 +68,11 @@ echo "[entrypoint] Ensuring image cache directory..."
 mkdir -p /app/instance/image_cache /app/static/uploads/avatars
 
 echo "[entrypoint] Setting qBittorrent password..."
-QB_PASS="${QBITTORRENT_PASSWORD:-adminadmin}"
-python3 -c "
+if [ -z "${QBITTORRENT_PASSWORD:-}" ]; then
+    echo "[entrypoint] QBITTORRENT_PASSWORD not set, skipping qBittorrent configuration."
+else
+    QB_PASS="$QBITTORRENT_PASSWORD"
+    python3 -c "
 import requests, os, time
 qb_url = os.environ.get('QBITTORRENT_URL', 'http://qbittorrent:8081')
 qb_user = os.environ.get('QBITTORRENT_USERNAME', 'admin')
@@ -87,7 +90,6 @@ for attempt in range(30):
             else:
                 print(f'Failed to set password: {r.status_code}')
         elif r.status_code == 401:
-            # password already changed, try new password
             r = s.post(f'{qb_url}/api/v2/auth/login', data={'username': qb_user, 'password': qb_pass_new}, timeout=5)
             if r.status_code == 204:
                 print('qBittorrent password already configured')
@@ -96,6 +98,7 @@ for attempt in range(30):
         pass
     time.sleep(2)
 "
+fi
 
 echo "[entrypoint] Starting Gunicorn..."
 exec gunicorn -b 0.0.0.0:5000 --workers 3 --timeout 30 'app:create_app()'

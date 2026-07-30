@@ -57,6 +57,7 @@ def update_profile():
 
 @bp.route("/api/users/change-password", methods=["POST"])
 @login_required
+@limiter.limit("5 per hour")
 def change_password():
     current_user = get_current_user()
     data = request.get_json(silent=True) or {}
@@ -73,7 +74,9 @@ def change_password():
         return jsonify({"error": "Mot de passe invalide", "details": errors}), 400
 
     current_user.password_hash = generate_password_hash(new_password)
+    current_user.session_version += 1
     db.session.commit()
+    session.clear()
     return jsonify({"status": "updated"})
 
 
@@ -89,8 +92,20 @@ def upload_avatar():
 
     import secrets
     ext = os.path.splitext(file.filename)[1].lower()
-    if ext not in (".png", ".jpg", ".jpeg", ".gif", ".webp"):
-        return jsonify({"error": "Format d'image non supporté (png, jpg, gif, webp)"}), 400
+    if ext not in (".png", ".jpg", ".jpeg", ".webp"):
+        return jsonify({"error": "Format d'image non supporté (png, jpg, webp)"}), 400
+
+    header = file.read(16)
+    file.seek(0)
+    is_valid_image = False
+    if ext in (".jpg", ".jpeg") and header[:3] in (b"\xff\xd8\xff",):
+        is_valid_image = True
+    elif ext == ".png" and header[:8] == b"\x89PNG\r\n\x1a\n":
+        is_valid_image = True
+    elif ext == ".webp" and header[:4] == b"RIFF" and header[8:12] == b"WEBP":
+        is_valid_image = True
+    if not is_valid_image:
+        return jsonify({"error": "Le fichier n'est pas une image valide"}), 400
 
     upload_dir = os.path.join(current_app.root_path, "static", "uploads", "avatars")
     os.makedirs(upload_dir, exist_ok=True)

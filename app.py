@@ -36,27 +36,6 @@ migrate = Migrate()
 limiter = Limiter(key_func=_get_client_ip, default_limits=["100 per hour"])
 
 
-def _run_migrations():
-    from sqlalchemy import inspect
-
-    inspector = inspect(db.engine)
-
-    # Ensure all tables exist before running migrations
-    if not inspector.has_table("items"):
-        return
-
-    columns = [col["name"] for col in inspector.get_columns("items")]
-
-    if "image_magnets_pending" not in columns:
-        print("Migration: adding image_magnets_pending column...")
-        db.session.execute(db.text("ALTER TABLE items ADD COLUMN image_magnets_pending BOOLEAN NOT NULL DEFAULT FALSE"))
-    if "image_magnets_total" not in columns:
-        print("Migration: adding image_magnets_total column...")
-        db.session.execute(db.text("ALTER TABLE items ADD COLUMN image_magnets_total INTEGER NOT NULL DEFAULT 0"))
-
-    db.session.commit()
-
-
 def create_app(app_name="ANANAS"):
     """Implémentation du motif 'usine' (factory) pour l'application."""
     # ────────────────────────────────────────────
@@ -83,11 +62,11 @@ def create_app(app_name="ANANAS"):
     def combined_before_request():
         g.csp_nonce = base64.b64encode(secrets.token_bytes(16)).decode()
 
-        # Ensure CSRF token is always generated
+        current_app.config["SESSION_COOKIE_SECURE"] = request.is_secure
+
         from flask_wtf.csrf import generate_csrf
         g.csrf_token = generate_csrf()
 
-        # For API requests, validate CSRF header exists
         if request.method in ("POST", "PUT", "PATCH", "DELETE"):
             if "/api/" in request.path:
                 if current_app.config.get("TESTING") or not current_app.config.get("WTF_CSRF_ENABLED", True):
@@ -166,9 +145,6 @@ def create_app(app_name="ANANAS"):
     db.init_app(app)
     migrate.init_app(app, db=db)
 
-    with app.app_context():
-        _run_migrations()
-
     @app.route("/health")
     def health_check():
         return {"status": "ok"}
@@ -213,7 +189,7 @@ def create_app(app_name="ANANAS"):
                 csrf_signed,
                 httponly=True,
                 samesite="Strict",
-                secure=_is_production_env(),
+                secure=request.is_secure,
                 path="/",
             )
 
@@ -234,12 +210,12 @@ def create_app(app_name="ANANAS"):
         }
 
     # Configuration des cookies sécurisés
-    app.config["SESSION_COOKIE_HTTPONLY"] = True  # Empêche les scripts JavaScript de lire le cookie de session
-    app.config["SESSION_COOKIE_SAMESITE"] = "Strict"  # Empêche toute requête cross-site, réduction du risque CSRF
-    app.config["SESSION_COOKIE_SECURE"] = _is_production_env()  # En production seulement, force HTTPS pour les cookies
-    app.config["TRUSTED_PROXIES"] = ["nginx", "127.0.0.1", "::1"]  # Confiance proxy reverser nginx/Docker
-    app.config["PERMANENT_SESSION_LIFETIME"] = 1800  # Les sessions expireront après 30 minutes
-    app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # Limite de 10 Mo pour les uploads (Max-Content-Length)
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Strict"
+    app.config["SESSION_COOKIE_SECURE"] = False  # géré dynamiquement dans before_request
+    app.config["TRUSTED_PROXIES"] = ["nginx", "127.0.0.1", "::1"]
+    app.config["PERMANENT_SESSION_LIFETIME"] = 1800
+    app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
     # Définition des routes statiques
     routes = []

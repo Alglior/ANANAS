@@ -31,6 +31,7 @@ def connexion_post():
         session.clear()
         session.pop("_csrf_token", None)
         session["user_id"] = user.id
+        session["session_version"] = user.session_version
         session["_auth_time"] = datetime.datetime.now().isoformat()
         session.modified = True
         return redirect(url_for("index.home"))

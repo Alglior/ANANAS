@@ -42,6 +42,9 @@ def login_required(f):
         if current_user and (current_user.banned or not current_user.is_active):
             session.clear()
             return redirect(url_for("auth.connexion_page", error="banned"))
+        if current_user and session.get("session_version", -1) != current_user.session_version:
+            session.clear()
+            return redirect(url_for("auth.connexion_page", error="session_expired"))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -52,7 +55,11 @@ def get_current_user():
     if "user_id" not in session:
         return None
     db = _get_db()
-    return db.session.get(User, session["user_id"])
+    user = db.session.get(User, session["user_id"])
+    if user and session.get("session_version", -1) != user.session_version:
+        session.clear()
+        return None
+    return user
 
 
 def _build_page_numbers(current, total):

@@ -13,8 +13,8 @@ CACHE_DIR = Path(os.path.dirname(os.path.dirname(__file__))) / "instance" / "ima
 CACHE_TTL = 86400 * 30
 
 QBITTORRENT_URL = os.environ.get("QBITTORRENT_URL", "http://qbittorrent:8081")
-QBITTORRENT_USERNAME = os.environ.get("QBITTORRENT_USERNAME", "admin")
-QBITTORRENT_PASSWORD = os.environ.get("QBITTORRENT_PASSWORD", "adminadmin")
+QBITTORRENT_USERNAME = os.environ.get("QBITTORRENT_USERNAME") or os.environ.get("QBITTORRENT_USERNAME", "")
+QBITTORRENT_PASSWORD = os.environ.get("QBITTORRENT_PASSWORD") or os.environ.get("QBITTORRENT_PASSWORD", "")
 QBITTORRENT_DOWNLOADS = Path("/qbittorrent_downloads")
 QBITTORENT_SAVE_PATH = "/downloads/ananas"
 
@@ -158,7 +158,7 @@ def download_image_from_magnet(magnet_link, timeout=300):
             return None, None
 
     files = _qb_get_file_paths(session, torrent["hash"])
-    image_extensions = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".tiff"}
+    image_extensions = {".png", ".jpg", ".jpeg", ".webp"}
     image_file = None
     for f in files:
         name = f.get("name", "")

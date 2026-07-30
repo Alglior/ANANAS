@@ -27,10 +27,10 @@ services:
     container_name: ananas_app
     env_file: .env          # reads POSTGRES_*, FLASK_SECRET_KEY from .env
     environment:
-      - FLASK_ENV=development
+      - FLASK_ENV=production
       - QBITTORRENT_URL=http://qbittorrent:8081
-      - QBITTORRENT_USERNAME=${QBITTORRENT_USERNAME-admin}
-      - QBITTORRENT_PASSWORD=${QBITTORRENT_PASSWORD-adminadmin}
+      - QBITTORRENT_USERNAME=${QBITTORRENT_USERNAME}
+      - QBITTORRENT_PASSWORD=${QBITTORRENT_PASSWORD}
     expose:
       - "5000"              # internal only, behind nginx
     depends_on:
