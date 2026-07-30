@@ -105,6 +105,22 @@
           </form>
         </section>
 
+        <section class="compte-section" style="margin-top: 1.5rem;">
+          <h2>Codes de récupération</h2>
+          <p class="recovery-info">Générez 10 codes de récupération à utiliser en cas de perte de mot de passe. Chaque code est à usage unique : une fois utilisé, il ne pourra plus être réemployé. Ces codes ne sont affichés qu'une seule fois. Téléchargez-les et conservez-les en lieu sûr.</p>
+          <div id="recoveryCodesContainer">
+            <button type="button" class="btn btn-primary" id="generateRecoveryCodesBtn">Générer mes codes de récupération</button>
+            <span class="form-status" id="recoveryStatus"></span>
+          </div>
+          <div id="recoveryCodesList" class="recovery-codes-list" style="display: none;">
+            <ol id="recoveryCodesOl"></ol>
+            <div class="form-actions">
+              <button type="button" class="btn btn-primary" id="downloadRecoveryCodesBtn">Télécharger en .txt</button>
+              <button type="button" class="btn btn-outline" id="closeRecoveryCodesBtn">Fermer</button>
+            </div>
+          </div>
+        </section>
+
         {% elif active_tab == 'activite' %}
         <section class="compte-section">
           <div class="compte-activite-tabs">

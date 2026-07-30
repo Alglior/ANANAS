@@ -155,7 +155,96 @@
     );
   });
 
+  /* ── Recovery codes ── */
+  function initRecoveryCodes() {
+    var generateBtn = document.getElementById('generateRecoveryCodesBtn');
+    var downloadBtn = document.getElementById('downloadRecoveryCodesBtn');
+    var closeBtn = document.getElementById('closeRecoveryCodesBtn');
+    var container = document.getElementById('recoveryCodesContainer');
+    var listEl = document.getElementById('recoveryCodesList');
+    var ol = document.getElementById('recoveryCodesOl');
+    var status = document.getElementById('recoveryStatus');
+    var currentCodes = [];
+
+    if (!generateBtn) return;
+
+    generateBtn.addEventListener('click', async function () {
+      status.textContent = 'Génération...';
+      status.className = 'form-status';
+
+      try {
+        var resp = await fetch('/api/users/generate-recovery-codes', {
+          method: 'POST',
+          headers: { 'X-CSRF-Token': csrfToken },
+        });
+        var data = await resp.json();
+
+        if (resp.ok) {
+          currentCodes = data.codes;
+          ol.innerHTML = '';
+          currentCodes.forEach(function (code) {
+            var li = document.createElement('li');
+            li.textContent = code;
+            li.className = 'recovery-code-item';
+            ol.appendChild(li);
+          });
+          container.style.display = 'none';
+          listEl.style.display = 'block';
+          status.textContent = '';
+        } else {
+          status.textContent = data.error || 'Erreur lors de la génération';
+          status.className = 'form-status form-error';
+        }
+      } catch (err) {
+        status.textContent = 'Erreur réseau';
+        status.className = 'form-status form-error';
+      }
+    });
+
+    downloadBtn.addEventListener('click', function () {
+      if (currentCodes.length === 0) return;
+
+      var pseudo = document.querySelector('.compte-avatar-pseudo');
+      var username = pseudo ? pseudo.textContent.replace('@', '').trim() : 'utilisateur';
+      var date = new Date().toLocaleDateString('fr-FR');
+      var lines = [
+        '=== Codes de récupération A.N.A.N.A.S ===',
+        '',
+        'Compte : ' + username,
+        'Généré le : ' + date,
+        '',
+        'Conservez ces codes en lieu sûr. Chaque code ne peut être utilisé qu\'une seule fois.',
+        '',
+        '---',
+        '',
+      ];
+      currentCodes.forEach(function (code) {
+        lines.push(code);
+      });
+      lines.push('');
+      lines.push('---');
+      lines.push('');
+
+      var blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'recuperation-' + username + '.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    closeBtn.addEventListener('click', function () {
+      listEl.style.display = 'none';
+      container.style.display = 'block';
+      currentCodes = [];
+    });
+  }
+
   /* ── Init ── */
   initProfileForm();
   initPasswordForm();
+  initRecoveryCodes();
 })();

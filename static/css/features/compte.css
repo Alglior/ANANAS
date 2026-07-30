@@ -516,3 +516,34 @@ a.activity-card-title:hover {
   background: rgba(108, 117, 125, 0.1);
   color: var(--specs-gray);
 }
+
+/* Recovery codes */
+.recovery-info {
+  font-size: 0.9rem;
+  color: var(--specs-gray);
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+
+.recovery-codes-list {
+  margin-top: 1rem;
+}
+
+.recovery-codes-list ol {
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', 'SF Mono', 'Consolas', monospace;
+  font-size: 1rem;
+  line-height: 2;
+  padding-left: 1.5rem;
+  margin: 0 0 1.5rem;
+  background: var(--surface-gray);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem 1rem 1rem 2.5rem;
+}
+
+.recovery-code-item {
+  padding: 0.15rem 0;
+  color: var(--charcoal);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}

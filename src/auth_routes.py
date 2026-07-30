@@ -43,11 +43,35 @@ def connexion_page():
 def connexion_post():
     pseudo = request.form.get("pseudo", "").strip()
     password = request.form.get("password", "")
+    recovery_code = request.form.get("recovery_code", "").strip()
 
     from models import User
 
     user = User.query.filter_by(pseudo=pseudo).first()
-    if user and check_password_hash(user.password_hash, password) and user.is_active and not user.banned:
+
+    if not user or not user.is_active or user.banned:
+        return render_template("connexion.html", recovery_code_mode=bool(recovery_code), error="banned" if user and (not user.is_active or user.banned) else "Identifiants incorrects"), 401
+
+    authenticated = False
+
+    if recovery_code:
+        if user.recovery_codes_hash:
+            for i, hashed in enumerate(user.recovery_codes_hash):
+                if check_password_hash(hashed, recovery_code):
+                    hashed_codes = list(user.recovery_codes_hash)
+                    hashed_codes.pop(i)
+                    user.recovery_codes_hash = hashed_codes if hashed_codes else None
+                    db.session.commit()
+                    authenticated = True
+                    break
+        if not authenticated:
+            return render_template("connexion.html", recovery_code_mode=True, error="Code de récupération invalide ou déjà utilisé"), 401
+    else:
+        if not check_password_hash(user.password_hash, password):
+            return render_template("connexion.html", error="Identifiants incorrects"), 401
+        authenticated = True
+
+    if authenticated:
         session.clear()
         session.pop("_csrf_token", None)
         session["user_id"] = user.id
@@ -55,11 +79,6 @@ def connexion_post():
         session["_auth_time"] = datetime.datetime.now().isoformat()
         session.modified = True
         return redirect(url_for("index.home"))
-
-    if user and (not user.is_active or user.banned):
-        return render_template("connexion.html", error="banned"), 401
-
-    return render_template("connexion.html", error="Identifiants incorrects"), 401
 
 
 @bp.route("/inscription")

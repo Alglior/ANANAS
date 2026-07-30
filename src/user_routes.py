@@ -72,6 +72,26 @@ def change_password():
     return jsonify({"status": "updated"})
 
 
+@bp.route("/api/users/generate-recovery-codes", methods=["POST"])
+@login_required
+@limiter.limit("3 per hour")
+def generate_recovery_codes():
+    import secrets
+    current_user = get_current_user()
+
+    codes = []
+    for _ in range(10):
+        code = secrets.token_hex(16)
+        code = "-".join([code[i:i+4] for i in range(0, len(code), 4)])
+        codes.append(code)
+
+    hashed_codes = [generate_password_hash(c) for c in codes]
+    current_user.recovery_codes_hash = hashed_codes
+    db.session.commit()
+
+    return jsonify({"codes": codes})
+
+
 @bp.route("/api/users/avatar", methods=["POST"])
 @login_required
 def upload_avatar():
