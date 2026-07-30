@@ -67,6 +67,12 @@ def admin_replication():
     return render_template("admin/replication.html", title="Administration — Réplication", meta_description="Répliquer des catalogues depuis une instance distante")
 
 
+@bp.route("/admin/tags")
+@login_required
+@require_admin
+def admin_tags():
+    return render_template("admin/tags.html", title="Administration — Étiquettes", meta_description="Gestion des catégories d'étiquettes et étiquettes")
+
 @bp.route("/admin/accueil")
 @login_required
 @require_admin

@@ -1,0 +1,78 @@
+{% extends 'base_admin.html' %}
+
+{% set title = "Administration — Étiquettes" %}
+
+{% block admin_content %}
+<div class="tags-header">
+  <h2>Catégories d'étiquettes</h2>
+  <button type="button" class="btn btn-primary" id="add-category-btn">+ Ajouter une catégorie</button>
+</div>
+
+<div class="table-wrapper">
+  <table id="tags-table">
+    <thead>
+      <tr>
+        <th>Ordre</th>
+        <th>Catégorie</th>
+        <th>Étiquettes</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="tags-tbody">
+      <tr><td colspan="4" class="loading-cell">Chargement...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div id="category-modal" class="modal-overlay hidden-section">
+  <div class="modal-content tag-modal-content">
+    <span class="modal-close" id="category-modal-close">&times;</span>
+    <h3 id="category-modal-title">Ajouter une catégorie</h3>
+    <form id="category-form" novalidate>
+      <input type="hidden" id="category-id" value="" />
+      <div class="form-group">
+        <label for="category-name">Nom de la catégorie</label>
+        <input type="text" id="category-name" maxlength="100" required placeholder="Ex: Format, Thème, Source..." />
+      </div>
+      <div class="form-group">
+        <label for="category-order">Ordre d'affichage</label>
+        <input type="number" id="category-order" min="0" value="0" />
+      </div>
+      <div id="category-error" class="form-error hidden-section"></div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary" id="category-submit">Enregistrer</button>
+        <button type="button" class="btn btn-outline" id="category-cancel">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="tag-modal" class="modal-overlay hidden-section">
+  <div class="modal-content tag-modal-content">
+    <span class="modal-close" id="tag-modal-close">&times;</span>
+    <h3 id="tag-modal-title">Ajouter une étiquette</h3>
+    <form id="tag-form" novalidate>
+      <input type="hidden" id="tag-category-id" value="" />
+      <input type="hidden" id="tag-id" value="" />
+      <div class="form-group">
+        <label for="tag-name">Nom de l'étiquette</label>
+        <input type="text" id="tag-name" maxlength="100" required placeholder="Ex: Raster, Vectoriel, INSEE..." />
+      </div>
+      <div class="form-group">
+        <label for="tag-order">Ordre d'affichage</label>
+        <input type="number" id="tag-order" min="0" value="0" />
+      </div>
+      <div id="tag-error" class="form-error hidden-section"></div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary" id="tag-submit">Enregistrer</button>
+        <button type="button" class="btn btn-outline" id="tag-cancel">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/tags.js') }}?v=1"></script>
+{% endblock %}
