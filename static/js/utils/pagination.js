@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Shared pagination renderer
+ * A.N.A.N.A.S — Shared pagination renderer
  * Replaces duplicate implementations across moderation, reports, messages, etc.
  */
 var PaginationModule = (function () {

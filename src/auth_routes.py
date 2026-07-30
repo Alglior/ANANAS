@@ -13,8 +13,8 @@ bp = Blueprint("auth", __name__)
 def connexion_page():
     return render_template(
         "connexion.html",
-        title="A.N.A.N.A.S. | Connexion",
-        meta_description="Connectez-vous à votre compte A.N.A.N.A.S.",
+        title="A.N.A.N.A.S | Connexion",
+        meta_description="Connectez-vous à votre compte A.N.A.N.A.S",
     )
 
 
@@ -45,8 +45,8 @@ def connexion_post():
 def inscription_page():
     return render_template(
         "inscription.html",
-        title="A.N.A.N.A.S. | Inscription",
-        meta_description="Créer un compte A.N.A.N.A.S.",
+        title="A.N.A.N.A.S | Inscription",
+        meta_description="Créer un compte A.N.A.N.A.S",
     )
 
 

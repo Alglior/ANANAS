@@ -24,7 +24,7 @@ def public_profile(user_id):
     publication_count = Item.query.filter_by(owner_user_id=user_id, status="published").count()
     return render_template(
         "users/public_profile.html",
-        title=f"A.N.A.N.A.S. | {user.prenom} {user.nom}",
+        title=f"A.N.A.N.A.S | {user.prenom} {user.nom}",
         meta_description=f"Profil de {user.prenom} {user.nom}",
         profile_user=user,
         comment_count=comment_count,
@@ -147,8 +147,8 @@ def compte_page():
 
     return render_template(
         "users/compte.html",
-        title="A.N.A.N.A.S. | Mon compte",
-        meta_description="Gérez votre compte A.N.A.N.A.S.",
+        title="A.N.A.N.A.S | Mon compte",
+        meta_description="Gérez votre compte A.N.A.N.A.S",
         user=current_user,
         current_user=current_user,
         rating_count=rating_count,
@@ -223,8 +223,8 @@ def upload_page():
 
     return render_template(
         "users/upload.html",
-        title="A.N.A.N.A.S. | Publier des données",
-        meta_description="Publiez et partagez des géodonnées sur A.N.A.N.A.S.",
+        title="A.N.A.N.A.S | Publier des données",
+        meta_description="Publiez et partagez des géodonnées sur A.N.A.N.A.S",
         current_user=current_user,
         drafts=drafts, trashed=trashed, publications=publications,
         publications_page=publications_page,
@@ -567,7 +567,7 @@ def brouillons_page():
     ).order_by(Item.created_at.desc()).all()
     return render_template(
         "users/brouillons.html",
-        title="A.N.A.N.A.S. | Mes brouillons",
+        title="A.N.A.N.A.S | Mes brouillons",
         drafts=drafts,
         current_user=current_user,
     )

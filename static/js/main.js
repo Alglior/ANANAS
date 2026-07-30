@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Script principal
+ * A.N.A.N.A.S — Script principal
  * Gérer la recherche, la copie d'email et les validations communes aux formulaires.
  */
 var MainModule = (function () {

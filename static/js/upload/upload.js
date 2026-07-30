@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Upload : shared namespace + state
+ * A.N.A.N.A.S — Upload : shared namespace + state
  */
 var UploadModule = window.UploadModule || {};
 

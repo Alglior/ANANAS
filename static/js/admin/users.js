@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Admin users : ban / tempban / mute / warn / kick actions
+ * A.N.A.N.A.S — Admin users : ban / tempban / mute / warn / kick actions
  */
 (function () {
   document.addEventListener('DOMContentLoaded', function () {

@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Inline gallery (detail page image strip)
+ * A.N.A.N.A.S — Inline gallery (detail page image strip)
  */
 var InlineGalleryModule = (function () {
   function init() {

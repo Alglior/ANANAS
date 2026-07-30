@@ -6,15 +6,15 @@ from src.admin import is_catalogue_enabled
 _CATALOGUE_META = {
     "donnees": {
         "title_prefix": "Catalogue des géodonnées",
-        "meta": "Parcourez le catalogue complet des géodonnées A.N.A.N.A.S.",
+        "meta": "Parcourez le catalogue complet des géodonnées A.N.A.N.A.S",
     },
     "cartes": {
         "title_prefix": "Catalogue des cartes",
-        "meta": "Explorez la collection de cartes et produits cartographiques A.N.A.N.A.S.",
+        "meta": "Explorez la collection de cartes et produits cartographiques A.N.A.N.A.S",
     },
     "applications": {
         "title_prefix": "Catalogue d'applications",
-        "meta": "Découvrez les applications et services web géospatiaux A.N.A.N.A.S.",
+        "meta": "Découvrez les applications et services web géospatiaux A.N.A.N.A.S",
     },
 }
 
@@ -120,7 +120,7 @@ def _do_catalogue(catalogue_type, page, per_page=30):
     meta = _CATALOGUE_META[catalogue]
 
     data = {
-        "title": f"A.N.A.N.A.S. | {meta['title_prefix']} — Page {page}",
+        "title": f"A.N.A.N.A.S | {meta['title_prefix']} — Page {page}",
         "meta_description": meta["meta"],
         "catalogue_type": catalogue,
         "filter_verified": filter_verified, "filter_unofficial": filter_unofficial,

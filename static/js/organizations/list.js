@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Organizations : create organization form
+ * A.N.A.N.A.S — Organizations : create organization form
  */
 (function () {
   document.addEventListener('DOMContentLoaded', function () {

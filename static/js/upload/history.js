@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Upload : drafts / trash / publications lists + confirm dialog
+ * A.N.A.N.A.S — Upload : drafts / trash / publications lists + confirm dialog
  */
 UploadModule.history = (function () {
   var currentDraftPage = 1;

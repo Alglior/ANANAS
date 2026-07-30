@@ -1,7 +1,16 @@
 <li>
   {% if not simple %}<hr class="catalogue-divider">{% endif %}
   <a href="/catalogue/item/{{ item.id }}" class="catalogue-item transition-hover catalogue-link">
-    <img class="catalogue-image" src="{{ item.image|e }}" alt="{{ item.title|e }}" loading="lazy">
+    <div class="catalogue-img-wrap">
+      <img class="catalogue-image" src="{{ item.image|e }}" alt="{{ item.title|e }}" loading="lazy">
+      {% if item.is_official_verified %}
+      <div class="catalogue-img-band">
+        <img class="band-logo" src="{{ url_for('static', filename='images/logo/ANANAS.png') }}" alt="">
+        <span>A.N.A.N.A.S</span>
+        <span class="band-name">Vérifié</span>
+      </div>
+      {% endif %}
+    </div>
     <div class="catalogue-content">
       {% if not simple %}
       <div class="catalogue-top">
@@ -12,9 +21,9 @@
         <span class="badge badge-individual">Fichiers individuels</span>
         {% endif %}
         {% if item.is_official_verified %}
-          <span class="badge badge-verified" title="Données vérifiées et approuvées par A.N.A.N.A.S.">Données vérifiées</span>
+          <span class="badge badge-verified" title="Données vérifiées et approuvées par A.N.A.N.A.S">Données vérifiées</span>
         {% else %}
-          <span class="badge badge-unofficial" title="Données non officielles - Accès accessible mais non vérifié par A.N.A.N.A.S.">Données non officielles</span>
+          <span class="badge badge-unofficial" title="Données non officielles - Accès accessible mais non vérifié par A.N.A.N.A.S">Données non officielles</span>
         {% endif %}
       </div>
       <p class="catalogue-author"><strong>Publié par :</strong> {{ item.author|e }}</p>

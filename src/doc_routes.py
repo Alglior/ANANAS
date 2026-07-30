@@ -33,8 +33,8 @@ def doc_index():
     return render_template(
         "doc_index.html",
         docs=docs,
-        title="A.N.A.N.A.S. | Documentation",
-        meta_description="Documentation de la plateforme A.N.A.N.A.S.",
+        title="A.N.A.N.A.S | Documentation",
+        meta_description="Documentation de la plateforme A.N.A.N.A.S",
     )
 
 
@@ -59,7 +59,7 @@ def doc_view(slug):
     html_content = markdown(content)
     return render_template(
         "doc.html",
-        title=f"A.N.A.N.A.S. | {match['title']}",
+        title=f"A.N.A.N.A.S | {match['title']}",
         meta_description=f"Documentation — {match['title']}",
         doc_title=match["title"],
         doc_content=html_content,

@@ -140,27 +140,6 @@
   <section class="detail-body">
     <div class="container">
 
-      <!-- Verification info -->
-      {% if current_user %}
-      <div class="verification-info">
-        {% if item.is_official_verified %}
-            <div class="verified-seal">
-                Données vérifiées et approuvées par A.N.A.N.A.S.
-                <br>Par {{ item.verifier_nom|e }} le {{ item.verified_at|default("N/A") }}
-            </div>
-        {% elif item.verification_status == 'rejected' %}
-            <div class="warning-rejected">
-                Ces données n'ont pas été approuvées par A.N.A.N.A.S.
-                {% if item.verification_notes %}<br>Raison : {{ item.verification_notes|e }}{% endif %}
-            </div>
-        {% else %}
-            <div class="unofficial-info">
-                Données non officielles - Accès accessible mais les données n'ont pas été vérifiées par A.N.A.N.A.S.
-            </div>
-        {% endif %}
-      </div>
-      {% endif %}
-
       {% if item.status == "draft" %}
       <div class="draft-banner">
         Ce contenu est un brouillon. <a href="/upload?edit={{ item.id }}">Reprendre l'édition</a>
@@ -178,6 +157,13 @@
           </div>
           {% else %}
           <img class="product-img" id="mainProductImg" src="{{ item.image|e }}" alt="{{ item.title|e }}">
+          {% if item.is_official_verified %}
+          <div class="verified-img-band">
+            <img class="band-logo" src="{{ url_for('static', filename='images/logo/ANANAS.png') }}" alt="">
+            <span>A.N.A.N.A.S</span>
+            <span class="band-name">Vérifié</span>
+          </div>
+          {% endif %}
           {% endif %}
 
           <!-- Inline image gallery strip -->
@@ -368,7 +354,7 @@
               <dd>{{ item.created_at }}</dd>
             </div>
           </dl>
-          <p class="attribution-note">Cette donnée publiée par {{ item.author|e }}{% if item.organization_name|e %} — {{ item.organization_name }}{% endif %} peut être réutilisée librement dans vos propres projets SIG, analyses ou visualisations cartographiques. La mention « Source : A.N.A.N.A.S. » est recommandée.</p>
+          <p class="attribution-note">Cette donnée publiée par {{ item.author|e }}{% if item.organization_name|e %} — {{ item.organization_name }}{% endif %} peut être réutilisée librement dans vos propres projets SIG, analyses ou visualisations cartographiques. La mention « Source : A.N.A.N.A.S » est recommandée.</p>
         </div>
       </section>
 

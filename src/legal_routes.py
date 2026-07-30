@@ -7,6 +7,6 @@ bp = Blueprint("legal", __name__)
 def legal_page():
     return render_template(
         "legal.html",
-        title="A.N.A.N.A.S. | Mentions légales",
-        meta_description="Mentions légales de la plateforme A.N.A.N.A.S. — éditeur, hébergement, propriété intellectuelle et responsabilité.",
+        title="A.N.A.N.A.S | Mentions légales",
+        meta_description="Mentions légales de la plateforme A.N.A.N.A.S — éditeur, hébergement, propriété intellectuelle et responsabilité.",
     )

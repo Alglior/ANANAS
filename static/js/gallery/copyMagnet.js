@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Copy magnet buttons (detail page)
+ * A.N.A.N.A.S — Copy magnet buttons (detail page)
  */
 var CopyMagnetModule = (function () {
   function init() {

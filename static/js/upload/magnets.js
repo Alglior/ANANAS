@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Upload : magnet links CRUD, zoom pills, bulk import
+ * A.N.A.N.A.S — Upload : magnet links CRUD, zoom pills, bulk import
  */
 UploadModule.magnets = (function () {
   function createEntry(magnetValue, zoomValue) {

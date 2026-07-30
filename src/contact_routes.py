@@ -10,7 +10,7 @@ bp = Blueprint("contact", __name__)
 def contact_page():
     return render_template(
         "contact.html",
-        title="A.N.A.N.A.S. | Contact",
+        title="A.N.A.N.A.S | Contact",
         meta_description="Contactez-nous pour toute question ou suggestion.",
     )
 

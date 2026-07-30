@@ -354,7 +354,7 @@ def organization_list_view(page=1):
 
     return render_template(
         "organization_list.html",
-        title="Toutes les organisations — A.N.A.N.A.S.",
+        title="Toutes les organisations — A.N.A.N.A.S",
         meta_description="Parcourez toutes les organisations de la plateforme.",
         organizations=orgs,
         page=page,
@@ -377,7 +377,7 @@ def organization_items_view(slug):
     items = items.limit(ITEMS_PER_PAGE).all()
     return render_template(
         "organization_detail.html",
-        title=f"{org.name} — A.N.A.N.A.S. | Données",
+        title=f"{org.name} — A.N.A.N.A.S | Données",
         meta_description=org.description or org.name,
         org=org,
         items=[i.to_dict() for i in items],
@@ -396,7 +396,7 @@ def organization_detail_view(slug):
     )
     return render_template(
         "organization_detail.html",
-        title=f"{org.name} — A.N.A.N.A.S.",
+        title=f"{org.name} — A.N.A.N.A.S",
         meta_description=org.description or org.name,
         org=org,
         items=[i.to_dict() for i in items],

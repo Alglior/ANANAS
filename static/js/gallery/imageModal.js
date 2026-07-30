@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Image modal (detail page full-screen gallery)
+ * A.N.A.N.A.S — Image modal (detail page full-screen gallery)
  */
 var ImageModalModule = (function () {
   function init() {

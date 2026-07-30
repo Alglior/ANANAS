@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — CSRF token utility
+ * A.N.A.N.A.S — CSRF token utility
  * Reads the token from a non-HttpOnly cookie set by the server.
  */
 var CsrfModule = (function () {

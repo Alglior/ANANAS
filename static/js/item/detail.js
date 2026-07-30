@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Item detail : star rating, download scroll, comment pagination, threaded replies
+ * A.N.A.N.A.S — Item detail : star rating, download scroll, comment pagination, threaded replies
  */
 (function () {
   if (window.DOCUMENT_READY_HANDLERS) {

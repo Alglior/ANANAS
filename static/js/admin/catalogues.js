@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Admin catalogues : toggle visibility
+ * A.N.A.N.A.S — Admin catalogues : toggle visibility
  */
 (function () {
   document.addEventListener('DOMContentLoaded', function () {

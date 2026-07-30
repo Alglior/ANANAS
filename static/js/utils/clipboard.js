@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Clipboard utility shared across modules
+ * A.N.A.N.A.S — Clipboard utility shared across modules
  */
 var ClipboardModule = (function () {
   function copyText(element, successMsg, duration) {

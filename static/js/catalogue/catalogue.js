@@ -1,4 +1,4 @@
-/* A.N.A.N.A.S. — Catalogue */
+/* A.N.A.N.A.S — Catalogue */
 var CatalogueModule = (function () {
   function init() {
     document.querySelectorAll(".catalogue-item").forEach(function (item) {

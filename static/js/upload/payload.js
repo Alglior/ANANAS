@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Upload : payload builder + safeFetchJson utility
+ * A.N.A.N.A.S — Upload : payload builder + safeFetchJson utility
  */
 UploadModule.payload = (function () {
   function buildItemPayload(magnetLinks, isDraft) {

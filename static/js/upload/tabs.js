@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Upload : tab switching
+ * A.N.A.N.A.S — Upload : tab switching
  */
 UploadModule.tabs = (function () {
   function init() {

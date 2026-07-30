@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Compte : profile form, password form, avatar upload, publication delete
+ * A.N.A.N.A.S — Compte : profile form, password form, avatar upload, publication delete
  */
 (function () {
   var csrfToken = CsrfModule.getCsrfToken();

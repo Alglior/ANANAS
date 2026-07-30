@@ -47,7 +47,7 @@ def require_admin(f):
         if not current_user.is_admin:
             return render_template(
                 "error.html",
-                title="Accès refusé — A.N.A.N.A.S.",
+                title="Accès refusé — A.N.A.N.A.S",
                 meta_description="Vous n'avez pas accès à cette page.",
                 message="Accès non autorisé. Vous devez être administrateur.",
                 code=403,

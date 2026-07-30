@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Upload : image magnet links CRUD, bulk import
+ * A.N.A.N.A.S — Upload : image magnet links CRUD, bulk import
  */
 UploadModule.imageMagnets = (function () {
   function createEntry(magnetValue, labelValue) {

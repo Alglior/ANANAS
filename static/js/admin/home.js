@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Admin home : tab switching
+ * A.N.A.N.A.S — Admin home : tab switching
  */
 (function () {
   document.addEventListener('DOMContentLoaded', function () {

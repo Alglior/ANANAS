@@ -52,6 +52,7 @@
 }
 
 .product-gallery {
+  position: relative;
 }
 
 .product-img {
@@ -63,6 +64,39 @@
   padding: 1.25rem;
   background: var(--white);
   transition: border-color 0.2s ease;
+}
+
+.verified-img-band {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(90deg, rgba(34, 139, 34, 0.92), rgba(34, 139, 34, 0.85));
+  color: var(--white);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 0 0 8px 8px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.verified-img-band .band-logo {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.verified-img-band .band-name {
+  margin-left: auto;
+  opacity: 0.9;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .product-img:hover {

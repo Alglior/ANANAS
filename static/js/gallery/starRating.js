@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Star rating hover + auto-submit (detail page)
+ * A.N.A.N.A.S — Star rating hover + auto-submit (detail page)
  */
 var StarRatingModule = (function () {
   function init() {

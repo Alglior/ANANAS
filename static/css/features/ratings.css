@@ -131,12 +131,20 @@
 }
 
 .verified-seal {
-    background: var(--surface-success-light);
+    background: transparent;
     color: var(--color-success-dark);
-    padding: 12px 16px;
+    padding: 0;
+    border-radius: 0;
+    font-size: 0.82rem;
+    border-left: none;
+}
+
+.verified-seal .verified-label {
+    display: inline-block;
+    background: var(--surface-success-light);
+    padding: 4px 10px;
     border-radius: var(--radius-sm);
-    font-size: 0.9rem;
-    border-left: 4px solid var(--color-success);
+    border-left: 3px solid var(--color-success);
 }
 
 .warning-rejected {

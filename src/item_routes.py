@@ -179,7 +179,7 @@ def item_detail_view(item_id):
 
     return render_template(
         "item_detail.html",
-        title=f"A.N.A.N.A.S. | {item.title}",
+        title=f"A.N.A.N.A.S | {item.title}",
         meta_description=item.description[:160],
         item=item_dict,
         comments=comments,
@@ -220,7 +220,7 @@ def item_data_view(item_id):
 
     return render_template(
         "item_detail.html",
-        title=f"A.N.A.N.A.S. | Données — {item.title}",
+        title=f"A.N.A.N.A.S | Données — {item.title}",
         meta_description=item.description[:160],
         item=item_dict,
         comments=comments,
@@ -259,7 +259,7 @@ def item_gallery_view(item_id):
 
     return render_template(
         "item_detail.html",
-        title=f"A.N.A.N.A.S. | Réutilisation — {item.title}",
+        title=f"A.N.A.N.A.S | Réutilisation — {item.title}",
         meta_description=item.description[:160],
         item=item_dict,
         comments=comments,

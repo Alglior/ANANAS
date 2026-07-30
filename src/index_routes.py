@@ -11,7 +11,7 @@ def home():
     geo_packages = GeoPackage.query.filter_by(is_active=True).order_by(GeoPackage.display_order, GeoPackage.id).all()
     return render_template(
         "index.html",
-        title="A.N.A.N.A.S. | Accueil",
+        title="A.N.A.N.A.S | Accueil",
         meta_description="Portail géoservices basé sur des liens magnet et torrents.",
         mirrors=mirrors,
         featured_items=featured,

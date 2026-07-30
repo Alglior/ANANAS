@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Organization detail : join/leave, roles, members, invites
+ * A.N.A.N.A.S — Organization detail : join/leave, roles, members, invites
  */
 (function () {
   document.addEventListener('DOMContentLoaded', function () {

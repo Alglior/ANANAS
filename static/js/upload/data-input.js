@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Upload : data textarea (CSV line count, paste guard)
+ * A.N.A.N.A.S — Upload : data textarea (CSV line count, paste guard)
  */
 UploadModule.dataInput = (function () {
   var MAX_LINES = 50;

@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Upload : submit, draft, JSON download, EDITING prefill
+ * A.N.A.N.A.S — Upload : submit, draft, JSON download, EDITING prefill
  */
 UploadModule.submit = (function () {
   var uploadForm = document.getElementById('uploadForm');

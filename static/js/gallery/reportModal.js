@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Report modal (detail page)
+ * A.N.A.N.A.S — Report modal (detail page)
  */
 (function () {
   var modal = document.getElementById("reportModal");

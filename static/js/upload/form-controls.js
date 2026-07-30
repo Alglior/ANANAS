@@ -1,5 +1,5 @@
 /**
- * A.N.A.N.A.S. — Upload : form controls (type, format, license selectors)
+ * A.N.A.N.A.S — Upload : form controls (type, format, license selectors)
  */
 UploadModule.formControls = (function () {
   var formatDict = {
