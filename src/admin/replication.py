@@ -4,7 +4,7 @@ from flask import request, jsonify
 from app import db
 from src.admin import bp, api_admin_required, login_required
 from src.admin import _log_audit, _get_json_data, get_current_user, _CATALOGUES_INFO
-from utils.security import sanitize_html
+from utils.security import sanitize_html, validate_external_url
 
 
 @bp.route("/api/admin/replication/fetch", methods=["POST"])
@@ -19,6 +19,8 @@ def replication_fetch():
 
     if not remote_url:
         return jsonify({"error": "URL requise."}), 400
+    if not validate_external_url(remote_url):
+        return jsonify({"error": "URL distante invalide ou non autorisée."}), 400
     if not selected_types:
         return jsonify({"error": "Sélectionnez au moins un type de catalogue."}), 400
 
@@ -142,7 +144,8 @@ def replication_preview():
 
     if not remote_url:
         return jsonify({"error": "URL requise."}), 400
-
+    if not validate_external_url(remote_url):
+        return jsonify({"error": "URL distante invalide ou non autorisée."}), 400
     import urllib.request
     import urllib.error
     import ssl

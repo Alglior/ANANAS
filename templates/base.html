@@ -9,6 +9,7 @@
       name="description"
       content="{% block meta_description %}{{ meta_description|default('Portail géoservices basé sur des liens magnet et torrents.') }}{% endblock %}"
     />
+    <meta name="csrf-token" content="{{ csrf_token_meta }}" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

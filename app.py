@@ -211,7 +211,7 @@ def create_app(app_name="ANANAS"):
             response.set_cookie(
                 "csrf_token",
                 csrf_signed,
-                httponly=False,
+                httponly=True,
                 samesite="Strict",
                 secure=_is_production_env(),
                 path="/",
@@ -228,6 +228,7 @@ def create_app(app_name="ANANAS"):
         cu = get_current_user()
         return {
             "csp_nonce": getattr(g, "csp_nonce", ""),
+            "csrf_token_meta": getattr(g, "csrf_token", ""),
             "current_user": cu,
             "is_catalogue_enabled": is_catalogue_enabled,
         }
