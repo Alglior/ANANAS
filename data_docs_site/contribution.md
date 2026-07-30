@@ -32,17 +32,29 @@ Avant de publier, vous devez créer un compte :
    - Description
    - Type (donnée, carte ou application)
    - Format
-   - Lien magnet ou fichier
-4. Ajoutez des tags et des liens de visualisation (optionnel)
-5. Choisissez une licence
-6. Associez à une organisation (optionnel)
-7. Publiez ou sauvegardez comme brouillon
+   - **Lien magnet** (obligatoire — les données ne sont pas hébergées sur le serveur)
+4. Choisissez le **niveau de format** :
+   - **Pack** : fichier GeoPackage (.gpkg) multi-couches — distribué exclusivement par magnet link
+   - **Individuel** : fichier unitaire — distribué obligatoirement par magnet link
+5. Ajoutez des tags et des liens de visualisation (optionnel)
+6. Choisissez une licence
+7. Associez à une organisation (optionnel)
+8. Publiez ou sauvegardez comme brouillon
+
+> **Important — Modèle de distribution P2P** : A.N.A.N.A.S. n'héberge **aucune donnée** sur son serveur. La plateforme est un catalogue d'indexation : seuls les métadonnées et les liens magnet sont stockés. Les données réelles circulent exclusivement sur le réseau BitTorrent entre les pairs. Sans lien magnet valide, la publication est impossible. Assurez-vous que votre client torrent reste actif (en *seed*) après publication pour garantir la disponibilité des données.
 
 ### Gestion des publications
 
 - **Brouillons** — Accessibles depuis `/brouillons` ou l'onglet brouillons de `/upload`
 - **Corbeille** — Les éléments supprimés sont placés en corbeille (récupérables)
 - **Suppression définitive** — Possible depuis la corbeille
+
+### Bonnes pratiques P2P pour les éditeurs
+
+- **Seeding** : Après avoir publié un magnet link, gardez votre client torrent ouvert au moins jusqu'à ce qu'un ratio de 1:1 soit atteint
+- **Doublons** : Avant de publier, vérifiez dans le catalogue que les données n'existent pas déjà
+- **Métadonnées** : Remplissez des tags précis et une description complète pour faciliter le filtrage
+- **Organisation** : Associez vos données à une organisation pour crédibiliser la source et permettre la gestion collective
 
 ## Rejoindre une organisation
 

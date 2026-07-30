@@ -1,6 +1,17 @@
 # Guide d'utilisation
 
-Bienvenue sur **A.N.A.N.A.S.** — *Atlas Numerique d'Archives de Noeuds et d'Acces Synchronises*, une plateforme de diffusion de données géospatiales via des protocoles décentralisés (BitTorrent / magnet links).
+Bienvenue sur **A.N.A.N.A.S.** — *Atlas Numerique d'Archives de Noeuds et d'Acces Synchronises*, une plateforme de diffusion de données géospatiales via des protocoles décentralisés (P2P / BitTorrent / magnet links).
+
+### Principes de la distribution P2P
+
+Contrairement aux plateformes traditionnelles qui stockent les données sur un serveur central, A.N.A.N.A.S. distribue les données via un réseau **pair-à-pair (P2P)** utilisant le protocole **BitTorrent** :
+
+- **Les données ne sont pas stockées sur le serveur** — Seuls les liens magnet (empreintes cryptographiques) sont hébergés
+- **Chaque téléchargeur devient aussi un distributeur** — En téléchargeant, vous contribuez à la résilience du réseau
+- **Pas de point de défaillance unique** — Le portail peut être hors ligne, les données restent accessibles entre pairs
+- **Intégrité garantie** — Chaque fichier est vérifié par hachage SHA-1
+
+> **Pour comprendre le fonctionnement détaillé du protocole**, consultez la page [P2P & BitTorrent](/docs/p2p-bittorrent).
 
 ---
 
@@ -14,6 +25,8 @@ Trois catalogues distincts sont disponibles :
 - **Applications** (`/catalogue/applications`) — Services web, outils géospatiaux, widgets
 
 Chaque catalogue est paginé (30 éléments par page) et propose des filtres par statut de vérification (vérifié / non officiel), organisation, et niveau de format (individuel / pack). Accès JSON possible via `/catalogue/<type>/<page>/json`.
+
+Les items sont présentés avec leur **format de distribution** (pack ou individuel) et leur **lien magnet** direct, permettant de lancer le téléchargement P2P en un clic.
 
 ### Navigation par page
 
@@ -41,7 +54,7 @@ Une fois connecté, accédez à votre tableau de bord via `/compte` :
 
 1. Rendez-vous sur `/upload`
 2. Remplissez les métadonnées (titre, description, type, format, licence)
-3. Ajoutez un lien magnet ou téléchargez un fichier
+3. **Ajoutez un lien magnet** (obligatoire — les données ne sont pas hébergées sur le serveur)
 4. Ajoutez des tags et des liens de visualisation
 5. Publiez ou sauvegardez comme brouillon
 
@@ -49,12 +62,16 @@ Les brouillons et la corbeille sont accessibles depuis la page de publication.
 
 ### Organisations
 
-Les organisations permettent de collaborer autour de jeux de données :
+Les organisations permettent de collaborer autour de jeux de données, structurant la publication et la gestion des données géospatiales :
 
 - **Créer** une organisation avec un slug unique
 - **Inviter** des membres par email
 - **Gérer les rôles** : membre, modérateur, éditeur, admin, propriétaire
 - **Rôles personnalisés** avec permissions granulaires (inviter, supprimer des membres, éditer, gérer les éléments, modérer, gérer les rôles, supprimer l'organisation)
+- **Publier sous une organisation** : lors de la publication d'un item, associez-le à votre organisation pour crédibiliser la source et permettre une gestion collective
+- **Page publique** : chaque organisation a sa propre page (`/organizations/<slug>`) listant tous ses items publiés
+
+> **Pour plus de détails sur le modèle d'organisation et les permissions**, consultez la page [Organisation des données](/docs/organisation-donnees).
 
 ### Interactions
 
@@ -68,7 +85,9 @@ Les organisations permettent de collaborer autour de jeux de données :
 
 - Navigateur récent (Firefox, Chrome, Safari, Edge)
 - Connexion internet
-- Un client torrent (qBittorrent, Transmission, etc.) pour télécharger les données lourdes via magnet links
+- **Un client torrent** (qBittorrent, Transmission, Deluge) pour télécharger les données volumineuses via magnet links
+- **Compréhension du P2P** : Les données sont distribuées via le réseau BitTorrent. Lorsque vous téléchargez, vous participez automatiquement à la redistribution, renforçant la disponibilité des données pour la communauté.
+- **Espace disque** : Variable selon les packs téléchargés. Les packs sont des fichiers GeoPackage (.gpkg) pouvant atteindre plusieurs gigaoctets.
 
 ---
 
@@ -82,10 +101,12 @@ Les organisations permettent de collaborer autour de jeux de données :
 
 ## Formats disponibles
 
-- **Packs** : archives complètes distribuées via magnet link (zip, tar.gz)
-- **Individuels** : fichiers unitaires (csv, shp, geojson, gpkg, json, xml, png, jpg, gif, svg, pdf)
+- **Packs (GeoPackage)** : fichiers uniques au format `.gpkg` (standard OGC) contenant plusieurs couches de données organisées par thématique. Distribués exclusivement via magnet link. Idéal pour les collections SIG complètes avec styles QML intégrés.
+- **Individuels** : fichiers unitaires (csv, shp, geojson, gpkg, json, xml, png, jpg, gif, svg, pdf). Distribués obligatoirement via magnet link.
 
-Taille maximale de fichier uploadé : Aucune car les fichiers sont du Torrent.
+> **Pour une comparaison détaillée entre packs et fichiers individuels**, consultez la page [Pack (GeoPackage) vs Individuel](/docs/pack-vs-individuel).
+
+Taille maximale de fichier : Aucune, car les données sont distribuées par Torrent et non stockées sur le serveur.
 
 ---
 

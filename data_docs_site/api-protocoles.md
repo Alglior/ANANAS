@@ -8,23 +8,13 @@ Vous y trouverez la liste complète des endpoints avec leurs méthodes, descript
 
 ---
 
-## Distribution des données
+## Documentation par thème
 
-Les données sont distribuées via des **liens magnet** et le protocole **BitTorrent**, garantissant :
+### [P2P & BitTorrent](/docs/p2p-bittorrent)
+Principe du Peer-to-Peer, fonctionnement du protocole BitTorrent, avantages de la distribution décentralisée, clients torrent recommandés.
 
-- La décentralisation — pas de point de défaillance unique
-- La disponibilité — les données restent accessibles tant qu'au moins un pair les partage
-- L'intégrité — vérification des fichiers via hachage SHA-1
+### [Pack (GeoPackage) vs Individuel](/docs/pack-vs-individuel)
+Différence entre les packs GeoPackage multi-couches et les fichiers individuels, formats supportés, cas d'usage, tableau comparatif.
 
-## Formats supportés
-
-| Type | Description |
-|------|-------------|
-| Géodonnées | Fichiers SIG, shapefiles, GeoJSON, CSV, GPKG |
-| Cartes | Produits cartographiques, tuiles, cartes interactives |
-| Applications | Services web, outils géospatiaux |
-
-## Niveaux de format
-
-- **Pack** : archives complètes (zip, tar.gz) via magnet link
-- **Individuel** : fichiers unitaires (csv, shp, geojson, gpkg, json, xml, png, jpg, gif, svg, pdf)
+### [Organisation des données](/docs/organisation-donnees)
+Structure hiérarchique des données, modèle Item, organisations et rôles, types de catalogue, formats supportés, intégrité et sécurité.
