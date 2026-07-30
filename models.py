@@ -470,6 +470,27 @@ class FeaturedItem(db.Model, TimestampMixin):
     item = relationship("Item")
 
 
+class PredefinedTagCategory(db.Model, TimestampMixin):
+    __tablename__ = "predefined_tag_categories"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(unique=True)
+    display_order: Mapped[int] = mapped_column(default=0)
+
+    tags = relationship("PredefinedTag", back_populates="category", cascade="all, delete-orphan", order_by="PredefinedTag.display_order")
+
+
+class PredefinedTag(db.Model):
+    __tablename__ = "predefined_tags"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    category_id: Mapped[int] = mapped_column(ForeignKey("predefined_tag_categories.id", ondelete="CASCADE"))
+    name: Mapped[str]
+    display_order: Mapped[int] = mapped_column(default=0)
+
+    category = relationship("PredefinedTagCategory", back_populates="tags")
+
+
 class GeoPackage(db.Model, TimestampMixin):
     __tablename__ = "geo_packages"
 

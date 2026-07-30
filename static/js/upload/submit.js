@@ -267,6 +267,10 @@ UploadModule.submit = (function () {
       if (formatTypeSelect) formatTypeSelect.value = d.format_type || '';
     }
     document.getElementById('description').value = d.description || '';
+    var tagsInput = document.getElementById('tags');
+    if (tagsInput && d.tags && d.tags.length > 0) {
+      tagsInput.value = d.tags.join(', ');
+    }
     if (d.organization_id) document.getElementById('organization_id').value = d.organization_id;
     if (d.license_type) {
       var lt = document.getElementById('license_type');
@@ -382,6 +386,7 @@ UploadModule.submit = (function () {
     UploadModule.imageMagnets.init();
     UploadModule.tabs.init();
     UploadModule.history.init();
+    if (UploadModule.tagSelector) UploadModule.tagSelector.init();
     initFormSubmission();
     initDraftBtn();
     initDownloadJson();

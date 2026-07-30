@@ -1,7 +1,6 @@
 import datetime
 import os
 import threading
-from pathlib import Path
 
 from flask import Blueprint, request, render_template, redirect, url_for, session, flash, jsonify, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -9,7 +8,7 @@ from sqlalchemy import func
 from app import db, limiter
 from src.shared import login_required, get_current_user, user_owns_item_or_admin, _build_page_numbers, ITEMS_PER_PAGE, validate_password_strength
 from src.admin import is_catalogue_enabled
-from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, OrganizationMember, ItemGallery, ItemGallery
+from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, OrganizationMember, ItemGallery, ItemTag, PredefinedTagCategory, PredefinedTag
 from utils.security import sanitize_html, validate_magnet_link
 
 ALLOWED_ITEM_TYPES = {"geodonnee", "carte", "application"}
@@ -237,7 +236,21 @@ def upload_page():
         trash_total=total_trash, trash_page_numbers=trash_page_numbers,
         edit_data=edit_data,
         is_catalogue_enabled=is_catalogue_enabled,
+        predefined_tags=_get_predefined_tags(),
     )
+
+
+def _get_predefined_tags():
+    categories = PredefinedTagCategory.query.order_by(PredefinedTagCategory.display_order).all()
+    return {
+        "categories": [
+            {
+                "name": cat.name,
+                "tags": [t.name for t in cat.tags]
+            }
+            for cat in categories
+        ]
+    }
 
 
 def _parse_item_data(data):
@@ -258,6 +271,21 @@ def _parse_item_data(data):
     if status not in ("published", "draft"):
         status = "published"
     return title, item_type, format_type, description, data_format_level, organization_id, license_type, pdf_magnet_link, status
+
+
+def _process_tags(item, tags):
+    existing = {t.tag for t in item.tags}
+    new_tags = set()
+    for t in (tags or []):
+        tag = sanitize_html(t.strip()[:50])
+        if tag:
+            new_tags.add(tag)
+    to_add = new_tags - existing
+    to_remove = [t for t in item.tags if t.tag not in new_tags]
+    for t in to_remove:
+        db.session.delete(t)
+    for tag in to_add:
+        db.session.add(ItemTag(item_id=item.id, tag=tag))
 
 
 def _check_org_membership(current_user, organization_id):
@@ -485,6 +513,7 @@ def create_upload_item():
     err = _create_viz_link(data, item.id)
     if err:
         return err
+    _process_tags(item, data.get("tags", []))
 
     if status != "draft":
         err = _process_magnets(item, data_format_level, data)
@@ -537,6 +566,7 @@ def update_draft_item(item_id):
     err = _create_viz_link(data, item.id)
     if err:
         return err
+    _process_tags(item, data.get("tags", []))
 
     err = _process_magnets(item, data_format_level, data)
     if err:

@@ -244,7 +244,20 @@
 
 .catalogue-desc-preview[hidden],
 .catalogue-desc-full[hidden] {
-  display: none !important;
+  display: none;
+}
+
+.catalogue-tags {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.catalogue-tags .tag {
+  margin: 0;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
 }
 
 .btn-expand {

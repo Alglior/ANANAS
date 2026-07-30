@@ -33,6 +33,13 @@
       </p>
       {% endif %}
       <p class="catalogue-desc-preview" id="preview-{{ item.id }}">{{ item.description|truncate(140, True, '...')|e }}</p>
+      {% if item.tags and item.tags|length > 0 %}
+      <div class="catalogue-tags">
+        {% for tag in item.tags[:5] %}
+        <span class="tag">{{ tag }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
       <p class="catalogue-desc-full" id="full-{{ item.id }}" hidden>{{ item.description|e }}</p>
       <button
         class="btn-expand"

@@ -43,6 +43,14 @@ UploadModule.payload = (function () {
       payload.image_magnets = imageMagnets;
     }
 
+    var tagsInput = document.getElementById('tags');
+    if (tagsInput) {
+      var tags = tagsInput.value.split(',').map(function(t) { return t.trim(); }).filter(function(t) { return t; });
+      if (tags.length > 0) {
+        payload.tags = tags;
+      }
+    }
+
     return payload;
   }
 

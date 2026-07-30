@@ -27,6 +27,11 @@
 
       <div class="upload-tab-content active" id="tab-publish">
 
+      <label class="btn btn-outline" id="uploadJsonLabel" title="Importer une fiche JSON pour remplir le formulaire">
+            Importer une fiche (JSON)
+            <input type="file" id="uploadJsonInput" accept=".json,application/json" hidden>
+          </label>
+
       <form class="upload-form" id="uploadForm">
         <div class="upload-section" id="tutoSectionInfo">
           <h2>Informations de l'item</h2>
@@ -73,6 +78,35 @@
           <div class="form-group">
             <label for="description" class="label-with-help">Description <span class="help-icon" data-tooltip="Décrivez le contenu, la méthode de collecte, les conditions d'utilisation. Cette description sera visible publiquement dans la fiche catalogue de l'item.">?</span></label>
             <textarea id="description" name="description" rows="3" placeholder="Décrivez brièvement vos données..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="tags" class="label-with-help">Tags <span class="help-icon" data-tooltip="Sélectionnez des tags dans la liste ou saisissez vos propres mots-clés. Les tags aident à retrouver vos données dans le catalogue.">?</span></label>
+            <div class="tag-selector" id="tagSelector">
+              <div class="tag-selector-header">
+                <div class="tag-search-wrap">
+                  <input type="text" class="tag-search" id="tagSearch" placeholder="Rechercher un tag..." />
+                </div>
+              </div>
+              <div class="tag-categories" id="tagCategories">
+                {% for cat in predefined_tags.categories %}
+                <div class="tag-category" data-category="{{ cat.name }}">
+                  <button type="button" class="tag-category-toggle" aria-expanded="false">
+                    <span class="tag-category-name">{{ cat.name }}</span>
+                    <span class="tag-category-count">{{ cat.tags|length }}</span>
+                    <span class="tag-category-arrow">▶</span>
+                  </button>
+                  <div class="tag-category-body" hidden>
+                    {% for tag in cat.tags %}
+                    <button type="button" class="tag-chip" data-tag="{{ tag }}">{{ tag }}</button>
+                    {% endfor %}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="tag-no-results" id="tagNoResults" hidden>Aucun tag trouvé</div>
+              <input type="hidden" id="tags" name="tags" value="" />
+            </div>
           </div>
 
           <div class="form-group">
@@ -199,10 +233,6 @@
           <button type="button" class="btn btn-outline" id="downloadJsonBtn" title="Télécharger la fiche info au format JSON">
             Télécharger la fiche (JSON)
           </button>
-          <label class="btn btn-outline" id="uploadJsonLabel" title="Importer une fiche JSON pour remplir le formulaire">
-            Importer une fiche (JSON)
-            <input type="file" id="uploadJsonInput" accept=".json,application/json" hidden>
-          </label>
           <span class="form-status" id="uploadStatus"></span>
         </div>
 
@@ -425,5 +455,6 @@
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/image-magnets.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/payload.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/history.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/tag-selector.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/submit.js') }}"></script>
 {% endblock %}
