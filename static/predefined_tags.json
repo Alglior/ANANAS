@@ -12,7 +12,12 @@
         "Emploi",
         "Chômage",
         "Logement",
-        "Ménages"
+        "Ménages",
+        "Migration",
+        "Natalité",
+        "Mortalité",
+        "Espérance de vie",
+        "Nationalités"
       ]
     },
     {
@@ -30,7 +35,244 @@
         "Neige",
         "Orage",
         "Météo",
-        "Changement climatique"
+        "Changement climatique",
+        "Réchauffement climatique",
+        "Scénarios climatiques",
+        "Emissions carbone"
+      ]
+    },
+    {
+      "name": "Géographie physique",
+      "tags": [
+        "Altitude",
+        "Relief",
+        "Modèle numérique de terrain",
+        "MNT",
+        "MNE",
+        "Bathymétrie",
+        "Géologie",
+        "Pédologie",
+        "Sols",
+        "Végétation",
+        "Occupation du sol",
+        "Géomorphologie",
+        "Risques naturels",
+        "Inondation",
+        "Glissement de terrain"
+      ]
+    },
+    {
+      "name": "Hydrologie & eau",
+      "tags": [
+        "Cours d'eau",
+        "Rivière",
+        "Bassin versant",
+        "Lac",
+        "Plan d'eau",
+        "Nappe phréatique",
+        "Eau souterraine",
+        "Qualité de l'eau",
+        "Hydrographie",
+        "Zone humide",
+        "Barrage",
+        "Prélèvement",
+        "Pluviométrie",
+        "Débit",
+        "Mer & océan",
+        "Littoral"
+      ]
+    },
+    {
+      "name": "Administration & limites",
+      "tags": [
+        "Limite administrative",
+        "Commune",
+        "Département",
+        "Région",
+        "Pays",
+        "IRIS",
+        "Code postal",
+        "EPCI",
+        "Canton",
+        "Arrondissement",
+        "Circonscription",
+        "Zone d'emploi",
+        "Bassin de vie",
+        "Aire urbaine",
+        "Frontière",
+        "Zone spéciale"
+      ]
+    },
+    {
+      "name": "Transport & mobilité",
+      "tags": [
+        "Route",
+        "Autoroute",
+        "Chemin",
+        "Réseau routier",
+        "Voie ferrée",
+        "Gare",
+        "Transport en commun",
+        "Bus",
+        "Métro",
+        "Tramway",
+        "Aéroport",
+        "Port",
+        "Piste cyclable",
+        "Mobilité douce",
+        "Trafic",
+        "Accessibilité",
+        "Itinéraire"
+      ]
+    },
+    {
+      "name": "Urbanisme & aménagement",
+      "tags": [
+        "Occupation du sol",
+        "Urbanisme",
+        "Zonage",
+        "PLU",
+        "SCoT",
+        "Bâtiment",
+        "Cadastre",
+        "Parcelle",
+        "Construction",
+        "Logement social",
+        "Équipement public",
+        "Espace vert",
+        "Friche",
+        "ZAC",
+        "Permis de construire",
+        "Plan local d'urbanisme"
+      ]
+    },
+    {
+      "name": "Agriculture & forêt",
+      "tags": [
+        "Parcelle agricole",
+        "Culture",
+        "Rendement",
+        "PAC",
+        "Irrigation",
+        "Forêt",
+        "Essence forestière",
+        "Déforestation",
+        "Pâturage",
+        "Élevage",
+        "Viticulture",
+        "Agriculture biologique",
+        "Haie",
+        "Bocage",
+        "Sylviculture",
+        "Foncier agricole"
+      ]
+    },
+    {
+      "name": "Biodiversité & environnement",
+      "tags": [
+        "Aire protégée",
+        "Parc national",
+        "Réserve naturelle",
+        "Natura 2000",
+        "Espèce",
+        "Faune",
+        "Flore",
+        "Habitat",
+        "Corridor écologique",
+        "Trame verte et bleue",
+        "Pollution",
+        "Qualité de l'air",
+        "Bruit",
+        "Déchet",
+        "Biodiversité",
+        "Écosystème"
+      ]
+    },
+    {
+      "name": "Énergie & réseaux",
+      "tags": [
+        "Réseau électrique",
+        "Gaz",
+        "Éolienne",
+        "Parc éolien",
+        "Solaire",
+        "Photovoltaïque",
+        "Méthanisation",
+        "Biomasse",
+        "Eau potable",
+        "Assainissement",
+        "Réseau de chaleur",
+        "Hydroélectricité",
+        "Nucléaire",
+        "Consommation énergétique",
+        "Transition énergétique"
+      ]
+    },
+    {
+      "name": "Économie & société",
+      "tags": [
+        "Entreprise",
+        "Commerce",
+        "Tourisme",
+        "Foncier",
+        "Fiscalité",
+        "PIB",
+        "Emploi",
+        "Marché du travail",
+        "Éducation",
+        "École",
+        "Université",
+        "Santé",
+        "Hôpital",
+        "Équipement sportif",
+        "Culture",
+        "Patrimoine",
+        "Pauvreté",
+        "Inégalités"
+      ]
+    },
+    {
+      "name": "Télédétection & imagerie",
+      "tags": [
+        "Imagerie satellite",
+        "Orthophoto",
+        "Photographie aérienne",
+        "Lidar",
+        "Radar",
+        "NDVI",
+        "Indice spectral",
+        "Résolution spatiale",
+        "Sentinel",
+        "Landsat",
+        "SPOT",
+        "Drone",
+        "Nuage de points",
+        "3D",
+        "Orthophotographie"
+      ]
+    },
+    {
+      "name": "Types de données",
+      "tags": [
+        "Vecteur",
+        "Raster",
+        "Tuile",
+        "TMS",
+        "WMS",
+        "WFS",
+        "WMTS",
+        "API",
+        "Base de données",
+        "Couche",
+        "Table",
+        "Statistique",
+        "Indice",
+        "Donnée ponctuelle",
+        "Donnée linéaire",
+        "Donnée surfacique",
+        "Maille",
+        "Grille",
+        "Heatmap"
       ]
     }
   ]

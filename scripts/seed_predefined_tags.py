@@ -26,12 +26,13 @@ def seed_predefined_tags():
         with open(json_path) as f:
             data = json.load(f)
 
-        existing_count = PredefinedTagCategory.query.count()
-        if existing_count > 0:
-            print(f"Database already has {existing_count} categories, skipping seed.")
-            return
+        existing_names = {c.name for c in PredefinedTagCategory.query.all()}
+        added = 0
 
         for i, cat_data in enumerate(data.get("categories", [])):
+            if cat_data["name"] in existing_names:
+                continue
+
             category = PredefinedTagCategory(name=cat_data["name"], display_order=i)
             db.session.add(category)
             db.session.flush()
@@ -40,8 +41,14 @@ def seed_predefined_tags():
                 tag = PredefinedTag(category_id=category.id, name=tag_name, display_order=j)
                 db.session.add(tag)
 
+            added += 1
+
         db.session.commit()
-        print(f"Seeded {len(data.get('categories', []))} categories and their tags successfully.")
+
+        if added:
+            print(f"Seeded {added} new categories and their tags successfully.")
+        else:
+            print(f"All {len(data.get('categories', []))} categories already exist, nothing to add.")
 
 
 if __name__ == "__main__":

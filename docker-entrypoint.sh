@@ -66,6 +66,9 @@ fi
 echo "[entrypoint] Running flask db upgrade..."
 flask db upgrade
 
+echo "[entrypoint] Seeding predefined tags..."
+python3 scripts/seed_predefined_tags.py
+
 echo "[entrypoint] Syncing admin credentials from .env..."
 python3 -c "
 import os, sys
