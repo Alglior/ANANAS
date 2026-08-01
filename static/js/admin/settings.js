@@ -65,12 +65,13 @@
     });
   }
 
-  /* ── Inline Edit Modal ── (same logic as before, adapted) */
+  /* ── Inline Edit Modal ── */
   function initSettingModal() {
     var modal = document.getElementById("settingModal");
     var form = document.getElementById("settingForm");
     var keyInput = document.getElementById("settingKey");
     var textInput = document.getElementById("settingInput");
+    var textareaInput = document.getElementById("settingTextarea");
     var selectInput = document.getElementById("settingSelect");
     var feedback = document.getElementById("settingFeedback");
     var modalTitle = document.getElementById("settingModalTitle");
@@ -83,12 +84,17 @@
       modalTitle.textContent = "Modifier : " + label;
       modalLabel.textContent = label;
 
+      textInput.hidden = true;
+      textareaInput.hidden = true;
+      selectInput.hidden = true;
+
       if (type === "boolean") {
-        textInput.hidden = true;
         selectInput.hidden = false;
         selectInput.value = value;
+      } else if (value && value.length > 80) {
+        textareaInput.hidden = false;
+        textareaInput.value = value;
       } else {
-        selectInput.hidden = true;
         textInput.hidden = false;
         textInput.value = value;
         textInput.type = type === "number" ? "number" : "text";
@@ -96,6 +102,12 @@
 
       feedback.hidden = true;
       modal.hidden = false;
+    }
+
+    function getEditedValue() {
+      if (!textInput.hidden) return textInput.value.trim();
+      if (!textareaInput.hidden) return textareaInput.value.trim();
+      return selectInput.value;
     }
 
     function closeModal() {
@@ -145,9 +157,7 @@
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var key = keyInput.value;
-      var value = selectInput.hidden
-        ? textInput.value.trim()
-        : selectInput.value;
+      var value = getEditedValue();
 
       updateSetting(key, value, function () {
         var row = document.querySelector('.setting-row[data-key="' + key + '"]');
