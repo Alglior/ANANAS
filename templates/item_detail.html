@@ -62,8 +62,10 @@
   <section class="detail-body">
     <div class="container">
       <div class="viz-section">
-        <!-- Visualization Links -->
+        <!-- Visualization Links (only on Reutilisation tab) -->
+        {% if active_reuse_tab %}
         {% include 'partials/viz_links.html' %}
+        {% endif %}
 
         <!-- Data Extractions (only on Données tab) -->
         {% if active_data_tab and data_chunks and data_chunks|length > 0 %}
