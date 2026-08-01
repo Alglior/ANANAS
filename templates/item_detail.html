@@ -26,21 +26,31 @@
         {% if show_data_visualization_tabs and show_data_visualization_tabs != False %}
           {% if active_data_tab %}
             <a href="/catalogue/item/{{ item.id }}" class="tab-btn">Aperçu</a>
-            <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn active">Données</a>
+            <a{% if data_chunks and data_chunks|length > 0 %} href="/catalogue/item/{{ item.id }}/data" class="tab-btn active"{% else %} href="#" class="tab-btn tab-btn-disabled"{% endif %}>Données</a>
             {% if viz_links and viz_links|length > 0 %}
             <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Réutilisation</a>
+            {% else %}
+            <a href="#" class="tab-btn tab-btn-disabled">Réutilisation</a>
             {% endif %}
           {% elif active_reuse_tab %}
             <a href="/catalogue/item/{{ item.id }}" class="tab-btn">Aperçu</a>
+            {% if data_chunks and data_chunks|length > 0 %}
             <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn">Données</a>
-            {% if viz_links and viz_links|length > 0 %}
-            <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn active">Réutilisation</a>
+            {% else %}
+            <a href="#" class="tab-btn tab-btn-disabled">Données</a>
             {% endif %}
+            <a{% if viz_links and viz_links|length > 0 %} href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn active"{% else %} href="#" class="tab-btn tab-btn-disabled"{% endif %}>Réutilisation</a>
           {% else %}
             <a href="#" class="tab-btn active">Aperçu</a>
+            {% if data_chunks and data_chunks|length > 0 %}
             <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn">Données</a>
+            {% else %}
+            <a href="#" class="tab-btn tab-btn-disabled">Données</a>
+            {% endif %}
             {% if viz_links and viz_links|length > 0 %}
             <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Réutilisation</a>
+            {% else %}
+            <a href="#" class="tab-btn tab-btn-disabled">Réutilisation</a>
             {% endif %}
           {% endif %}
         {% endif %}

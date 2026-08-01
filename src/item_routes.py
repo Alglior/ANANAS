@@ -179,6 +179,8 @@ def item_detail_view(item_id):
     item_dict = item.to_dict()
     item_dict["comment_count"] = Comment.query.filter_by(item_id=item_id).count()
     viz_links = [vl.to_dict() for vl in VisualizationLink.query.filter_by(parent_item_id=item_id).all()]
+    from models import DataChunk
+    data_chunks = [c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=item_id).all()]
 
     return render_template(
         "item_detail.html",
@@ -195,6 +197,7 @@ def item_detail_view(item_id):
         current_user=current_user,
         show_data_visualization_tabs=item.type == "geodonnee",
         viz_links=viz_links,
+        data_chunks=data_chunks,
     )
 
 

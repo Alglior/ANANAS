@@ -521,8 +521,6 @@ def upload_file():
     data_format_level = request.form.get("data_format_level", "individual").strip()
     organization_id = request.form.get("organization_id", "").strip()
 
-    if not data_text and item_type not in ("carte", "application"):
-        return jsonify({"error": "Les données sont requises"}), 400
     if not title:
         return jsonify({"error": "Le titre est requis"}), 400
     if item_type not in ALLOWED_ITEM_TYPES:

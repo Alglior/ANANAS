@@ -40,6 +40,12 @@
   border-bottom-color: var(--white);
 }
 
+.tab-btn-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .download-levels-list {
   list-style: none;
   padding: 0;

@@ -58,18 +58,6 @@ UploadModule.submit = (function () {
       }
     }
 
-    if (!UploadModule.EDITING && !isNonData) {
-      var dataText = dataInput ? dataInput.value : '';
-      var lines = dataText.split('\n').filter(function(line) { return line.trim(); }).slice(0, 50);
-      if (!lines.length) {
-        uploadStatus.textContent = 'Veuillez coller vos donn\u00e9es';
-        uploadStatus.className = 'form-status form-error';
-        uploadBtn.disabled = false;
-        if (draftBtn) draftBtn.disabled = false;
-        return;
-      }
-    }
-
     showSpinner(UploadModule.EDITING ? 'Mise \u00e0 jour en cours...' : 'Envoi des donn\u00e9es...', UploadModule.EDITING ? '' : '\u00c9tape 1/2');
 
     var csrfToken = CsrfModule.getCsrfToken();
@@ -77,40 +65,42 @@ UploadModule.submit = (function () {
     try {
       var chunkId = null;
       if (!UploadModule.EDITING && !isNonData) {
-        var formData = new FormData();
         var dataTextValue = dataInput.value;
         var dataLines = dataTextValue.split('\n').filter(function(line) { return line.trim(); }).slice(0, 50);
-        formData.append('data_text', dataLines.join('\n'));
-        formData.append('title', title);
-        formData.append('type', typeSelect.value);
-        formData.append('format_type', document.getElementById('format_type').value);
-        formData.append('description', document.getElementById('description').value.trim());
-        formData.append('data_format_level', 'pack');
+        if (dataLines.length) {
+          var formData = new FormData();
+          formData.append('data_text', dataLines.join('\n'));
+          formData.append('title', title);
+          formData.append('type', typeSelect.value);
+          formData.append('format_type', document.getElementById('format_type').value);
+          formData.append('description', document.getElementById('description').value.trim());
+          formData.append('data_format_level', 'pack');
 
-        var orgId = document.getElementById('organization_id').value;
-        if (orgId) formData.append('organization_id', orgId);
-        var lt = document.getElementById('license_type');
-        if (lt && lt.value) {
-          formData.append('license_type', lt.value);
-          if (lt.value === 'other') {
-            formData.append('custom_license_text', document.getElementById('custom_license_text').value);
+          var orgId = document.getElementById('organization_id').value;
+          if (orgId) formData.append('organization_id', orgId);
+          var lt = document.getElementById('license_type');
+          if (lt && lt.value) {
+            formData.append('license_type', lt.value);
+            if (lt.value === 'other') {
+              formData.append('custom_license_text', document.getElementById('custom_license_text').value);
+            }
           }
-        }
 
-        var fileResult = await UploadModule.payload.safeFetchJson('/api/upload/file', {
-          method: 'POST',
-          headers: { 'X-CSRF-Token': csrfToken },
-          body: formData,
-        });
-        if (!fileResult.response.ok) {
-          hideSpinner();
-          uploadStatus.textContent = fileResult.data.error || 'Erreur t\u00e9l\u00e9versement';
-          uploadStatus.className = 'form-status form-error';
-          uploadBtn.disabled = false;
-          if (draftBtn) draftBtn.disabled = false;
-          return;
+          var fileResult = await UploadModule.payload.safeFetchJson('/api/upload/file', {
+            method: 'POST',
+            headers: { 'X-CSRF-Token': csrfToken },
+            body: formData,
+          });
+          if (!fileResult.response.ok) {
+            hideSpinner();
+            uploadStatus.textContent = fileResult.data.error || 'Erreur t\u00e9l\u00e9versement';
+            uploadStatus.className = 'form-status form-error';
+            uploadBtn.disabled = false;
+            if (draftBtn) draftBtn.disabled = false;
+            return;
+          }
+          chunkId = fileResult.data.chunk_id;
         }
-        chunkId = fileResult.data.chunk_id;
       }
 
       showSpinner(UploadModule.EDITING ? 'Publication du brouillon...' : 'Cr\u00e9ation de l\'item...', UploadModule.EDITING ? '' : '\u00c9tape 2/2');
