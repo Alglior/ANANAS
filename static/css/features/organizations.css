@@ -624,14 +624,13 @@
 }
 
 .btn-danger {
-  border-color: var(--border-color);
-  color: var(--text-secondary);
+  background: var(--color-danger);
+  color: var(--white);
+  border: none;
 }
 
 .btn-danger:hover {
-  border-color: var(--color-danger);
-  color: var(--color-danger);
-  background: rgba(220, 53, 69, 0.08);
+  opacity: 0.85;
 }
 
 .form-hidden {
