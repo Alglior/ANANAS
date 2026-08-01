@@ -1,0 +1,123 @@
+.org-page {
+  padding: 2rem 0;
+}
+
+.org-back-link {
+  display: inline-block;
+  color: var(--specs-gray);
+  font-size: 0.9rem;
+  text-decoration: none;
+  margin-bottom: 1.5rem;
+}
+
+.org-back-link:hover {
+  color: var(--forest);
+}
+
+.org-profile-card {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.org-profile-avatar {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--light-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.org-profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.org-profile-initials {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--forest);
+  text-transform: uppercase;
+}
+
+.org-profile-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin: 0 0 0.25rem;
+}
+
+.org-profile-url {
+  font-size: 0.9rem;
+  color: var(--forest);
+  text-decoration: none;
+}
+
+.org-profile-url:hover {
+  text-decoration: underline;
+}
+
+.org-profile-desc {
+  font-size: 0.95rem;
+  color: var(--specs-gray);
+  margin: 0.5rem 0 0;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.org-section {
+  margin-bottom: 2rem;
+}
+
+.org-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.org-section-header h2 {
+  font-size: 1.1rem;
+  color: var(--charcoal);
+  margin: 0;
+}
+
+.org-view-all {
+  font-size: 0.85rem;
+  color: var(--forest);
+  text-decoration: none;
+}
+
+.org-view-all:hover {
+  text-decoration: underline;
+}
+
+.org-header h1 {
+  color: var(--forest);
+  margin-bottom: 0.5rem;
+}
+
+.org-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.org-header-row h1 {
+  margin-bottom: 0;
+}
+
+.org-logo {
+  max-width: 120px;
+  max-height: 80px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+}

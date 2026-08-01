@@ -102,15 +102,30 @@
       feedback.hidden = true;
     }
 
-    /* Bind inline edit buttons */
+    /* Bind inline edit buttons and container */
     document.querySelectorAll(".inline-edit-btn").forEach(function (btn) {
-      btn.addEventListener("click", function () {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
         openModal(
           this.dataset.key,
           this.dataset.label,
           this.dataset.type,
           this.dataset.value
         );
+      });
+    });
+
+    document.querySelectorAll(".inline-edit").forEach(function (container) {
+      container.addEventListener("click", function () {
+        var btn = this.querySelector(".inline-edit-btn");
+        if (btn) {
+          openModal(
+            btn.dataset.key,
+            btn.dataset.label,
+            btn.dataset.type,
+            btn.dataset.value
+          );
+        }
       });
     });
 

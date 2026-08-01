@@ -1,0 +1,107 @@
+.org-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.org-btn {
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  font-weight: 500;
+  background: var(--white);
+  color: var(--charcoal);
+  text-decoration: none;
+  display: inline-block;
+}
+
+.org-btn-outline:hover {
+  background: var(--light-gray);
+}
+
+.org-btn-primary {
+  background: var(--forest);
+  color: var(--white);
+  border-color: var(--forest);
+}
+
+.org-btn-primary:hover {
+  opacity: 0.85;
+}
+
+.org-btn-danger {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.org-btn-danger:hover {
+  background: rgba(220, 53, 69, 0.08);
+}
+
+.org-btn-sm {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+}
+
+.org-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-danger {
+  background: var(--color-danger);
+  color: var(--white);
+  border: none;
+}
+
+.btn-danger:hover {
+  opacity: 0.85;
+}
+
+.btn-remove-member {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 0.35rem;
+  line-height: 1;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.btn-remove-member:hover {
+  color: var(--color-danger);
+  background: rgba(220, 53, 69, 0.1);
+}
+
+.btn-sm {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+}
+
+.btn-solid-forest {
+  background: var(--forest);
+  color: var(--white);
+  border: 1px solid var(--forest);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-md);
+}
+
+.btn-solid-forest:hover {
+  background: var(--hover-forest);
+  border-color: var(--hover-forest);
+}
+
+.btn-sm-form {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}

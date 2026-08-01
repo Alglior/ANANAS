@@ -1,4 +1,3 @@
-/* ── Admin layout ── */
 .admin-page {
   padding: 2rem 0;
 }
@@ -13,280 +12,6 @@
   margin-bottom: 1.5rem;
 }
 
-/* ── Tags admin ── */
-.tags-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.tags-header h2 {
-  font-size: 1.1rem;
-  color: var(--charcoal);
-  margin: 0;
-}
-
-.tags-cell {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  align-items: center;
-}
-
-.tag-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.2rem;
-  padding: 0.15rem 0.5rem;
-  font-size: 0.78rem;
-  border: 1px solid var(--border-color);
-  border-radius: 999px;
-  background: var(--white);
-  color: var(--charcoal);
-}
-
-.tag-badge-remove {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  padding: 0;
-  line-height: 1;
-}
-
-.tag-badge-remove:hover {
-  color: var(--danger-color, #c0392b);
-}
-
-.btn-tag-add {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.4rem;
-  height: 1.4rem;
-  border: 1px dashed var(--border-color);
-  border-radius: 50%;
-  background: none;
-  cursor: pointer;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  padding: 0;
-  line-height: 1;
-}
-
-.btn-tag-add:hover {
-  border-color: var(--forest);
-  color: var(--forest);
-  background: rgba(34, 139, 34, 0.06);
-}
-
-.text-muted {
-  color: var(--text-muted);
-  font-size: 0.82rem;
-}
-
-/* Tag modal form styling */
-.modal-content.tag-modal-content {
-  display: block;
-  background: #fff;
-  border-radius: 12px;
-  padding: 2rem;
-  max-width: 480px;
-  width: 92%;
-  max-height: 85vh;
-  overflow-y: auto;
-  position: relative;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
-}
-
-.modal-content.tag-modal-content h3 {
-  margin: 0 0 1.25rem;
-  font-size: 1.1rem;
-  color: var(--charcoal);
-  padding-right: 2rem;
-}
-
-.modal-content.tag-modal-content .form-group {
-  margin-bottom: 1rem;
-}
-
-.modal-content.tag-modal-content .form-group label {
-  display: block;
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.35rem;
-}
-
-.modal-content.tag-modal-content .form-group input[type="text"],
-.modal-content.tag-modal-content .form-group input[type="number"] {
-  width: 100%;
-  padding: 0.65rem 0.85rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-family: inherit;
-  box-sizing: border-box;
-}
-
-.modal-content.tag-modal-content .form-group input:focus {
-  outline: none;
-  border-color: var(--color-blue);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.modal-actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1.25rem;
-}
-
-/* ── Backup page ── */
-.backup-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.backup-card {
-  background: var(--white);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1.5rem;
-}
-
-.backup-card h2 {
-  font-size: 1.1rem;
-  color: var(--charcoal);
-  margin: 0 0 0.5rem;
-}
-
-.backup-card p {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  margin: 0 0 1rem;
-}
-
-.backup-warning {
-  color: var(--error-red, #c0392b) !important;
-  font-weight: 600;
-}
-
-.btn-spinner {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.spinner {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--border-color);
-  border-top-color: currentColor;
-  border-radius: 50%;
-  animation: backup-spin 0.6s linear infinite;
-}
-
-.btn-spinner.hidden-section {
-  display: none;
-}
-
-@keyframes backup-spin {
-  to { transform: rotate(360deg); }
-}
-
-/* ── Custom file input ── */
-.custom-file-input {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.custom-file-input input[type="file"] {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
-}
-
-.btn-file-browse {
-  flex-shrink: 0;
-}
-
-.file-input-name {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* ── Settings admin ── */
-.admin-settings .setting-value-cell {
-  min-width: 120px;
-}
-
-.admin-settings .setting-value {
-  font-family: monospace;
-  font-size: 0.9rem;
-  color: var(--charcoal);
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-group label {
-  display: block;
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: var(--charcoal);
-  margin-bottom: 0.4rem;
-}
-
-.form-input {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font: inherit;
-  font-size: 0.9rem;
-  box-sizing: border-box;
-}
-
-.form-input:focus {
-  border-color: var(--mustard);
-  outline: none;
-}
-
-.form-feedback {
-  margin-top: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.form-feedback-success {
-  background: rgba(34, 139, 34, 0.1);
-  color: var(--forest);
-  border: 1px solid rgba(34, 139, 34, 0.25);
-}
-
-.form-feedback-error {
-  background: rgba(220, 53, 69, 0.1);
-  color: var(--color-danger);
-  border: 1px solid rgba(220, 53, 69, 0.25);
-}
-
-/* ── Admin sub-tabs ── */
 .admin-sub-nav {
   display: flex;
   gap: 0.25rem;
@@ -326,7 +51,6 @@
   display: block;
 }
 
-/* ── Settings Layout: Sidebar + Content ── */
 .admin-settings-layout {
   display: flex;
   gap: 1.5rem;
@@ -391,7 +115,6 @@
   color: var(--white);
 }
 
-/* ── Content Area ── */
 .settings-content {
   flex: 1;
   min-width: 0;
@@ -421,7 +144,6 @@
   margin: 0;
 }
 
-/* ── Settings Cards ── */
 .settings-card {
   background: var(--white);
   border: 1px solid var(--border-color);
@@ -472,7 +194,6 @@
   margin: 0 -1.25rem;
 }
 
-/* ── Settings Card Grid (for catalogues, backup, etc.) ── */
 .settings-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -483,7 +204,6 @@
   margin-bottom: 0;
 }
 
-/* ── Setting Row ── */
 .setting-row {
   display: flex;
   align-items: center;
@@ -517,7 +237,6 @@
   flex-shrink: 0;
 }
 
-/* ── Toggle Switch ── */
 .toggle-switch {
   position: relative;
   display: inline-block;
@@ -581,11 +300,15 @@
   color: var(--text-muted);
 }
 
-/* ── Inline Edit ── */
 .inline-edit {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  cursor: pointer;
+}
+
+.inline-edit:hover .inline-edit-value {
+  border-color: var(--forest);
 }
 
 .inline-edit-value {
@@ -601,6 +324,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: pointer;
 }
 
 .btn-ghost {
@@ -622,7 +346,37 @@
   border-color: var(--border-color);
 }
 
-/* ── Status Badges (Catalogues) ── */
+#settingModal {
+  display: none;
+}
+
+#settingModal:not([hidden]) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#settingModal .modal-box {
+  position: relative;
+  z-index: 10000;
+  background: var(--white);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  min-width: 340px;
+  max-width: 90vw;
+}
+
+#settingModal .modal-box h3 {
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  color: var(--forest);
+}
+
+#settingModal .form-feedback {
+  margin-top: 0.75rem;
+}
+
 .status-badge {
   display: inline-block;
   padding: 0.2rem 0.6rem;
@@ -641,7 +395,6 @@
   color: var(--color-danger);
 }
 
-/* ── Inner tabs (Accueil sub-tabs) ── */
 .settings-inner-tabs {
   margin-top: 0;
 }
@@ -685,7 +438,6 @@
   display: block;
 }
 
-/* ── Responsive ── */
 @media (max-width: 768px) {
   .admin-settings-layout {
     flex-direction: column;

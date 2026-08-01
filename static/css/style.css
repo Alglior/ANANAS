@@ -18,7 +18,12 @@
 @import url("./features/admin/mirrors.css");
 @import url("./features/admin/featured.css");
 @import url("./features/user-pages.css");
-@import url("./features/organizations.css");
+@import url("./features/organizations/profile.css");
+@import url("./features/organizations/members.css");
+@import url("./features/organizations/cards.css");
+@import url("./features/organizations/buttons.css");
+@import url("./features/organizations/forms.css");
+@import url("./features/organizations/roles.css");
 @import url("./features/upload/layout.css");
 @import url("./features/upload/inputs.css");
 @import url("./features/upload/file.css");
