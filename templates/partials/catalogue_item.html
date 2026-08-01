@@ -38,22 +38,6 @@
       </p>
       {% endif %}
       <p class="catalogue-desc-preview" id="preview-{{ item.id }}">{{ item.description|truncate(140, True, '...')|e }}</p>
-      {% if item.tags and item.tags|length > 0 %}
-      <div class="catalogue-tags">
-        <span class="tags-label">Étiquette :</span>
-        {% for tag in item.tags[:5] %}
-        <span class="tag">{{ tag }}</span>
-        {% endfor %}
-      </div>
-      {% endif %}
-      {% if item.unique_categories %}
-      <div class="catalogue-categories">
-        <span class="categories-label">Catégorie :</span>
-        {% for cat in item.unique_categories %}
-        <span class="category-tag">{{ cat }}</span>
-        {% endfor %}
-      </div>
-      {% endif %}
       <p class="catalogue-desc-full" id="full-{{ item.id }}" hidden>{{ item.description|e }}</p>
       {% if item.description and item.description|length > 140 %}
       <button
@@ -71,4 +55,22 @@
       {% endif %}
     </div>
   </a>
+  {% if not simple %}
+  {% if item.tags and item.tags|length > 0 %}
+  <div class="catalogue-tags">
+    <span class="tags-label">Étiquette :</span>
+    {% for tag in item.tags[:5] %}
+    <a href="/catalogue/{{ catalogue_type }}?tag={{ tag|urlencode }}" class="tag">{{ tag }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% if item.unique_categories %}
+  <div class="catalogue-categories">
+    <span class="categories-label">Catégorie :</span>
+    {% for cat in item.unique_categories %}
+    <a href="/catalogue/{{ catalogue_type }}?category={{ cat|urlencode }}" class="category-tag">{{ cat }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endif %}
 </li>

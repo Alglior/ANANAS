@@ -8,6 +8,14 @@
   font-weight: 700;
   color: var(--forest);
   background: rgba(34, 139, 34, 0.11);
+  text-decoration: none;
+  display: inline-block;
+}
+
+a.tag:hover {
+  background: rgba(34, 139, 34, 0.25);
+  border-color: var(--forest);
+  cursor: pointer;
 }
 
 .tag-warn {
@@ -56,6 +64,14 @@
   font-weight: 700;
   color: var(--color-blue);
   background: rgba(45, 140, 255, 0.11);
+  text-decoration: none;
+  display: inline-block;
+}
+
+a.category-tag:hover {
+  background: rgba(45, 140, 255, 0.25);
+  border-color: var(--color-blue);
+  cursor: pointer;
 }
 
 .card-link {

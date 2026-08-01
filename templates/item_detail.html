@@ -289,7 +289,7 @@
           <div class="item-tags">
             <span class="tags-label">Étiquette :</span>
             {% for tag in item.tags %}
-              <span class="tag">{{ tag }}</span>
+              <a href="{{ item.catalogue_link }}?tag={{ tag|urlencode }}" class="tag">{{ tag }}</a>
             {% endfor %}
           </div>
           {% endif %}
@@ -298,7 +298,7 @@
           <div class="item-categories">
             <span class="categories-label">Catégorie :</span>
             {% for cat in item.unique_categories %}
-              <span class="category-tag">{{ cat }}</span>
+              <a href="{{ item.catalogue_link }}?category={{ cat|urlencode }}" class="category-tag">{{ cat }}</a>
             {% endfor %}
           </div>
           {% endif %}

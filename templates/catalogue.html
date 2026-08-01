@@ -16,7 +16,7 @@
 <section class="catalogue-header">
     <div class="container">
       <h1>{{ catalogue_name }}</h1>
-      <p class="catalogue-meta">{{ total_items }}&nbsp;résultats — page {{ page }}/{{ total_pages }}</p>
+      <p class="catalogue-meta">{{ total_items }}&nbsp;résultats — page {{ page }}/{{ total_pages }}{% if filter_tag %} — Filtre par étiquette : <strong>{{ filter_tag }}</strong> <a href="/catalogue/{{ catalogue_type }}" class="filter-clear">&times; effacer</a>{% endif %}{% if filter_category %} — Filtre par catégorie : <strong>{{ filter_category }}</strong> <a href="/catalogue/{{ catalogue_type }}" class="filter-clear">&times; effacer</a>{% endif %}</p>
     </div>
   </section>
 

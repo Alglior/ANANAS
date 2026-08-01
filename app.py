@@ -171,7 +171,7 @@ def create_app(app_name="ANANAS"):
         nonce = getattr(g, "csp_nonce", "")
         response.headers["Content-Security-Policy"] = (
             f"default-src 'self'; "
-            f"style-src 'self' https://fonts.googleapis.com https://unpkg.com; "
+            f"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
             f"script-src 'self' 'nonce-{nonce}' https://unpkg.com; "
             f"font-src 'self' https://fonts.gstatic.com data:; "
             f"img-src 'self' data:; "

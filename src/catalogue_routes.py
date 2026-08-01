@@ -33,7 +33,7 @@ class CatalogueTypeConverter(BaseConverter):
         return value
 
 
-def _build_filtered_query(catalogue_type, filter_verified=False, filter_unofficial=False, filter_format="", org_slug=None, filter_imod=""):
+def _build_filtered_query(catalogue_type, filter_verified=False, filter_unofficial=False, filter_format="", org_slug=None, filter_imod="", filter_tag=None, filter_category=None):
     from models import Item
 
     item_type = type_map.get(catalogue_type)
@@ -54,6 +54,22 @@ def _build_filtered_query(catalogue_type, filter_verified=False, filter_unoffici
 
     if filter_format:
         query = query.filter_by(data_format_level=filter_format)
+
+    if filter_tag:
+        from models import ItemTag
+        from app import db
+        sub = db.session.query(ItemTag.item_id).filter(ItemTag.tag == filter_tag).subquery()
+        query = query.filter(Item.id.in_(sub))
+
+    if filter_category:
+        from models import ItemTag, PredefinedTag, PredefinedTagCategory
+        from app import db
+        sub = db.session.query(ItemTag.item_id).join(
+            PredefinedTag, ItemTag.tag == PredefinedTag.name
+        ).join(
+            PredefinedTagCategory
+        ).filter(PredefinedTagCategory.name == filter_category).subquery()
+        query = query.filter(Item.id.in_(sub))
 
     return query
 
@@ -99,9 +115,11 @@ def _do_catalogue(catalogue_type, page, per_page=30):
     filter_format = request.args.get("format_level", "")
     filter_imod = request.args.get("imod", "")
     org_slug = request.args.get("org")
+    filter_tag = request.args.get("tag", "")
+    filter_category = request.args.get("category", "")
     format_param = request.args.get("format", "")
 
-    query = _build_filtered_query(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod)
+    query = _build_filtered_query(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod, filter_tag, filter_category)
     all_items = query.all()
 
     if filter_imod == "high":
@@ -140,6 +158,7 @@ def _do_catalogue(catalogue_type, page, per_page=30):
         "catalogue_type": catalogue,
         "filter_verified": filter_verified, "filter_unofficial": filter_unofficial,
         "filter_format": filter_format, "filter_imod": filter_imod, "org_slug": org_slug,
+        "filter_tag": filter_tag, "filter_category": filter_category,
         **urls,
         "items": result_items, "page": page, "per_page": per_page,
         "total_items": total_items, "total_pages": total_pages, "page_numbers": page_numbers,
@@ -188,8 +207,10 @@ def catalogue_json_view(catalogue_type, page):
     filter_unofficial = request.args.get("unofficial") == "1"
     filter_format = request.args.get("format_level", "")
     org_slug = request.args.get("org")
+    filter_tag = request.args.get("tag", "")
+    filter_category = request.args.get("category", "")
 
-    query = _build_filtered_query(catalogue_type, filter_verified, filter_unofficial, filter_format, org_slug)
+    query = _build_filtered_query(catalogue_type, filter_verified, filter_unofficial, filter_format, org_slug, filter_tag=filter_tag, filter_category=filter_category)
     items = query.offset((page - 1) * per_page).limit(per_page).all()
     result_items = [item.to_dict() for item in items]
 
