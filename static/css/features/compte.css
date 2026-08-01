@@ -128,7 +128,7 @@
 }
 
 .compte-nav-link.active {
-  background: rgba(194, 154, 54, 0.08);
+  background: var(--mustard-alpha-08);
   color: var(--mustard);
   font-weight: 600;
 }

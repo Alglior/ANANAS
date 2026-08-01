@@ -88,7 +88,7 @@
   font-size: 0.85rem;
   color: var(--color-success-dark);
   padding-top: 0.5rem;
-  border-top: 1px solid rgba(40, 167, 69, 0.2);
+  border-top: 1px solid var(--forest-alpha-20);
 }
 
 .api-search-section {
@@ -381,9 +381,9 @@
 }
 
 .api-copy-btn.copied {
-  background: rgba(40, 167, 69, 0.3);
+  background: var(--forest-alpha-28);
   color: var(--api-code-btn-copied);
-  border-color: rgba(40, 167, 69, 0.4);
+  border-color: var(--forest-alpha-35);
 }
 
 .code-panel pre {

@@ -39,7 +39,7 @@
 }
 
 .breadcrumb .sep {
-  color: rgba(107, 149, 123, 0.45);
+  color: var(--specs-gray);
   user-select: none;
 }
 
