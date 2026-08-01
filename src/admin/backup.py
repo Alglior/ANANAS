@@ -1,7 +1,7 @@
 import gzip
 import tempfile
 
-from flask import current_app, jsonify, render_template, request, send_file
+from flask import current_app, jsonify, redirect, request, send_file, url_for
 from sqlalchemy import inspect, text, MetaData, Table
 from sqlalchemy.schema import CreateTable
 
@@ -12,11 +12,7 @@ from src.admin import bp, login_required, require_admin, api_admin_required
 @login_required
 @require_admin
 def admin_backup_page():
-    return render_template(
-        "admin/backup.html",
-        title="Administration — Sauvegarde",
-        meta_description="Sauvegarder ou restaurer la base de données",
-    )
+    return redirect(url_for("admin.admin_settings"))
 
 
 @bp.route("/api/admin/backup/download")

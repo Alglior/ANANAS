@@ -6,6 +6,9 @@
     <button class="admin-sub-tab active" data-tab="general">Général</button>
     <button class="admin-sub-tab" data-tab="catalogues">Catalogues</button>
     <button class="admin-sub-tab" data-tab="accueil">Accueil</button>
+    <button class="admin-sub-tab" data-tab="etiquettes">Étiquettes</button>
+    <button class="admin-sub-tab" data-tab="replication">Réplication</button>
+    <button class="admin-sub-tab" data-tab="backup">Sauvegarde</button>
   </nav>
 
   {# ─── Tab: Général ─── #}
@@ -335,6 +338,145 @@
       </div>
     </div>
   </div>
+
+  {# ─── Tab: Étiquettes ─── #}
+  <div class="admin-sub-tab-content" id="tab-etiquettes">
+    <div class="tags-header">
+      <h2>Catégories d'étiquettes</h2>
+      <button type="button" class="btn btn-primary" id="add-category-btn">+ Ajouter une catégorie</button>
+    </div>
+    <div class="table-wrapper">
+      <table id="tags-table">
+        <thead>
+          <tr>
+            <th>Ordre</th>
+            <th>Catégorie</th>
+            <th>Étiquettes</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tags-tbody">
+          <tr><td colspan="4" class="loading-cell">Chargement...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="category-modal" class="modal-overlay hidden-section">
+      <div class="modal-content tag-modal-content">
+        <span class="modal-close" id="category-modal-close">&times;</span>
+        <h3 id="category-modal-title">Ajouter une catégorie</h3>
+        <form id="category-form" novalidate>
+          <input type="hidden" id="category-id" value="" />
+          <div class="form-group">
+            <label for="category-name">Nom de la catégorie</label>
+            <input type="text" id="category-name" maxlength="100" required placeholder="Ex: Format, Thème, Source..." />
+          </div>
+          <div class="form-group">
+            <label for="category-order">Ordre d'affichage</label>
+            <input type="number" id="category-order" min="0" value="0" />
+          </div>
+          <div id="category-error" class="form-error hidden-section"></div>
+          <div class="modal-actions">
+            <button type="submit" class="btn btn-primary" id="category-submit">Enregistrer</button>
+            <button type="button" class="btn btn-outline" id="category-cancel">Annuler</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div id="tag-modal" class="modal-overlay hidden-section">
+      <div class="modal-content tag-modal-content">
+        <span class="modal-close" id="tag-modal-close">&times;</span>
+        <h3 id="tag-modal-title">Ajouter une étiquette</h3>
+        <form id="tag-form" novalidate>
+          <input type="hidden" id="tag-category-id" value="" />
+          <input type="hidden" id="tag-id" value="" />
+          <div class="form-group">
+            <label for="tag-name">Nom de l'étiquette</label>
+            <input type="text" id="tag-name" maxlength="100" required placeholder="Ex: Raster, Vectoriel, INSEE..." />
+          </div>
+          <div class="form-group">
+            <label for="tag-order">Ordre d'affichage</label>
+            <input type="number" id="tag-order" min="0" value="0" />
+          </div>
+          <div id="tag-error" class="form-error hidden-section"></div>
+          <div class="modal-actions">
+            <button type="submit" class="btn btn-primary" id="tag-submit">Enregistrer</button>
+            <button type="button" class="btn btn-outline" id="tag-cancel">Annuler</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {# ─── Tab: Réplication ─── #}
+  <div class="admin-sub-tab-content" id="tab-replication">
+    <p class="admin-section-desc">
+      Répliquez les items d'un catalogue depuis une autre instance A.N.A.N.A.S en fournissant son URL.
+      Les items seront importés avec leurs fiches, tags et galeries.
+    </p>
+    <div class="replication-form-section">
+      <div class="form-group">
+        <label for="remote-url">URL de l'instance distante</label>
+        <input type="url" id="remote-url" class="form-input" placeholder="https://exemple.ananas.fr" required />
+        <p class="form-help">L'instance distante doit exposer les endpoints JSON des catalogues (ex: /catalogue/donnees/1/json).</p>
+      </div>
+      <div class="form-group">
+        <label>Types de catalogues à répliquer</label>
+        <div class="replication-types" id="replication-types">
+          <label class="checkbox-label"><input type="checkbox" value="donnees" checked /> Géodonnées</label>
+          <label class="checkbox-label"><input type="checkbox" value="cartes" checked /> Cartes</label>
+          <label class="checkbox-label"><input type="checkbox" value="applications" checked /> Applications</label>
+        </div>
+      </div>
+      <div class="replication-actions">
+        <button type="button" class="btn btn-outline" id="preview-btn">Aperçu des catalogues distants</button>
+        <button type="button" class="btn btn-primary" id="fetch-btn" disabled>Lancer la réplication</button>
+      </div>
+    </div>
+    <div id="replication-preview" class="hidden-section replication-preview-section">
+      <h3>Aperçu des catalogues distants</h3>
+      <div id="preview-results"></div>
+    </div>
+    <div class="replication-progress hidden-section" id="replication-progress">
+      <div class="progress-bar-container"><div class="progress-bar" id="progress-bar"></div></div>
+      <p id="progress-text">Récupération en cours...</p>
+    </div>
+    <div id="replication-results" class="hidden-section replication-results-section">
+      <h3>Résultats de la réplication</h3>
+      <div id="results-content"></div>
+    </div>
+  </div>
+
+  {# ─── Tab: Sauvegarde ─── #}
+  <div class="admin-sub-tab-content" id="tab-backup">
+    <div class="backup-card">
+      <h2>Télécharger une sauvegarde</h2>
+      <p>Téléchargez un dump complet de la base de données (format .sql.gz).</p>
+      <button type="button" class="btn btn-primary" id="backup-download-btn">
+        <span class="btn-label">Télécharger la sauvegarde</span>
+        <span class="btn-spinner hidden-section"><span class="spinner"></span> Génération en cours...</span>
+      </button>
+    </div>
+    <div class="backup-card">
+      <h2>Restaurer une sauvegarde</h2>
+      <p class="backup-warning">&#9888;&#65039; Cette action remplacera toutes les données existantes par celles du fichier importé. Assurez-vous d'avoir téléchargé une sauvegarde avant de restaurer.</p>
+      <form id="backup-restore-form" novalidate>
+        <div class="form-group">
+          <label for="backup-file">Fichier .sql.gz</label>
+          <div class="custom-file-input">
+            <input type="file" id="backup-file" accept=".sql.gz" required />
+            <button type="button" class="btn btn-outline btn-file-browse">Parcourir...</button>
+            <span class="file-input-name" id="backup-file-name">Aucun fichier choisi</span>
+          </div>
+        </div>
+        <div id="backup-restore-error" class="form-error hidden-section"></div>
+        <div id="backup-restore-success" class="form-success hidden-section"></div>
+        <button type="submit" class="btn btn-danger" id="backup-restore-btn">
+          <span class="btn-label">Restaurer la base de données</span>
+          <span class="btn-spinner hidden-section"><span class="spinner"></span> Restauration en cours...</span>
+        </button>
+      </form>
+    </div>
+  </div>
 </div>
 
 <div id="settingModal" class="modal modal-backdrop" hidden>
@@ -369,5 +511,9 @@
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/featured.js') }}?v=1"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/simple_files.js') }}?v=1"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/geopackages.js') }}?v=1"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/tags.js') }}?v=1"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/replication.js') }}?v=1"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/backup.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/admin_tuto.js') }}?v=2"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/features/admin/replication.css') }}" />
 {% endblock %}

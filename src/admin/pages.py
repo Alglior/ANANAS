@@ -55,14 +55,21 @@ def admin_geopackages():
 @login_required
 @require_admin
 def admin_replication():
-    return render_template("admin/replication.html", title="Administration — Réplication", meta_description="Répliquer des catalogues depuis une instance distante")
+    return redirect(url_for("admin.admin_settings"))
+
+
+@bp.route("/admin/backup")
+@login_required
+@require_admin
+def admin_backup():
+    return redirect(url_for("admin.admin_settings"))
 
 
 @bp.route("/admin/tags")
 @login_required
 @require_admin
 def admin_tags():
-    return render_template("admin/tags.html", title="Administration — Étiquettes", meta_description="Gestion des catégories d'étiquettes et étiquettes")
+    return redirect(url_for("admin.admin_settings"))
 
 
 @bp.route("/admin/accueil")
