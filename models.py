@@ -475,6 +475,17 @@ class FeaturedItem(db.Model, TimestampMixin):
     item = relationship("Item")
 
 
+class SimpleFileItem(db.Model, TimestampMixin):
+    __tablename__ = "simple_file_items"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    item_id: Mapped[int] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
+    display_order: Mapped[int] = mapped_column(default=0)
+    is_active: Mapped[bool] = mapped_column(default=True)
+
+    item = relationship("Item")
+
+
 class PredefinedTagCategory(db.Model, TimestampMixin):
     __tablename__ = "predefined_tag_categories"
 

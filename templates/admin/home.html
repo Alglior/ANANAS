@@ -5,6 +5,7 @@
   <div class="mod-tabs">
     <button class="mod-tab active" data-tab="mirrors">Sites miroirs</button>
     <button class="mod-tab" data-tab="featured">Données en avant</button>
+    <button class="mod-tab" data-tab="simple-files">Fichiers simples</button>
     <button class="mod-tab" data-tab="geopackages">Packs GeoPackage</button>
   </div>
 
@@ -184,6 +185,57 @@
       </div>
     </div>
   </div>
+
+  <div class="tab-content" id="tab-simple-files">
+    <div class="mirrors-header">
+      <h2>Fichiers simples</h2>
+      <button type="button" class="btn btn-primary" id="add-sf-btn">+ Ajouter un fichier simple</button>
+    </div>
+    <p class="admin-hint">Ces items apparaissent dans la section « Fichiers Simples » sur la page d'accueil.</p>
+    <div class="table-wrapper">
+      <table id="sf-table">
+        <thead>
+          <tr>
+            <th>Ordre</th>
+            <th>ID</th>
+            <th>Titre</th>
+            <th>Type</th>
+            <th>Format</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="sf-tbody">
+          <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="sf-modal" class="modal-overlay hidden-section">
+      <div class="modal-content mirror-modal-content">
+        <span class="modal-close" id="sf-modal-close">&times;</span>
+        <h3>Ajouter un fichier simple</h3>
+        <form id="sf-form" novalidate>
+          <div class="form-group search-group">
+            <label for="sf-search">Rechercher un item</label>
+            <input type="text" id="sf-search" placeholder="Tapez le titre de l'item..." autocomplete="off" />
+            <div id="sf-search-results" class="search-results-dropdown hidden-section"></div>
+          </div>
+          <input type="hidden" id="sf-item-id" value="" />
+          <div id="sf-selected" class="hidden-section">
+            <div class="featured-selected-item">
+              <span id="sf-selected-title"></span>
+              <span id="sf-selected-info"></span>
+            </div>
+          </div>
+          <div id="sf-error" class="form-error hidden-section"></div>
+          <div class="mirror-modal-actions">
+            <button type="submit" class="btn btn-primary" id="sf-submit">Ajouter</button>
+            <button type="button" class="btn btn-outline" id="sf-cancel">Annuler</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
@@ -192,5 +244,6 @@
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/home.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/mirrors.js') }}?v=1"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/featured.js') }}?v=1"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/simple_files.js') }}?v=1"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/geopackages.js') }}?v=1"></script>
 {% endblock %}

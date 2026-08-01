@@ -36,11 +36,13 @@
            <span class="separator">|</span>
            <a href="{{ url_unofficial }}"{% if filter_unofficial %} class="active"{% endif %}>Données non officielles</a>
          </div>
-         <div class="filter-right">
-           <a{% if filter_format == 'pack' %} class="active"{% endif %} href="{{ url_pack }}">Packs</a>
-           <span class="separator">|</span>
-           <a{% if filter_format == 'individual' %} class="active"{% endif %} href="{{ url_ind }}">Individuelles</a>
-         </div>
+<div class="filter-right">
+            <a{% if filter_format == 'simple' %} class="active"{% endif %} href="{{ url_simple }}">Simples</a>
+            <span class="separator">|</span>
+            <a{% if filter_format == 'pack' %} class="active"{% endif %} href="{{ url_pack }}">Packs</a>
+            <span class="separator">|</span>
+            <a{% if filter_format == 'individual' %} class="active"{% endif %} href="{{ url_ind }}">Individuelles</a>
+          </div>
        </nav>
 
 

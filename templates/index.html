@@ -34,7 +34,7 @@
       </p>
     </div>
     
-    <div class="gp-grid">
+    <div class="gp-grid{% if not geo_packages %} gp-grid--empty{% endif %}">
       <!-- Description des avantages -->
       <div class="gp-info-card">
           <h3 class="gp-info-title">Pourquoi les GeoPackages ?</h3>
@@ -62,6 +62,7 @@
           </ul>
       </div>
       
+      {% if geo_packages %}
       <!-- Collections disponibles -->
       <div class="gp-collections">
         {% for pkg in geo_packages %}
@@ -86,6 +87,7 @@
           </svg>
         </a>
       </div>
+      {% endif %}
     </div>
   </div>
 </section>
@@ -118,6 +120,24 @@
         </p>
       </div>
     </div>
+    
+    {% if simple_files %}
+    <!-- Exemples de fichiers simples -->
+    <div class="di-examples">
+      <h3 class="di-examples-title">Exemples de Fichiers Simples</h3>
+      
+      <div class="di-example-grid">
+        {% for sf in simple_files %}
+        <a href="{{ url_for('items.item_detail_view', item_id=sf.item.id) }}" class="di-example-card">
+          <div class="di-example-header">
+            <span class="di-example-name">{{ sf.item.title }}</span>
+          </div>
+          <p class="di-example-desc">{{ sf.item.description[:80] }}{% if sf.item.description|length > 80 %}...{% endif %}</p>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
     
     <div class="di-cta-wrap">
       <a href="{{ url_for('catalogue') }}" class="di-cta-btn">
@@ -159,6 +179,7 @@
       </div>
     </div>
     
+    {% if featured_items %}
     <!-- Exemples de données -->
     <div class="di-examples">
       <h3 class="di-examples-title">Exemples de Données Disponibles</h3>
@@ -174,6 +195,7 @@
         {% endfor %}
       </div>
     </div>
+    {% endif %}
     
     <div class="di-cta-wrap">
       <a href="{{ url_for('catalogue') }}" class="di-cta-btn">

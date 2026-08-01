@@ -32,6 +32,15 @@
   align-items: start;
 }
 
+.gp-grid--empty {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
+.gp-grid--empty .gp-info-card {
+  max-width: 600px;
+}
+
 /* ── Info card (left side) ── */
 .gp-info-card {
   background: var(--white);

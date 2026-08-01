@@ -78,6 +78,7 @@ def _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_
         "url_verified": _build_url(include_verif=True, include_format=filter_format or None),
         "url_unofficial": _build_url(include_unofficial=True, include_format=filter_format or None),
         "url_pack": _build_url(include_verif=filter_verified, include_unofficial=filter_unofficial, include_format="pack"),
+        "url_simple": _build_url(include_verif=filter_verified, include_unofficial=filter_unofficial, include_format="simple"),
         "url_ind": _build_url(include_verif=filter_verified, include_unofficial=filter_unofficial, include_format="individual"),
     }
 

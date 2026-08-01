@@ -178,6 +178,17 @@ def _serialize_geopackage(p):
     }
 
 
+def _serialize_simple_file(f):
+    return {
+        "id": f.id, "item_id": f.item_id,
+        "item_title": f.item.title if f.item else None,
+        "item_type": f.item.type if f.item else None,
+        "item_format": f.item.format_type if f.item else None,
+        "item_description": f.item.description[:100] if f.item else None,
+        "display_order": f.display_order, "is_active": f.is_active,
+    }
+
+
 import src.admin.users
 import src.admin.reports
 import src.admin.pages
@@ -191,3 +202,4 @@ import src.admin.catalogues
 import src.admin.replication
 import src.admin.backup
 import src.admin.tags
+import src.admin.simple_files
