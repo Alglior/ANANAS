@@ -55,6 +55,7 @@
       </div>
       {% endif %}
       <p class="catalogue-desc-full" id="full-{{ item.id }}" hidden>{{ item.description|e }}</p>
+      {% if item.description and item.description|length > 140 %}
       <button
         class="btn-expand"
         type="button"
@@ -63,6 +64,7 @@
       >
         Plus
       </button>
+      {% endif %}
       {% else %}
       <span class="catalogue-title">{{ item.title|e }}</span>
       <p class="catalogue-desc-preview">{{ item.description|truncate(120)|e }}</p>
