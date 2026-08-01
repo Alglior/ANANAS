@@ -46,7 +46,12 @@
                 {% for s in ns.card_settings %}
                   <div class="setting-row" data-key="{{ s.key }}">
                     <div class="setting-info">
-                      <label>{{ s.label }}</label>
+                      <div class="label-with-help">
+                        <label>{{ s.label }}</label>
+                        {% if s.help %}
+                        <span class="help-icon" data-tooltip="{{ s.help }}">?</span>
+                        {% endif %}
+                      </div>
                       <code>{{ s.key }}</code>
                     </div>
                     <div class="setting-control">
@@ -95,7 +100,12 @@
             {% for s in ns.card_settings %}
               <div class="setting-row" data-key="{{ s.key }}">
                 <div class="setting-info">
-                  <label>{{ s.label }}</label>
+                  <div class="label-with-help">
+                    <label>{{ s.label }}</label>
+                    {% if s.help %}
+                    <span class="help-icon" data-tooltip="{{ s.help }}">?</span>
+                    {% endif %}
+                  </div>
                   <code>{{ s.key }}</code>
                 </div>
                 <div class="setting-control">
