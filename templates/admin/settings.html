@@ -1,484 +1,433 @@
 {% extends 'base_admin.html' %}
 
 {% block admin_content %}
-<div class="admin-settings-tabs">
-  <nav class="admin-sub-nav" aria-label="Sections des paramètres">
-    <button class="admin-sub-tab active" data-tab="general">Général</button>
-    <button class="admin-sub-tab" data-tab="catalogues">Catalogues</button>
-    <button class="admin-sub-tab" data-tab="accueil">Accueil</button>
-    <button class="admin-sub-tab" data-tab="etiquettes">Étiquettes</button>
-    <button class="admin-sub-tab" data-tab="replication">Réplication</button>
-    <button class="admin-sub-tab" data-tab="backup">Sauvegarde</button>
-  </nav>
-
-  {# ─── Tab: Général ─── #}
-  <div class="admin-sub-tab-content active" id="tab-general">
-    <p class="admin-section-desc">Configurer les paramètres globaux du site. Les modifications prennent effet immédiatement.</p>
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Paramètre</th>
-          <th>Valeur</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for setting in settings %}
-        {% if setting.type == "separator" %}
-        <tr class="setting-separator-row">
-          <td colspan="3"><strong>{{ setting.label }}</strong></td>
-        </tr>
-        {% else %}
-        <tr data-key="{{ setting.key }}">
-          <td>
-            <strong>{{ setting.label }}</strong>
-            <br>
-            <span class="admin-table-sub">Clé : {{ setting.key }}</span>
-          </td>
-          <td class="setting-value-cell">
-            {% if setting.type == "boolean" %}
-            <span class="badge {% if setting.value == 'true' %}badge-success{% else %}badge-danger{% endif %} setting-badge">
-              {{ "Activé" if setting.value == "true" else "Désactivé" }}
-            </span>
-            {% else %}
-            <span class="setting-value">{{ setting.value }}</span>
-            {% endif %}
-          </td>
-          <td>
-            <button class="btn btn-sm btn-outline edit-setting-btn"
-                    data-key="{{ setting.key }}"
-                    data-label="{{ setting.label }}"
-                    data-type="{{ setting.type }}"
-                    data-value="{{ setting.value }}">
-              Modifier
-            </button>
-          </td>
-        </tr>
-        {% endif %}
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-
-  {# ─── Tab: Catalogues ─── #}
-  <div class="admin-sub-tab-content" id="tab-catalogues">
-    <p class="admin-section-desc">Activer ou désactiver les catalogues de la plateforme. Un catalogue désactivé n'est plus accessible et n'apparaît plus dans la navigation.</p>
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Catalogue</th>
-          <th>Statut</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for catalogue in catalogues %}
-        <tr>
-          <td>
-            <strong>{{ catalogue.label }}</strong>
-            <br>
-            <span class="admin-table-sub">Slug : {{ catalogue.type }}</span>
-          </td>
-          <td>
-            {% if catalogue.active %}
-            <span class="badge badge-success">Actif</span>
-            {% else %}
-            <span class="badge badge-danger">Inactif</span>
-            {% endif %}
-          </td>
-          <td>
-            <button class="btn btn-sm btn-outline toggle-catalogue-btn"
-                    data-type="{{ catalogue.type }}"
-                    data-active="{{ catalogue.active|lower }}">
-              {% if catalogue.active %}Désactiver{% else %}Activer{% endif %}
-            </button>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-
-  {# ─── Tab: Accueil ─── #}
-  <div class="admin-sub-tab-content" id="tab-accueil">
-    <div class="admin-home-tabs">
-      <nav class="admin-sub-nav" aria-label="Sections accueil">
-        <button class="admin-sub-tab active" data-tab="mirrors">Sites miroirs</button>
-        <button class="admin-sub-tab" data-tab="featured">Données en avant</button>
-        <button class="admin-sub-tab" data-tab="geopackages">Packs GeoPackage</button>
-        <button class="admin-sub-tab" data-tab="simple-files">Fichiers simples</button>
-      </nav>
-
-      <div class="admin-sub-tab-content active" id="tab-mirrors">
-        <div class="mirrors-header">
-          <h2>Sites miroirs</h2>
-          <button type="button" class="btn btn-primary" id="add-mirror-btn">+ Ajouter un miroir</button>
-        </div>
-        <div class="table-wrapper">
-          <table id="mirrors-table">
-            <thead>
-              <tr>
-                <th>Ordre</th>
-                <th>Nom</th>
-                <th>URL</th>
-                <th>Description</th>
-                <th>Statut</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="mirrors-tbody">
-              <tr><td colspan="6" class="loading-cell">Chargement...</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div id="mirror-modal" class="modal-overlay hidden-section">
-          <div class="modal-content mirror-modal-content">
-            <span class="modal-close" id="mirror-modal-close">&times;</span>
-            <h3 id="mirror-modal-title">Ajouter un site miroir</h3>
-            <form id="mirror-form" novalidate>
-              <input type="hidden" id="mirror-id" value="" />
-              <div class="form-group">
-                <label for="mirror-name">Nom</label>
-                <input type="text" id="mirror-name" maxlength="200" required placeholder="Ex: Mirror 1 — GitHub.io" />
-              </div>
-              <div class="form-group">
-                <label for="mirror-url">URL</label>
-                <input type="url" id="mirror-url" maxlength="500" required placeholder="https://..." />
-              </div>
-              <div class="form-group">
-                <label for="mirror-desc">Description</label>
-                <input type="text" id="mirror-desc" maxlength="500" required placeholder="Hébergement statique, CDN mondial..." />
-              </div>
-              <div class="form-group">
-                <label for="mirror-order">Ordre d'affichage</label>
-                <input type="number" id="mirror-order" min="0" value="0" />
-              </div>
-              <div class="form-group">
-                <label class="checkbox-label">
-                  <input type="checkbox" id="mirror-active" checked />
-                  Actif
-                </label>
-              </div>
-              <div id="mirror-error" class="form-error hidden-section"></div>
-              <div class="mirror-modal-actions">
-                <button type="submit" class="btn btn-primary" id="mirror-submit">Enregistrer</button>
-                <button type="button" class="btn btn-outline" id="mirror-cancel">Annuler</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <div class="admin-sub-tab-content" id="tab-featured">
-        <div class="mirrors-header">
-          <h2>Données en avant</h2>
-          <button type="button" class="btn btn-primary" id="add-featured-btn">+ Ajouter une donnée</button>
-        </div>
-        <p class="admin-hint">Ces données apparaissent dans la section « Exemples de Données Disponibles » sur la page d'accueil.</p>
-        <div class="table-wrapper">
-          <table id="featured-table">
-            <thead>
-              <tr>
-                <th>Ordre</th>
-                <th>ID</th>
-                <th>Titre</th>
-                <th>Type</th>
-                <th>Format</th>
-                <th>Statut</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="featured-tbody">
-              <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div id="featured-modal" class="modal-overlay hidden-section">
-          <div class="modal-content mirror-modal-content">
-            <span class="modal-close" id="featured-modal-close">&times;</span>
-            <h3>Ajouter une donnée en avant</h3>
-            <form id="featured-form" novalidate>
-              <div class="form-group search-group">
-                <label for="featured-search">Rechercher un item</label>
-                <input type="text" id="featured-search" placeholder="Tapez le titre de l'item..." autocomplete="off" />
-                <div id="featured-search-results" class="search-results-dropdown hidden-section"></div>
-              </div>
-              <input type="hidden" id="featured-item-id" value="" />
-              <div id="featured-selected" class="hidden-section">
-                <div class="featured-selected-item">
-                  <span id="featured-selected-title"></span>
-                  <span id="featured-selected-info"></span>
-                </div>
-              </div>
-              <div id="featured-error" class="form-error hidden-section"></div>
-              <div class="mirror-modal-actions">
-                <button type="submit" class="btn btn-primary" id="featured-submit">Ajouter</button>
-                <button type="button" class="btn btn-outline" id="featured-cancel">Annuler</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <div class="admin-sub-tab-content" id="tab-geopackages">
-        <div class="mirrors-header">
-          <h2>Packs GeoPackage</h2>
-          <button type="button" class="btn btn-primary" id="add-gp-btn">+ Ajouter un pack</button>
-        </div>
-        <p class="admin-hint">Ces packs apparaissent dans la section « Packs de Données GeoPackage » sur la page d'accueil.</p>
-        <div class="table-wrapper">
-          <table id="geopackages-table">
-            <thead>
-              <tr>
-                <th>Ordre</th>
-                <th>Titre</th>
-                <th>Description</th>
-                <th>Format</th>
-                <th>Lien</th>
-                <th>Statut</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="geopackages-tbody">
-              <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div id="gp-modal" class="modal-overlay hidden-section">
-          <div class="modal-content mirror-modal-content">
-            <span class="modal-close" id="gp-modal-close">&times;</span>
-            <h3 id="gp-modal-title">Ajouter un pack</h3>
-            <form id="gp-form" novalidate>
-              <input type="hidden" id="gp-id" value="" />
-              <div class="form-group">
-                <label for="gp-title">Titre</label>
-                <input type="text" id="gp-title" maxlength="200" required placeholder="Ex: Pack Cartographie Historique" />
-              </div>
-              <div class="form-group">
-                <label for="gp-desc">Description</label>
-                <input type="text" id="gp-desc" maxlength="500" required placeholder="Cartes historiques, plans anciens..." />
-              </div>
-              <div class="form-group">
-                <label for="gp-format">Infos format</label>
-                <input type="text" id="gp-format" maxlength="200" required placeholder="Format: GPKG • Taille: ~250 MB" />
-              </div>
-              <div class="form-group">
-                <label for="gp-link">URL du lien</label>
-                <input type="text" id="gp-link" maxlength="500" required placeholder="/catalogue?collection=Historique" />
-              </div>
-              <div class="form-group">
-                <label for="gp-order">Ordre d'affichage</label>
-                <input type="number" id="gp-order" min="0" value="0" />
-              </div>
-              <div class="form-group">
-                <label class="checkbox-label">
-                  <input type="checkbox" id="gp-active" checked />
-                  Actif
-                </label>
-              </div>
-              <div id="gp-error" class="form-error hidden-section"></div>
-              <div class="mirror-modal-actions">
-                <button type="submit" class="btn btn-primary" id="gp-submit">Enregistrer</button>
-                <button type="button" class="btn btn-outline" id="gp-cancel">Annuler</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <div class="admin-sub-tab-content" id="tab-simple-files">
-        <div class="mirrors-header">
-          <h2>Fichiers simples</h2>
-          <button type="button" class="btn btn-primary" id="add-sf-btn">+ Ajouter un fichier simple</button>
-        </div>
-        <p class="admin-hint">Ces items apparaissent dans la section « Fichiers Simples » sur la page d'accueil.</p>
-        <div class="table-wrapper">
-          <table id="sf-table">
-            <thead>
-              <tr>
-                <th>Ordre</th>
-                <th>ID</th>
-                <th>Titre</th>
-                <th>Type</th>
-                <th>Format</th>
-                <th>Statut</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="sf-tbody">
-              <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div id="sf-modal" class="modal-overlay hidden-section">
-          <div class="modal-content mirror-modal-content">
-            <span class="modal-close" id="sf-modal-close">&times;</span>
-            <h3>Ajouter un fichier simple</h3>
-            <form id="sf-form" novalidate>
-              <div class="form-group search-group">
-                <label for="sf-search">Rechercher un item</label>
-                <input type="text" id="sf-search" placeholder="Tapez le titre de l'item..." autocomplete="off" />
-                <div id="sf-search-results" class="search-results-dropdown hidden-section"></div>
-              </div>
-              <input type="hidden" id="sf-item-id" value="" />
-              <div id="sf-selected" class="hidden-section">
-                <div class="featured-selected-item">
-                  <span id="sf-selected-title"></span>
-                  <span id="sf-selected-info"></span>
-                </div>
-              </div>
-              <div id="sf-error" class="form-error hidden-section"></div>
-              <div class="mirror-modal-actions">
-                <button type="submit" class="btn btn-primary" id="sf-submit">Ajouter</button>
-                <button type="button" class="btn btn-outline" id="sf-cancel">Annuler</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {# ─── Tab: Étiquettes ─── #}
-  <div class="admin-sub-tab-content" id="tab-etiquettes">
-    <div class="tags-header">
-      <h2>Catégories d'étiquettes</h2>
-      <button type="button" class="btn btn-primary" id="add-category-btn">+ Ajouter une catégorie</button>
-    </div>
-    <div class="table-wrapper">
-      <table id="tags-table">
-        <thead>
-          <tr>
-            <th>Ordre</th>
-            <th>Catégorie</th>
-            <th>Étiquettes</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="tags-tbody">
-          <tr><td colspan="4" class="loading-cell">Chargement...</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div id="category-modal" class="modal-overlay hidden-section">
-      <div class="modal-content tag-modal-content">
-        <span class="modal-close" id="category-modal-close">&times;</span>
-        <h3 id="category-modal-title">Ajouter une catégorie</h3>
-        <form id="category-form" novalidate>
-          <input type="hidden" id="category-id" value="" />
-          <div class="form-group">
-            <label for="category-name">Nom de la catégorie</label>
-            <input type="text" id="category-name" maxlength="100" required placeholder="Ex: Format, Thème, Source..." />
-          </div>
-          <div class="form-group">
-            <label for="category-order">Ordre d'affichage</label>
-            <input type="number" id="category-order" min="0" value="0" />
-          </div>
-          <div id="category-error" class="form-error hidden-section"></div>
-          <div class="modal-actions">
-            <button type="submit" class="btn btn-primary" id="category-submit">Enregistrer</button>
-            <button type="button" class="btn btn-outline" id="category-cancel">Annuler</button>
-          </div>
-        </form>
-      </div>
-    </div>
-    <div id="tag-modal" class="modal-overlay hidden-section">
-      <div class="modal-content tag-modal-content">
-        <span class="modal-close" id="tag-modal-close">&times;</span>
-        <h3 id="tag-modal-title">Ajouter une étiquette</h3>
-        <form id="tag-form" novalidate>
-          <input type="hidden" id="tag-category-id" value="" />
-          <input type="hidden" id="tag-id" value="" />
-          <div class="form-group">
-            <label for="tag-name">Nom de l'étiquette</label>
-            <input type="text" id="tag-name" maxlength="100" required placeholder="Ex: Raster, Vectoriel, INSEE..." />
-          </div>
-          <div class="form-group">
-            <label for="tag-order">Ordre d'affichage</label>
-            <input type="number" id="tag-order" min="0" value="0" />
-          </div>
-          <div id="tag-error" class="form-error hidden-section"></div>
-          <div class="modal-actions">
-            <button type="submit" class="btn btn-primary" id="tag-submit">Enregistrer</button>
-            <button type="button" class="btn btn-outline" id="tag-cancel">Annuler</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  {# ─── Tab: Réplication ─── #}
-  <div class="admin-sub-tab-content" id="tab-replication">
-    <p class="admin-section-desc">
-      Répliquez les items d'un catalogue depuis une autre instance A.N.A.N.A.S en fournissant son URL.
-      Les items seront importés avec leurs fiches, tags et galeries.
-    </p>
-    <div class="replication-form-section">
-      <div class="form-group">
-        <label for="remote-url">URL de l'instance distante</label>
-        <input type="url" id="remote-url" class="form-input" placeholder="https://exemple.ananas.fr" required />
-        <p class="form-help">L'instance distante doit exposer les endpoints JSON des catalogues (ex: /catalogue/donnees/1/json).</p>
-      </div>
-      <div class="form-group">
-        <label>Types de catalogues à répliquer</label>
-        <div class="replication-types" id="replication-types">
-          <label class="checkbox-label"><input type="checkbox" value="donnees" checked /> Géodonnées</label>
-          <label class="checkbox-label"><input type="checkbox" value="cartes" checked /> Cartes</label>
-          <label class="checkbox-label"><input type="checkbox" value="applications" checked /> Applications</label>
-        </div>
-      </div>
-      <div class="replication-actions">
-        <button type="button" class="btn btn-outline" id="preview-btn">Aperçu des catalogues distants</button>
-        <button type="button" class="btn btn-primary" id="fetch-btn" disabled>Lancer la réplication</button>
-      </div>
-    </div>
-    <div id="replication-preview" class="hidden-section replication-preview-section">
-      <h3>Aperçu des catalogues distants</h3>
-      <div id="preview-results"></div>
-    </div>
-    <div class="replication-progress hidden-section" id="replication-progress">
-      <div class="progress-bar-container"><div class="progress-bar" id="progress-bar"></div></div>
-      <p id="progress-text">Récupération en cours...</p>
-    </div>
-    <div id="replication-results" class="hidden-section replication-results-section">
-      <h3>Résultats de la réplication</h3>
-      <div id="results-content"></div>
-    </div>
-  </div>
-
-  {# ─── Tab: Sauvegarde ─── #}
-  <div class="admin-sub-tab-content" id="tab-backup">
-    <div class="backup-card">
-      <h2>Télécharger une sauvegarde</h2>
-      <p>Téléchargez un dump complet de la base de données (format .sql.gz).</p>
-      <button type="button" class="btn btn-primary" id="backup-download-btn">
-        <span class="btn-label">Télécharger la sauvegarde</span>
-        <span class="btn-spinner hidden-section"><span class="spinner"></span> Génération en cours...</span>
+<div class="admin-settings-layout">
+  {# ─── Sidebar ─── #}
+  <aside class="settings-sidebar">
+    <nav class="settings-sidebar-nav">
+      <button class="settings-sidebar-tab active" data-settings-tab="general">
+        Général
       </button>
-    </div>
-    <div class="backup-card">
-      <h2>Restaurer une sauvegarde</h2>
-      <p class="backup-warning">&#9888;&#65039; Cette action remplacera toutes les données existantes par celles du fichier importé. Assurez-vous d'avoir téléchargé une sauvegarde avant de restaurer.</p>
-      <form id="backup-restore-form" novalidate>
-        <div class="form-group">
-          <label for="backup-file">Fichier .sql.gz</label>
-          <div class="custom-file-input">
-            <input type="file" id="backup-file" accept=".sql.gz" required />
-            <button type="button" class="btn btn-outline btn-file-browse">Parcourir...</button>
-            <span class="file-input-name" id="backup-file-name">Aucun fichier choisi</span>
+      <button class="settings-sidebar-tab" data-settings-tab="catalogues">
+        Catalogues
+      </button>
+      <button class="settings-sidebar-tab" data-settings-tab="accueil">
+        Accueil
+      </button>
+      <button class="settings-sidebar-tab" data-settings-tab="etiquettes">
+        Étiquettes
+      </button>
+      <button class="settings-sidebar-tab" data-settings-tab="replication">
+        Réplication
+      </button>
+      <button class="settings-sidebar-tab" data-settings-tab="backup">
+        Sauvegarde
+      </button>
+    </nav>
+  </aside>
+
+  <div class="settings-content">
+    {# ─── Tab: Général ─── #}
+    <div class="settings-tab-panel active" id="settings-tab-general">
+      <header class="settings-panel-header">
+        <h2>Paramètres généraux</h2>
+        <p class="settings-panel-desc">Configurer les paramètres globaux du site. Les modifications prennent effet immédiatement.</p>
+      </header>
+
+      {% set ns = namespace(card_settings=[], card_title="Général") %}
+      {% for setting in settings %}
+        {% if setting.type == "separator" %}
+          {% if ns.card_settings %}
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <h3>{{ ns.card_title }}</h3>
+              </div>
+              <div class="settings-card-body">
+                {% for s in ns.card_settings %}
+                  <div class="setting-row" data-key="{{ s.key }}">
+                    <div class="setting-info">
+                      <label>{{ s.label }}</label>
+                      <code>{{ s.key }}</code>
+                    </div>
+                    <div class="setting-control">
+                      {% if s.type == "boolean" %}
+                        <label class="toggle-switch">
+                          <input type="checkbox" class="toggle-input" data-key="{{ s.key }}" data-label="{{ s.label }}" {{ 'checked' if s.value == 'true' else '' }}>
+                          <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label {{ 'toggle-on' if s.value == 'true' else 'toggle-off' }}" id="toggle-label-{{ s.key }}">
+                          {{ 'Activé' if s.value == 'true' else 'Désactivé' }}
+                        </span>
+                      {% elif s.type == "number" %}
+                        <div class="inline-edit" data-key="{{ s.key }}" data-label="{{ s.label }}" data-type="{{ s.type }}">
+                          <span class="inline-edit-value" id="val-{{ s.key }}">{{ s.value }}</span>
+                          <button class="btn btn-sm btn-ghost inline-edit-btn" data-key="{{ s.key }}" data-label="{{ s.label }}" data-type="{{ s.type }}" data-value="{{ s.value }}">
+                            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
+                          </button>
+                        </div>
+                      {% else %}
+                        <div class="inline-edit" data-key="{{ s.key }}" data-label="{{ s.label }}" data-type="{{ s.type }}">
+                          <span class="inline-edit-value" id="val-{{ s.key }}">{{ s.value }}</span>
+                          <button class="btn btn-sm btn-ghost inline-edit-btn" data-key="{{ s.key }}" data-label="{{ s.label }}" data-type="{{ s.type }}" data-value="{{ s.value }}">
+                            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
+                          </button>
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+          {% set ns.card_title = setting.label | replace('─', '') | trim %}
+          {% set ns.card_settings = [] %}
+        {% else %}
+          {% set ns.card_settings = ns.card_settings + [setting] %}
+        {% endif %}
+      {% endfor %}
+
+      {% if ns.card_settings %}
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <h3>{{ ns.card_title }}</h3>
+          </div>
+          <div class="settings-card-body">
+            {% for s in ns.card_settings %}
+              <div class="setting-row" data-key="{{ s.key }}">
+                <div class="setting-info">
+                  <label>{{ s.label }}</label>
+                  <code>{{ s.key }}</code>
+                </div>
+                <div class="setting-control">
+                  {% if s.type == "boolean" %}
+                    <label class="toggle-switch">
+                      <input type="checkbox" class="toggle-input" data-key="{{ s.key }}" data-label="{{ s.label }}" {{ 'checked' if s.value == 'true' else '' }}>
+                      <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label {{ 'toggle-on' if s.value == 'true' else 'toggle-off' }}" id="toggle-label-{{ s.key }}">
+                      {{ 'Activé' if s.value == 'true' else 'Désactivé' }}
+                    </span>
+                  {% elif s.type == "number" %}
+                    <div class="inline-edit" data-key="{{ s.key }}" data-label="{{ s.label }}" data-type="{{ s.type }}">
+                      <span class="inline-edit-value" id="val-{{ s.key }}">{{ s.value }}</span>
+                      <button class="btn btn-sm btn-ghost inline-edit-btn" data-key="{{ s.key }}" data-label="{{ s.label }}" data-type="{{ s.type }}" data-value="{{ s.value }}">
+                        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
+                      </button>
+                    </div>
+                  {% else %}
+                    <div class="inline-edit" data-key="{{ s.key }}" data-label="{{ s.label }}" data-type="{{ s.type }}">
+                      <span class="inline-edit-value" id="val-{{ s.key }}">{{ s.value }}</span>
+                      <button class="btn btn-sm btn-ghost inline-edit-btn" data-key="{{ s.key }}" data-label="{{ s.label }}" data-type="{{ s.type }}" data-value="{{ s.value }}">
+                        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
+                      </button>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
           </div>
         </div>
-        <div id="backup-restore-error" class="form-error hidden-section"></div>
-        <div id="backup-restore-success" class="form-success hidden-section"></div>
-        <button type="submit" class="btn btn-danger" id="backup-restore-btn">
-          <span class="btn-label">Restaurer la base de données</span>
-          <span class="btn-spinner hidden-section"><span class="spinner"></span> Restauration en cours...</span>
-        </button>
-      </form>
+      {% endif %}
+    </div>
+
+    {# ─── Tab: Catalogues ─── #}
+    <div class="settings-tab-panel" id="settings-tab-catalogues">
+      <header class="settings-panel-header">
+        <h2>Catalogues</h2>
+        <p class="settings-panel-desc">Activer ou désactiver les catalogues de la plateforme. Un catalogue désactivé n'est plus accessible et n'apparaît plus dans la navigation.</p>
+      </header>
+      <div class="settings-cards-grid">
+        {% for catalogue in catalogues %}
+        <div class="settings-card catalogue-card">
+          <div class="settings-card-header">
+            <h3>{{ catalogue.label }}</h3>
+            <code>slug : {{ catalogue.type }}</code>
+          </div>
+          <div class="settings-card-body">
+            <div class="setting-row">
+              <div class="setting-info">
+                <label>Statut</label>
+              </div>
+              <div class="setting-control">
+                {% if catalogue.active %}
+                <span class="status-badge status-active">Actif</span>
+                {% else %}
+                <span class="status-badge status-inactive">Inactif</span>
+                {% endif %}
+                <button class="btn btn-sm {% if catalogue.active %}btn-danger{% else %}btn-outline{% endif %} toggle-catalogue-btn"
+                        data-type="{{ catalogue.type }}"
+                        data-active="{{ catalogue.active|lower }}">
+                  {% if catalogue.active %}Désactiver{% else %}Activer{% endif %}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# ─── Tab: Accueil ─── #}
+    <div class="settings-tab-panel" id="settings-tab-accueil">
+      <header class="settings-panel-header">
+        <h2>Page d'accueil</h2>
+        <p class="settings-panel-desc">Gérer les sections affichées sur la page d'accueil.</p>
+      </header>
+
+      <div class="settings-inner-tabs">
+        <nav class="settings-inner-nav" aria-label="Sections accueil">
+          <button class="settings-inner-tab active" data-inner-tab="mirrors">Sites miroirs</button>
+          <button class="settings-inner-tab" data-inner-tab="featured">Données en avant</button>
+          <button class="settings-inner-tab" data-inner-tab="geopackages">Packs GeoPackage</button>
+          <button class="settings-inner-tab" data-inner-tab="simple-files">Fichiers simples</button>
+        </nav>
+
+        <div class="settings-inner-panel active" id="settings-inner-mirrors">
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <h3>Sites miroirs</h3>
+              <button type="button" class="btn btn-sm btn-primary" id="add-mirror-btn">+ Ajouter</button>
+            </div>
+            <div class="settings-card-body">
+              <div class="table-wrapper">
+                <table id="mirrors-table">
+                  <thead>
+                    <tr>
+                      <th>Ordre</th>
+                      <th>Nom</th>
+                      <th>URL</th>
+                      <th>Description</th>
+                      <th>Statut</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="mirrors-tbody">
+                    <tr><td colspan="6" class="loading-cell">Chargement...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-inner-panel" id="settings-inner-featured">
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <h3>Données en avant</h3>
+              <button type="button" class="btn btn-sm btn-primary" id="add-featured-btn">+ Ajouter</button>
+            </div>
+            <div class="settings-card-body">
+              <p class="settings-card-hint">Ces données apparaissent dans la section « Exemples de Données Disponibles » sur la page d'accueil.</p>
+              <div class="table-wrapper">
+                <table id="featured-table">
+                  <thead>
+                    <tr>
+                      <th>Ordre</th>
+                      <th>ID</th>
+                      <th>Titre</th>
+                      <th>Type</th>
+                      <th>Format</th>
+                      <th>Statut</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="featured-tbody">
+                    <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-inner-panel" id="settings-inner-geopackages">
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <h3>Packs GeoPackage</h3>
+              <button type="button" class="btn btn-sm btn-primary" id="add-gp-btn">+ Ajouter</button>
+            </div>
+            <div class="settings-card-body">
+              <p class="settings-card-hint">Ces packs apparaissent dans la section « Packs de Données GeoPackage » sur la page d'accueil.</p>
+              <div class="table-wrapper">
+                <table id="geopackages-table">
+                  <thead>
+                    <tr>
+                      <th>Ordre</th>
+                      <th>Titre</th>
+                      <th>Description</th>
+                      <th>Format</th>
+                      <th>Lien</th>
+                      <th>Statut</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="geopackages-tbody">
+                    <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-inner-panel" id="settings-inner-simple-files">
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <h3>Fichiers simples</h3>
+              <button type="button" class="btn btn-sm btn-primary" id="add-sf-btn">+ Ajouter</button>
+            </div>
+            <div class="settings-card-body">
+              <p class="settings-card-hint">Ces items apparaissent dans la section « Fichiers Simples » sur la page d'accueil.</p>
+              <div class="table-wrapper">
+                <table id="sf-table">
+                  <thead>
+                    <tr>
+                      <th>Ordre</th>
+                      <th>ID</th>
+                      <th>Titre</th>
+                      <th>Type</th>
+                      <th>Format</th>
+                      <th>Statut</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sf-tbody">
+                    <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ─── Tab: Étiquettes ─── #}
+    <div class="settings-tab-panel" id="settings-tab-etiquettes">
+      <header class="settings-panel-header">
+        <h2>Étiquettes</h2>
+        <p class="settings-panel-desc">Gérer les catégories d'étiquettes et leurs étiquettes associées.</p>
+      </header>
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <h3>Catégories d'étiquettes</h3>
+          <button type="button" class="btn btn-sm btn-primary" id="add-category-btn">+ Ajouter</button>
+        </div>
+        <div class="settings-card-body">
+          <div class="table-wrapper">
+            <table id="tags-table">
+              <thead>
+                <tr>
+                  <th>Ordre</th>
+                  <th>Catégorie</th>
+                  <th>Étiquettes</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="tags-tbody">
+                <tr><td colspan="4" class="loading-cell">Chargement...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ─── Tab: Réplication ─── #}
+    <div class="settings-tab-panel" id="settings-tab-replication">
+      <header class="settings-panel-header">
+        <h2>Réplication</h2>
+        <p class="settings-panel-desc">Répliquez les items d'un catalogue depuis une autre instance A.N.A.N.A.S en fournissant son URL. Les items seront importés avec leurs fiches, tags et galeries.</p>
+      </header>
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <h3>Connexion distante</h3>
+        </div>
+        <div class="settings-card-body">
+          <div class="form-group">
+            <label for="remote-url">URL de l'instance distante</label>
+            <input type="url" id="remote-url" class="form-input" placeholder="https://exemple.ananas.fr" required />
+            <p class="form-help">L'instance distante doit exposer les endpoints JSON des catalogues (ex: /catalogue/donnees/1/json).</p>
+          </div>
+          <div class="form-group">
+            <label>Types de catalogues à répliquer</label>
+            <div class="replication-types" id="replication-types">
+              <label class="checkbox-label"><input type="checkbox" value="donnees" checked /> Géodonnées</label>
+              <label class="checkbox-label"><input type="checkbox" value="cartes" checked /> Cartes</label>
+              <label class="checkbox-label"><input type="checkbox" value="applications" checked /> Applications</label>
+            </div>
+          </div>
+          <div class="replication-actions">
+            <button type="button" class="btn btn-outline" id="preview-btn">Aperçu des catalogues distants</button>
+            <button type="button" class="btn btn-primary" id="fetch-btn" disabled>Lancer la réplication</button>
+          </div>
+        </div>
+      </div>
+      <div id="replication-preview" class="hidden-section settings-card">
+        <div class="settings-card-header"><h3>Aperçu des catalogues distants</h3></div>
+        <div class="settings-card-body"><div id="preview-results"></div></div>
+      </div>
+      <div class="replication-progress hidden-section settings-card">
+        <div class="settings-card-body">
+          <div class="progress-bar-container"><div class="progress-bar" id="progress-bar"></div></div>
+          <p id="progress-text">Récupération en cours...</p>
+        </div>
+      </div>
+      <div id="replication-results" class="hidden-section settings-card">
+        <div class="settings-card-header"><h3>Résultats de la réplication</h3></div>
+        <div class="settings-card-body"><div id="results-content"></div></div>
+      </div>
+    </div>
+
+    {# ─── Tab: Sauvegarde ─── #}
+    <div class="settings-tab-panel" id="settings-tab-backup">
+      <header class="settings-panel-header">
+        <h2>Sauvegarde</h2>
+        <p class="settings-panel-desc">Télécharger ou restaurer la base de données.</p>
+      </header>
+      <div class="settings-cards-grid">
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <h3>Télécharger une sauvegarde</h3>
+          </div>
+          <div class="settings-card-body">
+            <p>Téléchargez un dump complet de la base de données (format .sql.gz).</p>
+            <button type="button" class="btn btn-primary" id="backup-download-btn">
+              <span class="btn-label">Télécharger la sauvegarde</span>
+              <span class="btn-spinner hidden-section"><span class="spinner"></span> Génération en cours...</span>
+            </button>
+          </div>
+        </div>
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <h3>Restaurer une sauvegarde</h3>
+          </div>
+          <div class="settings-card-body">
+            <p class="backup-warning">&#9888;&#65039; Cette action remplacera toutes les données existantes par celles du fichier importé. Assurez-vous d'avoir téléchargé une sauvegarde avant de restaurer.</p>
+            <form id="backup-restore-form" novalidate>
+              <div class="form-group">
+                <label for="backup-file">Fichier .sql.gz</label>
+                <div class="custom-file-input">
+                  <input type="file" id="backup-file" accept=".sql.gz" required />
+                  <button type="button" class="btn btn-outline btn-file-browse">Parcourir...</button>
+                  <span class="file-input-name" id="backup-file-name">Aucun fichier choisi</span>
+                </div>
+              </div>
+              <div id="backup-restore-error" class="form-error hidden-section"></div>
+              <div id="backup-restore-success" class="form-success hidden-section"></div>
+              <button type="submit" class="btn btn-danger" id="backup-restore-btn">
+                <span class="btn-label">Restaurer la base de données</span>
+                <span class="btn-spinner hidden-section"><span class="spinner"></span> Restauration en cours...</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
+{# ─── Modal d'édition inline ─── #}
 <div id="settingModal" class="modal modal-backdrop" hidden>
   <div class="modal-box">
     <h3 id="settingModalTitle">Modifier le paramètre</h3>
@@ -500,6 +449,179 @@
       </div>
     </form>
     <p id="settingFeedback" class="form-feedback" hidden></p>
+  </div>
+</div>
+
+{# ─── Modales existantes (catalogues, tags, etc.) ─── #}
+<div id="mirror-modal" class="modal-overlay hidden-section">
+  <div class="modal-content mirror-modal-content">
+    <span class="modal-close" id="mirror-modal-close">&times;</span>
+    <h3 id="mirror-modal-title">Ajouter un site miroir</h3>
+    <form id="mirror-form" novalidate>
+      <input type="hidden" id="mirror-id" value="" />
+      <div class="form-group">
+        <label for="mirror-name">Nom</label>
+        <input type="text" id="mirror-name" maxlength="200" required placeholder="Ex: Mirror 1 — GitHub.io" />
+      </div>
+      <div class="form-group">
+        <label for="mirror-url">URL</label>
+        <input type="url" id="mirror-url" maxlength="500" required placeholder="https://..." />
+      </div>
+      <div class="form-group">
+        <label for="mirror-desc">Description</label>
+        <input type="text" id="mirror-desc" maxlength="500" required placeholder="Hébergement statique, CDN mondial..." />
+      </div>
+      <div class="form-group">
+        <label for="mirror-order">Ordre d'affichage</label>
+        <input type="number" id="mirror-order" min="0" value="0" />
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="mirror-active" checked />
+          Actif
+        </label>
+      </div>
+      <div id="mirror-error" class="form-error hidden-section"></div>
+      <div class="mirror-modal-actions">
+        <button type="submit" class="btn btn-primary" id="mirror-submit">Enregistrer</button>
+        <button type="button" class="btn btn-outline" id="mirror-cancel">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div id="featured-modal" class="modal-overlay hidden-section">
+  <div class="modal-content mirror-modal-content">
+    <span class="modal-close" id="featured-modal-close">&times;</span>
+    <h3>Ajouter une donnée en avant</h3>
+    <form id="featured-form" novalidate>
+      <div class="form-group search-group">
+        <label for="featured-search">Rechercher un item</label>
+        <input type="text" id="featured-search" placeholder="Tapez le titre de l'item..." autocomplete="off" />
+        <div id="featured-search-results" class="search-results-dropdown hidden-section"></div>
+      </div>
+      <input type="hidden" id="featured-item-id" value="" />
+      <div id="featured-selected" class="hidden-section">
+        <div class="featured-selected-item">
+          <span id="featured-selected-title"></span>
+          <span id="featured-selected-info"></span>
+        </div>
+      </div>
+      <div id="featured-error" class="form-error hidden-section"></div>
+      <div class="mirror-modal-actions">
+        <button type="submit" class="btn btn-primary" id="featured-submit">Ajouter</button>
+        <button type="button" class="btn btn-outline" id="featured-cancel">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div id="gp-modal" class="modal-overlay hidden-section">
+  <div class="modal-content mirror-modal-content">
+    <span class="modal-close" id="gp-modal-close">&times;</span>
+    <h3 id="gp-modal-title">Ajouter un pack</h3>
+    <form id="gp-form" novalidate>
+      <input type="hidden" id="gp-id" value="" />
+      <div class="form-group">
+        <label for="gp-title">Titre</label>
+        <input type="text" id="gp-title" maxlength="200" required placeholder="Ex: Pack Cartographie Historique" />
+      </div>
+      <div class="form-group">
+        <label for="gp-desc">Description</label>
+        <input type="text" id="gp-desc" maxlength="500" required placeholder="Cartes historiques, plans anciens..." />
+      </div>
+      <div class="form-group">
+        <label for="gp-format">Infos format</label>
+        <input type="text" id="gp-format" maxlength="200" required placeholder="Format: GPKG • Taille: ~250 MB" />
+      </div>
+      <div class="form-group">
+        <label for="gp-link">URL du lien</label>
+        <input type="text" id="gp-link" maxlength="500" required placeholder="/catalogue?collection=Historique" />
+      </div>
+      <div class="form-group">
+        <label for="gp-order">Ordre d'affichage</label>
+        <input type="number" id="gp-order" min="0" value="0" />
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="gp-active" checked />
+          Actif
+        </label>
+      </div>
+      <div id="gp-error" class="form-error hidden-section"></div>
+      <div class="mirror-modal-actions">
+        <button type="submit" class="btn btn-primary" id="gp-submit">Enregistrer</button>
+        <button type="button" class="btn btn-outline" id="gp-cancel">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div id="sf-modal" class="modal-overlay hidden-section">
+  <div class="modal-content mirror-modal-content">
+    <span class="modal-close" id="sf-modal-close">&times;</span>
+    <h3>Ajouter un fichier simple</h3>
+    <form id="sf-form" novalidate>
+      <div class="form-group search-group">
+        <label for="sf-search">Rechercher un item</label>
+        <input type="text" id="sf-search" placeholder="Tapez le titre de l'item..." autocomplete="off" />
+        <div id="sf-search-results" class="search-results-dropdown hidden-section"></div>
+      </div>
+      <input type="hidden" id="sf-item-id" value="" />
+      <div id="sf-selected" class="hidden-section">
+        <div class="featured-selected-item">
+          <span id="sf-selected-title"></span>
+          <span id="sf-selected-info"></span>
+        </div>
+      </div>
+      <div id="sf-error" class="form-error hidden-section"></div>
+      <div class="mirror-modal-actions">
+        <button type="submit" class="btn btn-primary" id="sf-submit">Ajouter</button>
+        <button type="button" class="btn btn-outline" id="sf-cancel">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div id="category-modal" class="modal-overlay hidden-section">
+  <div class="modal-content tag-modal-content">
+    <span class="modal-close" id="category-modal-close">&times;</span>
+    <h3 id="category-modal-title">Ajouter une catégorie</h3>
+    <form id="category-form" novalidate>
+      <input type="hidden" id="category-id" value="" />
+      <div class="form-group">
+        <label for="category-name">Nom de la catégorie</label>
+        <input type="text" id="category-name" maxlength="100" required placeholder="Ex: Format, Thème, Source..." />
+      </div>
+      <div class="form-group">
+        <label for="category-order">Ordre d'affichage</label>
+        <input type="number" id="category-order" min="0" value="0" />
+      </div>
+      <div id="category-error" class="form-error hidden-section"></div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary" id="category-submit">Enregistrer</button>
+        <button type="button" class="btn btn-outline" id="category-cancel">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div id="tag-modal" class="modal-overlay hidden-section">
+  <div class="modal-content tag-modal-content">
+    <span class="modal-close" id="tag-modal-close">&times;</span>
+    <h3 id="tag-modal-title">Ajouter une étiquette</h3>
+    <form id="tag-form" novalidate>
+      <input type="hidden" id="tag-category-id" value="" />
+      <input type="hidden" id="tag-id" value="" />
+      <div class="form-group">
+        <label for="tag-name">Nom de l'étiquette</label>
+        <input type="text" id="tag-name" maxlength="100" required placeholder="Ex: Raster, Vectoriel, INSEE..." />
+      </div>
+      <div class="form-group">
+        <label for="tag-order">Ordre d'affichage</label>
+        <input type="number" id="tag-order" min="0" value="0" />
+      </div>
+      <div id="tag-error" class="form-error hidden-section"></div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary" id="tag-submit">Enregistrer</button>
+        <button type="button" class="btn btn-outline" id="tag-cancel">Annuler</button>
+      </div>
+    </form>
   </div>
 </div>
 {% endblock %}
