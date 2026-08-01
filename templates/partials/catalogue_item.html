@@ -40,8 +40,17 @@
       <p class="catalogue-desc-preview" id="preview-{{ item.id }}">{{ item.description|truncate(140, True, '...')|e }}</p>
       {% if item.tags and item.tags|length > 0 %}
       <div class="catalogue-tags">
+        <span class="tags-label">Étiquette :</span>
         {% for tag in item.tags[:5] %}
         <span class="tag">{{ tag }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if item.unique_categories %}
+      <div class="catalogue-categories">
+        <span class="categories-label">Catégorie :</span>
+        {% for cat in item.unique_categories %}
+        <span class="category-tag">{{ cat }}</span>
         {% endfor %}
       </div>
       {% endif %}

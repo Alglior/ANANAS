@@ -252,12 +252,34 @@
   gap: 0.35rem;
   flex-wrap: wrap;
   margin-top: 0.5rem;
+  align-items: center;
 }
 
 .catalogue-tags .tag {
   margin: 0;
   font-size: 0.7rem;
   padding: 0.15rem 0.5rem;
+}
+
+.catalogue-categories {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+  align-items: center;
+}
+
+.catalogue-categories .category-tag {
+  margin: 0;
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+}
+
+.catalogue-tags .tags-label,
+.catalogue-categories .categories-label {
+  font-weight: 700;
+  font-size: 0.7rem;
+  color: var(--charcoal);
 }
 
 .btn-expand {

@@ -133,6 +133,13 @@ class Item(db.Model, TimestampMixin):
 
     def to_dict(self, include_details=False):
         imod = self._compute_imod_score()
+        tag_names = [t.tag for t in self.tags]
+        tag_categories = self._get_tag_categories(tag_names)
+        unique_categories = list(dict.fromkeys(c for c in tag_categories.values() if c))
+        grouped = {}
+        for tag, cat in tag_categories.items():
+            if cat:
+                grouped.setdefault(cat, []).append(tag)
         result = {
             "id": self.id,
             "title": self.title,
@@ -149,7 +156,10 @@ class Item(db.Model, TimestampMixin):
             "organization_name": self.organization.name if self.organization else None,
             "organization_slug": self.organization.slug if self.organization else None,
             "created_at": self.created_at.strftime("%Y-%m-%d") if self.created_at else "",
-            "tags": [t.tag for t in self.tags],
+            "tags": tag_names,
+            "tag_categories": tag_categories,
+            "unique_categories": unique_categories,
+            "grouped_categories": [{"category": k, "tags": v} for k, v in grouped.items()],
             "gallery": self._build_gallery_dict(),
             "pdf_doc": self.pdf_magnet_link if self.pdf_magnet_link and validate_magnet_link(self.pdf_magnet_link) else "",
             "pdf_magnet_link": self.pdf_magnet_link if self.pdf_magnet_link and validate_magnet_link(self.pdf_magnet_link) else "",
@@ -175,6 +185,15 @@ class Item(db.Model, TimestampMixin):
         if include_details:
             result["data_chunks"] = [c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=self.id).all()]
         return result
+
+    def _get_tag_categories(self, tag_names):
+        if not tag_names:
+            return {}
+        predefined_tags = PredefinedTag.query.options(
+            db.joinedload(PredefinedTag.category)
+        ).filter(PredefinedTag.name.in_(tag_names)).all()
+        tag_to_category = {pt.name: pt.category.name for pt in predefined_tags if pt.category}
+        return {tag: tag_to_category.get(tag) for tag in tag_names}
 
     def _get_rating_avg(self):
         ratings = [r.rating for r in self.ratings if r.rating is not None]

@@ -22,6 +22,40 @@
   margin-top: 0.75rem;
   margin-bottom: 0.5rem;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.tags-label {
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--charcoal);
+}
+
+.item-categories {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.categories-label {
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--charcoal);
+}
+
+.category-tag {
+  width: fit-content;
+  margin: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(45, 140, 255, 0.35);
+  padding: 0.22rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-blue);
+  background: rgba(45, 140, 255, 0.11);
 }
 
 .card-link {

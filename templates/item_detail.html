@@ -287,8 +287,18 @@
 
           {% if item.tags and item.tags|length > 0 %}
           <div class="item-tags">
+            <span class="tags-label">Étiquette :</span>
             {% for tag in item.tags %}
               <span class="tag">{{ tag }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          {% if item.unique_categories %}
+          <div class="item-categories">
+            <span class="categories-label">Catégorie :</span>
+            {% for cat in item.unique_categories %}
+              <span class="category-tag">{{ cat }}</span>
             {% endfor %}
           </div>
           {% endif %}
