@@ -627,6 +627,14 @@ class CatalogueConfig(db.Model):
     enabled: Mapped[bool] = mapped_column(default=True)
 
 
+class SiteSetting(db.Model):
+    __tablename__ = "site_settings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    key: Mapped[str] = mapped_column(unique=True, nullable=False)
+    value: Mapped[str]
+
+
 class GeoPackage(db.Model, TimestampMixin):
     __tablename__ = "geo_packages"
 

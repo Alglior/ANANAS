@@ -101,8 +101,14 @@ def _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_
     }
 
 
-def _do_catalogue(catalogue_type, page, per_page=30):
+def _do_catalogue(catalogue_type, page, per_page=None):
     from models import Item
+    if per_page is None:
+        try:
+            from src.admin.settings import get_setting
+            per_page = int(get_setting("items_per_page", "30"))
+        except Exception:
+            per_page = 30
     catalogue = catalogue_type
     if catalogue not in type_map:
         return redirect(url_for("catalogue.catalogue_index"))
@@ -202,7 +208,11 @@ def catalogue_json_view(catalogue_type, page):
     if catalogue_type not in type_map:
         return redirect(url_for("catalogue.catalogue_index"))
 
-    per_page = 20
+    try:
+        from src.admin.settings import get_setting
+        per_page = int(get_setting("catalogue_per_page", "20"))
+    except Exception:
+        per_page = 20
     item_type = type_map[catalogue_type]
     total_items = Item.query.filter_by(type=item_type).count()
     total_pages = max((total_items + per_page - 1) // per_page, 1)

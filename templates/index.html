@@ -10,11 +10,10 @@
   <div class="hero-overlay"></div>
   <div class="container hero-grid">
     <div class="hero-copy">
-      <p class="eyebrow">Partage de données géospatiales</p>
-      <h1>Partagez vos géodonnées avec des torrents vérifiés</h1>
+      <p class="eyebrow">{{ get_setting("home_eyebrow", "Partage de données géospatiales") }}</p>
+      <h1>{{ get_setting("home_hero_title", "Partagez vos géodonnées avec des torrents vérifiés") }}</h1>
       <p class="hero-lead">
-        A.N.A.N.A.S permet de partager et télécharger des données géographiques.
-        Vérification d'intégrité et accès rapide.
+        {{ get_setting("home_hero_subtitle", "A.N.A.N.A.S permet de partager et télécharger des données géographiques. Vérification d'intégrité et accès rapide.") }}
       </p>
       <div class="action-row">
         <a class="btn btn-primary transition-hover" href="#mirrors">Ouvrir le catalogue</a>
@@ -24,6 +23,7 @@
 </section>
 
 <!-- Section Packs de Données GeoPackage -->
+{% if get_setting("home_show_geopackages", "true") == "true" %}
 <section class="gp-section" id="packs-geopackage">
   <div class="container">
     <div class="gp-header">
@@ -91,8 +91,10 @@
     </div>
   </div>
 </section>
+{% endif %}
 
 <!-- Section Fichiers Simples -->
+{% if get_setting("home_show_simple_files", "true") == "true" %}
 <section class="di-section" id="fichiers-simples">
   <div class="container">
     <div class="di-header">
@@ -149,8 +151,10 @@
     </div>
   </div>
 </section>
+{% endif %}
 
 <!-- Section Données Individuelles -->
+{% if get_setting("home_show_featured", "true") == "true" %}
 <section class="di-section" id="donnees-individuelles">
   <div class="container">
     <div class="di-header">
@@ -207,6 +211,7 @@
     </div>
   </div>
 </section>
+{% endif %}
 
 <!-- Section Peer-to-Peer & Résilience -->
 <section class="p2p-section" id="peer-to-peer">
@@ -376,6 +381,7 @@
   </div>
 </section>
 
+{% if get_setting("home_show_mirrors", "true") == "true" %}
 <section class="mirror-section" id="mirrors">
   <div class="container">
     <h2>Sites miroirs</h2>
@@ -395,6 +401,7 @@
     </ul>
   </div>
 </section>
+{% endif %}
 
 </main>
 {% endblock %}

@@ -61,6 +61,8 @@ if result.returncode != 0:
 
 else
     echo "[entrypoint] Database already initialized."
+    echo "[entrypoint] Checking for missing tables..."
+    python3 scripts/init_db.py
 fi
 
 echo "[entrypoint] Running flask db upgrade..."

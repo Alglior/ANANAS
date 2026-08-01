@@ -12,7 +12,7 @@ _CATALOGUES_INFO = [
     {"type": "applications", "label": "Applications"},
 ]
 
-_DEFAULT_CATALOGUES = {"donnees": True, "cartes": True, "applications": True}
+_DEFAULT_CATALOGUES = {"donnees": True, "cartes": False, "applications": False}
 
 
 def get_catalogues_status():
@@ -203,3 +203,4 @@ import src.admin.replication
 import src.admin.backup
 import src.admin.tags
 import src.admin.simple_files
+import src.admin.settings

@@ -10,11 +10,19 @@ def init_db():
     app = create_app()
     with app.app_context():
         inspector = db.inspect(db.engine)
-        existing_tables = inspector.get_table_names()
+        existing_tables = set(inspector.get_table_names())
+
+        all_tables = set(db.metadata.tables.keys())
+        missing_tables = all_tables - existing_tables
+
+        if missing_tables:
+            print(f"Creating missing tables: {', '.join(sorted(missing_tables))}")
+            db.create_all()
+            print("Missing tables created successfully.")
+        else:
+            print("All tables already exist.")
 
         if existing_tables:
-            print(f"Tables already exist: {', '.join(existing_tables)}")
-
             columns = [col["name"] for col in inspector.get_columns("items")]
 
             if "image_magnets_pending" not in columns:
@@ -26,10 +34,6 @@ def init_db():
 
             db.session.commit()
             return
-
-        print("Creating database tables...")
-        db.create_all()
-        print("Database initialized successfully.")
 
 
 if __name__ == "__main__":

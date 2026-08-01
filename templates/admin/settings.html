@@ -1,0 +1,373 @@
+{% extends 'base_admin.html' %}
+
+{% block admin_content %}
+<div class="admin-settings-tabs">
+  <nav class="admin-sub-nav" aria-label="Sections des paramètres">
+    <button class="admin-sub-tab active" data-tab="general">Général</button>
+    <button class="admin-sub-tab" data-tab="catalogues">Catalogues</button>
+    <button class="admin-sub-tab" data-tab="accueil">Accueil</button>
+  </nav>
+
+  {# ─── Tab: Général ─── #}
+  <div class="admin-sub-tab-content active" id="tab-general">
+    <p class="admin-section-desc">Configurer les paramètres globaux du site. Les modifications prennent effet immédiatement.</p>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Paramètre</th>
+          <th>Valeur</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for setting in settings %}
+        {% if setting.type == "separator" %}
+        <tr class="setting-separator-row">
+          <td colspan="3"><strong>{{ setting.label }}</strong></td>
+        </tr>
+        {% else %}
+        <tr data-key="{{ setting.key }}">
+          <td>
+            <strong>{{ setting.label }}</strong>
+            <br>
+            <span class="admin-table-sub">Clé : {{ setting.key }}</span>
+          </td>
+          <td class="setting-value-cell">
+            {% if setting.type == "boolean" %}
+            <span class="badge {% if setting.value == 'true' %}badge-success{% else %}badge-danger{% endif %} setting-badge">
+              {{ "Activé" if setting.value == "true" else "Désactivé" }}
+            </span>
+            {% else %}
+            <span class="setting-value">{{ setting.value }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <button class="btn btn-sm btn-outline edit-setting-btn"
+                    data-key="{{ setting.key }}"
+                    data-label="{{ setting.label }}"
+                    data-type="{{ setting.type }}"
+                    data-value="{{ setting.value }}">
+              Modifier
+            </button>
+          </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {# ─── Tab: Catalogues ─── #}
+  <div class="admin-sub-tab-content" id="tab-catalogues">
+    <p class="admin-section-desc">Activer ou désactiver les catalogues de la plateforme. Un catalogue désactivé n'est plus accessible et n'apparaît plus dans la navigation.</p>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Catalogue</th>
+          <th>Statut</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for catalogue in catalogues %}
+        <tr>
+          <td>
+            <strong>{{ catalogue.label }}</strong>
+            <br>
+            <span class="admin-table-sub">Slug : {{ catalogue.type }}</span>
+          </td>
+          <td>
+            {% if catalogue.active %}
+            <span class="badge badge-success">Actif</span>
+            {% else %}
+            <span class="badge badge-danger">Inactif</span>
+            {% endif %}
+          </td>
+          <td>
+            <button class="btn btn-sm btn-outline toggle-catalogue-btn"
+                    data-type="{{ catalogue.type }}"
+                    data-active="{{ catalogue.active|lower }}">
+              {% if catalogue.active %}Désactiver{% else %}Activer{% endif %}
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {# ─── Tab: Accueil ─── #}
+  <div class="admin-sub-tab-content" id="tab-accueil">
+    <div class="admin-home-tabs">
+      <nav class="admin-sub-nav" aria-label="Sections accueil">
+        <button class="admin-sub-tab active" data-tab="mirrors">Sites miroirs</button>
+        <button class="admin-sub-tab" data-tab="featured">Données en avant</button>
+        <button class="admin-sub-tab" data-tab="geopackages">Packs GeoPackage</button>
+        <button class="admin-sub-tab" data-tab="simple-files">Fichiers simples</button>
+      </nav>
+
+      <div class="admin-sub-tab-content active" id="tab-mirrors">
+        <div class="mirrors-header">
+          <h2>Sites miroirs</h2>
+          <button type="button" class="btn btn-primary" id="add-mirror-btn">+ Ajouter un miroir</button>
+        </div>
+        <div class="table-wrapper">
+          <table id="mirrors-table">
+            <thead>
+              <tr>
+                <th>Ordre</th>
+                <th>Nom</th>
+                <th>URL</th>
+                <th>Description</th>
+                <th>Statut</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="mirrors-tbody">
+              <tr><td colspan="6" class="loading-cell">Chargement...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="mirror-modal" class="modal-overlay hidden-section">
+          <div class="modal-content mirror-modal-content">
+            <span class="modal-close" id="mirror-modal-close">&times;</span>
+            <h3 id="mirror-modal-title">Ajouter un site miroir</h3>
+            <form id="mirror-form" novalidate>
+              <input type="hidden" id="mirror-id" value="" />
+              <div class="form-group">
+                <label for="mirror-name">Nom</label>
+                <input type="text" id="mirror-name" maxlength="200" required placeholder="Ex: Mirror 1 — GitHub.io" />
+              </div>
+              <div class="form-group">
+                <label for="mirror-url">URL</label>
+                <input type="url" id="mirror-url" maxlength="500" required placeholder="https://..." />
+              </div>
+              <div class="form-group">
+                <label for="mirror-desc">Description</label>
+                <input type="text" id="mirror-desc" maxlength="500" required placeholder="Hébergement statique, CDN mondial..." />
+              </div>
+              <div class="form-group">
+                <label for="mirror-order">Ordre d'affichage</label>
+                <input type="number" id="mirror-order" min="0" value="0" />
+              </div>
+              <div class="form-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="mirror-active" checked />
+                  Actif
+                </label>
+              </div>
+              <div id="mirror-error" class="form-error hidden-section"></div>
+              <div class="mirror-modal-actions">
+                <button type="submit" class="btn btn-primary" id="mirror-submit">Enregistrer</button>
+                <button type="button" class="btn btn-outline" id="mirror-cancel">Annuler</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-sub-tab-content" id="tab-featured">
+        <div class="mirrors-header">
+          <h2>Données en avant</h2>
+          <button type="button" class="btn btn-primary" id="add-featured-btn">+ Ajouter une donnée</button>
+        </div>
+        <p class="admin-hint">Ces données apparaissent dans la section « Exemples de Données Disponibles » sur la page d'accueil.</p>
+        <div class="table-wrapper">
+          <table id="featured-table">
+            <thead>
+              <tr>
+                <th>Ordre</th>
+                <th>ID</th>
+                <th>Titre</th>
+                <th>Type</th>
+                <th>Format</th>
+                <th>Statut</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="featured-tbody">
+              <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="featured-modal" class="modal-overlay hidden-section">
+          <div class="modal-content mirror-modal-content">
+            <span class="modal-close" id="featured-modal-close">&times;</span>
+            <h3>Ajouter une donnée en avant</h3>
+            <form id="featured-form" novalidate>
+              <div class="form-group search-group">
+                <label for="featured-search">Rechercher un item</label>
+                <input type="text" id="featured-search" placeholder="Tapez le titre de l'item..." autocomplete="off" />
+                <div id="featured-search-results" class="search-results-dropdown hidden-section"></div>
+              </div>
+              <input type="hidden" id="featured-item-id" value="" />
+              <div id="featured-selected" class="hidden-section">
+                <div class="featured-selected-item">
+                  <span id="featured-selected-title"></span>
+                  <span id="featured-selected-info"></span>
+                </div>
+              </div>
+              <div id="featured-error" class="form-error hidden-section"></div>
+              <div class="mirror-modal-actions">
+                <button type="submit" class="btn btn-primary" id="featured-submit">Ajouter</button>
+                <button type="button" class="btn btn-outline" id="featured-cancel">Annuler</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-sub-tab-content" id="tab-geopackages">
+        <div class="mirrors-header">
+          <h2>Packs GeoPackage</h2>
+          <button type="button" class="btn btn-primary" id="add-gp-btn">+ Ajouter un pack</button>
+        </div>
+        <p class="admin-hint">Ces packs apparaissent dans la section « Packs de Données GeoPackage » sur la page d'accueil.</p>
+        <div class="table-wrapper">
+          <table id="geopackages-table">
+            <thead>
+              <tr>
+                <th>Ordre</th>
+                <th>Titre</th>
+                <th>Description</th>
+                <th>Format</th>
+                <th>Lien</th>
+                <th>Statut</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="geopackages-tbody">
+              <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="gp-modal" class="modal-overlay hidden-section">
+          <div class="modal-content mirror-modal-content">
+            <span class="modal-close" id="gp-modal-close">&times;</span>
+            <h3 id="gp-modal-title">Ajouter un pack</h3>
+            <form id="gp-form" novalidate>
+              <input type="hidden" id="gp-id" value="" />
+              <div class="form-group">
+                <label for="gp-title">Titre</label>
+                <input type="text" id="gp-title" maxlength="200" required placeholder="Ex: Pack Cartographie Historique" />
+              </div>
+              <div class="form-group">
+                <label for="gp-desc">Description</label>
+                <input type="text" id="gp-desc" maxlength="500" required placeholder="Cartes historiques, plans anciens..." />
+              </div>
+              <div class="form-group">
+                <label for="gp-format">Infos format</label>
+                <input type="text" id="gp-format" maxlength="200" required placeholder="Format: GPKG • Taille: ~250 MB" />
+              </div>
+              <div class="form-group">
+                <label for="gp-link">URL du lien</label>
+                <input type="text" id="gp-link" maxlength="500" required placeholder="/catalogue?collection=Historique" />
+              </div>
+              <div class="form-group">
+                <label for="gp-order">Ordre d'affichage</label>
+                <input type="number" id="gp-order" min="0" value="0" />
+              </div>
+              <div class="form-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="gp-active" checked />
+                  Actif
+                </label>
+              </div>
+              <div id="gp-error" class="form-error hidden-section"></div>
+              <div class="mirror-modal-actions">
+                <button type="submit" class="btn btn-primary" id="gp-submit">Enregistrer</button>
+                <button type="button" class="btn btn-outline" id="gp-cancel">Annuler</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-sub-tab-content" id="tab-simple-files">
+        <div class="mirrors-header">
+          <h2>Fichiers simples</h2>
+          <button type="button" class="btn btn-primary" id="add-sf-btn">+ Ajouter un fichier simple</button>
+        </div>
+        <p class="admin-hint">Ces items apparaissent dans la section « Fichiers Simples » sur la page d'accueil.</p>
+        <div class="table-wrapper">
+          <table id="sf-table">
+            <thead>
+              <tr>
+                <th>Ordre</th>
+                <th>ID</th>
+                <th>Titre</th>
+                <th>Type</th>
+                <th>Format</th>
+                <th>Statut</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="sf-tbody">
+              <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="sf-modal" class="modal-overlay hidden-section">
+          <div class="modal-content mirror-modal-content">
+            <span class="modal-close" id="sf-modal-close">&times;</span>
+            <h3>Ajouter un fichier simple</h3>
+            <form id="sf-form" novalidate>
+              <div class="form-group search-group">
+                <label for="sf-search">Rechercher un item</label>
+                <input type="text" id="sf-search" placeholder="Tapez le titre de l'item..." autocomplete="off" />
+                <div id="sf-search-results" class="search-results-dropdown hidden-section"></div>
+              </div>
+              <input type="hidden" id="sf-item-id" value="" />
+              <div id="sf-selected" class="hidden-section">
+                <div class="featured-selected-item">
+                  <span id="sf-selected-title"></span>
+                  <span id="sf-selected-info"></span>
+                </div>
+              </div>
+              <div id="sf-error" class="form-error hidden-section"></div>
+              <div class="mirror-modal-actions">
+                <button type="submit" class="btn btn-primary" id="sf-submit">Ajouter</button>
+                <button type="button" class="btn btn-outline" id="sf-cancel">Annuler</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="settingModal" class="modal modal-backdrop" hidden>
+  <div class="modal-box">
+    <h3 id="settingModalTitle">Modifier le paramètre</h3>
+    <form id="settingForm">
+      <input type="hidden" name="key" id="settingKey">
+      <div class="form-group">
+        <label id="settingLabel" for="settingInput"></label>
+        <div id="settingInputWrap">
+          <input type="text" id="settingInput" class="form-input" autocomplete="off">
+          <select id="settingSelect" class="form-input" hidden>
+            <option value="true">Activé</option>
+            <option value="false">Désactivé</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <button type="button" class="btn btn-outline modal-cancel">Annuler</button>
+      </div>
+    </form>
+    <p id="settingFeedback" class="form-feedback" hidden></p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/settings.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/catalogues.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/mirrors.js') }}?v=1"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/featured.js') }}?v=1"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/simple_files.js') }}?v=1"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/geopackages.js') }}?v=1"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/admin_tuto.js') }}?v=2"></script>
+{% endblock %}

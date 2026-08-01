@@ -2,6 +2,15 @@ from flask import Blueprint, render_template, session, Response, request, g, abo
 from app import db
 from src.shared import get_current_user, user_owns_item_or_admin, ITEMS_PER_PAGE, _build_page_numbers
 
+
+def get_comments_per_page():
+    try:
+        from src.admin.settings import get_setting
+        return int(get_setting("comments_per_page", "10"))
+    except Exception:
+        return 10
+
+
 COMMENTS_PER_PAGE = 10
 
 bp = Blueprint("items", __name__)
@@ -55,15 +64,16 @@ def _paginate_comments(item_id, page=1):
     from models import Comment
     from sqlalchemy.orm import joinedload
 
+    per_page = get_comments_per_page()
     total = Comment.query.filter_by(item_id=item_id, parent_id=None).count()
-    total_pages = max((total + COMMENTS_PER_PAGE - 1) // COMMENTS_PER_PAGE, 1)
+    total_pages = max((total + per_page - 1) // per_page, 1)
     page = min(max(page, 1), total_pages) or 1
     top_comments = (
         Comment.query.options(joinedload(Comment.user))
         .filter_by(item_id=item_id, parent_id=None)
         .order_by(Comment.created_at.desc())
-        .offset((page - 1) * COMMENTS_PER_PAGE)
-        .limit(COMMENTS_PER_PAGE)
+        .offset((page - 1) * per_page)
+        .limit(per_page)
         .all()
     )
     top_ids = [c.id for c in top_comments]
@@ -81,7 +91,7 @@ def _paginate_comments(item_id, page=1):
     page_numbers = _build_page_numbers(page, total_pages)
     return comment_tree, {
         "page": page,
-        "per_page": COMMENTS_PER_PAGE,
+        "per_page": per_page,
         "total_items": total,
         "total_pages": total_pages,
         "page_numbers": page_numbers,

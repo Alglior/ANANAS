@@ -4,9 +4,9 @@
 {% block meta_description %}{{ meta_description }}{% endblock %}
 
 {% set catalogue_titles = {
-  "donnees": "Catalogue des géodonnées",
-  "cartes": "Catalogue des cartes",
-  "applications": "Catalogue d'applications"
+  "donnees": get_setting("catalogue_donnees_title", "Catalogue des géodonnées"),
+  "cartes": get_setting("catalogue_cartes_title", "Catalogue des cartes"),
+  "applications": get_setting("catalogue_applications_title", "Catalogue d'applications")
 } %}
 {% set catalogue_name = catalogue_titles.get(catalogue_type, "Catalogue des géodonnées") %}
 

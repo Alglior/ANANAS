@@ -1,4 +1,4 @@
-from flask import render_template
+from flask import render_template, redirect, url_for
 from src.admin import bp, login_required, require_admin, get_catalogues_status, _CATALOGUES_INFO
 
 
@@ -51,15 +51,6 @@ def admin_geopackages():
     return render_template("admin/geopackages.html", title="Administration — GeoPackages", meta_description="Gestion des packs GeoPackage")
 
 
-@bp.route("/admin/catalogues")
-@login_required
-@require_admin
-def admin_catalogues():
-    status = get_catalogues_status()
-    catalogues = [{"type": info["type"], "label": info["label"], "active": status.get(info["type"], True)} for info in _CATALOGUES_INFO]
-    return render_template("admin/catalogues.html", title="Administration — Catalogues", meta_description="Activer ou désactiver les catalogues", catalogues=catalogues)
-
-
 @bp.route("/admin/replication")
 @login_required
 @require_admin
@@ -73,8 +64,16 @@ def admin_replication():
 def admin_tags():
     return render_template("admin/tags.html", title="Administration — Étiquettes", meta_description="Gestion des catégories d'étiquettes et étiquettes")
 
+
 @bp.route("/admin/accueil")
 @login_required
 @require_admin
 def admin_home():
-    return render_template("admin/home.html", title="Administration — Accueil", meta_description="Gestion de la page d'accueil")
+    return redirect(url_for("admin.admin_settings"))
+
+
+@bp.route("/admin/catalogues")
+@login_required
+@require_admin
+def admin_catalogues():
+    return redirect(url_for("admin.admin_settings"))

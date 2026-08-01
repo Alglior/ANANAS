@@ -10,6 +10,14 @@ SECRET_FILE = ".secret"
 ITEMS_PER_PAGE = 30
 
 
+def get_items_per_page():
+    try:
+        from src.admin.settings import get_setting
+        return int(get_setting("items_per_page", "30"))
+    except Exception:
+        return 30
+
+
 def validate_password_strength(password: str) -> tuple[bool, list[str]]:
     errors = []
     if len(password) < 8:
