@@ -51,7 +51,88 @@ class Item(db.Model, TimestampMixin):
         "application": "/catalogue/applications",
     }
 
+    def _compute_imod_score(self):
+        # Meta (45%) — Qualite documentaire
+        meta_score = 0
+        if self.description and len(self.description.strip()) > 0:
+            meta_score += 1
+            if len(self.description) > 100:
+                meta_score += 1
+        tag_count = len(self.tags)
+        if tag_count >= 3:
+            meta_score += 2
+        elif tag_count >= 1:
+            meta_score += 1
+        if self.license_type:
+            meta_score += 2
+        if self.author_name:
+            meta_score += 1
+        if self.organization:
+            meta_score += 1
+        if self.pdf_magnet_link and validate_magnet_link(self.pdf_magnet_link):
+            meta_score += 2
+        meta_pct = (min(meta_score, 10) / 10.0) * 45
+
+        # Tech (36%) — Precision technique et spatiale
+        tech_score = 0
+        if self.format_type:
+            tech_score += 2
+        if validate_magnet_link(self.magnet_link):
+            tech_score += 2
+        fmt_level = {"individual": 1, "simple": 2, "pack": 3}
+        tech_score += fmt_level.get(self.data_format_level, 0)
+        chunk_count = DataChunk.query.filter_by(parent_item_id=self.id).count()
+        if chunk_count > 0:
+            tech_score += 2
+        if self.verification_status == "verified":
+            tech_score += 1
+        tech_pct = (min(tech_score, 10) / 10.0) * 36
+
+        # Rich (19%) — Diversite et profondeur info.
+        rich_score = 0
+        gallery_count = len(self.gallery_items)
+        if gallery_count >= 5:
+            rich_score += 3
+        elif gallery_count >= 3:
+            rich_score += 2
+        elif gallery_count >= 1:
+            rich_score += 1
+        viz_count = len(self.visualization_links)
+        if viz_count >= 3:
+            rich_score += 2
+        elif viz_count >= 1:
+            rich_score += 1
+        rating_count = len(self.ratings)
+        if rating_count > 0:
+            rich_score += 1
+        if rating_count > 5:
+            rich_score += 1
+        comment_count = len(self.comments)
+        if comment_count > 0:
+            rich_score += 1
+        if comment_count > 3:
+            rich_score += 1
+        if self._get_image_magnets():
+            rich_score += 1
+        rich_pct = (min(rich_score, 10) / 10.0) * 19
+
+        imod = round(meta_pct + tech_pct + rich_pct, 1)
+        if imod >= 70:
+            level = "Eleve"
+        elif imod >= 40:
+            level = "Moyen"
+        else:
+            level = "Faible"
+        return {
+            "score": imod,
+            "level": level,
+            "meta": round(meta_pct, 1),
+            "tech": round(tech_pct, 1),
+            "rich": round(rich_pct, 1),
+        }
+
     def to_dict(self, include_details=False):
+        imod = self._compute_imod_score()
         result = {
             "id": self.id,
             "title": self.title,
@@ -89,6 +170,7 @@ class Item(db.Model, TimestampMixin):
             "image_magnets_total": self.image_magnets_total,
             "image_magnets": self._get_image_magnets(),
             "visualization_links": [vl.to_dict() for vl in self.visualization_links],
+            "imod": imod,
         }
         if include_details:
             result["data_chunks"] = [c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=self.id).all()]

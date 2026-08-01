@@ -346,6 +346,42 @@
 
       </section>
 
+      <!-- IMOD Score -->
+      {% if item.imod %}
+      {% set imod_meta_pct = (item.imod.meta / 45 * 100)|round(1) %}
+      {% set imod_tech_pct = (item.imod.tech / 36 * 100)|round(1) %}
+      {% set imod_rich_pct = (item.imod.rich / 19 * 100)|round(1) %}
+      <section class="imod-section">
+        <h2>Indice de qualité des métadonnées
+          <span class="help-icon" data-tooltip="L'indice IMOD évalue la qualité des métadonnées selon trois dimensions : Meta (qualité documentaire), Tech (précision technique), Rich (diversité). Score sur 100 classé en niveau Élevé (&ge;70), Moyen ([40,70[) ou Faible (&lt;40).">?</span>
+        </h2>
+        <div class="imod-container">
+          <div class="imod-global imod-{{ item.imod.level|lower }}">
+            <span class="imod-score">{{ item.imod.score }}</span>
+            <span class="imod-label">/100</span>
+            <span class="imod-level">Niveau {{ item.imod.level }}</span>
+          </div>
+          <div class="imod-details">
+            <div class="imod-dimension imod-meta">
+              <span class="imod-dim-label">Meta</span>
+              <span class="imod-dim-bar"><span class="imod-dim-fill" style="width:{{ imod_meta_pct }}%"></span></span>
+              <span class="imod-dim-value">{{ item.imod.meta }}</span>
+            </div>
+            <div class="imod-dimension imod-tech">
+              <span class="imod-dim-label">Tech</span>
+              <span class="imod-dim-bar"><span class="imod-dim-fill" style="width:{{ imod_tech_pct }}%"></span></span>
+              <span class="imod-dim-value">{{ item.imod.tech }}</span>
+            </div>
+            <div class="imod-dimension imod-rich">
+              <span class="imod-dim-label">Rich</span>
+              <span class="imod-dim-bar"><span class="imod-dim-fill" style="width:{{ imod_rich_pct }}%"></span></span>
+              <span class="imod-dim-value">{{ item.imod.rich }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      {% endif %}
+
       <!-- Attribution -->
       <section class="attribution-section">
         <h2>Attribution</h2>

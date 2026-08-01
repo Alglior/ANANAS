@@ -1,0 +1,241 @@
+.imod-section {
+  margin-top: 3rem;
+}
+
+.imod-section h2 {
+  color: var(--charcoal);
+  font-size: 1.35rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--border-color);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: help;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.help-icon:hover {
+  background: var(--mustard);
+  color: var(--charcoal);
+}
+
+.help-icon::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--charcoal);
+  color: var(--white);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: normal;
+  width: max-content;
+  max-width: 320px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 100;
+}
+
+.help-icon:hover::after {
+  opacity: 1;
+}
+
+.help-icon::before {
+  content: '';
+  position: absolute;
+  bottom: 75%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--charcoal);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.help-icon:hover::before {
+  opacity: 1;
+}
+
+.imod-container {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  background: var(--light-gray);
+  border-radius: 12px;
+  padding: 1.75rem 2rem;
+  border: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.imod-global {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  background: var(--white);
+  border: 2px solid var(--border-color);
+}
+
+.imod-score {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.imod-label {
+  font-size: 0.85rem;
+  color: var(--specs-gray);
+  font-weight: 600;
+}
+
+.imod-level {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+}
+
+.imod-eleve {
+  border-color: var(--color-success);
+}
+.imod-eleve .imod-score {
+  color: var(--color-success-dark);
+}
+.imod-eleve .imod-level {
+  background: var(--surface-success-light);
+  color: var(--color-success-dark);
+}
+
+.imod-moyen {
+  border-color: var(--mustard);
+}
+.imod-moyen .imod-score {
+  color: var(--mustard);
+}
+.imod-moyen .imod-level {
+  background: var(--surface-warning-light);
+  color: var(--color-warning-dark);
+}
+
+.imod-faible {
+  border-color: var(--color-danger);
+}
+.imod-faible .imod-score {
+  color: var(--color-danger);
+}
+.imod-faible .imod-level {
+  background: var(--surface-error-light);
+  color: var(--error-red);
+}
+
+.imod-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 200px;
+}
+
+.imod-dimension {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.imod-dim-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 40px;
+  color: var(--charcoal);
+}
+
+.imod-meta .imod-dim-label { color: var(--color-success-dark); }
+.imod-tech .imod-dim-label { color: var(--color-blue); }
+.imod-rich .imod-dim-label { color: var(--color-purple); }
+
+.imod-dim-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.imod-dim-fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.imod-meta .imod-dim-fill { background: var(--color-success); }
+.imod-tech .imod-dim-fill { background: var(--color-blue); }
+.imod-rich .imod-dim-fill { background: var(--color-purple); }
+
+.imod-dim-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  min-width: 30px;
+  text-align: right;
+  color: var(--charcoal);
+}
+
+/* Catalogue card badge */
+.imod-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+  white-space: nowrap;
+  vertical-align: middle;
+  border: 1px solid;
+}
+
+.imod-eleve .imod-badge,
+.imod-badge.imod-eleve {
+  background: var(--surface-success-light);
+  color: var(--color-success-dark);
+  border-color: var(--color-success);
+}
+
+.imod-moyen .imod-badge,
+.imod-badge.imod-moyen {
+  background: var(--surface-warning-light);
+  color: var(--color-warning-dark);
+  border-color: var(--mustard);
+}
+
+.imod-faible .imod-badge,
+.imod-badge.imod-faible {
+  background: var(--surface-error-light);
+  color: var(--error-red);
+  border-color: var(--color-danger);
+}

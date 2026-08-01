@@ -32,6 +32,7 @@
 @import url("./features/sections/geopackage.css");
 @import url("./features/sections/individual-data.css");
 @import url("./features/sections/magnet.css");
+@import url("./features/sections/imod.css");
 @import url("./features/privacy.css");
 @import url("./layouts/auth.css");
 @import url("./layouts/services.css");

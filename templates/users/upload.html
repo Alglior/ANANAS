@@ -246,6 +246,37 @@
           </div>
         </div>
 
+        <!-- IMOD Preview -->
+        <div class="upload-section" id="imodPreviewPanel">
+          <h2>Indice de qualité des métadonnées
+            <span class="help-icon" data-tooltip="Aperçu en temps réel du score IMOD de votre fiche. Remplissez les champs pour voir le score évoluer. Un score &ge;70 est considéré Élevé, [40,70[ Moyen, &lt;40 Faible. Certains critères (avis, commentaires, vérification) ne sont évaluables qu'après publication.">?</span>
+          </h2>
+          <div class="imod-preview-container">
+            <div class="imod-preview-global imod-preview-faible">
+              <span class="imod-preview-score imod-preview-faible">0</span>
+              <span class="imod-preview-label">/100</span>
+              <span class="imod-preview-level imod-preview-faible">Niveau Faible</span>
+            </div>
+            <div class="imod-preview-details">
+              <div class="imod-preview-dim imod-preview-meta">
+                <span class="imod-preview-dim-label">Meta</span>
+                <span class="imod-preview-dim-bar"><span class="imod-preview-fill" style="width:0%"></span></span>
+                <span class="imod-preview-dim-value">0</span>
+              </div>
+              <div class="imod-preview-dim imod-preview-tech">
+                <span class="imod-preview-dim-label">Tech</span>
+                <span class="imod-preview-dim-bar"><span class="imod-preview-fill" style="width:0%"></span></span>
+                <span class="imod-preview-dim-value">0</span>
+              </div>
+              <div class="imod-preview-dim imod-preview-rich">
+                <span class="imod-preview-dim-label">Rich</span>
+                <span class="imod-preview-dim-bar"><span class="imod-preview-fill" style="width:0%"></span></span>
+                <span class="imod-preview-dim-value">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="form-actions upload-actions" id="tutoSectionActions">
           <button type="submit" class="btn btn-primary" id="uploadBtn">
             Publier les données
@@ -480,4 +511,5 @@
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/history.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/tag-selector.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/submit.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/imod-preview.js') }}"></script>
 {% endblock %}

@@ -15,6 +15,9 @@
       {% if not simple %}
       <div class="catalogue-top">
         <span class="catalogue-title">{{ item.title|e }}</span>
+        {% if item.imod %}
+        <span class="imod-badge imod-{{ item.imod.level|lower }}" title="Score IMOD : {{ item.imod.score }}/100 — Niveau {{ item.imod.level }}">IMOD {{ item.imod.score }}</span>
+        {% endif %}
         {% if item.type == "application" and item.data_format_level == "simple" %}
         <span class="badge badge-simple">Fichier simple</span>
         {% elif item.type == "application" and item.data_format_level == "pack" %}

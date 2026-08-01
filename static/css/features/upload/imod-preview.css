@@ -1,0 +1,138 @@
+.upload-section#imodPreviewPanel h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.imod-preview-container {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  background: var(--light-gray);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.imod-preview-global {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 90px;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  background: var(--white);
+  border: 2px solid var(--border-color);
+}
+
+.imod-preview-score {
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.imod-preview-label {
+  font-size: 0.78rem;
+  color: var(--specs-gray);
+  font-weight: 600;
+}
+
+.imod-preview-level {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.2rem;
+  padding: 0.12rem 0.4rem;
+  border-radius: 4px;
+}
+
+.imod-preview-eleve {
+  border-color: var(--color-success);
+}
+.imod-preview-eleve .imod-preview-score {
+  color: var(--color-success-dark);
+}
+.imod-preview-eleve .imod-preview-level {
+  background: var(--surface-success-light);
+  color: var(--color-success-dark);
+}
+
+.imod-preview-moyen {
+  border-color: var(--mustard);
+}
+.imod-preview-moyen .imod-preview-score {
+  color: var(--mustard);
+}
+.imod-preview-moyen .imod-preview-level {
+  background: var(--surface-warning-light);
+  color: var(--color-warning-dark);
+}
+
+.imod-preview-faible {
+  border-color: var(--color-danger);
+}
+.imod-preview-faible .imod-preview-score {
+  color: var(--color-danger);
+}
+.imod-preview-faible .imod-preview-level {
+  background: var(--surface-error-light);
+  color: var(--error-red);
+}
+
+.imod-preview-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 180px;
+}
+
+.imod-preview-dim {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.imod-preview-dim-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 35px;
+  color: var(--charcoal);
+}
+
+.imod-preview-meta .imod-preview-dim-label { color: var(--color-success-dark); }
+.imod-preview-tech .imod-preview-dim-label { color: var(--color-blue); }
+.imod-preview-rich .imod-preview-dim-label { color: var(--color-purple); }
+
+.imod-preview-dim-bar {
+  flex: 1;
+  height: 7px;
+  background: var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.imod-preview-fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.25s ease;
+}
+
+.imod-preview-meta .imod-preview-fill { background: var(--color-success); }
+.imod-preview-tech .imod-preview-fill { background: var(--color-blue); }
+.imod-preview-rich .imod-preview-fill { background: var(--color-purple); }
+
+.imod-preview-dim-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  min-width: 28px;
+  text-align: right;
+  color: var(--charcoal);
+}
