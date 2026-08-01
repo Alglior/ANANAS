@@ -19,11 +19,11 @@
 .btn-primary {
   background: var(--mustard);
   color: var(--charcoal);
-  box-shadow: 0 6px 14px rgba(218, 165, 32, 0.28);
+  box-shadow: var(--shadow-mustard-btn);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 9px 18px rgba(218, 165, 32, 0.32);
+  box-shadow: var(--shadow-mustard-btn-hover);
 }
 
 .btn-outline {
@@ -33,7 +33,7 @@
 }
 
 .btn-outline:hover {
-  background: rgba(34, 139, 34, 0.08);
+  background: var(--forest-alpha-08);
 }
 
 .copy-btn {
@@ -43,7 +43,7 @@
 .copy-btn.copied {
   background: var(--forest);
   color: var(--white);
-  box-shadow: 0 6px 14px rgba(34, 139, 22, 0.28);
+  box-shadow: 0 6px 14px var(--forest-alpha-28);
 }
 
 .copy-btn.error {
@@ -67,7 +67,7 @@
   background: var(--white);
   padding: 0.4rem 0.8rem;
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px var(--shadow-black-10);
   pointer-events: none;
   white-space: nowrap;
 }

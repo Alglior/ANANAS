@@ -45,7 +45,7 @@
 .gp-info-card {
   background: var(--white);
   border-radius: 12px;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 14px 32px var(--shadow-black-06);
   padding: 2.5rem;
 }
 
@@ -98,13 +98,13 @@
 .gp-collection-card {
   background: var(--white);
   border-radius: 12px;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 14px 32px var(--shadow-black-06);
   padding: 1.5rem 1.75rem;
   transition: box-shadow 0.2s ease;
 }
 
 .gp-collection-card:hover {
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 18px 40px var(--shadow-black-10);
 }
 
 .gp-card-header {
@@ -165,13 +165,13 @@
   border-radius: 8px;
   font-weight: 700;
   font-size: 1.05rem;
-  box-shadow: 0 6px 18px rgba(34, 139, 34, 0.28);
+  box-shadow: 0 6px 18px var(--forest-alpha-28);
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .gp-cta-btn:hover {
   background: var(--hover-forest-dark);
-  box-shadow: 0 9px 22px rgba(34, 139, 34, 0.35);
+  box-shadow: 0 9px 22px var(--forest-alpha-35);
 }
 
 .gp-cta-arrow {

@@ -7,8 +7,8 @@
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(110deg, rgba(34, 139, 34, 0.1), rgba(245, 245, 245, 0) 58%),
-    linear-gradient(180deg, rgba(218, 165, 32, 0.1), rgba(255, 255, 255, 0) 35%);
+  background: linear-gradient(110deg, var(--forest-alpha-10), rgba(245, 245, 245, 0) 58%),
+    linear-gradient(180deg, var(--mustard-alpha-11), rgba(255, 255, 255, 0) 35%);
   pointer-events: none;
 }
 
@@ -65,7 +65,7 @@
   padding: 0.8rem;
   border-left: 4px solid var(--mustard);
   border-radius: 8px;
-  background: rgba(218, 165, 32, 0.13);
+  background: var(--mustard-alpha-13);
 }
 
 .alert-title {

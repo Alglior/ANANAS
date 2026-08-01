@@ -45,7 +45,7 @@
 
 .btn-band:hover {
   filter: brightness(1.08);
-  box-shadow: 0 4px 12px rgba(218, 165, 32, 0.3);
+  box-shadow: 0 4px 12px var(--mustard-alpha-35);
 }
 
 .apercu-btn:hover {
@@ -150,7 +150,7 @@
 }
 
 .btn-copy-secondary:hover {
-  background: rgba(34, 139, 34, 0.08);
+  background: var(--forest-alpha-08);
 }
 
 .no-download {
@@ -188,5 +188,5 @@
 }
 
 .btn-pdf-download:hover {
-  background: rgba(34, 139, 34, 0.08);
+  background: var(--forest-alpha-08);
 }

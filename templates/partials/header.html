@@ -1,15 +1,15 @@
 <header class="topbar">
   <div class="container topbar-inner">
     <div class="topbar-toprow">
-      <a class="brand" href="/" aria-label="Accueil A.N.A.N.A.S">
+      <a class="brand" href="/" aria-label="Accueil {{ get_setting('site_name') }}">
         <img
           class="brand-logo"
           src="{{ url_for('static', filename='images/logo/ANANAS.png') }}"
-          alt="Logo A.N.A.N.A.S"
+          alt="Logo {{ get_setting('site_name') }}"
         />
         <span class="brand-label">
-          <span class="brand-text">A.N.A.N.A.S</span>
-          <span class="brand-subtitle">Atlas Numérique d'Archives de Nœuds et d'Accès Synchronisés</span>
+          <span class="brand-text">{{ get_setting('site_name') }}</span>
+          <span class="brand-subtitle">{{ get_setting('site_subtitle') }}</span>
         </span>
       </a>
 

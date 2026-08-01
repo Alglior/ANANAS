@@ -75,7 +75,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background: linear-gradient(90deg, rgba(34, 139, 34, 0.92), rgba(34, 139, 34, 0.85));
+  background: linear-gradient(90deg, var(--forest-alpha-92), var(--forest-alpha-85));
   color: var(--white);
   font-size: 0.78rem;
   font-weight: 600;
@@ -277,13 +277,13 @@
 
 .product-details .badge-pack,
 .product-details .badge-simple {
-  background: rgba(34, 139, 34, 0.11);
-  border: 1px solid rgba(34, 139, 34, 0.35);
+  background: var(--forest-alpha-11);
+  border: 1px solid var(--forest-alpha-35);
 }
 
 .product-details .badge-simple {
-  background: rgba(34, 139, 34, 0.06);
-  border: 1px solid rgba(34, 139, 34, 0.2);
+  background: var(--forest-alpha-06);
+  border: 1px solid var(--forest-alpha-25);
 }
 
 .product-details .badge-individual {

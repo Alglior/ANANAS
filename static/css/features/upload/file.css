@@ -25,7 +25,7 @@
 }
 
 .file-drop-zone.drag-over {
-  background: rgba(34, 139, 32, 0.1);
+  background: var(--forest-alpha-10);
   border-color: var(--mustard);
   color: var(--charcoal);
 }
@@ -51,12 +51,12 @@
 
 .json-drop-zone:hover {
   border-color: var(--forest);
-  background: rgba(34, 139, 32, 0.03);
+  background: var(--forest-alpha-04);
 }
 
 .json-drop-zone.drag-over {
   border-color: var(--mustard);
-  background: rgba(212, 175, 55, 0.06);
+  background: var(--mustard-alpha-06);
   border-style: solid;
 }
 
@@ -93,12 +93,12 @@
 }
 
 .json-upload-result.success {
-  background: rgba(34, 139, 32, 0.06);
+  background: var(--forest-alpha-06);
   color: var(--forest);
 }
 
 .json-upload-result.error {
-  background: rgba(220, 53, 69, 0.06);
+  background: var(--danger-alpha-06);
   color: var(--error);
 }
 
@@ -151,7 +151,7 @@
 
 .zoom-pill:hover {
   border-color: var(--mustard);
-  background: rgba(212, 175, 55, 0.1);
+  background: var(--mustard-alpha-11);
 }
 
 .zoom-pill.active {

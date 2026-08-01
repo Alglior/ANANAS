@@ -4,8 +4,8 @@
 }
 
 .replication-form-section {
-  background: var(--bg-card, #fff);
-  border: 1px solid var(--border-color, #ddd);
+  background: var(--bg-card, var(--white));
+  border: 1px solid var(--border-color, var(--border-color));
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -19,13 +19,13 @@
   display: block;
   font-weight: 600;
   margin-bottom: 0.4rem;
-  color: var(--text-primary, #222);
+  color: var(--text-primary, var(--charcoal));
 }
 
 .replication-form-section .form-input {
   width: 100%;
   padding: 0.6rem 0.8rem;
-  border: 1px solid var(--border-color, #ccc);
+  border: 1px solid var(--border-color, var(--border-color));
   border-radius: 6px;
   font-size: 0.95rem;
   box-sizing: border-box;
@@ -33,7 +33,7 @@
 
 .form-help {
   font-size: 0.8rem;
-  color: var(--text-muted, #666);
+  color: var(--text-muted, var(--text-secondary));
   margin-top: 0.3rem;
 }
 
@@ -59,8 +59,8 @@
 
 .replication-preview-section,
 .replication-results-section {
-  background: var(--bg-card, #fff);
-  border: 1px solid var(--border-color, #ddd);
+  background: var(--bg-card, var(--white));
+  border: 1px solid var(--border-color, var(--border-color));
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -78,7 +78,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.6rem 0;
-  border-bottom: 1px solid var(--border-color, #eee);
+  border-bottom: 1px solid var(--border-color, var(--border-light));
 }
 
 .preview-catalogue:last-child {
@@ -91,7 +91,7 @@
 
 .preview-catalogue .cat-count {
   font-size: 0.9rem;
-  color: var(--text-muted, #666);
+  color: var(--text-muted, var(--text-secondary));
 }
 
 .preview-catalogue .cat-status {
@@ -101,13 +101,13 @@
 }
 
 .preview-catalogue .cat-status.reachable {
-  background: #e6f7e6;
-  color: #2e7d32;
+  background: var(--rep-success-bg);
+  color: var(--rep-success-text);
 }
 
 .preview-catalogue .cat-status.unreachable {
-  background: #fde8e8;
-  color: #c62828;
+  background: var(--rep-error-bg);
+  color: var(--rep-error-text);
 }
 
 .replication-progress {
@@ -117,7 +117,7 @@
 .progress-bar-container {
   width: 100%;
   height: 8px;
-  background: var(--border-color, #ddd);
+  background: var(--border-color, var(--border-color));
   border-radius: 4px;
   overflow: hidden;
 }
@@ -125,14 +125,14 @@
 .progress-bar {
   height: 100%;
   width: 0%;
-  background: var(--accent-color, #4caf50);
+  background: var(--accent-color, var(--color-success));
   transition: width 0.3s ease;
 }
 
 #progress-text {
   margin-top: 0.5rem;
   font-size: 0.9rem;
-  color: var(--text-muted, #666);
+  color: var(--text-muted, var(--text-secondary));
 }
 
 /* Results */
@@ -144,7 +144,7 @@
 }
 
 .results-summary .stat {
-  background: var(--bg-subtle, #f5f5f5);
+  background: var(--bg-subtle, var(--light-gray));
   padding: 0.5rem 1rem;
   border-radius: 6px;
   font-size: 0.9rem;
@@ -157,7 +157,7 @@
 .results-details {
   max-height: 400px;
   overflow-y: auto;
-  border: 1px solid var(--border-color, #eee);
+  border: 1px solid var(--border-color, var(--border-light));
   border-radius: 6px;
 }
 
@@ -170,33 +170,33 @@
 .results-table th {
   text-align: left;
   padding: 0.5rem 0.75rem;
-  background: var(--bg-subtle, #f9f9f9);
-  border-bottom: 2px solid var(--border-color, #ddd);
+  background: var(--bg-subtle, var(--light-gray));
+  border-bottom: 2px solid var(--border-color, var(--border-color));
   position: sticky;
   top: 0;
 }
 
 .results-table td {
   padding: 0.4rem 0.75rem;
-  border-bottom: 1px solid var(--border-color, #eee);
+  border-bottom: 1px solid var(--border-color, var(--border-light));
 }
 
 .results-table .result-created td {
-  background: #f0faf0;
+  background: var(--rep-success-bg);
 }
 
 .results-table .result-skipped td {
-  background: #fff8e1;
+  background: var(--rep-warning-bg);
 }
 
 .results-table .result-error td {
-  background: #fde8e8;
+  background: var(--rep-error-bg);
 }
 
 .badge-created {
   display: inline-block;
-  background: #e6f7e6;
-  color: #2e7d32;
+  background: var(--rep-success-bg);
+  color: var(--rep-success-text);
   padding: 0.15rem 0.5rem;
   border-radius: 4px;
   font-size: 0.75rem;
@@ -205,8 +205,8 @@
 
 .badge-skipped {
   display: inline-block;
-  background: #fff8e1;
-  color: #f57f17;
+  background: var(--rep-warning-bg);
+  color: var(--rep-warning-text);
   padding: 0.15rem 0.5rem;
   border-radius: 4px;
   font-size: 0.75rem;
@@ -215,8 +215,8 @@
 
 .badge-error {
   display: inline-block;
-  background: #fde8e8;
-  color: #c62828;
+  background: var(--rep-error-bg);
+  color: var(--rep-error-text);
   padding: 0.15rem 0.5rem;
   border-radius: 4px;
   font-size: 0.75rem;

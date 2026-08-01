@@ -39,7 +39,7 @@
 }
 
 .org-btn-danger:hover {
-  background: rgba(220, 53, 69, 0.08);
+  background: var(--danger-alpha-08);
 }
 
 .org-btn-sm {
@@ -80,7 +80,7 @@
 
 .btn-remove-member:hover {
   color: var(--color-danger);
-  background: rgba(220, 53, 69, 0.1);
+  background: var(--danger-alpha-10);
 }
 
 .btn-sm {

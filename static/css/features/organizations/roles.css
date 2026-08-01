@@ -176,7 +176,7 @@
 .create-role-form .form-input:focus {
   outline: none;
   border-color: var(--forest);
-  box-shadow: 0 0 0 3px rgba(34, 139, 34, 0.12);
+  box-shadow: 0 0 0 3px var(--forest-alpha-12);
 }
 
 .create-role-form .form-actions {

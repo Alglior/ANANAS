@@ -56,7 +56,7 @@
 }
 
 .error-message {
-  color: #a71d2a;
+  color: var(--color-danger);
   font-weight: 600;
   font-size: 0.9rem;
   margin: 0 0 0.25rem;
@@ -68,7 +68,7 @@
   border-radius: var(--radius-md);
   padding: 1rem 1.25rem;
   margin-bottom: 1rem;
-  color: #155724;
+  color: var(--flash-success-text);
   font-size: 0.9rem;
   line-height: 1.5;
 }
@@ -79,7 +79,7 @@
   gap: 0.5rem;
   margin: 0.75rem 0;
   padding: 0.5rem 0.75rem;
-  background: rgba(255,255,255,0.5);
+  background: var(--white-alpha-50);
   border-radius: var(--radius-sm);
 }
 
@@ -87,12 +87,12 @@
   font-size: 1.1rem;
   font-weight: 700;
   font-family: monospace;
-  color: #155724;
+  color: var(--flash-success-text);
 }
 
 .btn-copy {
   background: none;
-  border: 1px solid #155724;
+  border: 1px solid var(--flash-success-text);
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 1rem;
@@ -102,22 +102,22 @@
 }
 
 .btn-copy:hover {
-  background: rgba(21,87,36,0.1);
+  background: var(--forest-alpha-10);
 }
 
 .warning-box {
   margin-top: 0.75rem;
   padding: 0.5rem 0.75rem;
-  background: #fff3cd;
-  border: 1px solid #ffc107;
+  background: var(--surface-warning-light);
+  border: 1px solid var(--color-warning);
   border-radius: var(--radius-sm);
-  color: #856404;
+  color: var(--color-warning-dark);
   font-size: 0.85rem;
   line-height: 1.4;
 }
 
 .error-list {
-  color: #842029;
+  color: var(--color-danger);
   margin: 0.5rem 0 0;
   padding-left: 1.2rem;
   list-style-type: disc;

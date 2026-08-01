@@ -4,7 +4,7 @@
   background: var(--white);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 14px 32px var(--shadow-black-06);
 }
 
 .contact-card {
@@ -82,7 +82,7 @@
 .contact-form .form-group textarea:focus {
   outline: none;
   border-color: var(--primary, #2563eb);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px var(--blue-alpha-10);
 }
 
 .contact-form .form-group textarea {
@@ -91,21 +91,21 @@
 }
 
 .contact-form .form-error {
-  color: #dc2626;
+  color: var(--contact-error-text);
   font-size: 0.9rem;
   padding: 0.5rem 0.75rem;
-  background: #fef2f2;
+  background: var(--contact-error-bg);
   border-radius: 6px;
-  border: 1px solid #fecaca;
+  border: 1px solid var(--contact-error-border);
 }
 
 .contact-form .form-success {
-  color: #16a34a;
+  color: var(--contact-success-text);
   font-size: 0.9rem;
   padding: 0.5rem 0.75rem;
-  background: #f0fdf4;
+  background: var(--contact-success-bg);
   border-radius: 6px;
-  border: 1px solid #bbf7d0;
+  border: 1px solid var(--contact-success-border);
 }
 
 .contact-form .btn-primary {

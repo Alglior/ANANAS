@@ -2,7 +2,7 @@
 .tuto-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.35);
+  background: var(--shadow-black-35);
   z-index: 9999;
 }
 
@@ -19,7 +19,7 @@
   border-radius: 10px;
   padding: 1.25rem;
   max-width: 340px;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+  box-shadow: 0 6px 24px var(--shadow-black-30);
   animation: tutoFadeIn 0.2s ease;
 }
 
@@ -57,7 +57,7 @@
 
 .tuto-step-indicator {
   font-size: 0.75rem;
-  color: rgba(255,255,255,0.5);
+  color: var(--white-alpha-50);
   margin-bottom: 0.5rem;
 }
 
@@ -89,13 +89,13 @@
 }
 
 .tuto-actions .btn-outline {
-  border-color: rgba(255,255,255,0.3);
+  border-color: var(--white-alpha-30);
   color: var(--white);
 }
 
 .tuto-actions .btn-outline:hover {
   border-color: var(--white);
-  background: rgba(255,255,255,0.1);
+  background: var(--white-alpha-10);
 }
 
 .tuto-dont-show {
@@ -103,7 +103,7 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.75rem;
-  color: rgba(255,255,255,0.5);
+  color: var(--white-alpha-50);
   cursor: pointer;
 }
 

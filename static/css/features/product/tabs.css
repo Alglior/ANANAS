@@ -29,7 +29,7 @@
 }
 
 .tab-btn:hover {
-  background: rgba(0,0,0,0.05);
+  background: var(--shadow-black-05);
   color: var(--forest);
 }
 
@@ -138,10 +138,10 @@
   border-radius: var(--radius-sm);
 }
 
-.badge-external { background: rgba(45, 140, 255, 0.12); color: var(--color-blue); }
-.badge-internal { background: rgba(34, 139, 34, 0.12); color: var(--forest); }
-.badge-embed    { background: rgba(155, 89, 182, 0.12); color: var(--color-purple); }
-.badge-widget   { background: rgba(218, 165, 32, 0.12); color: var(--mustard); }
+.badge-external { background: var(--blue-alpha-12); color: var(--color-blue); }
+.badge-internal { background: var(--forest-alpha-12); color: var(--forest); }
+.badge-embed    { background: var(--purple-alpha-12); color: var(--color-purple); }
+.badge-widget   { background: var(--mustard-alpha-13); color: var(--mustard); }
 
 /* Viz Iframe Wrapper */
 .viz-iframe-wrapper {

@@ -3,7 +3,7 @@
    ──────────────────────────────────────────── */
 .magnet-section {
   padding: var(--section-padding) 0;
-  background: rgba(218, 165, 32, 0.06);
+  background: var(--mustard-alpha-06);
 }
 
 .magnet-header {
@@ -89,7 +89,7 @@
 .magnet-example-card {
   background: var(--white);
   border-radius: 12px;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 14px 32px var(--shadow-black-06);
   padding: 2rem 2.5rem;
 }
 
@@ -108,7 +108,7 @@
 
 .magnet-code {
   display: block;
-  background: rgba(34, 139, 34, 0.06);
+  background: var(--forest-alpha-06);
   border-radius: 8px;
   padding: 1rem 1.25rem;
   font-size: 0.85rem;
@@ -134,7 +134,7 @@
 .magnet-quick-facts {
   background: var(--white);
   border-radius: 12px;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 14px 32px var(--shadow-black-06);
   padding: 2rem 2.5rem;
 }
 

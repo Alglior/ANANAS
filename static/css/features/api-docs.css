@@ -204,7 +204,7 @@
 }
 
 .api-table tbody tr:hover {
-  background: #fafafa;
+  background: var(--light-gray);
 }
 
 .col-method { width: 80px; }
@@ -227,10 +227,10 @@
   text-align: center;
 }
 
-.method-get    { background: #2d8cff; }
-.method-post   { background: #28a745; }
-.method-put    { background: #ffc107; }
-.method-delete { background: #dc3545; }
+.method-get    { background: var(--api-method-get); }
+.method-post   { background: var(--api-method-post); }
+.method-put    { background: var(--api-method-put); }
+.method-delete { background: var(--api-method-delete); }
 
 .endpoint-path {
   font-size: 0.85rem;
@@ -295,7 +295,7 @@
 
 .api-code-btn:hover {
   border-color: var(--forest);
-  background: #f0f7f0;
+  background: var(--surface-success-light);
 }
 
 .api-code-row {
@@ -308,11 +308,11 @@
 
 .api-code-row td {
   padding: 0;
-  background: #1a1a2e;
+  background: var(--api-code-bg);
 }
 
 .api-code-row:hover td {
-  background: #1a1a2e;
+  background: var(--api-code-bg);
 }
 
 .code-examples {
@@ -329,23 +329,23 @@
   padding: 0.35rem 0.85rem;
   font-size: 0.8rem;
   font-family: var(--mono);
-  border: 1px solid rgba(255,255,255,0.15);
+  border: 1px solid var(--white-alpha-15);
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  background: rgba(255,255,255,0.05);
-  color: rgba(255,255,255,0.6);
+  background: var(--white-alpha-05);
+  color: var(--white-alpha-60);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .code-tab:hover {
-  background: rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.85);
+  background: var(--white-alpha-10);
+  color: var(--white-alpha-85);
 }
 
 .code-tab.active {
-  background: rgba(255,255,255,0.15);
+  background: var(--white-alpha-15);
   color: var(--white);
-  border-color: rgba(255,255,255,0.25);
+  border-color: var(--white-alpha-25);
 }
 
 .code-panel {
@@ -367,38 +367,38 @@
   padding: 0.25rem 0.6rem;
   font-size: 0.72rem;
   font-family: inherit;
-  border: 1px solid rgba(255,255,255,0.15);
+  border: 1px solid var(--white-alpha-15);
   border-radius: var(--radius-sm);
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.6);
+  background: var(--white-alpha-08);
+  color: var(--white-alpha-60);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .api-copy-btn:hover {
-  background: rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.9);
+  background: var(--white-alpha-15);
+  color: var(--white-alpha-90);
 }
 
 .api-copy-btn.copied {
   background: rgba(40, 167, 69, 0.3);
-  color: #8fdf9f;
+  color: var(--api-code-btn-copied);
   border-color: rgba(40, 167, 69, 0.4);
 }
 
 .code-panel pre {
   margin: 0;
   padding: 1rem;
-  background: #16162a;
+  background: var(--api-code-panel-bg);
   border-radius: 0 var(--radius-sm) var(--radius-sm) var(--radius-sm);
   overflow-x: auto;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid var(--white-alpha-08);
 }
 
 .code-panel code {
   font-size: 0.82rem;
   line-height: 1.6;
-  color: #e8e8e8;
+  color: var(--api-code-text);
   font-family: var(--mono);
   white-space: pre-wrap;
   word-break: break-all;

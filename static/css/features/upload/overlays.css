@@ -2,7 +2,7 @@
 .spinner-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--shadow-black-50);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18,7 +18,7 @@
   border-radius: 12px;
   padding: 2.5rem 2rem;
   text-align: center;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px var(--shadow-black-20);
   max-width: 340px;
 }
 
@@ -60,7 +60,7 @@
 .confirm-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--shadow-black-50);
   z-index: 10001;
   display: flex;
   align-items: center;
@@ -71,7 +71,7 @@
   background: var(--white);
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 60px var(--shadow-black-50);
   min-width: 320px;
   max-width: 420px;
   text-align: center;

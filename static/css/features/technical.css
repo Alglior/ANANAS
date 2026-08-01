@@ -113,7 +113,7 @@
 
 .zoom-tab:hover {
   border-color: var(--mustard);
-  background: rgba(218, 165, 32, 0.08);
+  background: var(--mustard-alpha-08);
 }
 
 .zoom-tab.active {
@@ -132,11 +132,11 @@
   font-size: 0.65rem;
   font-weight: 700;
   border-radius: 9px;
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--shadow-black-10);
 }
 
 .zoom-tab.active .zoom-tab-count {
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--shadow-black-15);
 }
 
 .zoom-panel {
@@ -207,7 +207,7 @@
 }
 
 .btn-copy-tech:hover {
-  background: rgba(34, 139, 34, 0.08);
+  background: var(--forest-alpha-08);
 }
 
 .btn-copy-tech.copied {

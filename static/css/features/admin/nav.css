@@ -205,7 +205,7 @@
 }
 
 .admin-page table tbody tr:hover {
-  background: rgba(34, 139, 34, 0.03);
+  background: var(--forest-alpha-04);
 }
 
 .admin-page table tbody tr:last-child td {

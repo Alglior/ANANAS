@@ -74,8 +74,8 @@
 }
 
 .badge-published {
-  background: rgba(70, 130, 180, 0.15);
-  color: steelblue;
+  background: var(--blue-alpha-15);
+  color: var(--color-blue);
 }
 
 .trash-hint {

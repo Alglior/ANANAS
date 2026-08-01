@@ -256,7 +256,7 @@
 
 .radio-label:has(input[type="radio"]:checked) {
   border-color: var(--forest);
-  background: rgba(34, 139, 34, 0.04);
+  background: var(--forest-alpha-04);
 }
 
 .radio-label input[type="radio"] {
@@ -424,7 +424,7 @@
 
 .tag-chip:hover {
   border-color: var(--forest);
-  background: rgba(34, 139, 34, 0.06);
+  background: var(--forest-alpha-06);
 }
 
 .tag-chip.active {

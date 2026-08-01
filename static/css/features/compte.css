@@ -503,17 +503,17 @@ a.activity-card-title:hover {
 }
 
 .badge-verified {
-  background: rgba(34, 139, 34, 0.1);
+  background: var(--forest-alpha-10);
   color: var(--forest);
 }
 
 .badge-rejected {
-  background: rgba(220, 53, 69, 0.1);
+  background: var(--danger-alpha-10);
   color: var(--color-danger);
 }
 
 .badge-unofficial {
-  background: rgba(108, 117, 125, 0.1);
+  background: var(--gray-alpha-10);
   color: var(--specs-gray);
 }
 

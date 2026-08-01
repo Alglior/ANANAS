@@ -4,7 +4,7 @@
 
 /* Contact messages unread row */
 .contact-msg-unread {
-  background: #fffbeb;
+  background: var(--rep-warning-bg);
   font-weight: 500;
 }
 
@@ -15,7 +15,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--shadow-black-50);
   z-index: 1000;
   display: none;
 }
@@ -27,7 +27,7 @@
 }
 
 .modal-content.contact-msg-modal-content {
-  background: #fff;
+  background: var(--white);
   border-radius: 16px;
   padding: 0;
   max-width: 680px;
@@ -35,7 +35,7 @@
   max-height: 85vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 24px 80px var(--shadow-black-20);
 }
 
 .modal-close {
@@ -146,7 +146,7 @@
 
 /* Mirror modal */
 .mirror-modal-content {
-  background: #fff;
+  background: var(--white);
   border-radius: 12px;
   padding: 2rem;
   max-width: 520px;
@@ -154,7 +154,7 @@
   max-height: 85vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 24px 80px var(--shadow-black-20);
 }
 
 .mirror-modal-content h3 {
@@ -195,7 +195,7 @@
 .mirror-modal-content .form-group input:focus {
   outline: none;
   border-color: var(--color-blue);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px var(--blue-alpha-10);
 }
 
 .mirror-modal-content .checkbox-label {
@@ -231,10 +231,10 @@
   right: 0;
   max-height: 240px;
   overflow-y: auto;
-  background: #fff;
+  background: var(--white);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px var(--shadow-black-10);
   z-index: 10;
   margin-top: 4px;
 }

@@ -131,7 +131,7 @@
 }
 
 .catalogue-link:hover .catalogue-image {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px var(--shadow-black-10);
 }
 
 .catalogue-title {
@@ -176,7 +176,7 @@
   align-items: center;
   gap: 0.3rem;
   padding: 0.3rem 0.5rem;
-  background: linear-gradient(90deg, rgba(34, 139, 34, 0.92), rgba(34, 139, 34, 0.85));
+  background: linear-gradient(90deg, var(--forest-alpha-92), var(--forest-alpha-85));
   color: var(--white);
   font-size: 0.6rem;
   font-weight: 600;
@@ -218,7 +218,7 @@
   display: inline-block;
   font-size: 0.75rem;
   color: var(--forest);
-  background: rgba(34, 139, 34, 0.08);
+  background: var(--forest-alpha-08);
   border-radius: 4px;
   padding: 0.2rem 0.5rem;
   white-space: nowrap;
@@ -340,7 +340,7 @@
 }
 
 .btn-expand:hover {
-  background: rgba(34, 139, 34, 0.08);
+  background: var(--forest-alpha-08);
 }
 
 /* ── Pagination ── */
@@ -387,7 +387,7 @@
 }
 
 .pagination-link:hover {
-  background: rgba(34, 139, 34, 0.06);
+  background: var(--forest-alpha-06);
   border-color: var(--forest);
   color: var(--forest);
 }
@@ -474,7 +474,7 @@
 
 .org-card:hover {
   background: var(--lightest-gray);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px var(--shadow-black-06);
 }
 
 .org-card .org-logo {

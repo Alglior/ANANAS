@@ -3,7 +3,7 @@
    ──────────────────────────────────────────── */
 .p2p-section {
   padding: var(--section-padding) 0;
-  background: linear-gradient(135deg, rgba(34, 139, 34, 0.04) 0%, rgba(100, 160, 200, 0.04) 100%);
+  background: linear-gradient(135deg, var(--forest-alpha-04) 0%, rgba(100, 160, 200, 0.04) 100%);
 }
 
 .p2p-header {
@@ -101,7 +101,7 @@
 .p2p-adv-card {
   background: var(--white);
   border-radius: 14px;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 14px 32px var(--shadow-black-06);
   padding: 2rem;
 }
 
@@ -149,7 +149,7 @@
   text-align: center;
   background: var(--white);
   border-radius: 12px;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 14px 32px var(--shadow-black-06);
   padding: 2rem 2.5rem;
 }
 
@@ -167,7 +167,7 @@
 }
 
 .p2p-fact-highlight {
-  background: rgba(34, 139, 34, 0.06);
+  background: var(--forest-alpha-06);
   padding: 1rem 1.25rem;
   border-radius: 8px;
   text-align: center;

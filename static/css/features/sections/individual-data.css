@@ -79,7 +79,7 @@
 }
 
 .di-example-card:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--shadow-black-04);
 }
 
 .di-example-header {
@@ -128,7 +128,7 @@
 
 .di-cta-btn:hover {
   background: var(--hover-charcoal);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 18px var(--shadow-black-15);
 }
 
 .di-cta-arrow {

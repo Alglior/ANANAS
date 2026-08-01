@@ -268,10 +268,10 @@
   height: 20px;
   left: 2px;
   bottom: 2px;
-  background: white;
+  background: var(--white);
   border-radius: 50%;
   transition: transform 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  box-shadow: 0 1px 3px var(--shadow-black-15);
 }
 
 .toggle-input:checked + .toggle-slider {
@@ -283,7 +283,7 @@
 }
 
 .toggle-input:focus-visible + .toggle-slider {
-  box-shadow: 0 0 0 3px rgba(34, 139, 34, 0.15);
+  box-shadow: 0 0 0 3px var(--forest-alpha-15);
 }
 
 .toggle-label {
@@ -362,7 +362,7 @@
   background: var(--white);
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 60px var(--shadow-black-50);
   min-width: 340px;
   max-width: 90vw;
 }

@@ -148,8 +148,8 @@
 }
 
 .warning-rejected {
-    background: #f8d7da;
-    color: #721c24;
+    background: var(--flash-error-bg);
+    color: var(--flash-error-text);
     padding: 12px 16px;
     border-radius: var(--radius-sm);
     font-size: 0.9rem;
@@ -157,7 +157,7 @@
 }
 
 .unofficial-info {
-    background: #e2e3e5;
+    background: var(--border-color);
     color: #383d41;
     padding: 12px 16px;
     border-radius: var(--radius-sm);
@@ -251,7 +251,7 @@
     background: var(--white);
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 16px var(--shadow-black-12);
     z-index: 100;
     overflow: hidden;
 }
@@ -294,7 +294,7 @@
 
 .filter-category-option:hover,
 .filter-category-option.active {
-    background: rgba(218, 165, 32, 0.15);
+    background: var(--mustard-alpha-15);
 }
 
 .filter-category-option.active {
@@ -310,7 +310,7 @@
 
 .filter-category-clear:hover {
     color: var(--color-danger);
-    background: rgba(220, 53, 69, 0.06);
+    background: var(--danger-alpha-06);
 }
 
 .filter-category-option.hidden {

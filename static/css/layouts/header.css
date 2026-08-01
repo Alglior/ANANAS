@@ -3,7 +3,7 @@
   position: relative;
   z-index: 100;
   border-bottom: 1px solid var(--border-header);
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--white-alpha-92);
   backdrop-filter: blur(8px);
 }
 
@@ -180,7 +180,7 @@
   background: var(--white);
   border: 1px solid var(--border-header);
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 16px var(--shadow-black-12);
   padding: 0.35rem 0;
   z-index: 10000;
 }
@@ -273,7 +273,7 @@
   background: var(--white);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 16px var(--shadow-black-12);
   padding: 0.35rem 0;
   z-index: 10000;
 }

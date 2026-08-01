@@ -17,7 +17,7 @@
   background: var(--white);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px var(--shadow-black-10);
   padding: 0.5rem 0;
   z-index: 100;
 }
@@ -355,7 +355,7 @@
 
 .req-item.req-met {
   color: var(--forest);
-  background: rgba(34, 139, 34, 0.1);
+  background: var(--forest-alpha-10);
 }
 
 /* ==========================================
@@ -443,7 +443,7 @@
 }
 
 .activity-item:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px var(--shadow-black-06);
 }
 
 .activity-icon {
@@ -460,18 +460,18 @@
 }
 
 .rating-badge {
-  background: rgba(218, 165, 32, 0.15);
+  background: var(--mustard-alpha-15);
   color: var(--mustard);
 }
 
 .comment-badge {
-  background: rgba(34, 139, 34, 0.15);
+  background: var(--forest-alpha-15);
   color: var(--forest);
 }
 
 .publication-badge {
-  background: rgba(70, 130, 180, 0.15);
-  color: steelblue;
+  background: var(--blue-alpha-15);
+  color: var(--color-blue);
 }
 
 .activity-content {
@@ -549,7 +549,7 @@
    ========================================== */
 
 .admin-card {
-  background: linear-gradient(135deg, rgba(34, 139, 34, 0.05), rgba(218, 165, 32, 0.05));
+  background: linear-gradient(135deg, var(--forest-alpha-04), var(--mustard-alpha-06));
   border: 2px solid var(--mustard);
   padding: 1.25rem;
 }
