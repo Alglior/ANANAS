@@ -177,7 +177,7 @@
           <img class="product-img" id="mainProductImg" src="{{ item.image|e }}" alt="{{ item.title|e }}">
           {% if item.is_official_verified %}
           <div class="verified-img-band">
-            <img class="band-logo" src="{{ url_for('static', filename='images/logo/ANANAS.png') }}" alt="">
+            <img class="band-logo" src="{{ get_setting('site_logo') }}" alt="">
             <span>A.N.A.N.A.S</span>
             <span class="band-name">Vérifié</span>
           </div>

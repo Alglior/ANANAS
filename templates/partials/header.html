@@ -4,7 +4,7 @@
       <a class="brand" href="/" aria-label="Accueil {{ get_setting('site_name') }}">
         <img
           class="brand-logo"
-          src="{{ url_for('static', filename='images/logo/ANANAS.png') }}"
+          src="{{ get_setting('site_logo') }}"
           alt="Logo {{ get_setting('site_name') }}"
         />
         <span class="brand-label">

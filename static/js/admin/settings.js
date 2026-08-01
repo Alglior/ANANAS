@@ -3,6 +3,7 @@
   initInnerTabs();
   initToggleSwitches();
   initSettingModal();
+  initLogoUpload();
 
   /* ── Sidebar tab switching ── */
   function initSidebarTabs() {
@@ -181,13 +182,17 @@
   }
 
   /* ── Shared API call ── */
+  function getCsrf() {
+    return typeof CsrfModule !== "undefined" ? CsrfModule.getCsrfToken() : "";
+  }
+
   function updateSetting(key, value, onSuccess, onError) {
     var payload = {};
     payload[key] = value;
 
     fetch("/api/admin/settings/update", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": getCsrf() },
       body: JSON.stringify(payload),
     })
       .then(function (r) {
@@ -202,5 +207,95 @@
       .catch(function (err) {
         if (onError) onError(err);
       });
+  }
+
+  /* ── Logo drag & drop upload ── */
+  function initLogoUpload() {
+    var dropzone = document.getElementById("logo-dropzone");
+    var fileInput = document.getElementById("logo-file-input");
+    var preview = document.getElementById("logo-preview");
+    var feedback = document.getElementById("logo-upload-feedback");
+
+    if (!dropzone || !fileInput) return;
+
+    function showFeedback(msg, isError) {
+      if (!feedback) return;
+      feedback.textContent = msg;
+      feedback.className = "form-feedback " + (isError ? "form-feedback-error" : "form-feedback-success");
+      feedback.hidden = false;
+      setTimeout(function () { feedback.hidden = true; }, 4000);
+    }
+
+    function uploadFile(file) {
+      if (!file) return;
+      var allowed = ["image/png", "image/jpeg", "image/webp", "image/svg+xml", "image/x-icon"];
+      if (allowed.indexOf(file.type) === -1) {
+        showFeedback("Format non support\u00e9 (png, jpg, webp, svg, ico)", true);
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showFeedback("Fichier trop volumineux (max 5 Mo)", true);
+        return;
+      }
+
+      var formData = new FormData();
+      formData.append("logo", file);
+
+      dropzone.classList.add("uploading");
+
+      fetch("/api/admin/settings/logo-upload", {
+        method: "POST",
+        headers: { "X-CSRF-Token": getCsrf() },
+        body: formData,
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          dropzone.classList.remove("uploading");
+          if (data.error) {
+            showFeedback(data.error, true);
+            return;
+          }
+          if (data.logo_path) {
+            preview.src = data.logo_path + "?t=" + Date.now();
+            var pathDisplay = document.getElementById("logo-path-display");
+            if (pathDisplay) pathDisplay.textContent = data.logo_path;
+            var row = document.querySelector('.setting-row[data-key="site_logo"]');
+            if (row) {
+              var valSpan = row.querySelector(".inline-edit-value");
+              if (valSpan) valSpan.textContent = data.logo_path;
+              var btn = row.querySelector(".inline-edit-btn");
+              if (btn) btn.dataset.value = data.logo_path;
+            }
+          }
+          showFeedback("Logo mis \u00e0 jour avec succ\u00e8s.", false);
+        })
+        .catch(function () {
+          dropzone.classList.remove("uploading");
+          showFeedback("Erreur lors de l'upload du logo.", true);
+        });
+    }
+
+    /* Click to browse */
+    dropzone.addEventListener("click", function () { fileInput.click(); });
+    fileInput.addEventListener("change", function () {
+      if (this.files && this.files[0]) uploadFile(this.files[0]);
+    });
+
+    /* Drag & drop */
+    dropzone.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.add("drag-over");
+    });
+    dropzone.addEventListener("dragleave", function () {
+      dropzone.classList.remove("drag-over");
+    });
+    dropzone.addEventListener("drop", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove("drag-over");
+      var files = e.dataTransfer.files;
+      if (files && files[0]) uploadFile(files[0]);
+    });
   }
 })();

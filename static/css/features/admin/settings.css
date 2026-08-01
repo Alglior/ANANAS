@@ -482,3 +482,62 @@
     justify-content: flex-start;
   }
 }
+
+/* ── Logo upload ── */
+.logo-upload-preview {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  background: var(--white);
+}
+
+.logo-dropzone {
+  position: relative;
+  width: 220px;
+  height: 140px;
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--light-gray);
+}
+
+.logo-dropzone:hover,
+.logo-dropzone.drag-over {
+  border-color: var(--forest);
+  background: var(--surface-success-light);
+}
+
+.logo-dropzone.uploading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.logo-dropzone-content {
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.logo-dropzone-content svg {
+  margin-bottom: 6px;
+  color: var(--text-muted);
+}
+
+.logo-dropzone-text {
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--charcoal);
+}
+
+.logo-dropzone-hint {
+  font-size: 0.75rem;
+  margin: 4px 0 0;
+  color: var(--text-muted);
+}

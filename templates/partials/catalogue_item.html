@@ -5,7 +5,7 @@
       <img class="catalogue-image" src="{{ item.image|e }}" alt="{{ item.title|e }}" loading="lazy">
       {% if item.is_official_verified %}
       <div class="catalogue-img-band">
-        <img class="band-logo" src="{{ url_for('static', filename='images/logo/ANANAS.png') }}" alt="">
+        <img class="band-logo" src="{{ get_setting('site_logo') }}" alt="">
         <span>A.N.A.N.A.S</span>
         <span class="band-name">Vérifié</span>
       </div>

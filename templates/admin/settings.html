@@ -138,6 +138,48 @@
           </div>
         </div>
       {% endif %}
+
+      {# ─── Logo upload card ─── #}
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <h3>Logo personnalisé</h3>
+        </div>
+        <div class="settings-card-body">
+          <div class="setting-row">
+            <div class="setting-info">
+              <label>Logo actuel</label>
+            </div>
+            <div class="setting-control">
+              <img id="logo-preview" class="logo-upload-preview" src="{{ get_setting('site_logo') }}" alt="Logo du site">
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label>Nouveau logo</label>
+              <p class="form-help">Déposez une image ou cliquez pour parcourir. Formats acceptés : PNG, JPG, WebP, SVG, ICO.</p>
+            </div>
+            <div class="setting-control">
+              <div class="logo-dropzone" id="logo-dropzone">
+                <div class="logo-dropzone-content">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  <p class="logo-dropzone-text">Glissez-déposez votre logo ici</p>
+                  <p class="logo-dropzone-hint">ou cliquez pour parcourir</p>
+                </div>
+                <input type="file" id="logo-file-input" accept="image/png,image/jpeg,image/webp,image/svg+xml,image/x-icon" hidden />
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label>Chemin du logo</label>
+            </div>
+            <div class="setting-control">
+              <code id="logo-path-display" class="logo-path-text">{{ get_setting('site_logo') }}</code>
+            </div>
+          </div>
+          <div id="logo-upload-feedback" class="form-feedback" hidden></div>
+        </div>
+      </div>
     </div>
 
     {# ─── Tab: Catalogues ─── #}

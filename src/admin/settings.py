@@ -1,4 +1,4 @@
-from flask import request, jsonify, render_template
+from flask import request, jsonify, render_template, current_app
 from app import db
 from src.admin import bp, login_required, require_admin, api_admin_required, _log_audit
 from models import SiteSetting
@@ -9,6 +9,8 @@ _DEFAULT_SETTINGS = {
     "catalogue_per_page": "20",
     "site_name": "A.N.A.N.A.S",
     "site_subtitle": "Atlas Numérique d'Archives de Nœuds et d'Accès Synchronisés",
+    "site_logo": "/static/images/logo/ANANAS.png",
+    "site_favicon": "/static/images/logo/ANANAS.ico",
     "enable_registration": "true",
     "maintenance_mode": "false",
     "home_eyebrow": "Partage de données géospatiales",
@@ -123,3 +125,66 @@ def admin_settings_update():
         set_setting(key, value)
     _log_audit("settings_update", details=data)
     return jsonify({"status": "updated", "settings": get_all_settings()})
+
+
+@bp.route("/api/admin/settings/logo-upload", methods=["POST"])
+@login_required
+@api_admin_required
+def admin_logo_upload():
+    import os
+    import secrets
+    from werkzeug.utils import secure_filename
+
+    if "logo" not in request.files:
+        return jsonify({"error": "Aucun fichier fourni"}), 400
+    file = request.files["logo"]
+    if not file.filename:
+        return jsonify({"error": "Fichier invalide"}), 400
+
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in (".png", ".jpg", ".jpeg", ".webp", ".svg", ".ico"):
+        return jsonify({"error": "Format d'image non supporté (png, jpg, webp, svg, ico)"}), 400
+
+    header = file.read(16)
+    file.seek(0)
+    is_valid = False
+    if ext in (".jpg", ".jpeg") and header[:3] in (b"\xff\xd8\xff",):
+        is_valid = True
+    elif ext == ".png" and header[:8] == b"\x89PNG\r\n\x1a\n":
+        is_valid = True
+    elif ext == ".webp" and header[:4] == b"RIFF" and header[8:12] == b"WEBP":
+        is_valid = True
+    elif ext == ".svg":
+        is_valid = True
+    elif ext == ".ico":
+        is_valid = True
+    if not is_valid:
+        return jsonify({"error": "Le fichier n'est pas une image valide"}), 400
+
+    upload_dir = os.path.join(current_app.root_path, "static", "uploads", "logos")
+    os.makedirs(upload_dir, exist_ok=True)
+
+    filename = secure_filename(f"site_logo_{secrets.token_hex(8)}{ext}")
+    filepath = os.path.join(upload_dir, filename)
+    file.save(filepath)
+
+    logo_path = f"/static/uploads/logos/{filename}"
+    set_setting("site_logo", logo_path)
+
+    favicon_name = secure_filename(f"site_favicon_{secrets.token_hex(8)}.png")
+    favicon_url = logo_path
+    try:
+        from PIL import Image
+        img = Image.open(filepath)
+        img = img.convert("RGBA")
+        favicon = img.resize((32, 32), Image.LANCZOS)
+        favicon_path = os.path.join(upload_dir, favicon_name)
+        favicon.save(favicon_path, "PNG")
+        favicon_url = f"/static/uploads/logos/{favicon_name}"
+        set_setting("site_favicon", favicon_url)
+    except Exception:
+        set_setting("site_favicon", logo_path)
+
+    _log_audit("logo_upload", details={"logo": logo_path, "favicon": favicon_url})
+
+    return jsonify({"status": "updated", "logo_path": logo_path})

@@ -14,7 +14,7 @@
       <aside class="compte-sidebar">
         <div class="compte-avatar-section">
           <div class="compte-avatar-wrapper">
-            <img id="avatarPreview" class="compte-avatar" src="{{ user.avatar_path or url_for('static', filename='images/logo/ANANAS.png') }}" alt="Avatar" />
+            <img id="avatarPreview" class="compte-avatar" src="{{ user.avatar_path or get_setting('site_logo') }}" alt="Avatar" />
             <label class="compte-avatar-edit" for="avatarInput" title="Changer la photo">
             <input type="file" id="avatarInput" accept="image/png,image/jpeg,image/gif,image/webp" hidden />
           </div>
