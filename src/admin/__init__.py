@@ -12,6 +12,8 @@ _CATALOGUES_INFO = [
     {"type": "applications", "label": "Applications"},
 ]
 
+CATALOGUE_TYPE_MAP = {"donnees": "geodonnee", "cartes": "carte", "applications": "application"}
+
 _DEFAULT_CATALOGUES = {"donnees": True, "cartes": False, "applications": False}
 
 

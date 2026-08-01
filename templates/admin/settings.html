@@ -362,9 +362,9 @@
           <div class="form-group">
             <label>Types de catalogues à répliquer</label>
             <div class="replication-types" id="replication-types">
-              <label class="checkbox-label"><input type="checkbox" value="donnees" checked /> Géodonnées</label>
-              <label class="checkbox-label"><input type="checkbox" value="cartes" checked /> Cartes</label>
-              <label class="checkbox-label"><input type="checkbox" value="applications" checked /> Applications</label>
+              {% for catalogue in catalogues %}
+              <label class="checkbox-label"><input type="checkbox" value="{{ catalogue.type }}" checked /> {{ catalogue.label }}</label>
+              {% endfor %}
             </div>
           </div>
           <div class="replication-actions">
