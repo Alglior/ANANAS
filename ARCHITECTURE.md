@@ -47,11 +47,12 @@ Le code est organisé en **8 blueprints** répartis dans `src/` :
 |-----------|---------|--------------------|-------------|
 | `auth` | `src/auth_routes.py` | `/connexion`, `/inscription`, `/logout` | Authentification, validation mot de passe |
 | `catalogue` | `src/catalogue_routes.py` | `/catalogue/{donnees\|cartes\|applications}`, JSON API | Filtrage paginé avec convertisseur `CatalogueTypeConverter` |
-| `items` | `src/item_routes.py` | `/catalogue/item/<id>`, galerie | Détail d'item, galerie inline, favicon |
+| `items` | `src/item_routes.py` | `/catalogue/item/<id>`, galerie, téléchargement magnets | Détail d'item, galerie inline, zoom magnets, favicon |
 | `organizations` | `src/organization_routes.py` | `/api/organizations`, `/organizations/<slug>` | CRUD orgs, membres, API |
 | `admin` | `src/admin_routes.py` | `/admin/users`, `/admin/reports`, ban/unban | Modération, gestion utilisateurs |
 | `interactions` | `src/interactions.py` | `/catalogue/item/<id>/rate`, `/comment`, vérification | Ratings (1-5), commentaires, verification d'items |
 | `upload` | `src/upload_routes.py` | `/api/upload/chunk`, liens de visualisation | Upload par chunks, validation magic bytes |
+| `api_docs` | `src/api_docs.py` | `/api` | Documentation interactive de l'API REST |
 
 ### Fichiers Partagés
 
@@ -75,7 +76,8 @@ Le code est organisé en **8 blueprints** répartis dans `src/` :
 | GET | `/connexion` | `auth.connexion_page` | `connexion.html` | Formulaire de connexion |
 | GET | `/inscription` | `auth.inscription_page` | `inscription.html` | Formulaire d'inscription |
 | GET | `/logout` | `auth.logout` | — | Déconnexion (clear session) |
-| GET | `/catalogue/item/<id>` | `items.item_detail_view` | `item_detail.html` | Détail item avec galerie et ratings |
+| GET | `/catalogue/item/<id>` | `items.item_detail_view` | `item_detail.html` | Détail item avec galerie, ratings, magnets par échelle et IMOD |
+| GET | `/catalogue/item/<id>/magnets/download` | `items.download_item_magnets` | `.magnet` file | Téléchargement de tous les liens magnet groupés par échelle |
 | GET | `/catalogue/item/<id>/gallery` | `items.item_gallery_view` | `gallery.html` | Galerie plein écran (Leaflet, CSV viewer) |
 | GET | `/organizations/<slug>` | — | `organization_detail.html` | Page d'une organisation |
 | GET | `/organizations/<slug>/items` | `org.organization_items_view` | `organization_detail.html` | Items d'une organisation |

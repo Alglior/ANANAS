@@ -182,6 +182,15 @@ def item_detail_view(item_id):
     from models import DataChunk
     data_chunks = [c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=item_id).all()]
 
+    ZOOM_ORDER = {"iris": 0, "communes": 1, "cantons": 2, "departements": 3, "regions": 4, "pays": 5}
+    if item_dict.get("magnet_links"):
+        item_dict["magnet_links"].sort(key=lambda ml: ZOOM_ORDER.get(ml.get("zoom_level", ""), 99))
+        grouped = {}
+        for ml in item_dict["magnet_links"]:
+            zl = ml.get("zoom_level", "")
+            grouped.setdefault(zl, []).append(ml["magnet_link"])
+        item_dict["magnet_links_grouped"] = [{"zoom_level": z, "links": grouped[z]} for z in sorted(grouped, key=lambda z: ZOOM_ORDER.get(z, 99))]
+
     return render_template(
         "item_detail.html",
         title=f"A.N.A.N.A.S | {item.title}",
@@ -198,6 +207,46 @@ def item_detail_view(item_id):
         show_data_visualization_tabs=item.type == "geodonnee",
         viz_links=viz_links,
         data_chunks=data_chunks,
+    )
+
+
+ZOOM_LABELS = {"iris": "IRIS", "communes": "Communes", "cantons": "Cantons", "departements": "Départements", "regions": "Régions", "pays": "Pays"}
+ZOOM_ORDER = {"iris": 0, "communes": 1, "cantons": 2, "departements": 3, "regions": 4, "pays": 5}
+
+
+@bp.route("/catalogue/item/<int:item_id>/magnets/download")
+def download_item_magnets(item_id):
+    from models import Item
+    item = Item.query.get_or_404(item_id)
+    lines = []
+    lines.append(f"# A.N.A.N.A.S — Liens Magnet")
+    lines.append(f"# Titre : {item.title}")
+    lines.append(f"# Format : {item.format_type}")
+    lines.append(f"# URL : https://ananas.fr/catalogue/item/{item_id}")
+    lines.append("")
+
+    if item.data_format_level in ("simple", "pack"):
+        magnet = item.magnet_link or ""
+        if magnet:
+            lines.append(f"# Magnet unique ({item.data_format_level})")
+            lines.append(magnet)
+    elif item.data_format_level == "individual" and item.metadata_json:
+        magnets = sorted(item.metadata_json, key=lambda m: ZOOM_ORDER.get(m.get("zoom_level", ""), 99))
+        current_zoom = None
+        for ml in magnets:
+            zl = ml.get("zoom_level", "")
+            if zl != current_zoom:
+                lines.append(f"")
+                lines.append(f"# {ZOOM_LABELS.get(zl, zl)}")
+                current_zoom = zl
+            lines.append(ml.get("magnet_link", ""))
+
+    text = "\n".join(lines)
+    filename = f"ananas_magnets_{item_id}.magnet"
+    return Response(
+        text,
+        mimetype="text/plain",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 

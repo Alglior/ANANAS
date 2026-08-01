@@ -334,7 +334,48 @@
           </div>
         </dl>
 
-        {% if item.magnet %}
+        {% if item.data_format_level == "individual" and item.magnet_links_grouped and item.magnet_links_grouped|length > 0 %}
+        <div class="tech-code-block" id="techCodeBlock">
+          <h3>{{ item.magnet_links_grouped|sum(attribute='links', start=[]) | length }} liens magnet — {{ item.magnet_links_grouped|length }} échelles
+            <a href="/catalogue/item/{{ item.id }}/magnets/download" class="btn btn-copy-tech btn-download-magnets" download>Télécharger tout</a>
+          </h3>
+          {% set zoom_labels = {"iris": "IRIS", "communes": "Communes", "cantons": "Cantons", "departements": "Départements", "regions": "Régions", "pays": "Pays"} %}
+          <div class="zoom-tabs" id="zoomTabs">
+            {% for group in item.magnet_links_grouped %}
+            <button type="button" class="zoom-tab{% if loop.first %} active{% endif %}" data-zoom="{{ group.zoom_level }}">
+              {{ zoom_labels.get(group.zoom_level, group.zoom_level) }}
+              <span class="zoom-tab-count">{{ group.links|length }}</span>
+            </button>
+            {% endfor %}
+          </div>
+          {% for group in item.magnet_links_grouped %}
+          <div class="zoom-panel{% if loop.first %} active{% endif %}" id="zoomPanel-{{ group.zoom_level }}" data-zoom="{{ group.zoom_level }}" data-per-page="15">
+            <div class="zoom-panel-header">
+              <span class="zoom-panel-title">{{ zoom_labels.get(group.zoom_level, group.zoom_level) }}</span>
+              <button type="button" class="btn btn-copy-tech btn-copy-all" data-zoom="{{ group.zoom_level }}">Tout copier ({{ group.links|length }})</button>
+            </div>
+            {% for link in group.links %}
+            <div class="magnet-level-link-row{% if loop.index > 15 %} hidden{% endif %}">
+              <code class="magnet-level-code">{{ link|e }}</code>
+              <button class="btn btn-copy-tech btn-copy-magnet" type="button" data-magnet="{{ link|e }}">Copier</button>
+            </div>
+            {% endfor %}
+            {% if group.links|length > 15 %}
+            <nav class="pagination zoom-pagination" data-zoom="{{ group.zoom_level }}">
+              <span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>
+              <div class="pagination-numbers">
+                {% set total_pages = ((group.links|length - 1) // 15) + 1 %}
+                {% for p in range(1, total_pages + 1) %}
+                <span class="pagination-link{% if p == 1 %} active{% endif %}" data-page="{{ p }}">{{ p }}</span>
+                {% endfor %}
+              </div>
+              <span class="btn btn-outline pagination-next{% if total_pages <= 1 %} disabled{% endif %}">Suivant&nbsp;&#9658;</span>
+            </nav>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% elif item.magnet %}
         <div class="tech-code-block" id="techCodeBlock">
           <h3>Lien magnet</h3>
           <code>{{ item.magnet|e }}</code>
@@ -535,4 +576,5 @@
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/gallery/starRating.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/gallery/reportModal.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/item/detail.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/item/zoom-magnets.js') }}"></script>
 {% endblock %}
