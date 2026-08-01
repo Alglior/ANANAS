@@ -140,6 +140,16 @@ class Item(db.Model, TimestampMixin):
         for tag, cat in tag_categories.items():
             if cat:
                 grouped.setdefault(cat, []).append(tag)
+        zoom_levels = []
+        if isinstance(self.metadata_json, list):
+            seen = set()
+            for entry in self.metadata_json:
+                zl = entry.get("zoom_level", "") if isinstance(entry, dict) else ""
+                if zl and zl not in seen:
+                    seen.add(zl)
+                    zoom_levels.append(zl)
+        elif isinstance(self.metadata_json, dict):
+            zoom_levels = self.metadata_json.get("zoom_levels", [])
         result = {
             "id": self.id,
             "title": self.title,
@@ -160,6 +170,7 @@ class Item(db.Model, TimestampMixin):
             "tag_categories": tag_categories,
             "unique_categories": unique_categories,
             "grouped_categories": [{"category": k, "tags": v} for k, v in grouped.items()],
+            "zoom_levels": zoom_levels,
             "gallery": self._build_gallery_dict(),
             "pdf_doc": self.pdf_magnet_link if self.pdf_magnet_link and validate_magnet_link(self.pdf_magnet_link) else "",
             "pdf_magnet_link": self.pdf_magnet_link if self.pdf_magnet_link and validate_magnet_link(self.pdf_magnet_link) else "",

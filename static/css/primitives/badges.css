@@ -58,19 +58,19 @@ a.tag:hover {
   width: fit-content;
   margin: 0;
   border-radius: 999px;
-  border: 1px solid rgba(45, 140, 255, 0.35);
+  border: 1px solid rgba(218, 165, 32, 0.35);
   padding: 0.22rem 0.6rem;
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--color-blue);
-  background: rgba(45, 140, 255, 0.11);
+  color: var(--mustard);
+  background: rgba(218, 165, 32, 0.11);
   text-decoration: none;
   display: inline-block;
 }
 
 a.category-tag:hover {
-  background: rgba(45, 140, 255, 0.25);
-  border-color: var(--color-blue);
+  background: rgba(218, 165, 32, 0.25);
+  border-color: var(--mustard);
   cursor: pointer;
 }
 

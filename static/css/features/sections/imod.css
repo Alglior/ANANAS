@@ -175,10 +175,6 @@
   color: var(--charcoal);
 }
 
-.imod-meta .imod-dim-label { color: var(--color-success-dark); }
-.imod-tech .imod-dim-label { color: var(--color-blue); }
-.imod-rich .imod-dim-label { color: var(--color-purple); }
-
 .imod-dim-bar {
   flex: 1;
   height: 8px;
@@ -192,11 +188,8 @@
   height: 100%;
   border-radius: 4px;
   transition: width 0.3s ease;
+  background: var(--charcoal);
 }
-
-.imod-meta .imod-dim-fill { background: var(--color-success); }
-.imod-tech .imod-dim-fill { background: var(--color-blue); }
-.imod-rich .imod-dim-fill { background: var(--color-purple); }
 
 .imod-dim-value {
   font-size: 0.85rem;

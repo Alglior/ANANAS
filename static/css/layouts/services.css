@@ -252,6 +252,7 @@
   gap: 0.35rem;
   flex-wrap: wrap;
   margin-top: 0.5rem;
+  margin-bottom: 0.35rem;
   align-items: center;
 }
 
@@ -266,6 +267,7 @@
   gap: 0.35rem;
   flex-wrap: wrap;
   margin-top: 0.25rem;
+  margin-bottom: 0.35rem;
   align-items: center;
 }
 
@@ -276,14 +278,39 @@
 }
 
 .catalogue-tags .tags-label,
-.catalogue-categories .categories-label {
+.catalogue-categories .categories-label,
+.catalogue-scales .scales-label {
   font-weight: 700;
   font-size: 0.7rem;
   color: var(--charcoal);
 }
 
+.catalogue-scales {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+  margin-bottom: 0.35rem;
+  align-items: center;
+}
+
+.scale-badge {
+  width: fit-content;
+  margin: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(51, 51, 51, 0.25);
+  padding: 0.1rem 0.4rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  background: rgba(51, 51, 51, 0.06);
+  display: inline-block;
+  text-decoration: none;
+}
+
 .catalogue-list li .catalogue-tags,
-.catalogue-list li .catalogue-categories {
+.catalogue-list li .catalogue-categories,
+.catalogue-list li .catalogue-scales {
   padding-left: calc(160px + 1.25rem);
   margin-top: 0;
 }

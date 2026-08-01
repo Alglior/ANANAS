@@ -72,5 +72,14 @@
     {% endfor %}
   </div>
   {% endif %}
+  {% if item.zoom_levels and item.zoom_levels|length > 0 %}
+  <div class="catalogue-scales">
+    <span class="scales-label">Échelles :</span>
+    {% set zoom_labels = {"iris": "IRIS", "communes": "Communes", "cantons": "Cantons", "departements": "Départements", "regions": "Régions", "pays": "Pays"} %}
+    {% for zl in item.zoom_levels %}
+    <span class="scale-badge">{{ zoom_labels.get(zl, zl) }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
   {% endif %}
 </li>
