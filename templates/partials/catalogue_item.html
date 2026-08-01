@@ -15,7 +15,9 @@
       {% if not simple %}
       <div class="catalogue-top">
         <span class="catalogue-title">{{ item.title|e }}</span>
-        {% if item.type == "application" and item.data_format_level == "pack" %}
+        {% if item.type == "application" and item.data_format_level == "simple" %}
+        <span class="badge badge-simple">Fichier simple</span>
+        {% elif item.type == "application" and item.data_format_level == "pack" %}
         <span class="badge badge-pack">Pack complet — fichier unique</span>
         {% elif item.type == "application" and item.data_format_level == "individual" %}
         <span class="badge badge-individual">Fichiers individuels</span>

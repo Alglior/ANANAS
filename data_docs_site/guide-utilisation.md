@@ -24,9 +24,9 @@ Trois catalogues distincts sont disponibles :
 - **Cartes** (`/catalogue/cartes`) — Produits cartographiques, tuiles, fonds de carte
 - **Applications** (`/catalogue/applications`) — Services web, outils géospatiaux, widgets
 
-Chaque catalogue est paginé (30 éléments par page) et propose des filtres par statut de vérification (vérifié / non officiel), organisation, et niveau de format (individuel / pack). Accès JSON possible via `/catalogue/<type>/<page>/json`.
+Chaque catalogue est paginé (30 éléments par page) et propose des filtres par statut de vérification (vérifié / non officiel), organisation, et niveau de format (simple / pack / individuel). Accès JSON possible via `/catalogue/<type>/<page>/json`.
 
-Les items sont présentés avec leur **format de distribution** (pack ou individuel) et leur **lien magnet** direct, permettant de lancer le téléchargement P2P en un clic.
+Les items sont présentés avec leur **format de distribution** (simple, pack ou individuel) et leur **lien magnet** direct, permettant de lancer le téléchargement P2P en un clic.
 
 ### Navigation par page
 
@@ -104,7 +104,7 @@ Les organisations permettent de collaborer autour de jeux de données, structura
 - **Packs (GeoPackage)** : fichiers uniques au format `.gpkg` (standard OGC) contenant plusieurs couches de données organisées par thématique. Distribués exclusivement via magnet link. Idéal pour les collections SIG complètes avec styles QML intégrés.
 - **Individuels** : fichiers unitaires (csv, shp, geojson, gpkg, json, xml, png, jpg, gif, svg, pdf). Distribués obligatoirement via magnet link.
 
-> **Pour une comparaison détaillée entre packs et fichiers individuels**, consultez la page [Pack (GeoPackage) vs Individuel](/docs/pack-vs-individuel).
+> **Pour une comparaison détaillée entre fichiers simples, packs et fichiers individuels**, consultez la page [Simple, Pack (GeoPackage) vs Individuel](/docs/pack-vs-individuel).
 
 Taille maximale de fichier : Aucune, car les données sont distribuées par Torrent et non stockées sur le serveur.
 

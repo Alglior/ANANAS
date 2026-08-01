@@ -13,8 +13,8 @@ Vous y trouverez la liste complète des endpoints avec leurs méthodes, descript
 ### [P2P & BitTorrent](/docs/p2p-bittorrent)
 Principe du Peer-to-Peer, fonctionnement du protocole BitTorrent, avantages de la distribution décentralisée, clients torrent recommandés.
 
-### [Pack (GeoPackage) vs Individuel](/docs/pack-vs-individuel)
-Différence entre les packs GeoPackage multi-couches et les fichiers individuels, formats supportés, cas d'usage, tableau comparatif.
+### [Simple, Pack (GeoPackage) vs Individuel](/docs/pack-vs-individuel)
+Différence entre les packs GeoPackage multi-couches, les fichiers simples et les fichiers individuels, formats supportés, cas d'usage, tableau comparatif.
 
 ### [Organisation des données](/docs/organisation-donnees)
 Structure hiérarchique des données, modèle Item, organisations et rôles, types de catalogue, formats supportés, intégrité et sécurité.

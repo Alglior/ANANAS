@@ -90,6 +90,46 @@
   </div>
 </section>
 
+<!-- Section Fichiers Simples -->
+<section class="di-section" id="fichiers-simples">
+  <div class="container">
+    <div class="di-header">
+      <h2>Fichiers Simples</h2>
+      <p class="di-lead">
+        Besoin d'un fichier unique, une seule couche, prêt à l'emploi ? 
+        Nos fichiers simples sont disponibles en téléchargement direct via magnet.
+      </p>
+    </div>
+    
+    <div class="di-benefits-row">
+      <div class="di-benefit-card">
+        <h3 class="di-benefit-title">Léger & Rapide</h3>
+        <p class="di-benefit-text">
+          Téléchargez exactement ce dont vous avez besoin sans surplus. 
+          Un fichier, une couche, des métadonnées complètes.
+        </p>
+      </div>
+      
+      <div class="di-benefit-card">
+        <h3 class="di-benefit-title">Prêt à l'Emploi</h3>
+        <p class="di-benefit-text">
+          Pas de multi-couches complexes à gérer. 
+          Ouvrez votre fichier directement dans QGIS, ArcGIS ou tout autre logiciel SIG.
+        </p>
+      </div>
+    </div>
+    
+    <div class="di-cta-wrap">
+      <a href="{{ url_for('catalogue') }}" class="di-cta-btn">
+         Découvrir les fichiers simples
+         <svg class="di-cta-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
 <!-- Section Données Individuelles -->
 <section class="di-section" id="donnees-individuelles">
   <div class="container">
@@ -107,15 +147,6 @@
         <p class="di-benefit-text">
           Téléchargez uniquement les données dont vous avez besoin. 
           Chaque fichier est disponible individuellement avec ses métadonnées complètes.
-        </p>
-      </div>
-      
-      <div class="di-benefit-card">
-        <h3 class="di-benefit-title">Format GeoPackage</h3>
-        <p class="di-benefit-text">
-          Toutes nos données individuelles sont au format GeoPackage standardisé, 
-          avec fichiers .qml pour les styles et alias de variables explicites 
-          (ex: "elev_max" devient "Altitude maximale en mètres").
         </p>
       </div>
       
@@ -139,7 +170,6 @@
             <span class="di-example-name">{{ fi.item.title }}</span>
           </div>
           <p class="di-example-desc">{{ fi.item.description[:80] }}{% if fi.item.description|length > 80 %}...{% endif %}</p>
-          <span class="di-format-tag">{{ fi.item.format_type or 'GPKG' }}</span>
         </a>
         {% endfor %}
       </div>

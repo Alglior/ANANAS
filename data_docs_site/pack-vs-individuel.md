@@ -1,8 +1,17 @@
-# Pack (GeoPackage) vs Individuel
+# Simple, Pack (GeoPackage) vs Individuel
 
 > **Le lien magnet est obligatoire pour tous les items du catalogue**, quel que soit le niveau de format. Aucune donnée n'est stockée sur le serveur d'A.N.A.N.A.S. — la plateforme ne fait qu'indexer et référencer les données disponibles sur le réseau BitTorrent.
 
-Les données du catalogue sont organisées en deux niveaux de format, définis par le champ `data_format_level` dans le modèle `Item` :
+Les données du catalogue sont organisées en trois niveaux de format, définis par le champ `data_format_level` dans le modèle `Item` :
+
+---
+
+## Simple (fichier unique, une seule couche)
+
+Les fichiers **simples** sont des fichiers unitaires contenant une seule couche de données. Distribués exclusivement via **magnet link**.
+
+- **Usage** : Idéal pour un fichier unique sans organisation multi-couche (ex: un CSV, un GeoJSON simple, un shapefile)
+- **Distribution** : Magnet link uniquement
 
 ---
 
@@ -21,7 +30,7 @@ Les **packs** sont des fichiers uniques au format **GeoPackage** (.gpkg) contena
 
 ---
 
-## Individuels (fichiers unitaires)
+## Individuels (fichiers unitaires multiples)
 
 Les fichiers **individuels** sont des fichiers unitaires distribués **obligatoirement via magnet link**. L'interface d'upload permet uniquement d'ajouter des données de prévisualisation (CSV d'aperçu, galerie d'images) — les données réelles transitent exclusivement par le réseau P2P.
 
@@ -31,10 +40,9 @@ Les fichiers **individuels** sont des fichiers unitaires distribués **obligatoi
 
 ## Tableau comparatif
 
-| Critère | Pack (GeoPackage) | Individuel |
-|---------|-------------------|------------|
-| Contenu | Multi-couches dans un fichier unique `.gpkg` | Fichier unitaire |
-| Distribution | Magnet link uniquement | Magnet link obligatoire |
-| Taille typique | Volumineux (Mo à Go) | Variable (Ko à Mo) |
-| Cas d'usage | Collection thématique SIG complète | Fichier cartographique unitaire, document |
-| Upload sur le serveur | Non | Non (prévisualisation uniquement) |
+| Critère | Simple | Pack (GeoPackage) | Individuel |
+|---------|--------|-------------------|------------|
+| Contenu | Une seule couche dans un fichier | Multi-couches dans un fichier unique `.gpkg` | Plusieurs fichiers unitaires |
+| Distribution | Magnet link uniquement | Magnet link uniquement | Magnet link obligatoire |
+| Taille typique | Variable (Ko à Mo) | Volumineux (Mo à Go) | Variable (Ko à Mo) |
+| Cas d'usage | Fichier cartographique unitaire | Collection thématique SIG complète | Ensemble de fichiers distincts |

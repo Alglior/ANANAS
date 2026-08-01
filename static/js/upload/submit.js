@@ -74,7 +74,8 @@ UploadModule.submit = (function () {
           formData.append('type', typeSelect.value);
           formData.append('format_type', document.getElementById('format_type').value);
           formData.append('description', document.getElementById('description').value.trim());
-          formData.append('data_format_level', 'pack');
+          var dataFormatLevelRadio = document.querySelector('input[name="data_format_level"]:checked');
+          formData.append('data_format_level', dataFormatLevelRadio ? dataFormatLevelRadio.value : 'pack');
 
           var orgId = document.getElementById('organization_id').value;
           if (orgId) formData.append('organization_id', orgId);
@@ -271,8 +272,14 @@ UploadModule.submit = (function () {
       }
     }
 
+    // Restore data format level
+    if (d.data_format_level) {
+      var radio = document.querySelector('input[name="data_format_level"][value="' + d.data_format_level + '"]');
+      if (radio) radio.checked = true;
+    }
+
     // Restore magnet links
-    if (d.data_format_level === 'pack' && d.magnet_link) {
+    if (d.data_format_level === 'simple' || d.data_format_level === 'pack') {
       var magnetEntries = document.getElementById('magnetEntries');
       if (magnetEntries) {
         magnetEntries.innerHTML = '';
@@ -363,7 +370,10 @@ UploadModule.submit = (function () {
             if (data.tags && data.tags.length > 0) {
               payload.tags = data.tags;
             }
-            if (data.data_format_level === 'pack' && data.magnet_link) {
+            if (data.data_format_level === 'simple' && data.magnet_link) {
+              payload.data_format_level = 'simple';
+              payload.magnet_link = data.magnet_link;
+            } else if (data.data_format_level === 'pack' && data.magnet_link) {
               payload.data_format_level = 'pack';
               payload.magnet_link = data.magnet_link;
             } else if (data.data_format_level === 'individual' && data.magnet_links && data.magnet_links.length > 0) {

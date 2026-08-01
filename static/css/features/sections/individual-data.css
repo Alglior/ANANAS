@@ -25,16 +25,18 @@
   line-height: 1.7;
 }
 
-/* ── Benefits row (3 cards) ── */
+/* ── Benefits row (centered, flexible count) ── */
 .di-benefits-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  justify-content: center;
   gap: 2rem;
   margin-bottom: 4rem;
+  flex-wrap: wrap;
 }
 
 .di-benefit-card {
   text-align: center;
+  flex: 0 1 300px;
 }
 
 .di-benefit-title {

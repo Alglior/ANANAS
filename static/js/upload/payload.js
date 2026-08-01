@@ -22,10 +22,13 @@ UploadModule.payload = (function () {
     }
 
     if (!isDraft) {
-      if (magnetLinks.length === 1) {
-        payload.data_format_level = 'pack';
-        payload.magnet_link = magnetLinks[0].magnet_link;
-      } else if (magnetLinks.length > 1) {
+      var dataFormatLevel = document.querySelector('input[name="data_format_level"]:checked');
+      var level = dataFormatLevel ? dataFormatLevel.value : 'pack';
+
+      if (level === 'simple' || level === 'pack') {
+        payload.data_format_level = level;
+        payload.magnet_link = magnetLinks.length > 0 ? magnetLinks[0].magnet_link : '';
+      } else {
         payload.data_format_level = 'individual';
         payload.magnet_links = magnetLinks;
       }

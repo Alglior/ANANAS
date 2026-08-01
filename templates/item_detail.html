@@ -229,7 +229,11 @@
             Format : <strong>{{ item.format }}</strong>
           </div>
 
-          {% if item.type == "application" and item.data_format_level == "pack" %}
+          {% if item.type == "application" and item.data_format_level == "simple" %}
+          <div class="badge badge-simple">
+            Fichier simple
+          </div>
+          {% elif item.type == "application" and item.data_format_level == "pack" %}
           <div class="badge badge-pack">
             Pack complet — fichier unique
           </div>

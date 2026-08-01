@@ -26,7 +26,7 @@ Chaque élément du catalogue (`Item`) possède les attributs suivants liés à 
 |-------|-------------|
 | `type` | Catégorie : `geodonnee`, `carte`, `application` |
 | `format_type` | Format technique (ex: shapefile, GeoJSON, GPKG) |
-| `data_format_level` | Niveau : `pack` ou `individual` |
+| `data_format_level` | Niveau : `simple`, `pack` ou `individual` |
 | `magnet_link` | Lien magnet principal pour télécharger les données |
 | `pdf_magnet_link` | Lien magnet optionnel pour la documentation PDF |
 | `image_magnet_links` | Liste de magnets pour les images de la galerie |
@@ -66,7 +66,7 @@ Les items sont répartis en trois catalogues distincts :
 Chaque catalogue supporte le filtrage par :
 - Statut de vérification (`verified`, `unofficial`, `rejected`)
 - Organisation
-- Niveau de format (`pack` / `individual`)
+- Niveau de format (`simple` / `pack` / `individual`)
 
 ---
 

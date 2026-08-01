@@ -144,6 +144,25 @@
 
         <div class="upload-section" id="tutoSectionData">
           <h2>Données (optionnel)</h2>
+
+          <div class="form-group">
+            <label class="label-with-help">Format des données <span class="help-icon" data-tooltip="Choisissez 'Simple' pour un fichier unique avec une seule couche, 'Pack' pour un fichier unique multi-couches, ou 'Individuelles' pour plusieurs fichiers distincts.">?</span></label>
+            <div class="radio-group" id="dataFormatLevelGroup">
+              <label class="radio-label">
+                <input type="radio" name="data_format_level" value="simple" checked>
+                <span class="radio-text">Simple <small>Un seul fichier, une seule couche</small></span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="data_format_level" value="pack">
+                <span class="radio-text">Pack <small>Un seul fichier contenant plusieurs couches</small></span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="data_format_level" value="individual">
+                <span class="radio-text">Individuelles <small>Plusieurs fichiers distincts</small></span>
+              </label>
+            </div>
+          </div>
+
           <div id="dataTextInputGroup" class="form-group data-input-group">
             <label class="label-with-help">Coller vos données <span class="help-icon" data-tooltip="Copiez-collez votre tableau ici (format CSV : virgules ou tabs). Seules les 50 premières lignes seront conservées pour l'aperçu dans le catalogue.">?</span></label>
             <div class="form-hint">Les 50 premières lignes seront utilisées uniquement pour prévisualiser la table dans le catalogue</div>

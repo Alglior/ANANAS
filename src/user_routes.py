@@ -437,7 +437,7 @@ def _create_viz_link(data, item_id):
 
 
 def _process_magnets(item, data_format_level, data):
-    if data_format_level == "pack":
+    if data_format_level in ("simple", "pack"):
         magnet = data.get("magnet_link", "").strip()
         if magnet:
             if not validate_magnet_link(magnet):

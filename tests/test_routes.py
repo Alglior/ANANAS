@@ -204,6 +204,25 @@ class TestAPIEndpoints:
         data = resp.get_json()
         assert data and data.get("status") == "created"
 
+    def test_upload_item_accepts_simple_level(self, client, seeded):
+        with client.session_transaction() as sess:
+            sess["user_id"] = seeded["user"].id
+
+        resp = client.post(
+            "/api/upload/item",
+            json={
+                "title": "Test item simple",
+                "type": "geodonnee",
+                "format_type": "csv",
+                "description": "desc",
+                "data_format_level": "simple",
+                "magnet_link": "magnet:?xt=urn:btih:test123",
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["data_format_level"] == "simple"
+
 
 class TestOrganizationRoutes:
     """Phase 7.6 — Vérifier les routes organisation."""

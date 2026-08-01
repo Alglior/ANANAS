@@ -396,6 +396,8 @@ def seed_items(category, count, type_val, title_fn, format_fn, is_pack=False):
         )
         if is_pack:
             item.data_format_level = "pack"
+        elif i % 5 == 0:
+            item.data_format_level = "simple"
         db.session.add(item)
         item_records.append({"item": item, "title": title, "tags": tags})
 

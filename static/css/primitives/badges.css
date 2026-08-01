@@ -38,7 +38,8 @@
 
 /* Data format badges */
 .badge-pack,
-.badge-individual {
+.badge-individual,
+.badge-simple {
   display: inline-block;
   font-size: 0.75rem;
   font-weight: 600;
@@ -50,6 +51,12 @@
   color: var(--forest);
   background: rgba(34, 139, 34, 0.11);
   border: 1px solid rgba(34, 139, 34, 0.35);
+}
+
+.badge-simple {
+  color: var(--forest);
+  background: rgba(34, 139, 34, 0.06);
+  border: 1px solid rgba(34, 139, 34, 0.2);
 }
 
 .badge-individual {
