@@ -54,6 +54,25 @@
   flex-shrink: 0;
 }
 
+.pack-zoom-levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.pack-zoom-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  background: var(--mustard);
+  border: none;
+  color: var(--charcoal);
+}
+
 .tech-code-block code {
   display: block;
   font-family: var(--mono);

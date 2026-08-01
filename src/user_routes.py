@@ -443,10 +443,17 @@ def _process_magnets(item, data_format_level, data):
             if not validate_magnet_link(magnet):
                 return jsonify({"error": "Lien magnet invalide"}), 400
             item.magnet_link = magnet
+            zoom_meta = {}
             if data_format_level == "pack":
                 zoom_levels = data.get("zoom_levels", [])
                 if zoom_levels:
-                    item.metadata_json = {"zoom_levels": zoom_levels}
+                    zoom_meta["zoom_levels"] = zoom_levels
+            elif data_format_level == "simple":
+                zoom_level = data.get("zoom_level", "")
+                if zoom_level:
+                    zoom_meta["zoom_levels"] = [zoom_level]
+            if zoom_meta:
+                item.metadata_json = zoom_meta
     else:
         magnet_links = data.get("magnet_links", [])
         if magnet_links:

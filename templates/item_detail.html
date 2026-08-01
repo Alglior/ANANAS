@@ -375,6 +375,17 @@
           </div>
           {% endfor %}
         </div>
+        {% elif item.data_format_level in ("pack", "simple") and item.pack_zoom_levels %}
+        <div class="tech-code-block" id="techCodeBlock">
+          <h3>Lien magnet <a href="/catalogue/item/{{ item.id }}/magnets/download" class="btn btn-copy-tech btn-download-magnets" download>Télécharger</a></h3>
+          <div class="pack-zoom-levels">
+            {% for zl in item.pack_zoom_levels %}
+            <span class="pack-zoom-badge">{{ zl.label }}</span>
+            {% endfor %}
+          </div>
+          <code>{{ item.magnet|e }}</code>
+          <button class="btn btn-copy-tech" type="button" data-magnet="{{ item.magnet|e }}">Copier le lien</button>
+        </div>
         {% elif item.magnet %}
         <div class="tech-code-block" id="techCodeBlock">
           <h3>Lien magnet</h3>

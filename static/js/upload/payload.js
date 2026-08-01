@@ -28,8 +28,12 @@ UploadModule.payload = (function () {
       if (level === 'simple' || level === 'pack') {
         payload.data_format_level = level;
         payload.magnet_link = magnetLinks.length > 0 ? magnetLinks[0].magnet_link : '';
-        if (level === 'pack' && magnetLinks.length > 0 && magnetLinks[0].zoom_levels && magnetLinks[0].zoom_levels.length > 0) {
-          payload.zoom_levels = magnetLinks[0].zoom_levels;
+        if (magnetLinks.length > 0) {
+          if (level === 'pack' && magnetLinks[0].zoom_levels && magnetLinks[0].zoom_levels.length > 0) {
+            payload.zoom_levels = magnetLinks[0].zoom_levels;
+          } else if (level === 'simple') {
+            payload.zoom_level = magnetLinks[0].zoom_level || 'regions';
+          }
         }
       } else {
         payload.data_format_level = 'individual';

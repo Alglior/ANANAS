@@ -183,6 +183,7 @@ def item_detail_view(item_id):
     data_chunks = [c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=item_id).all()]
 
     ZOOM_ORDER = {"iris": 0, "communes": 1, "cantons": 2, "departements": 3, "regions": 4, "pays": 5}
+    ZOOM_LABELS = {"iris": "IRIS", "communes": "Communes", "cantons": "Cantons", "departements": "D\u00e9partements", "regions": "R\u00e9gions", "pays": "Pays"}
     if item_dict.get("magnet_links"):
         item_dict["magnet_links"].sort(key=lambda ml: ZOOM_ORDER.get(ml.get("zoom_level", ""), 99))
         grouped = {}
@@ -190,6 +191,9 @@ def item_detail_view(item_id):
             zl = ml.get("zoom_level", "")
             grouped.setdefault(zl, []).append(ml["magnet_link"])
         item_dict["magnet_links_grouped"] = [{"zoom_level": z, "links": grouped[z]} for z in sorted(grouped, key=lambda z: ZOOM_ORDER.get(z, 99))]
+    elif item.data_format_level in ("pack", "simple") and isinstance(item.metadata_json, dict) and item.metadata_json.get("zoom_levels"):
+        zlevels = sorted(item.metadata_json["zoom_levels"], key=lambda z: ZOOM_ORDER.get(z, 99))
+        item_dict["pack_zoom_levels"] = [{"key": z, "label": ZOOM_LABELS.get(z, z)} for z in zlevels]
 
     return render_template(
         "item_detail.html",
