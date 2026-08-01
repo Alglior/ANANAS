@@ -6,7 +6,7 @@ from src.admin import bp, login_required, require_admin, get_catalogues_status, 
 @login_required
 @require_admin
 def admin_reports():
-    return render_template("admin/reports.html", title="Administration — Signalements", meta_description="Liste des signalements")
+    return redirect(url_for("admin.admin_moderation"))
 
 
 @bp.route("/admin/moderation")
@@ -27,7 +27,7 @@ def admin_audit():
 @login_required
 @require_admin
 def admin_contact_messages():
-    return render_template("admin/contact_messages.html", title="Administration — Messages de contact", meta_description="Messages reçus via la page contact")
+    return redirect(url_for("admin.admin_moderation"))
 
 
 @bp.route("/admin/mirrors")
