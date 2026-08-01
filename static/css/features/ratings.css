@@ -204,6 +204,119 @@
     font-size: 1rem;
 }
 
+/* Category dropdown filter */
+.filter-category-dropdown {
+    position: relative;
+    margin-left: 0.5rem;
+}
+
+.filter-category-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 4px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--white);
+    color: var(--charcoal);
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+}
+
+.filter-category-btn:hover,
+.filter-category-btn[aria-expanded="true"] {
+    background: var(--mustard);
+    border-color: var(--mustard);
+    color: var(--charcoal);
+}
+
+.filter-category-arrow {
+    font-size: 0.7rem;
+    transition: transform 0.2s ease;
+}
+
+.filter-category-btn[aria-expanded="true"] .filter-category-arrow {
+    transform: rotate(180deg);
+}
+
+.filter-category-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 240px;
+    max-width: 320px;
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    z-index: 100;
+    overflow: hidden;
+}
+
+.filter-category-search-wrap {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.filter-category-search {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font: inherit;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.filter-category-search:focus {
+    border-color: var(--mustard);
+}
+
+.filter-category-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.filter-category-option {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    color: var(--charcoal);
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.filter-category-option:hover,
+.filter-category-option.active {
+    background: rgba(218, 165, 32, 0.15);
+}
+
+.filter-category-option.active {
+    font-weight: 700;
+    color: var(--mustard);
+}
+
+.filter-category-clear {
+    font-style: italic;
+    color: var(--color-muted);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.filter-category-clear:hover {
+    color: var(--color-danger);
+    background: rgba(220, 53, 69, 0.06);
+}
+
+.filter-category-option.hidden {
+    display: none;
+}
+
 /* Report section */
 .report-section {
     margin-top: 2rem;

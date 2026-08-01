@@ -16,7 +16,7 @@
 <section class="catalogue-header">
     <div class="container">
       <h1>{{ catalogue_name }}</h1>
-      <p class="catalogue-meta">{{ total_items }}&nbsp;résultats — page {{ page }}/{{ total_pages }}{% if filter_tag %} — Filtre par étiquette : <strong>{{ filter_tag }}</strong> <a href="/catalogue/{{ catalogue_type }}" class="filter-clear">&times; effacer</a>{% endif %}{% if filter_category %} — Filtre par catégorie : <strong>{{ filter_category }}</strong> <a href="/catalogue/{{ catalogue_type }}" class="filter-clear">&times; effacer</a>{% endif %}</p>
+      <p class="catalogue-meta">{{ total_items }}&nbsp;résultats — page {{ page }}/{{ total_pages }}{% if filter_tag %} — Filtre par étiquette : <strong>{{ filter_tag }}</strong> <a href="?{% if filter_category %}category={{ filter_category|urlencode }}{% endif %}{% if filter_verified %}&verified=1{% endif %}{% if filter_unofficial %}&unofficial=1{% endif %}{% if filter_format %}&format_level={{ filter_format }}{% endif %}{% if filter_imod %}&imod={{ filter_imod }}{% endif %}" class="filter-clear">&times; effacer</a>{% endif %}{% if filter_category %} — Filtre par catégorie : <strong>{{ filter_category }}</strong> <a href="?{% if filter_tag %}tag={{ filter_tag|urlencode }}{% endif %}{% if filter_verified %}&verified=1{% endif %}{% if filter_unofficial %}&unofficial=1{% endif %}{% if filter_format %}&format_level={{ filter_format }}{% endif %}{% if filter_imod %}&imod={{ filter_imod }}{% endif %}" class="filter-clear">&times; effacer</a>{% endif %}</p>
     </div>
   </section>
 
@@ -35,6 +35,25 @@
             <a href="{{ url_verified }}"{% if filter_verified %} class="active"{% endif %}>Données vérifiées</a>
             <span class="separator">|</span>
             <a href="{{ url_unofficial }}"{% if filter_unofficial %} class="active"{% endif %}>Données non officielles</a>
+          </div>
+          <div class="filter-category-dropdown">
+            <button class="filter-category-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+              <span class="filter-category-label">{% if filter_category %}{{ filter_category }}{% else %}Catégorie{% endif %}</span>
+              <span class="filter-category-arrow">&#9662;</span>
+            </button>
+            <div class="filter-category-menu" role="listbox" hidden>
+              <div class="filter-category-search-wrap">
+                <input class="filter-category-search" type="text" placeholder="Rechercher une catégorie..." autocomplete="off">
+              </div>
+              <ul class="filter-category-list">
+                {% if filter_category %}
+                <li role="option" class="filter-category-option filter-category-clear" data-value="">— Effacer le filtre —</li>
+                {% endif %}
+                {% for cat in all_categories %}
+                <li role="option" class="filter-category-option{% if filter_category == cat %} active{% endif %}" data-value="{{ cat|e }}">{{ cat }}</li>
+                {% endfor %}
+              </ul>
+            </div>
           </div>
           {% if catalogue_type == "donnees" %}
           <div class="filter-right">

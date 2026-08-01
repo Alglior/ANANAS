@@ -149,6 +149,10 @@ def _do_catalogue(catalogue_type, page, per_page=30):
     from src.shared import _build_page_numbers
     page_numbers = _build_page_numbers(page, total_pages)
 
+    from models import PredefinedTagCategory
+    all_categories = PredefinedTagCategory.query.order_by(PredefinedTagCategory.display_order).all()
+    all_category_names = [c.name for c in all_categories]
+
     urls = _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod)
     meta = _CATALOGUE_META[catalogue]
 
@@ -159,6 +163,7 @@ def _do_catalogue(catalogue_type, page, per_page=30):
         "filter_verified": filter_verified, "filter_unofficial": filter_unofficial,
         "filter_format": filter_format, "filter_imod": filter_imod, "org_slug": org_slug,
         "filter_tag": filter_tag, "filter_category": filter_category,
+        "all_categories": all_category_names,
         **urls,
         "items": result_items, "page": page, "per_page": per_page,
         "total_items": total_items, "total_pages": total_pages, "page_numbers": page_numbers,
