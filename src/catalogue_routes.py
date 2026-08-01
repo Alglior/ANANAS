@@ -33,7 +33,7 @@ class CatalogueTypeConverter(BaseConverter):
         return value
 
 
-def _build_filtered_query(catalogue_type, filter_verified=False, filter_unofficial=False, filter_format="", org_slug=None):
+def _build_filtered_query(catalogue_type, filter_verified=False, filter_unofficial=False, filter_format="", org_slug=None, filter_imod=""):
     from models import Item
 
     item_type = type_map.get(catalogue_type)
@@ -58,7 +58,7 @@ def _build_filtered_query(catalogue_type, filter_verified=False, filter_unoffici
     return query
 
 
-def _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_format, org_slug):
+def _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, _filter_imod=""):
     base = f"/catalogue/{catalogue}"
 
     def _build_url(include_verif=False, include_unofficial=False, include_format=None):
@@ -80,10 +80,13 @@ def _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_
         "url_pack": _build_url(include_verif=filter_verified, include_unofficial=filter_unofficial, include_format="pack"),
         "url_simple": _build_url(include_verif=filter_verified, include_unofficial=filter_unofficial, include_format="simple"),
         "url_ind": _build_url(include_verif=filter_verified, include_unofficial=filter_unofficial, include_format="individual"),
+        "url_imod_high": _build_url(include_verif=filter_verified, include_unofficial=filter_unofficial, include_format=filter_format or None) + ("&" if filter_verified or filter_unofficial or filter_format or org_slug else "?") + "imod=high",
+        "url_imod_low": _build_url(include_verif=filter_verified, include_unofficial=filter_unofficial, include_format=filter_format or None) + ("&" if filter_verified or filter_unofficial or filter_format or org_slug else "?") + "imod=low",
     }
 
 
 def _do_catalogue(catalogue_type, page, per_page=30):
+    from models import Item
     catalogue = catalogue_type
     if catalogue not in type_map:
         return redirect(url_for("catalogue.catalogue_index"))
@@ -94,12 +97,21 @@ def _do_catalogue(catalogue_type, page, per_page=30):
     filter_verified = request.args.get("verified") == "1"
     filter_unofficial = request.args.get("unofficial") == "1"
     filter_format = request.args.get("format_level", "")
+    filter_imod = request.args.get("imod", "")
     org_slug = request.args.get("org")
     format_param = request.args.get("format", "")
 
-    query = _build_filtered_query(catalogue, filter_verified, filter_unofficial, filter_format, org_slug)
+    query = _build_filtered_query(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod)
+    all_items = query.all()
 
-    total_items = query.count()
+    if filter_imod == "high":
+        all_items.sort(key=lambda it: it._compute_imod_score()["score"], reverse=True)
+    elif filter_imod == "low":
+        all_items.sort(key=lambda it: it._compute_imod_score()["score"])
+    else:
+        all_items.sort(key=lambda it: it._compute_imod_score()["score"], reverse=True)
+
+    total_items = len(all_items)
     total_pages = max((total_items + per_page - 1) // per_page, 1)
 
     if page < 1:
@@ -111,13 +123,15 @@ def _do_catalogue(catalogue_type, page, per_page=30):
             return redirect(f"/catalogue/{catalogue}?page={total_pages}")
         page = total_pages
 
-    items = query.offset((page - 1) * per_page).limit(per_page).all()
-    result_items = [item.to_dict(include_details=True) for item in items]
+    start = (page - 1) * per_page
+    end = start + per_page
+    items_page = all_items[start:end]
+    result_items = [item.to_dict(include_details=True) for item in items_page]
 
     from src.shared import _build_page_numbers
     page_numbers = _build_page_numbers(page, total_pages)
 
-    urls = _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_format, org_slug)
+    urls = _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod)
     meta = _CATALOGUE_META[catalogue]
 
     data = {
@@ -125,7 +139,7 @@ def _do_catalogue(catalogue_type, page, per_page=30):
         "meta_description": meta["meta"],
         "catalogue_type": catalogue,
         "filter_verified": filter_verified, "filter_unofficial": filter_unofficial,
-        "filter_format": filter_format, "org_slug": org_slug,
+        "filter_format": filter_format, "filter_imod": filter_imod, "org_slug": org_slug,
         **urls,
         "items": result_items, "page": page, "per_page": per_page,
         "total_items": total_items, "total_pages": total_pages, "page_numbers": page_numbers,

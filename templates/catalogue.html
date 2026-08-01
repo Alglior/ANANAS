@@ -28,21 +28,27 @@
         <span>{{ catalogue_name }}</span>
       </nav>
 
-     <nav class="filters" aria-label="Filtres de vérification">
-         <div class="filter-left">
-           <a href="{{ url_all }}"{% if not filter_verified and not filter_unofficial %} class="active"{% endif %}>Toutes les données</a>
-           <span class="separator">|</span>
-           <a href="{{ url_verified }}"{% if filter_verified %} class="active"{% endif %}>Données vérifiées</a>
-           <span class="separator">|</span>
-           <a href="{{ url_unofficial }}"{% if filter_unofficial %} class="active"{% endif %}>Données non officielles</a>
-         </div>
-<div class="filter-right">
+<nav class="filters" aria-label="Filtres de vérification">
+          <div class="filter-left">
+            <a href="{{ url_all }}"{% if not filter_verified and not filter_unofficial %} class="active"{% endif %}>Toutes les données</a>
+            <span class="separator">|</span>
+            <a href="{{ url_verified }}"{% if filter_verified %} class="active"{% endif %}>Données vérifiées</a>
+            <span class="separator">|</span>
+            <a href="{{ url_unofficial }}"{% if filter_unofficial %} class="active"{% endif %}>Données non officielles</a>
+          </div>
+          {% if catalogue_type == "donnees" %}
+          <div class="filter-right">
             <a{% if filter_format == 'simple' %} class="active"{% endif %} href="{{ url_simple }}">Simples</a>
             <span class="separator">|</span>
             <a{% if filter_format == 'pack' %} class="active"{% endif %} href="{{ url_pack }}">Packs</a>
             <span class="separator">|</span>
             <a{% if filter_format == 'individual' %} class="active"{% endif %} href="{{ url_ind }}">Individuelles</a>
+            <span class="separator">|</span>
+            <a{% if filter_imod == 'high' %} class="active"{% endif %} href="{{ url_imod_high }}">IMOD +</a>
+            <span class="separator">|</span>
+            <a{% if filter_imod == 'low' %} class="active"{% endif %} href="{{ url_imod_low }}">IMOD -</a>
           </div>
+          {% endif %}
        </nav>
 
 
