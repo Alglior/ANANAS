@@ -28,6 +28,9 @@ UploadModule.payload = (function () {
       if (level === 'simple' || level === 'pack') {
         payload.data_format_level = level;
         payload.magnet_link = magnetLinks.length > 0 ? magnetLinks[0].magnet_link : '';
+        if (level === 'pack' && magnetLinks.length > 0 && magnetLinks[0].zoom_levels && magnetLinks[0].zoom_levels.length > 0) {
+          payload.zoom_levels = magnetLinks[0].zoom_levels;
+        }
       } else {
         payload.data_format_level = 'individual';
         payload.magnet_links = magnetLinks;

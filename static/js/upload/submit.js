@@ -283,7 +283,16 @@ UploadModule.submit = (function () {
       var magnetEntries = document.getElementById('magnetEntries');
       if (magnetEntries) {
         magnetEntries.innerHTML = '';
-        UploadModule.magnets.createEntry(d.magnet_link, 'regions');
+        if (d.data_format_level === 'pack' && d.metadata_json && d.metadata_json.zoom_levels) {
+          UploadModule.magnets.createEntry(d.magnet_link, d.metadata_json.zoom_levels.join(','));
+        } else {
+          UploadModule.magnets.createEntry(d.magnet_link, 'regions');
+        }
+        if (d.data_format_level === 'pack') {
+          UploadModule.magnets.setSingleEntryMode(true, true);
+        } else if (d.data_format_level === 'simple') {
+          UploadModule.magnets.setSingleEntryMode(true, false);
+        }
       }
     } else if (d.data_format_level === 'individual' && d.magnet_links && d.magnet_links.length > 0) {
       var magnetEntries = document.getElementById('magnetEntries');

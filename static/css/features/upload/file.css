@@ -161,6 +161,18 @@
   font-weight: 600;
 }
 
+.zoom-pill.multi-select.active {
+  background: var(--mustard);
+  border-color: var(--mustard);
+  color: var(--charcoal);
+  font-weight: 600;
+}
+
+.zoom-pill.multi-select.active:hover {
+  background: var(--mustard);
+  border-color: var(--mustard);
+}
+
 /* ── Magnet entry ── */
 .magnet-entry {
   display: flex;
