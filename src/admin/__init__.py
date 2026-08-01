@@ -189,4 +189,5 @@ import src.admin.featured
 import src.admin.geopackages
 import src.admin.catalogues
 import src.admin.replication
+import src.admin.backup
 import src.admin.tags

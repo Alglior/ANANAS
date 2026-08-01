@@ -142,3 +142,88 @@
   gap: 0.75rem;
   margin-top: 1.25rem;
 }
+
+/* ── Backup page ── */
+.backup-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.backup-card {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.backup-card h2 {
+  font-size: 1.1rem;
+  color: var(--charcoal);
+  margin: 0 0 0.5rem;
+}
+
+.backup-card p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+}
+
+.backup-warning {
+  color: var(--error-red, #c0392b) !important;
+  font-weight: 600;
+}
+
+.btn-spinner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-color);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: backup-spin 0.6s linear infinite;
+}
+
+.btn-spinner.hidden-section {
+  display: none;
+}
+
+@keyframes backup-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Custom file input ── */
+.custom-file-input {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.custom-file-input input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.btn-file-browse {
+  flex-shrink: 0;
+}
+
+.file-input-name {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -1,0 +1,47 @@
+{% extends 'base_admin.html' %}
+
+{% block admin_content %}
+<div class="backup-section">
+  <div class="backup-card">
+    <h2>Télécharger une sauvegarde</h2>
+    <p>Téléchargez un dump complet de la base de données (format .sql.gz).</p>
+    <button type="button" class="btn btn-primary" id="backup-download-btn">
+      <span class="btn-label">Télécharger la sauvegarde</span>
+      <span class="btn-spinner hidden-section">
+        <span class="spinner"></span> Génération en cours...
+      </span>
+    </button>
+  </div>
+
+  <div class="backup-card">
+    <h2>Restaurer une sauvegarde</h2>
+    <p class="backup-warning">
+      &#9888;&#65039; Cette action remplacera toutes les données existantes par celles du fichier importé.
+      Assurez-vous d'avoir téléchargé une sauvegarde avant de restaurer.
+    </p>
+    <form id="backup-restore-form" novalidate>
+      <div class="form-group">
+        <label for="backup-file">Fichier .sql.gz</label>
+        <div class="custom-file-input">
+          <input type="file" id="backup-file" accept=".sql.gz" required />
+          <button type="button" class="btn btn-outline btn-file-browse">Parcourir...</button>
+          <span class="file-input-name" id="backup-file-name">Aucun fichier choisi</span>
+        </div>
+      </div>
+      <div id="backup-restore-error" class="form-error hidden-section"></div>
+      <div id="backup-restore-success" class="form-success hidden-section"></div>
+      <button type="submit" class="btn btn-danger" id="backup-restore-btn">
+        <span class="btn-label">Restaurer la base de données</span>
+        <span class="btn-spinner hidden-section">
+          <span class="spinner"></span> Restauration en cours...
+        </span>
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/backup.js') }}"></script>
+{% endblock %}

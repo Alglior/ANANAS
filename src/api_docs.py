@@ -172,9 +172,9 @@ METHOD_COLORS = {
     "DELETE": "#dc3545",
 }
 
-ALLOWED_EXTENSIONS = "csv, shp, geojson, gpkg, json, xml, png, jpg, gif, svg, pdf"
+ALLOWED_EXTENSIONS = "csv, shp, geojson, gpkg, json, xml, png, jpg, svg, pdf"
 
-
+#la variable ep = EndPoint, c'est un dictionnaire qui contient les informations sur un endpoint spécifique de l'API. Chaque endpoint est défini par sa méthode HTTP (GET, POST, PUT, DELETE), son chemin (path), sa description (desc), si l'authentification est requise (auth), le taux de requêtes autorisé (rate) et éventuellement le corps de la requête (body) pour les méthodes qui en nécessitent un.
 def _build_endpoints():
     lookup = {ep["path"]: ep for ep in _ENDPOINTS}
     result = []
