@@ -75,45 +75,46 @@ def _get_tags(category, i):
         fmt = GALLERY_FORMATS[i % 3]
         tags = []
         if i % 5 == 0:
-            tags.extend(["topographie", "altimétrie"])
+            tags.extend(["Altitude", "Relief"])
         elif i % 4 == 0:
-            tags.extend(["hydrologie", "réseau"])
+            tags.extend(["Hydrographie", "Cours d'eau"])
         elif i % 3 == 0:
-            tags.extend(["occupation du sol", "classification"])
+            tags.extend(["Occupation du sol", "Végétation"])
         elif i % 7 == 0:
-            tags.extend(["administratif", "communes"])
+            tags.extend(["Limite administrative", "Commune"])
         else:
-            tags = ["donnée", fmt]
+            tags = ["Donnée ponctuelle", "Couche"]
         return tags, fmt
 
     if category == "cartes":
         fmt = MAP_FORMATS[i % len(MAP_FORMATS)]
         tags = []
         if i % 5 == 0:
-            tags.extend(["cartographie", "topographie"])
+            tags.extend(["Couche", "Limite administrative"])
         elif i % 4 == 0:
-            tags.extend(["SIG", "vectoriel"])
+            tags.extend(["Couche", "Vecteur"])
         elif i % 3 == 0:
-            tags.extend(["raster", "satellite"])
+            tags.extend(["Raster", "Imagerie satellite"])
         else:
-            tags = ["carte", fmt]
+            tags = ["Couche", fmt]
         return tags, fmt
 
     if category == "applications":
         app_type = APP_TYPES[i % len(APP_TYPES)]
         tags = []
         if i % 5 == 0:
-            tags.extend(["web", "visualisation"])
+            tags.extend(["API", "Couche"])
         elif i % 4 == 0:
-            tags.extend(["api", "service"])
+            tags.extend(["API", "Base de données"])
         elif i % 3 == 0:
-            tags.extend(["dashboard", "analytique"])
+            tags.extend(["Couche", "Statistique"])
         else:
-            tags = ["application", app_type]
+            tags = ["API", app_type]
         return tags, app_type
 
 
 ZOOM_LEVELS = [1, 2, 4, 8, 16]
+ZOOM_NAMES = ["iris", "communes", "departements", "regions", "pays"]
 BAND_NAMES = ["Lambert II étendu", "Lambert III", "WGS84/UTM32"]
 CHUNK_FORMATS = ["GeoTIFF", "NTF", "Shapefile zip", "GeoPackage", "E00"]
 
@@ -499,6 +500,9 @@ def seed_items(category, count, type_val, title_fn, format_fn, is_pack=False):
             item.data_format_level = "pack"
         else:
             item.data_format_level = "simple"
+        item.metadata_json = {
+            "zoom_levels": [ZOOM_NAMES[i % 5], ZOOM_NAMES[(i + 2) % 5]]
+        }
         db.session.add(item)
         item_records.append({"item": item, "title": title, "tags": tags})
 

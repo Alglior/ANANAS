@@ -272,7 +272,21 @@
         "Donnée surfacique",
         "Maille",
         "Grille",
-        "Heatmap"
+        "Heatmap",
+        "Shapefile",
+        "GeoJSON",
+        "GeoPackage",
+        "Carte raster",
+        "Carte vectorielle",
+        "SIG interactif",
+        "Orthophoto",
+        "Web App",
+        "Dashboard",
+        "Microservice",
+        "API REST",
+        "Cartographie",
+        "Web",
+        "Application"
       ]
     }
   ]
