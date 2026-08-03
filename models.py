@@ -189,6 +189,7 @@ class Item(db.Model, TimestampMixin):
             "magnet_links": self.metadata_json if isinstance(self.metadata_json, list) else [],
             "image": self.image_path,
             "author": self.author_name,
+            "owner_user_id": self.owner_user_id,
             "organization_id": self.organization_id,
             "organization_name": self.organization.name if self.organization else None,
             "organization_slug": self.organization.slug if self.organization else None,

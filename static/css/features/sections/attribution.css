@@ -49,9 +49,17 @@
   margin: 0;
 }
 
+.attribution-item dd a:hover {
+  color: var(--forest);
+}
+
 .attribution-note {
   color: var(--charcoal);
   line-height: 1.7;
   font-size: 0.95rem;
   margin: 1.25rem 0 0;
+}
+
+.attribution-note a:hover {
+  color: var(--forest);
 }

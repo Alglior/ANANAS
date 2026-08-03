@@ -470,12 +470,16 @@ def seed_ratings():
 
 def seed_items(category, count, type_val, title_fn, format_fn, is_pack=False):
     org_id = _seed_organization()
+    user_ids = db.session.execute(
+        db.select(User.id).order_by(User.id)
+    ).scalars().all()
     item_records = []
     gallery_idx = 1
     for i in range(1, count + 1):
         tags, fmt = format_fn(i)
         title = title_fn(i)
         author_idx = i % len(AUTHOR_NAMES)
+        owner_user_id = user_ids[i % len(user_ids)] if user_ids else None
 
         item = Item(
             type=type_val,
@@ -485,6 +489,7 @@ def seed_items(category, count, type_val, title_fn, format_fn, is_pack=False):
             magnet_link=f"magnet:?xt=urn:btih:{i:032d}",
             image_path="/static/images/logo/ANANAS.png",
             author_name=AUTHOR_NAMES[author_idx],
+            owner_user_id=owner_user_id,
             created_at=_pseudo_date(i),
             license_type="Licence Ouverte / Open License",
             organization_id=org_id,

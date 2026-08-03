@@ -31,6 +31,10 @@
   margin: 0;
 }
 
+.tech-item dd a:hover {
+  color: var(--forest);
+}
+
 .tech-code-block {
   background: var(--light-gray);
   border-radius: 8px;

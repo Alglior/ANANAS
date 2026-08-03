@@ -342,7 +342,7 @@
           </div>
           <div class="tech-item">
             <dt>Auteur / Publieur</dt>
-            <dd>{{ item.author|e }}{% if item.organization_name|e %} — {{ item.organization_name }}{% endif %}</dd>
+            <dd>{% if item.owner_user_id %}<a href="/profile/{{ item.owner_user_id }}">{{ item.author|e }}</a>{% else %}{{ item.author|e }}{% endif %}{% if item.organization_name|e %} — <a href="/organizations/{{ item.organization_slug|e }}">{{ item.organization_name|e }}</a>{% endif %}</dd>
           </div>
         </dl>
 
@@ -467,14 +467,14 @@
             </div>
             <div class="attribution-item">
               <dt>Auteur</dt>
-              <dd>{{ item.author|e }}{% if item.organization_name|e %} — {{ item.organization_name }}{% endif %}</dd>
+<dd>{% if item.owner_user_id %}<a href="/profile/{{ item.owner_user_id }}">{{ item.author|e }}</a>{% else %}{{ item.author|e }}{% endif %}{% if item.organization_name|e %} — <a href="/organizations/{{ item.organization_slug|e }}">{{ item.organization_name|e }}</a>{% endif %}</dd>
             </div>
             <div class="attribution-item">
               <dt>Date de publication</dt>
               <dd>{{ item.created_at }}</dd>
             </div>
           </dl>
-          <p class="attribution-note">Cette donnée publiée par {{ item.author|e }}{% if item.organization_name|e %} — {{ item.organization_name }}{% endif %} peut être réutilisée librement dans vos propres projets SIG, analyses ou visualisations cartographiques. La mention « Source : A.N.A.N.A.S » est recommandée.</p>
+          <p class="attribution-note">Cette donnée publiée par {% if item.owner_user_id %}<a href="/profile/{{ item.owner_user_id }}">{{ item.author|e }}</a>{% else %}{{ item.author|e }}{% endif %}{% if item.organization_name|e %} — <a href="/organizations/{{ item.organization_slug|e }}">{{ item.organization_name|e }}</a>{% endif %} peut être réutilisée librement dans vos propres projets SIG, analyses ou visualisations cartographiques. La mention « Source : A.N.A.N.A.S » est recommandée.</p>
         </div>
       </section>
 
