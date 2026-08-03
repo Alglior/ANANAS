@@ -310,13 +310,10 @@
           </div>
 
           {% if item.pdf_doc %}
-          <div class="pdf-doc-section">
-            <a href="{{ item.pdf_doc|e }}" class="btn btn-pdf" target="_blank" rel="noopener noreferrer">
-              Voir la documentation PDF
-            </a>
-            <a href="{{ item.pdf_doc|e }}" class="btn btn-pdf-download" download>
-              Télécharger la documentation PDF
-            </a>
+          <div class="tech-code-block pdf-doc-section">
+            <h3>Documentation PDF</h3>
+            <code>{{ item.pdf_doc|e }}</code>
+            <button class="btn btn-copy-tech" type="button" data-magnet="{{ item.pdf_doc|e }}">Copier le lien magnet</button>
           </div>
           {% endif %}
 
