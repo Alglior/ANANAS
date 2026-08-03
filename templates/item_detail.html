@@ -285,6 +285,19 @@
 
           </div>
 
+          {% if current_user and current_user.is_admin %}
+          <div class="admin-item-actions">
+            <hr class="buy-divider">
+            <h3>Administration</h3>
+            <div class="admin-verify-controls">
+              <span class="admin-verify-label">Vérification :</span>
+              <span class="admin-verify-status" id="verifyStatus">{{ item.verification_status }}</span>
+              <button class="btn btn-verify" id="btnVerifyItem" type="button" data-item-id="{{ item.id }}">✓ Vérifier</button>
+              <button class="btn btn-unverify" id="btnUnverifyItem" type="button" data-item-id="{{ item.id }}">✗ Dé-vérifier</button>
+            </div>
+          </div>
+          {% endif %}
+
           {% if item.tags and item.tags|length > 0 %}
           <div class="item-tags">
             <span class="tags-label">Étiquette :</span>

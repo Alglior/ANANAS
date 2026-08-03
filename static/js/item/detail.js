@@ -280,4 +280,32 @@
         .catch(function () {});
     }, 2000);
   }
+
+  var btnVerify = document.getElementById('btnVerifyItem');
+  var btnUnverify = document.getElementById('btnUnverifyItem');
+  var verifyStatus = document.getElementById('verifyStatus');
+
+  function handleVerify(status) {
+    fetch('/api/items/' + itemId + '/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-Token': csrfToken,
+      },
+      body: JSON.stringify({ status: status }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.error) return;
+        if (verifyStatus) verifyStatus.textContent = data.new_status;
+      });
+  }
+
+  if (btnVerify) {
+    btnVerify.addEventListener('click', function () { handleVerify('verified'); });
+  }
+  if (btnUnverify) {
+    btnUnverify.addEventListener('click', function () { handleVerify('unofficial'); });
+  }
 })();

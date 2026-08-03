@@ -190,3 +190,36 @@
 .btn-pdf-download:hover {
   background: var(--forest-alpha-08);
 }
+
+/* Admin item verification controls */
+.admin-item-actions {
+  margin-top: 1.5rem;
+}
+
+.admin-item-actions h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--specs-gray);
+  margin-bottom: 0.5rem;
+}
+
+.admin-verify-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-verify-label {
+  font-size: 0.85rem;
+  color: var(--specs-gray);
+}
+
+.admin-verify-status {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  background: var(--light-gray);
+  text-transform: uppercase;
+}
