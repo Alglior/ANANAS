@@ -196,24 +196,24 @@ var ImodPreview = (function () {
     var values = getFormValues();
     var imod = compute(values);
 
-    var scoreEl = panel.querySelector('.imod-preview-score');
-    var levelEl = panel.querySelector('.imod-preview-level');
-    var metaBar = panel.querySelector('.imod-preview-meta .imod-preview-fill');
-    var techBar = panel.querySelector('.imod-preview-tech .imod-preview-fill');
-    var richBar = panel.querySelector('.imod-preview-rich .imod-preview-fill');
-    var metaVal = panel.querySelector('.imod-preview-meta .imod-preview-dim-value');
-    var techVal = panel.querySelector('.imod-preview-tech .imod-preview-dim-value');
-    var richVal = panel.querySelector('.imod-preview-rich .imod-preview-dim-value');
+    var scoreEl = panel.querySelector('.imod-score');
+    var levelEl = panel.querySelector('.imod-level');
+    var metaBar = panel.querySelector('.imod-meta .imod-dim-fill');
+    var techBar = panel.querySelector('.imod-tech .imod-dim-fill');
+    var richBar = panel.querySelector('.imod-rich .imod-dim-fill');
+    var metaVal = panel.querySelector('.imod-meta .imod-dim-value');
+    var techVal = panel.querySelector('.imod-tech .imod-dim-value');
+    var richVal = panel.querySelector('.imod-rich .imod-dim-value');
     var cfg = config || defaultConfig;
     var w = cfg.weights;
 
     if (scoreEl) {
       scoreEl.textContent = imod.score;
-      scoreEl.className = 'imod-preview-score imod-preview-' + imod.level.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      scoreEl.className = 'imod-score imod-' + imod.level.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
     if (levelEl) {
       levelEl.textContent = 'Niveau ' + imod.level;
-      levelEl.className = 'imod-preview-level imod-preview-' + imod.level.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      levelEl.className = 'imod-level imod-' + imod.level.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
     if (metaBar) metaBar.style.width = (imod.meta / w.meta * 100) + '%';
     if (techBar) techBar.style.width = (imod.tech / w.tech * 100) + '%';
