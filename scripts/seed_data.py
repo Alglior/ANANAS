@@ -405,6 +405,10 @@ def seed_comments():
         print("No items found to attach comments to. Skipping comment seeding.")
         return
 
+    user_ids = db.session.execute(
+        db.select(User.id).order_by(User.id)
+    ).scalars().all()
+
     comments_to_add = []
     n_comments = 2000
     for i in range(1, n_comments + 1):
@@ -412,9 +416,11 @@ def seed_comments():
         item_id = items[(i - 1) % len(items)]
         content = COMMENT_CONTENTS[i % len(COMMENT_CONTENTS)]
         created_at = _pseudo_date(f"comment_{i}")
+        user_id = user_ids[i % len(user_ids)] if user_ids else None
 
         comment = Comment(
             item_id=item_id,
+            user_id=user_id,
             author_name=author,
             content=content,
             created_at=created_at,
