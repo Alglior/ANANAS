@@ -358,6 +358,8 @@ UploadModule.submit = (function () {
       }
 
       resultsContainer.innerHTML = '';
+      var total = validFiles.length;
+      var done = 0;
 
       validFiles.forEach(function(file) {
         var row = document.createElement('div');
@@ -426,10 +428,20 @@ UploadModule.submit = (function () {
             .catch(function(err) {
               row.className = 'json-upload-result error';
               row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + file.name + '</span><span class="file-status">' + err.message + '</span>';
+            })
+            .finally(function() {
+              done++;
+              if (done >= total) {
+                setTimeout(function() { location.reload(); }, 1500);
+              }
             });
           } catch (err) {
             row.className = 'json-upload-result error';
             row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + file.name + '</span><span class="file-status">JSON invalide</span>';
+            done++;
+            if (done >= total) {
+              setTimeout(function() { location.reload(); }, 1500);
+            }
           }
         };
         reader.readAsText(file);
