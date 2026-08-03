@@ -412,9 +412,9 @@
 
       <!-- IMOD Score -->
       {% if item.imod %}
-      {% set imod_meta_pct = (item.imod.meta / 45 * 100)|round(1) %}
-      {% set imod_tech_pct = (item.imod.tech / 36 * 100)|round(1) %}
-      {% set imod_rich_pct = (item.imod.rich / 19 * 100)|round(1) %}
+      {% set imod_meta_pct = (item.imod.meta / imod_config.weights.meta * 100)|round(1) %}
+      {% set imod_tech_pct = (item.imod.tech / imod_config.weights.tech * 100)|round(1) %}
+      {% set imod_rich_pct = (item.imod.rich / imod_config.weights.rich * 100)|round(1) %}
       <section class="imod-section">
         <h2>Indice de qualité des métadonnées
           <span class="help-icon" data-tooltip="L'indice IMOD évalue la qualité des métadonnées selon trois dimensions : Meta (qualité documentaire), Tech (précision technique), Rich (diversité). Score sur 100 classé en niveau Élevé (&ge;70), Moyen ([40,70[) ou Faible (&lt;40).">?</span>

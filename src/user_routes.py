@@ -632,16 +632,16 @@ def create_upload_item():
         return err
     _process_tags(item, data.get("tags", []))
 
-    if status != "draft":
-        err = _process_magnets(item, data_format_level, data)
-        if err:
-            return err
-        image_magnets = data.get("image_magnets", [])
-        if image_magnets:
-            item.image_magnet_links = image_magnets
+    err = _process_magnets(item, data_format_level, data)
+    if err:
+        return err
+    image_magnets = data.get("image_magnets", [])
+    if image_magnets:
+        item.image_magnet_links = image_magnets
+        if status != "draft":
             item.image_magnets_pending = True
             item.image_magnets_total = len(image_magnets)
-        _process_image_magnets_async(item.id, image_magnets)
+    _process_image_magnets_async(item.id, image_magnets)
 
     db.session.commit()
     return jsonify({"status": "created", "id": item.id})

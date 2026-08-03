@@ -304,6 +304,12 @@ UploadModule.submit = (function () {
       }
     }
 
+    // Restore PDF magnet
+    var pdfInput = document.getElementById('pdf_magnet_link');
+    if (pdfInput && d.pdf_magnet_link) {
+      pdfInput.value = d.pdf_magnet_link;
+    }
+
     // Restore visualization links (supports both formats)
     if (d.visualization_links && d.visualization_links.length > 0) {
       var vln = document.getElementById('viz_name');
@@ -374,6 +380,7 @@ UploadModule.submit = (function () {
               organization_id: data.organization_id || '',
               license_type: data.license_type || '',
               custom_license_text: data.custom_license_text || '',
+              pdf_magnet_link: data.pdf_magnet_link || '',
               status: 'draft'
             };
             if (data.tags && data.tags.length > 0) {

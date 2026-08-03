@@ -1,0 +1,26 @@
+{
+  "weights": {
+    "meta": 45,
+    "tech": 36,
+    "rich": 19
+  },
+  "max_raw": {
+    "meta": 10,
+    "tech": 10,
+    "rich": 10
+  },
+  "thresholds": {
+    "high": 70,
+    "medium": 40
+  },
+  "levels": {
+    "high": "Élevé",
+    "medium": "Moyen",
+    "low": "Faible"
+  },
+  "format_level_points": {
+    "individual": 1,
+    "simple": 2,
+    "pack": 3
+  }
+}

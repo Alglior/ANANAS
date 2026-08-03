@@ -233,6 +233,15 @@
         </div>
 
         <div class="upload-section">
+          <h2>Documentation PDF (optionnel)</h2>
+          <div class="form-group">
+            <label for="pdf_magnet_link" class="label-with-help">Lien Magnet du document PDF <span class="help-icon" data-tooltip="Ajoutez un lien Magnet vers un document PDF de documentation ou de notice technique. Cela améliore votre score IMOD (Meta : +2 points).">?</span></label>
+            <input type="text" id="pdf_magnet_link" name="pdf_magnet_link" class="form-control" placeholder="magnet:?xt=urn:btih:...">
+            <div class="form-hint">Ajoutez une documentation PDF (notice, rapport technique) pour gagner +2 points dans le score IMOD.</div>
+          </div>
+        </div>
+
+        <div class="upload-section">
           <h2>Lien de visualisation (optionnel)</h2>
           <div class="form-row viz-links-row">
             <div class="form-group">
@@ -261,20 +270,21 @@
               <div class="imod-preview-dim imod-preview-meta">
                 <span class="imod-preview-dim-label">Meta</span>
                 <span class="imod-preview-dim-bar"><span class="imod-preview-fill" style="width:0%"></span></span>
-                <span class="imod-preview-dim-value">0</span>
+                <span class="imod-preview-dim-value">0/45</span>
               </div>
               <div class="imod-preview-dim imod-preview-tech">
                 <span class="imod-preview-dim-label">Tech</span>
                 <span class="imod-preview-dim-bar"><span class="imod-preview-fill" style="width:0%"></span></span>
-                <span class="imod-preview-dim-value">0</span>
+                <span class="imod-preview-dim-value">0/36</span>
               </div>
               <div class="imod-preview-dim imod-preview-rich">
                 <span class="imod-preview-dim-label">Rich</span>
                 <span class="imod-preview-dim-bar"><span class="imod-preview-fill" style="width:0%"></span></span>
-                <span class="imod-preview-dim-value">0</span>
+                <span class="imod-preview-dim-value">0/19</span>
               </div>
             </div>
           </div>
+          <div class="imod-checklist"></div>
         </div>
 
         <div class="form-actions upload-actions" id="tutoSectionActions">

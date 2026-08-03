@@ -15,6 +15,7 @@ UploadModule.payload = (function () {
       organization_id: document.getElementById('organization_id').value || '',
       license_type: document.getElementById('license_type').value || '',
       custom_license_text: customLicenseText ? customLicenseText.value || '' : '',
+      pdf_magnet_link: (document.getElementById('pdf_magnet_link') || {}).value || '',
     };
 
     if (isDraft) {

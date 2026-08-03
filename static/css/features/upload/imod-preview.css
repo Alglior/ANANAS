@@ -132,7 +132,117 @@
 .imod-preview-dim-value {
   font-size: 0.8rem;
   font-weight: 700;
-  min-width: 28px;
+  min-width: 40px;
   text-align: right;
+  color: var(--charcoal);
+}
+
+/* ─── IMOD Checklist ─── */
+.imod-checklist {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.imod-check-section {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.imod-check-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: var(--light-gray);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.imod-check-score {
+  font-size: 0.78rem;
+  color: var(--specs-gray);
+  font-weight: 600;
+}
+
+.imod-check-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem 0;
+}
+
+.imod-check-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.imod-check-icon {
+  font-size: 0.7rem;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.imod-check-ok .imod-check-icon { color: var(--color-success); }
+.imod-check-partial .imod-check-icon { color: var(--mustard); }
+.imod-check-miss .imod-check-icon { color: var(--color-danger); }
+
+.imod-check-label {
+  flex: 1;
+  color: var(--charcoal);
+}
+
+.imod-check-ok .imod-check-label { color: var(--color-success-dark); }
+.imod-check-miss .imod-check-label { color: var(--color-muted); }
+
+.imod-check-pts {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--specs-gray);
+  min-width: 24px;
+  text-align: right;
+}
+
+.imod-check-ok .imod-check-pts { color: var(--color-success); }
+.imod-check-partial .imod-check-pts { color: var(--mustard); }
+
+.imod-check-tip {
+  cursor: help;
+  font-size: 0.7rem;
+  color: var(--specs-gray);
+  opacity: 0.7;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.imod-check-tip:hover {
+  opacity: 1;
+  color: var(--primary-blue);
+}
+
+.imod-check-footer {
+  padding: 0.5rem 0.75rem;
+  background: var(--light-gray);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  color: var(--specs-gray);
+  line-height: 1.5;
+}
+
+.imod-check-advice {
+  display: block;
+  margin-top: 0.2rem;
+  font-weight: 600;
   color: var(--charcoal);
 }

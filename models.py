@@ -1,10 +1,37 @@
 import datetime
+import json
+import os
 
 from app import db
 from sqlalchemy import ForeignKey, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from utils.security import sanitize_gallery_data, sanitize_value, validate_external_url, validate_magnet_link
+
+IMOD_CONFIG_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "static", "config", "imod-config.json"
+)
+
+
+def load_imod_config():
+    default = {
+        "weights": {"meta": 45, "tech": 36, "rich": 19},
+        "max_raw": {"meta": 10, "tech": 10, "rich": 10},
+        "thresholds": {"high": 70, "medium": 40},
+        "levels": {"high": "Élevé", "medium": "Moyen", "low": "Faible"},
+        "format_level_points": {"individual": 1, "simple": 2, "pack": 3},
+    }
+    try:
+        with open(IMOD_CONFIG_PATH, encoding="utf-8") as f:
+            config = json.load(f)
+        for key in default:
+            config.setdefault(key, default[key])
+        for dim in default["weights"]:
+            config["weights"].setdefault(dim, default["weights"][dim])
+            config["max_raw"].setdefault(dim, default["max_raw"][dim])
+        return config
+    except (OSError, ValueError):
+        return default
 
 
 class TimestampMixin:
@@ -52,7 +79,12 @@ class Item(db.Model, TimestampMixin):
     }
 
     def _compute_imod_score(self):
-        # Meta (45%) — Qualite documentaire
+        cfg = load_imod_config()
+        w = cfg["weights"]
+        mr = cfg["max_raw"]
+        thr = cfg["thresholds"]
+        lvls = cfg["levels"]
+
         meta_score = 0
         if self.description and len(self.description.strip()) > 0:
             meta_score += 1
@@ -71,24 +103,19 @@ class Item(db.Model, TimestampMixin):
             meta_score += 1
         if self.pdf_magnet_link and validate_magnet_link(self.pdf_magnet_link):
             meta_score += 2
-        meta_pct = (min(meta_score, 10) / 10.0) * 45
+        meta_pct = (min(meta_score, mr["meta"]) / mr["meta"]) * w["meta"]
 
-        # Tech (36%) — Precision technique et spatiale
         tech_score = 0
         if self.format_type:
             tech_score += 2
         if validate_magnet_link(self.magnet_link):
             tech_score += 2
-        fmt_level = {"individual": 1, "simple": 2, "pack": 3}
+        fmt_level = cfg["format_level_points"]
         tech_score += fmt_level.get(self.data_format_level, 0)
-        chunk_count = DataChunk.query.filter_by(parent_item_id=self.id).count()
-        if chunk_count > 0:
-            tech_score += 2
         if self.verification_status == "verified":
             tech_score += 1
-        tech_pct = (min(tech_score, 10) / 10.0) * 36
+        tech_pct = (min(tech_score, mr["tech"]) / mr["tech"]) * w["tech"]
 
-        # Rich (19%) — Diversite et profondeur info.
         rich_score = 0
         gallery_count = len(self.gallery_items)
         if gallery_count >= 5:
@@ -114,12 +141,12 @@ class Item(db.Model, TimestampMixin):
             rich_score += 1
         if self._get_image_magnets():
             rich_score += 1
-        rich_pct = (min(rich_score, 10) / 10.0) * 19
+        rich_pct = (min(rich_score, mr["rich"]) / mr["rich"]) * w["rich"]
 
         imod = round(meta_pct + tech_pct + rich_pct, 1)
-        if imod >= 70:
+        if imod >= thr["high"]:
             level = "Eleve"
-        elif imod >= 40:
+        elif imod >= thr["medium"]:
             level = "Moyen"
         else:
             level = "Faible"

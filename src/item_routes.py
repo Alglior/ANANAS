@@ -179,6 +179,8 @@ def item_detail_view(item_id):
 
     from models import VisualizationLink
 
+    from models import load_imod_config
+
     comment_page = 1
     try:
         comment_page = int(request.args.get("page", 1))
@@ -221,6 +223,7 @@ def item_detail_view(item_id):
         show_data_visualization_tabs=item.type == "geodonnee",
         viz_links=viz_links,
         data_chunks=data_chunks,
+        imod_config=load_imod_config(),
     )
 
 
