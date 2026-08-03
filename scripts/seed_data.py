@@ -6,7 +6,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app, db
-from models import Item, ItemTag, ItemGallery, DataChunk, Report, User
+from models import Item, ItemTag, ItemGallery, DataChunk, Report, User, Organization, OrganizationMember, Rating, Comment, VisualizationLink
 
 
 LOREM_IPSUM_FR = [
@@ -149,6 +149,62 @@ def _ensure_system_user():
                 SYSTEM_USER_ID = existing.id
                 return
         SYSTEM_USER_ID = user.id
+
+
+def _ensure_test_users():
+    _ensure_system_user()
+    from models import User
+    try:
+        from werkzeug.security import generate_password_hash
+    except ImportError:
+        generate_password_hash = lambda x: x
+    test_users = [
+        ("Alice", "Martin", "alice@test.local"),
+        ("Bob", "Durand", "bob@test.local"),
+        ("Claire", "Petit", "claire@test.local"),
+        ("David", "Moreau", "david@test.local"),
+        ("Eve", "Leroy", "eve@test.local"),
+    ]
+    existing = db.session.execute(
+        db.select(User.email).filter(User.email.in_([u[2] for u in test_users]))
+    ).scalars().all()
+    existing_set = set(existing)
+    created = 0
+    for prenom, nom, email in test_users:
+        if email not in existing_set:
+            user = User(
+                prenom=prenom, nom=nom,
+                pseudo=email.split("@")[0],
+                email=email,
+                password_hash=generate_password_hash("test1234"),
+                is_active=True, banned=False, is_admin=False,
+            )
+            db.session.add(user)
+            created += 1
+    if created:
+        db.session.commit()
+        print(f"  Seed test users: {created} created")
+
+
+def _seed_organization():
+    _ensure_system_user()
+    existing = db.session.execute(db.select(Organization).limit(1)).scalar_one_or_none()
+    if existing:
+        return existing.id
+    org = Organization(
+        name="Institut National de l'Information Géographique",
+        slug="institut-national-info-geo",
+        description="Organisme de référence pour les données géographiques nationales",
+        created_by=SYSTEM_USER_ID,
+        is_active=True,
+    )
+    db.session.add(org)
+    db.session.commit()
+    member = OrganizationMember(user_id=SYSTEM_USER_ID, organization_id=org.id, role="owner")
+    db.session.add(member)
+    db.session.commit()
+    print(f"  Seed organization: {org.name} (id={org.id})")
+    return org.id
 
 
 def _build_chunks(item_id, pack_title):
@@ -338,7 +394,6 @@ def seed_reports():
 
 
 def seed_comments():
-    from models import Comment
     if db.session.execute(db.select(db.func.count()).select_from(Comment)).scalar() > 0:
         print("Comments already exist. Skipping seeding.")
         return
@@ -352,10 +407,10 @@ def seed_comments():
         return
 
     comments_to_add = []
-    n_comments = 120
+    n_comments = 2000
     for i in range(1, n_comments + 1):
         author = COMMENT_AUTHORS[i % len(COMMENT_AUTHORS)]
-        item_id = items[(i * 3) % len(items)]
+        item_id = items[(i - 1) % len(items)]
         content = COMMENT_CONTENTS[i % len(COMMENT_CONTENTS)]
         created_at = _pseudo_date(f"comment_{i}")
 
@@ -376,7 +431,45 @@ def seed_comments():
         print(f"Error seeding comments: {e}")
 
 
+def seed_ratings():
+    if db.session.execute(db.select(db.func.count()).select_from(Rating)).scalar() > 0:
+        print("Ratings already exist. Skipping seeding.")
+        return
+
+    items = db.session.execute(
+        db.select(Item.id).order_by(Item.id)
+    ).scalars().all()
+    users = db.session.execute(
+        db.select(User.id).order_by(User.id)
+    ).scalars().all()
+
+    if not items or len(users) < 2:
+        print("Not enough items or users to seed ratings.")
+        return
+
+    ratings_to_add = []
+    n_ratings = 3200
+    for i in range(1, n_ratings + 1):
+        item_id = items[(i - 1) % len(items)]
+        user_id = users[(i - 1) % len(users)]
+        rating = Rating(
+            item_id=item_id,
+            user_id=user_id,
+            rating=3.0 + (i % 3),
+        )
+        ratings_to_add.append(rating)
+
+    db.session.add_all(ratings_to_add)
+    try:
+        db.session.commit()
+        print(f"  Seed ratings: {len(ratings_to_add)} ratings created")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error seeding ratings: {e}")
+
+
 def seed_items(category, count, type_val, title_fn, format_fn, is_pack=False):
+    org_id = _seed_organization()
     item_records = []
     gallery_idx = 1
     for i in range(1, count + 1):
@@ -393,10 +486,18 @@ def seed_items(category, count, type_val, title_fn, format_fn, is_pack=False):
             image_path="/static/images/logo/ANANAS.png",
             author_name=AUTHOR_NAMES[author_idx],
             created_at=_pseudo_date(i),
+            license_type="Licence Ouverte / Open License",
+            organization_id=org_id,
+            pdf_magnet_link=f"magnet:?xt=urn:btih:pdf{i:032d}",
+            verification_status="verified",
+            image_magnet_links=[
+                f"magnet:?xt=urn:btih:img{i:032d}a",
+                f"magnet:?xt=urn:btih:img{i:032d}b",
+            ],
         )
         if is_pack:
             item.data_format_level = "pack"
-        elif i % 5 == 0:
+        else:
             item.data_format_level = "simple"
         db.session.add(item)
         item_records.append({"item": item, "title": title, "tags": tags})
@@ -405,13 +506,15 @@ def seed_items(category, count, type_val, title_fn, format_fn, is_pack=False):
 
     for idx, rec in enumerate(item_records):
         item = rec["item"]
-        for tag_str in (rec["tags"] if isinstance(rec["tags"], list) else []):
+        tag_list = rec["tags"] if isinstance(rec["tags"], list) else []
+        if len(tag_list) < 3:
+            tag_list = tag_list + ["donnée"][:3 - len(tag_list)]
+        for tag_str in tag_list:
             db.session.add(ItemTag(item_id=item.id, tag=tag_str))
 
-        if is_pack:
-            chunks = _build_chunks(item.id, rec["title"])
-            for chunk in chunks:
-                db.session.add(chunk)
+        chunks = _build_chunks(item.id, rec["title"])
+        for chunk in chunks:
+            db.session.add(chunk)
 
         gallery = _build_gallery(gallery_idx)
         gallery_idx += 1
@@ -424,6 +527,17 @@ def seed_items(category, count, type_val, title_fn, format_fn, is_pack=False):
                 label=g["label"],
             )
             db.session.add(gallery_entry)
+
+        for j in range(3):
+            vl = VisualizationLink(
+                parent_item_id=item.id,
+                name=f"Visualisation {j + 1}",
+                url=f"https://example.com/viz/{item.id}/{j}",
+                owner_user_id=SYSTEM_USER_ID,
+                link_type="external",
+                display_order=j,
+            )
+            db.session.add(vl)
 
     items_created = len(item_records)
     db.session.commit()
@@ -449,12 +563,16 @@ def seed_all():
 
         if before > 0:
             print(f"Clearing existing {before} items...")
-            for tbl in ["visualization_links", "reports", "ratings", "comments", "item_gallery", "item_tags", "user_uploads", "data_chunks"]:
+            for tbl in ["admin_audit", "visualization_links", "reports", "ratings", "comments", "item_gallery", "item_tags", "user_uploads", "data_chunks"]:
                 db.session.execute(db.table(tbl).delete())
             db.session.execute(db.table("items").delete())
+            for tbl in ["organization_members", "organizations", "users"]:
+                db.session.execute(db.table(tbl).delete())
             db.session.commit()
 
         print("Seeding sample data...\n")
+
+        _ensure_test_users()
 
         PACK_TITLES = [
             "Pack Regional Hauts-de-France",
@@ -502,8 +620,9 @@ def seed_all():
             format_fn=lambda i: _get_tags("applications", i),
         )
 
-        # Seed mock comments and reports
+        # Seed mock comments, ratings, and reports
         seed_comments()
+        seed_ratings()
         seed_reports()
 
         total = db.session.execute(func.count(Item.id)).scalar()

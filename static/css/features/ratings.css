@@ -358,7 +358,7 @@
 .catalogue-org {
     font-size: 0.85rem;
     color: var(--specs-gray);
-    margin-top: 4px;
+    padding-top: 0.35rem;
 }
 
 .catalogue-org a {

@@ -52,12 +52,16 @@ def seeded(client):
         item = Item(
             type=item_type,
             title=f"Item {i}",
-            description=f"Description de l'item {i}",
+            description=f"Description détaillée de l'item {i} avec des informations complètes sur le jeu de données géographiques et ses caractéristiques techniques.",
             format_type=f"format-{i % 3}",
             magnet_link=f"magnet:?xt=urn:btih:{i:040x}",
             author_name=f"Author {i}",
-            organization_id=org.id if i % 2 == 0 else None,
-            verification_status="verified" if i % 5 == 0 else "unofficial",
+            organization_id=org.id,
+            verification_status="verified",
+            license_type="Licence Ouverte / Open License",
+            pdf_magnet_link=f"magnet:?xt=urn:btih:pdf{i:040x}",
+            data_format_level="simple" if i % 3 == 0 else "individual",
+            image_magnet_links=[f"magnet:?xt=urn:btih:img{i:040x}a"],
         )
         db.session.add(item)
 

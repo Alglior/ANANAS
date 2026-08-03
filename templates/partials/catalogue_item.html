@@ -32,11 +32,6 @@
         {% endif %}
       </div>
       <p class="catalogue-author"><strong>Publié par :</strong> {{ item.author|e }}</p>
-      {% if item.organization_name %}
-      <p class="catalogue-org">
-        <a href="/organizations/{{ item.organization_slug|e }}">{{ item.organization_name|e }}</a>
-      </p>
-      {% endif %}
       <p class="catalogue-desc-preview" id="preview-{{ item.id }}">{{ item.description|truncate(140, True, '...')|e }}</p>
       <p class="catalogue-desc-full" id="full-{{ item.id }}" hidden>{{ item.description|e }}</p>
       {% if item.description and item.description|length > 140 %}
@@ -55,6 +50,11 @@
       {% endif %}
     </div>
   </a>
+  {% if item.organization_name %}
+  <p class="catalogue-org">
+    <a href="/organizations/{{ item.organization_slug|e }}">{{ item.organization_name|e }}</a>
+  </p>
+  {% endif %}
   {% if not simple %}
   {% if item.tags and item.tags|length > 0 %}
   <div class="catalogue-tags">
