@@ -124,8 +124,14 @@ SYSTEM_USER_ID = None
 def _ensure_system_user():
     global SYSTEM_USER_ID
     from models import User
-    from src.auth_routes import _generate_pseudo
     if not SYSTEM_USER_ID:
+        existing = db.session.execute(
+            db.select(User).filter(User.prenom == "Système", User.nom == "ANANAS")
+        ).scalar_one_or_none()
+        if existing:
+            SYSTEM_USER_ID = existing.id
+            return
+        from src.auth_routes import _generate_pseudo
         try:
             from werkzeug.security import generate_password_hash
         except ImportError:
@@ -139,18 +145,7 @@ def _ensure_system_user():
             is_active=True, banned=False, is_admin=True
         )
         db.session.add(user)
-        try:
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
-            existing = db.session.execute(
-                db.select(User).filter(User.prenom == "Système", User.nom == "ANANAS")
-            ).scalar_one_or_none()
-            if existing:
-                existing.pseudo = pseudo
-                db.session.commit()
-                SYSTEM_USER_ID = existing.id
-                return
+        db.session.commit()
         SYSTEM_USER_ID = user.id
 
 
