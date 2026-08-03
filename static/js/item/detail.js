@@ -196,6 +196,74 @@
     { navClass: 'mod-pagination-nav', ariaLabel: 'Pagination des commentaires' }
   );
 
+  var commentForm = document.querySelector('.comment-form');
+  if (commentForm) {
+    commentForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var textarea = commentForm.querySelector('textarea');
+      var text = textarea.value.trim();
+      if (!text) return;
+
+      var btn = commentForm.querySelector('.btn-primary');
+      btn.disabled = true;
+      btn.textContent = 'Envoi...';
+
+      fetch('/api/catalogue/item/' + itemId + '/reply', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-Token': csrfToken,
+        },
+        body: JSON.stringify({ text: text, parent_id: null }),
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.error) {
+            btn.disabled = false;
+            btn.textContent = 'Publier';
+            return;
+          }
+          textarea.value = '';
+          btn.disabled = false;
+          btn.textContent = 'Publier';
+
+          var list = document.getElementById('comments-list');
+          var empty = document.querySelector('.comments-empty');
+          if (!list) {
+            list = document.createElement('ul');
+            list.id = 'comments-list';
+            list.className = 'comments-list';
+            var section = commentForm.closest('.comments-section');
+            if (section) {
+              if (empty) empty.remove();
+              section.insertBefore(list, commentForm);
+            }
+          }
+          if (empty) empty.remove();
+          list.insertAdjacentHTML('afterbegin', renderCommentHTML(data));
+
+          var badge = document.querySelector('.comment-count-badge');
+          if (badge) {
+            var count = parseInt(badge.textContent, 10);
+            badge.textContent = count + 1;
+          } else {
+            var h2 = commentForm.closest('.comments-section').querySelector('h2');
+            if (h2) {
+              var newBadge = document.createElement('span');
+              newBadge.className = 'comment-count-badge';
+              newBadge.textContent = '1';
+              h2.appendChild(newBadge);
+            }
+          }
+        })
+        .catch(function () {
+          btn.disabled = false;
+          btn.textContent = 'Publier';
+        });
+    });
+  }
+
   var imagePending = mainEl.getAttribute('data-image-pending') === 'true';
   if (imagePending) {
     var pollInterval = setInterval(function () {
