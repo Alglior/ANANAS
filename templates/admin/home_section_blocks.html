@@ -1,0 +1,121 @@
+<!-- Bloc : Bannière hero -->
+<script type="text/template" id="tpl-hero">
+  <div
+    class="editor-section hero-section"
+    style="background:var(--forest);color:var(--white);padding:3rem 2rem;text-align:center;border-radius:12px;margin:1rem 0;"
+  >
+    <h3 style="color:var(--white);font-size:1.6rem;margin:0 0 0.5rem;">
+      {{title}}
+    </h3>
+    <p style="font-size:1.05rem;opacity:0.9;margin:0 0 1.5rem;">
+      {{subtitle}}
+    </p>
+    <a
+      href="{{btnUrl}}"
+      class="btn btn-primary"
+      style="background:var(--white);color:var(--forest);padding:0.6rem 1.5rem;border-radius:6px;font-weight:600;text-decoration:none;display:inline-block;"
+    >
+      {{btn}}
+    </a>
+  </div>
+</script>
+
+<!-- Bloc : Grille de cartes -->
+<script type="text/template" id="tpl-cards">
+  <div
+    class="editor-row"
+    style="display:flex;flex-wrap:wrap;gap:16px;margin:1rem 0;"
+  >
+    {{cards}}
+  </div>
+</script>
+
+<script type="text/template" id="tpl-card">
+  <div
+    class="editor-col"
+    style="flex:1 1 {{width}};min-width:220px;background:var(--light-gray);border-radius:12px;padding:1.25rem;border:1px solid var(--border-light);text-align:center;"
+  >
+    <h3 style="font-size:1rem;color:var(--charcoal);margin:0 0 0.5rem;">
+      {{title}}
+    </h3>
+    <p style="color:var(--text-secondary);margin:0 0 0.75rem;">
+      {{desc}}
+    </p>
+    <a
+      href="#"
+      class="btn"
+      style="background:var(--forest);color:var(--white);padding:0.5rem 1.25rem;border-radius:6px;font-weight:600;text-decoration:none;display:inline-block;"
+    >
+      {{btn}}
+    </a>
+  </div>
+</script>
+
+<!-- Bloc : Ligne avec colonnes (texte + image) -->
+<script type="text/template" id="tpl-row">
+  <div
+    class="editor-row"
+    style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;margin:1.5rem 0;"
+  >
+    {{columns}}
+  </div>
+</script>
+
+<script type="text/template" id="tpl-col-text">
+  <div
+    class="editor-col"
+    style="flex:1 1 45%;min-width:280px;"
+  >
+    {{content}}
+  </div>
+</script>
+
+<script type="text/template" id="tpl-col-image">
+  <div
+    class="editor-col"
+    style="flex:1 1 45%;min-width:280px;text-align:center;"
+  >
+    <img src="{{src}}" style="max-width:100%;height:auto;border-radius:12px;" />
+  </div>
+</script>
+
+<!-- Bloc : Liste d'avantages -->
+<script type="text/template" id="tpl-list">
+  <ul
+    style="list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:12px;margin:1rem 0;"
+  >
+    {{items}}
+  </ul>
+</script>
+
+<script type="text/template" id="tpl-list-item">
+  <li
+    style="flex:1 1 calc(50% - 12px);min-width:240px;background:var(--light-gray);border-radius:8px;padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:10px;border:1px solid var(--border-light);"
+  >
+    <span style="color:var(--forest);font-weight:700;font-size:1.1rem;">
+      ✓
+    </span>
+    <div>
+      <strong style="color:var(--charcoal);">{{title}}</strong>
+      <p style="margin:2px 0 0;color:var(--text-secondary);font-size:0.9rem;">
+        {{desc}}
+      </p>
+    </div>
+  </li>
+</script>
+
+<!-- Bloc : Texte simple -->
+<script type="text/template" id="tpl-text">
+  <div style="text-align:{{align}};margin:0.5rem 0;">
+    {{content}}
+  </div>
+</script>
+
+<!-- Bloc : Vidéo -->
+<script type="text/template" id="tpl-video">
+  <div style="text-align:{{align}};">
+    <div class="responsive-video">
+      <iframe src="{{url}}" frameborder="0" allowfullscreen></iframe>
+    </div>
+  </div>
+</script>

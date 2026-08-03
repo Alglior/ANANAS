@@ -18,7 +18,7 @@ var CatalogueModule = (function () {
         const expanded = btn.getAttribute("aria-expanded") === "true";
 
         btn.setAttribute("aria-expanded", String(!expanded));
-        btn.textContent = expanded ? "Moins" : "Plus";
+        btn.textContent = expanded ? "Plus" : "Moins";
 
         preview.hidden = !expanded;
         full.hidden = expanded;
