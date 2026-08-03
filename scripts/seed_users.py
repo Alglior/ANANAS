@@ -44,7 +44,6 @@ def generate_fake_users(n=100):
     for i in range(1, n + 1):
         prenom = PRENOMS[i % len(PRENOMS)]
         nom = NOMS[i % len(NOMS)]
-        email = f"{prenom.lower()}.{nom.lower().replace(' ', '')}@fake{str(i).zfill(3)}.ma"
 
         is_active = i % 12 != 0
         banned = i % 50 == 0 and i > 50
@@ -64,7 +63,6 @@ def generate_fake_users(n=100):
             prenom=prenom,
             nom=nom,
             pseudo=pseudo,
-            email=email,
             password_hash=password,
             is_active=is_active,
             banned=banned,

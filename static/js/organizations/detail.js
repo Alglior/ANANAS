@@ -103,15 +103,15 @@
     if (inviteForm) {
       inviteForm.addEventListener('submit', function (e) {
         e.preventDefault();
-        var email = document.getElementById('inviteEmail').value.trim();
-        if (!email) return;
+        var pseudo = document.getElementById('invitePseudo').value.trim();
+        if (!pseudo) return;
         fetch('/api/organizations/' + slug + '/invite', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': CsrfModule.getCsrfToken()
           },
-          body: JSON.stringify({ email: email })
+          body: JSON.stringify({ pseudo: pseudo })
         })
           .then(function (res) { return res.json(); })
           .then(function (data) {

@@ -33,7 +33,7 @@
       page: 'users',
       target: '.admin-page table',
       position: 'top',
-      text: '<strong>Liste des utilisateurs</strong> — Chaque ligne affiche l\'ID, le nom, l\'email et le statut. Les boutons <strong>Bannir/Débannir</strong> permettent de contrôler l\'accès au site.',
+      text: '<strong>Liste des utilisateurs</strong> — Chaque ligne affiche l\'ID, le nom, le pseudo et le statut. Les boutons <strong>Bannir/Débannir</strong> permettent de contrôler l\'accès au site.',
     },
     {
       page: 'users',

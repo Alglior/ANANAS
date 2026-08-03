@@ -32,9 +32,9 @@ def seeded(client):
         db.session.query(m).delete()
     db.session.commit()
 
-    admin = User(prenom="Admin", nom="Super", pseudo="admin-super", email="admin@test.com", password_hash="pbkdf2:sha256:260000$xxx$yyy", is_active=True, banned=False, is_admin=True)
-    user = User(prenom="Test", nom="User", pseudo="test-user", email="user@test.com", password_hash="pbkdf2:sha256:260000$xxx$yyy", is_active=True, banned=False, is_admin=False)
-    seeder = User(prenom="Seeder", nom="Bot", pseudo="seeder-bot", email="seeder@test.com", password_hash="pbkdf2:sha256:260000$xxx$yyy", is_active=True, banned=False, is_admin=False)
+    admin = User(prenom="Admin", nom="Super", pseudo="admin-super", password_hash="pbkdf2:sha256:260000$xxx$yyy", is_active=True, banned=False, is_admin=True)
+    user = User(prenom="Test", nom="User", pseudo="test-user", password_hash="pbkdf2:sha256:260000$xxx$yyy", is_active=True, banned=False, is_admin=False)
+    seeder = User(prenom="Seeder", nom="Bot", pseudo="seeder-bot", password_hash="pbkdf2:sha256:260000$xxx$yyy", is_active=True, banned=False, is_admin=False)
 
     db.session.add_all([admin, user, seeder])
     db.session.commit()

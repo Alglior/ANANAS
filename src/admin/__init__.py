@@ -105,7 +105,7 @@ def _get_json_data():
 
 def _serialize_user(u):
     return {
-        "id": u.id, "prenom": u.prenom, "nom": u.nom, "pseudo": u.pseudo, "email": u.email,
+        "id": u.id, "prenom": u.prenom, "nom": u.nom, "pseudo": u.pseudo,
         "created_at": u.created_at.isoformat() if hasattr(u, "created_at") else None,
         "banned": u.banned,
     }

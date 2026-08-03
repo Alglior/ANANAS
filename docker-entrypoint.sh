@@ -32,21 +32,21 @@ sys.path.insert(0, '/app')
 os.environ.setdefault('ADMIN_PASSWORD', 'system')
 from app import create_app, db
 from models import User
+from src.auth_routes import _generate_pseudo
 app = create_app()
 with app.app_context():
     from werkzeug.security import generate_password_hash
     pw = os.environ.get('ADMIN_PASSWORD', 'system')
-    pseudo = os.environ.get('ADMIN_PSEUDO', 'systeme-ananas')
+    pseudo = os.environ.get('ADMIN_PSEUDO', '') or _generate_pseudo('Système', 'ANANAS')
     user = User(
         prenom='Système', nom='ANANAS',
         pseudo=pseudo,
-        email='system@ananas.local',
         password_hash=generate_password_hash(pw),
         is_active=True, banned=False, is_admin=True
     )
     db.session.add(user)
     db.session.commit()
-    print(f'Admin created: system@ananas.local')
+    print(f'Admin created: {pseudo}')
 "
 
     echo "[entrypoint] Setting alembic version to head..."
@@ -77,19 +77,29 @@ import os, sys
 sys.path.insert(0, '/app')
 from app import create_app, db
 from models import User
+from src.auth_routes import _generate_pseudo
 from werkzeug.security import generate_password_hash
 app = create_app()
 with app.app_context():
-    admin = User.query.filter_by(email='system@ananas.local').first()
+    pw = os.environ.get('ADMIN_PASSWORD', 'system')
+    pseudo = os.environ.get('ADMIN_PSEUDO', '') or _generate_pseudo('Système', 'ANANAS')
+    admin = User.query.filter_by(prenom='Système', nom='ANANAS').first()
     if admin:
-        pw = os.environ.get('ADMIN_PASSWORD', 'system')
-        pseudo = os.environ.get('ADMIN_PSEUDO', 'systeme-ananas')
         admin.pseudo = pseudo
         admin.password_hash = generate_password_hash(pw)
         db.session.commit()
         print(f'Admin synced: pseudo={pseudo}')
     else:
-        print('No admin user found, skipping sync.')
+        print(f'Admin user \"Système ANANAS\" not found, creating...')
+        user = User(
+            prenom='Système', nom='ANANAS',
+            pseudo=pseudo,
+            password_hash=generate_password_hash(pw),
+            is_active=True, banned=False, is_admin=True
+        )
+        db.session.add(user)
+        db.session.commit()
+        print(f'Admin created: {pseudo}')
 "
 
 echo "[entrypoint] Ensuring image cache directory..."

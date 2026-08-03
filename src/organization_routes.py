@@ -184,13 +184,13 @@ def invite_member(slug):
         return jsonify({"error": "Non autorisé"}), 403
 
     data = request.get_json(silent=True) or {}
-    email = data.get("email", "").strip().lower()
-    if not email:
-        return jsonify({"error": "Email requis"}), 400
+    pseudo = data.get("pseudo", "").strip().lower()
+    if not pseudo:
+        return jsonify({"error": "Pseudo requis"}), 400
 
-    invited_user = User.query.filter_by(email=email).first()
+    invited_user = User.query.filter_by(pseudo=pseudo).first()
     if not invited_user:
-        return jsonify({"error": "Aucun utilisateur trouvé avec cet email"}), 404
+        return jsonify({"error": "Aucun utilisateur trouvé avec ce pseudo"}), 404
 
     existing = OrganizationMember.query.filter_by(
         user_id=invited_user.id, organization_id=org.id

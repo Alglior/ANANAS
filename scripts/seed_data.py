@@ -124,17 +124,17 @@ SYSTEM_USER_ID = None
 def _ensure_system_user():
     global SYSTEM_USER_ID
     from models import User
+    from src.auth_routes import _generate_pseudo
     if not SYSTEM_USER_ID:
         try:
             from werkzeug.security import generate_password_hash
         except ImportError:
             generate_password_hash = lambda x: x
         admin_password = os.environ.get("ADMIN_PASSWORD", "system")
-        admin_pseudo = os.environ.get("ADMIN_PSEUDO", "systeme-ananas")
+        pseudo = _generate_pseudo("Système", "ANANAS")
         user = User(
             prenom="Système", nom="ANANAS",
-            pseudo=admin_pseudo,
-            email="system@ananas.local",
+            pseudo=pseudo,
             password_hash=generate_password_hash(admin_password),
             is_active=True, banned=False, is_admin=True
         )
@@ -144,9 +144,11 @@ def _ensure_system_user():
         except Exception:
             db.session.rollback()
             existing = db.session.execute(
-                db.select(User).filter(User.email == "system@ananas.local")
+                db.select(User).filter(User.prenom == "Système", User.nom == "ANANAS")
             ).scalar_one_or_none()
             if existing:
+                existing.pseudo = pseudo
+                db.session.commit()
                 SYSTEM_USER_ID = existing.id
                 return
         SYSTEM_USER_ID = user.id
@@ -155,33 +157,29 @@ def _ensure_system_user():
 def _ensure_test_users():
     _ensure_system_user()
     from models import User
+    from src.auth_routes import _generate_pseudo
     try:
         from werkzeug.security import generate_password_hash
     except ImportError:
         generate_password_hash = lambda x: x
     test_users = [
-        ("Alice", "Martin", "alice@test.local"),
-        ("Bob", "Durand", "bob@test.local"),
-        ("Claire", "Petit", "claire@test.local"),
-        ("David", "Moreau", "david@test.local"),
-        ("Eve", "Leroy", "eve@test.local"),
+        ("Alice", "Martin"),
+        ("Bob", "Durand"),
+        ("Claire", "Petit"),
+        ("David", "Moreau"),
+        ("Eve", "Leroy"),
     ]
-    existing = db.session.execute(
-        db.select(User.email).filter(User.email.in_([u[2] for u in test_users]))
-    ).scalars().all()
-    existing_set = set(existing)
     created = 0
-    for prenom, nom, email in test_users:
-        if email not in existing_set:
-            user = User(
-                prenom=prenom, nom=nom,
-                pseudo=email.split("@")[0],
-                email=email,
-                password_hash=generate_password_hash("test1234"),
-                is_active=True, banned=False, is_admin=False,
-            )
-            db.session.add(user)
-            created += 1
+    for prenom, nom in test_users:
+        pseudo = _generate_pseudo(prenom, nom)
+        user = User(
+            prenom=prenom, nom=nom,
+            pseudo=pseudo,
+            password_hash=generate_password_hash("test1234"),
+            is_active=True, banned=False, is_admin=False,
+        )
+        db.session.add(user)
+        created += 1
     if created:
         db.session.commit()
         print(f"  Seed test users: {created} created")

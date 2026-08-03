@@ -44,7 +44,7 @@ def _do_ban(user):
     user.is_active = False
     user.session_version += 1
     db.session.commit()
-    _log_audit("ban", "user", user.id, {"email": user.email, "duration": "permanent"})
+    _log_audit("ban", "user", user.id, {"pseudo": user.pseudo, "duration": "permanent"})
     return jsonify({"status": "updated", "user_id": user.id, "action": "ban"})
 
 
@@ -52,7 +52,7 @@ def _do_unban(user):
     user.banned = False
     user.is_active = True
     db.session.commit()
-    _log_audit("unban", "user", user.id, {"email": user.email})
+    _log_audit("unban", "user", user.id, {"pseudo": user.pseudo})
     return jsonify({"status": "updated", "user_id": user.id, "action": "unban"})
 
 
@@ -66,7 +66,7 @@ def _do_tempban(user, duration):
     user.is_active = False
     user.session_version += 1
     db.session.commit()
-    _log_audit("tempban", "user", user.id, {"email": user.email, "duration_hours": hours, "ban_until": ban_until.isoformat()})
+    _log_audit("tempban", "user", user.id, {"pseudo": user.pseudo, "duration_hours": hours, "ban_until": ban_until.isoformat()})
     return jsonify({"status": "updated", "user_id": user.id, "action": "tempban", "ban_until": ban_until.isoformat()})
 
 
@@ -77,14 +77,14 @@ def _do_mute(user, duration):
         return jsonify({"error": "Durée invalide"}), 400
     user.muted_until = dt.datetime.now() + dt.timedelta(hours=hours)
     db.session.commit()
-    _log_audit("mute", "user", user.id, {"email": user.email, "duration_hours": hours, "muted_until": user.muted_until.isoformat()})
+    _log_audit("mute", "user", user.id, {"pseudo": user.pseudo, "duration_hours": hours, "muted_until": user.muted_until.isoformat()})
     return jsonify({"status": "updated", "user_id": user.id, "action": "mute", "muted_until": user.muted_until.isoformat()})
 
 
 def _do_unmute(user):
     user.muted_until = None
     db.session.commit()
-    _log_audit("unmute", "user", user.id, {"email": user.email})
+    _log_audit("unmute", "user", user.id, {"pseudo": user.pseudo})
     return jsonify({"status": "updated", "user_id": user.id, "action": "unmute"})
 
 
@@ -93,7 +93,7 @@ def _do_warn(user, data):
     user.warned = True
     user.warnings = (user.warnings or "") + f"[{dt.datetime.now().strftime('%Y-%m-%d %H:%M')}] {reason}\n"
     db.session.commit()
-    _log_audit("warn", "user", user.id, {"email": user.email, "reason": reason})
+    _log_audit("warn", "user", user.id, {"pseudo": user.pseudo, "reason": reason})
     return jsonify({"status": "updated", "user_id": user.id, "action": "warn"})
 
 
@@ -101,13 +101,13 @@ def _do_unwarn(user):
     user.warned = False
     user.warnings = None
     db.session.commit()
-    _log_audit("unwarn", "user", user.id, {"email": user.email})
+    _log_audit("unwarn", "user", user.id, {"pseudo": user.pseudo})
     return jsonify({"status": "updated", "user_id": user.id, "action": "unwarn"})
 
 
 def _do_kick(user):
     db.session.commit()
-    _log_audit("kick", "user", user.id, {"email": user.email})
+    _log_audit("kick", "user", user.id, {"pseudo": user.pseudo})
     return jsonify({"status": "updated", "user_id": user.id, "action": "kick"})
 
 

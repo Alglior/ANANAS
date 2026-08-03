@@ -13,7 +13,6 @@
             <th>ID</th>
             <th>Nom</th>
             <th>Pseudo</th>
-            <th>Email</th>
             <th>Statut</th>
             <th>Action</th>
           </tr>
@@ -23,8 +22,7 @@
           <tr>
             <td data-label="ID">{{ user.id }}</td>
             <td data-label="Nom">{{ user.prenom|e }} {{ user.nom|e }}</td>
-            <td data-label="Pseudo">@{{ user.pseudo|e }}</td>
-            <td data-label="Email">{{ user.email|e }}</td>
+            <td data-label="Pseudo">{{ user.pseudo|e }}</td>
             <td data-label="Statut">
               {% if user.banned %}
                 <span class="badge badge-rejected">Banni</span>

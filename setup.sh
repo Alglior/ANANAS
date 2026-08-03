@@ -29,7 +29,7 @@ docker_setup() {
         local flask_key=$(generate_random)
 
         local admin_pass=$(python3 -c "import secrets; print(secrets.token_urlsafe(24))")
-        local admin_pseudo="systeme-ananas"
+        local admin_pseudo="systeme-ananas#$(python3 -c "import secrets,string; print(''.join(secrets.choice(string.ascii_lowercase) for _ in range(2)) + ''.join(secrets.choice(string.digits) for _ in range(4)))")"
         local qb_pass=$(generate_password)
 
         cat > "$ENV_FILE" <<EOF
@@ -40,7 +40,6 @@ POSTGRES_PASSWORD=${pg_pass}
 SQLALCHEMY_DATABASE_URI=postgresql://${pg_user}:${pg_pass}@postgres/${pg_db}
 
 # ─── Admin Account ───
-ADMIN_EMAIL=system@ananas.local
 ADMIN_PSEUDO=${admin_pseudo}
 ADMIN_PASSWORD=${admin_pass}
 
@@ -60,8 +59,7 @@ EOF
         printf "POSTGRES_DB         : %s\n" "${pg_db}"
         printf "POSTGRES_USER       : %s\n" "${pg_user}"
         printf "POSTGRES_PASSWORD   : %s\n" "${pg_pass}"
-        printf "ADMIN_EMAIL         : %s\n" "system@ananas.local"
-        printf "ADMIN_PSEUDO        : %s\n" "${admin_pseudo}"
+printf "ADMIN_PSEUDO        : %s\n" "${admin_pseudo}"
         printf "ADMIN_PASSWORD      : %s\n" "${admin_pass}"
         printf "FLASK_SECRET_KEY    : %s\n" "${flask_key}"
         printf "QBITTORRENT_URL     : %s\n" "http://qbittorrent:8081"

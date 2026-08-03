@@ -91,7 +91,7 @@
         {% if user_membership and user_membership.has_permission("invite_members") %}
         <button class="org-btn org-btn-outline" id="inviteToggleBtn">Inviter un membre</button>
         <form class="org-invite-form form-hidden" id="inviteForm">
-          <input type="email" id="inviteEmail" class="org-input" placeholder="email@exemple.fr" required>
+          <input type="text" id="invitePseudo" class="org-input" placeholder="pseudo de l'utilisateur" required>
           <button type="submit" class="org-btn org-btn-primary">Inviter</button>
           <button type="button" class="org-btn org-btn-outline" id="cancelInviteBtn">Annuler</button>
         </form>
