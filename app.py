@@ -224,16 +224,8 @@ def create_app(app_name="ANANAS"):
     app.config["PERMANENT_SESSION_LIFETIME"] = 1800
     app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
-    # Définition des routes statiques
-    routes = []
-
     # Enregistrer tous les blueprints
     from src import _register_view, _legacy_catalogue, register_all_blueprints
-
-    for route_cfg in routes:
-        rule = route_cfg["rule"]
-        endpoint = rule.lstrip("/") or "home"
-        _register_view(app, rule, route_cfg["template"], route_cfg["title"], route_cfg["meta"])
 
     register_all_blueprints(app)
 

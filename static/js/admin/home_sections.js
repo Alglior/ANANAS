@@ -371,7 +371,7 @@
             if (item.type === 'image') {
               return fillTpl('tpl-col-image', {src: esc(item.src)});
             }
-            return fillTpl('tpl-col-text', {content: item.content||''});
+            return fillTpl('tpl-col-text', {content: esc(item.content||'')});
           }).join('');
           return fillTpl('tpl-row', {columns: cols});
 
@@ -387,7 +387,7 @@
         case 'text':
           return fillTpl('tpl-text', {
             align: b.align||'left',
-            content: b.content||''
+            content: esc(b.content||'')
           });
 
         case 'video':

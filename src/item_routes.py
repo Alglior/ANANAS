@@ -194,8 +194,6 @@ def item_detail_view(item_id):
     from models import DataChunk
     data_chunks = [c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=item_id).all()]
 
-    ZOOM_ORDER = {"iris": 0, "communes": 1, "cantons": 2, "departements": 3, "regions": 4, "pays": 5}
-    ZOOM_LABELS = {"iris": "IRIS", "communes": "Communes", "cantons": "Cantons", "departements": "D\u00e9partements", "regions": "R\u00e9gions", "pays": "Pays"}
     if item_dict.get("magnet_links"):
         item_dict["magnet_links"].sort(key=lambda ml: ZOOM_ORDER.get(ml.get("zoom_level", ""), 99))
         grouped = {}
@@ -239,7 +237,7 @@ def download_item_magnets(item_id):
     lines.append(f"# A.N.A.N.A.S — Liens Magnet")
     lines.append(f"# Titre : {item.title}")
     lines.append(f"# Format : {item.format_type}")
-    lines.append(f"# URL : https://ananas.fr/catalogue/item/{item_id}")
+    lines.append(f"# URL : {request.host_url.rstrip('/')}/catalogue/item/{item_id}")
     lines.append("")
 
     if item.data_format_level in ("simple", "pack"):

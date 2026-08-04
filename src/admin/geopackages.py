@@ -2,7 +2,7 @@ from flask import request, jsonify
 from app import db
 from src.admin import bp, api_admin_required, login_required
 from src.admin import _serialize_geopackage, _log_audit, _get_json_data
-from utils.security import sanitize_html
+from utils.security import sanitize_html, validate_external_url
 
 
 @bp.route("/api/admin/geopackages", methods=["GET"])
@@ -33,11 +33,13 @@ def create_geopackage():
         return jsonify({"error": "Tous les champs sont requis."}), 400
     if len(title) > 200 or len(description) > 500 or len(format_info) > 200 or len(link_url) > 500:
         return jsonify({"error": "Champs trop longs."}), 400
+    if not validate_external_url(link_url):
+        return jsonify({"error": "URL invalide ou non sécurisée."}), 400
 
     max_order = db.session.query(db.func.max(GeoPackage.display_order)).scalar() or 0
     pkg = GeoPackage(
         title=sanitize_html(title), description=sanitize_html(description),
-        format_info=sanitize_html(format_info), link_url=sanitize_html(link_url),
+        format_info=sanitize_html(format_info), link_url=link_url,
         display_order=max_order + 1, is_active=True,
     )
     db.session.add(pkg)
@@ -64,7 +66,10 @@ def update_geopackage(pkg_id):
     if "format_info" in data:
         pkg.format_info = sanitize_html(data["format_info"].strip())
     if "link_url" in data:
-        pkg.link_url = sanitize_html(data["link_url"].strip())
+        new_url = data["link_url"].strip()
+        if not validate_external_url(new_url):
+            return jsonify({"error": "URL invalide ou non sécurisée."}), 400
+        pkg.link_url = new_url
     if "display_order" in data:
         pkg.display_order = int(data["display_order"])
     if "is_active" in data:

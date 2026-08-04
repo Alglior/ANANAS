@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import os
 import re
 import time
@@ -9,14 +10,16 @@ import requests
 from app import db
 from models import Item, ItemGallery
 
+logger = logging.getLogger(__name__)
+
 CACHE_DIR = Path(os.path.dirname(os.path.dirname(__file__))) / "instance" / "image_cache"
 CACHE_TTL = 86400 * 30
 
 QBITTORRENT_URL = os.environ.get("QBITTORRENT_URL", "http://qbittorrent:8081")
-QBITTORRENT_USERNAME = os.environ.get("QBITTORRENT_USERNAME") or os.environ.get("QBITTORRENT_USERNAME", "")
-QBITTORRENT_PASSWORD = os.environ.get("QBITTORRENT_PASSWORD") or os.environ.get("QBITTORRENT_PASSWORD", "")
+QBITTORRENT_USERNAME = os.environ.get("QBITTORRENT_USERNAME") or ""
+QBITTORRENT_PASSWORD = os.environ.get("QBITTORRENT_PASSWORD") or ""
 QBITTORRENT_DOWNLOADS = Path("/qbittorrent_downloads")
-QBITTORENT_SAVE_PATH = "/downloads/ananas"
+QBITTORRENT_SAVE_PATH = "/downloads/ananas"
 
 
 def _cache_path(magnet_link):
@@ -120,13 +123,13 @@ def download_image_from_magnet(magnet_link, timeout=300):
     try:
         session = _qb_login()
     except Exception as e:
-        print(f"qBittorrent login failed: {e}")
+        logger.error("qBittorrent login failed: %s", e)
         return None, None
 
     try:
         resp = session.post(
             f"{QBITTORRENT_URL}/api/v2/torrents/add",
-            data={"urls": magnet_link, "savepath": QBITTORENT_SAVE_PATH},
+            data={"urls": magnet_link, "savepath": QBITTORRENT_SAVE_PATH},
             timeout=10,
         )
         resp.raise_for_status()
@@ -143,10 +146,10 @@ def download_image_from_magnet(magnet_link, timeout=300):
                     if torrent:
                         break
             if torrent is None:
-                print(f"qBittorrent add magnet failed (409 but torrent not found): {e}")
+                logger.error("qBittorrent add magnet failed (409 but torrent not found): %s", e)
                 return None, None
         else:
-            print(f"qBittorrent add magnet failed: {e}")
+            logger.error("qBittorrent add magnet failed: %s", e)
             return None, None
     else:
         torrent = None
@@ -174,7 +177,7 @@ def download_image_from_magnet(magnet_link, timeout=300):
 
     if not relative_path:
         name = torrent.get("name", info_hash)
-        relative_path = str(Path(QBITTORENT_SAVE_PATH) / name / image_file["name"])
+        relative_path = str(Path(QBITTORRENT_SAVE_PATH) / name / image_file["name"])
     else:
         relative_path = str(Path(torrent["save_path"]) / image_file["name"])
 
@@ -236,7 +239,7 @@ def process_image_magnets(item_id, image_magnets):
                         item.image_path = src
                     first_image = False
             except Exception as e:
-                print(f"Error downloading image magnet {magnet}: {e}")
+                logger.error("Error downloading image magnet %s: %s", magnet, e)
                 continue
     finally:
         item = db.session.get(Item, item_id)

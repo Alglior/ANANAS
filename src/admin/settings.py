@@ -52,7 +52,7 @@ def _ensure_table():
     try:
         SiteSetting.__table__.create(db.engine, checkfirst=True)
     except Exception:
-        pass
+        current_app.logger.exception("Failed to ensure settings table")
 
 
 def get_setting(key, default=None):
@@ -63,6 +63,7 @@ def get_setting(key, default=None):
             return _DEFAULT_SETTINGS.get(key, default)
         return row.value
     except Exception:
+        current_app.logger.exception("Failed to get setting: %s", key)
         return _DEFAULT_SETTINGS.get(key, default)
 
 
@@ -71,6 +72,7 @@ def get_all_settings():
     try:
         rows = {r.key: r.value for r in SiteSetting.query.all()}
     except Exception:
+        current_app.logger.exception("Failed to load all settings")
         rows = {}
     result = {}
     for key, default in _DEFAULT_SETTINGS.items():
@@ -92,6 +94,7 @@ def set_setting(key, value):
         db.session.commit()
     except Exception:
         db.session.rollback()
+        current_app.logger.exception("Failed to set setting: %s", key)
 
 
 @bp.route("/admin/settings")

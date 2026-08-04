@@ -2,7 +2,7 @@ from flask import request, jsonify
 from app import db
 from src.admin import bp, api_admin_required, login_required
 from src.admin import _serialize_mirror, _log_audit, _get_json_data
-from utils.security import sanitize_html
+from utils.security import sanitize_html, validate_external_url
 
 
 @bp.route("/api/admin/mirrors", methods=["GET"])
@@ -32,10 +32,12 @@ def create_mirror():
         return jsonify({"error": "Tous les champs sont requis."}), 400
     if len(name) > 200 or len(url) > 500 or len(description) > 500:
         return jsonify({"error": "Champs trop longs."}), 400
+    if not validate_external_url(url):
+        return jsonify({"error": "URL invalide ou non sécurisée."}), 400
 
     max_order = db.session.query(db.func.max(MirrorSite.display_order)).scalar() or 0
     mirror = MirrorSite(
-        name=sanitize_html(name), url=sanitize_html(url),
+        name=sanitize_html(name), url=url.strip(),
         description=sanitize_html(description),
         display_order=max_order + 1, is_active=True,
     )
@@ -59,7 +61,10 @@ def update_mirror(mirror_id):
     if "name" in data:
         mirror.name = sanitize_html(data["name"].strip())
     if "url" in data:
-        mirror.url = sanitize_html(data["url"].strip())
+        new_url = data["url"].strip()
+        if not validate_external_url(new_url):
+            return jsonify({"error": "URL invalide ou non sécurisée."}), 400
+        mirror.url = new_url
     if "description" in data:
         mirror.description = sanitize_html(data["description"].strip())
     if "display_order" in data:

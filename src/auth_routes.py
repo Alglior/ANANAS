@@ -1,5 +1,5 @@
 import datetime
-import random
+import secrets
 import string
 import unicodedata
 
@@ -20,8 +20,8 @@ def _generate_pseudo(prenom: str, nom: str) -> str:
 
     base = f"{_normalize(prenom).lower()}-{_normalize(nom).lower().replace(' ', '-')}"
     while True:
-        letters = ''.join(random.choices(string.ascii_lowercase, k=2))
-        digits = ''.join(random.choices(string.digits, k=4))
+        letters = ''.join(secrets.choice(string.ascii_lowercase) for _ in range(2))
+        digits = ''.join(secrets.choice(string.digits) for _ in range(4))
         pseudo = f"{base}#{letters}{digits}"
         if not User.query.filter_by(pseudo=pseudo).first():
             return pseudo

@@ -85,7 +85,11 @@ def _log_audit(action_type, target_type=None, target_id=None, details=None):
         details=details or {},
     )
     db.session.add(audit)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Failed to log audit: %s", action_type)
 
 
 def _paginate(query, page=1, per_page=30):

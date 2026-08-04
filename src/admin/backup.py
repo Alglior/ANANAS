@@ -1,4 +1,5 @@
 import gzip
+import re
 import tempfile
 
 from flask import current_app, jsonify, redirect, request, send_file, url_for
@@ -6,6 +7,64 @@ from sqlalchemy import inspect, text, MetaData, Table
 from sqlalchemy.schema import CreateTable
 
 from src.admin import bp, login_required, require_admin, api_admin_required
+
+_RESTORE_ALLOWED = [
+    (
+        re.compile(r"^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?\w+\s*\(", re.I),
+        None,
+    ),
+    (
+        re.compile(r"^CREATE\s+OR\s+REPLACE\s+VIEW\s+\w+\s+AS\s+", re.I),
+        None,
+    ),
+    (
+        re.compile(r"^INSERT\s+INTO\s+\w+\s*\([^)]*\)\s*VALUES", re.I),
+        lambda c: not _has_select_outside_strings(c),
+    ),
+    (
+        re.compile(r"^DELETE\s+FROM\s+\w+", re.I),
+        lambda c: not _has_select_outside_strings(c),
+    ),
+    (
+        re.compile(r"^SELECT\s+setval\s*\(", re.I),
+        None,
+    ),
+]
+
+
+def _has_select_outside_strings(stmt):
+    in_string = False
+    i = 0
+    while i < len(stmt):
+        ch = stmt[i]
+        if in_string:
+            if ch == "'":
+                if i + 1 < len(stmt) and stmt[i + 1] == "'":
+                    i += 2
+                    continue
+                in_string = False
+            i += 1
+            continue
+        if ch == "'":
+            in_string = True
+            i += 1
+            continue
+        if stmt[i:].upper().startswith("SELECT") and (
+            i + 6 >= len(stmt) or not stmt[i + 6].isalpha()
+        ):
+            return True
+        i += 1
+    return False
+
+
+def _is_allowed_restore_statement(stmt):
+    compact = " ".join(stmt.split())
+    for pattern, validator in _RESTORE_ALLOWED:
+        if pattern.match(compact):
+            if validator and not validator(compact):
+                return False
+            return True
+    return False
 
 
 @bp.route("/admin/backup")
@@ -96,7 +155,6 @@ def admin_backup_restore():
     if current_stmt:
         sql_statements.append("\n".join(current_stmt))
 
-    import re
     table_names = []
     for stmt in sql_statements:
         stmt_clean = stmt.strip().upper()
@@ -120,6 +178,16 @@ def admin_backup_restore():
                 stmt_upper = stmt.upper().strip()
                 if stmt_upper.startswith("SET "):
                     continue
+                if not _is_allowed_restore_statement(stmt):
+                    errors.append({
+                        "statement": stmt[:200],
+                        "error": "Instruction non autorisée",
+                    })
+                    return jsonify({
+                        "error": "Restauration annulée : instruction non autorisée détectée",
+                        "errors": errors,
+                        "executed": executed,
+                    }), 400
                 try:
                     conn.execute(text(stmt))
                     executed += 1

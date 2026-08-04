@@ -1,8 +1,10 @@
+import os
+
 from flask import Blueprint, render_template
 
 bp = Blueprint("api_docs", __name__)
 
-BASE = "https://ananas.example.com"
+BASE = os.environ.get("SITE_URL", "https://ananas.example.com")
 
 
 def _examples(method, path, body=None, auth=False):

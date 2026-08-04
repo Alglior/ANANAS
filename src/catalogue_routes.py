@@ -34,13 +34,14 @@ class CatalogueTypeConverter(BaseConverter):
 
 
 def _build_filtered_query(catalogue_type, filter_verified=False, filter_unofficial=False, filter_format="", org_slug=None, filter_imod="", filter_tag=None, filter_category=None):
-    from models import Item
+    from models import Item as ItemModel
+    from sqlalchemy.orm import joinedload, subqueryload
 
     item_type = type_map.get(catalogue_type)
     if not item_type:
         return None
 
-    query = Item.query.filter_by(type=item_type).filter(Item.status != "draft")
+    query = ItemModel.query.filter_by(type=item_type).filter(ItemModel.status != "draft")
 
     if org_slug:
         org = Organization.query.filter_by(slug=org_slug).first()
@@ -50,7 +51,7 @@ def _build_filtered_query(catalogue_type, filter_verified=False, filter_unoffici
     if filter_verified:
         query = query.filter_by(verification_status="verified")
     elif filter_unofficial:
-        query = query.filter(Item.verification_status != "verified")
+        query = query.filter(ItemModel.verification_status != "verified")
 
     if filter_format:
         query = query.filter_by(data_format_level=filter_format)
@@ -59,7 +60,7 @@ def _build_filtered_query(catalogue_type, filter_verified=False, filter_unoffici
         from models import ItemTag
         from app import db
         sub = db.session.query(ItemTag.item_id).filter(ItemTag.tag == filter_tag).subquery()
-        query = query.filter(Item.id.in_(sub))
+        query = query.filter(ItemModel.id.in_(sub))
 
     if filter_category:
         from models import ItemTag, PredefinedTag, PredefinedTagCategory
@@ -69,7 +70,17 @@ def _build_filtered_query(catalogue_type, filter_verified=False, filter_unoffici
         ).join(
             PredefinedTagCategory
         ).filter(PredefinedTagCategory.name == filter_category).subquery()
-        query = query.filter(Item.id.in_(sub))
+        query = query.filter(ItemModel.id.in_(sub))
+
+    query = query.options(
+        subqueryload(ItemModel.tags),
+        subqueryload(ItemModel.gallery_items),
+        subqueryload(ItemModel.ratings),
+        subqueryload(ItemModel.comments),
+        subqueryload(ItemModel.visualization_links),
+        joinedload(ItemModel.verifier),
+        joinedload(ItemModel.organization),
+    )
 
     return query
 
@@ -236,7 +247,3 @@ def catalogue_json_view(catalogue_type, page):
         "items": result_items, "page": page, "per_page": per_page,
         "total_items": total_items, "total_pages": total_pages, "page_numbers": page_numbers,
     }, 200, {"Content-Type": "application/json"}
-
-
-def register_catalogue(app):
-    app.url_map.converters["catalogue_type"] = CatalogueTypeConverter
