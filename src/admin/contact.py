@@ -8,7 +8,6 @@ from src.admin import _serialize_contact_message, _log_audit, _paginate, _get_js
 @login_required
 @api_admin_required
 def list_contact_messages():
-    from models import ContactMessage
 
     page = request.args.get("page", 1, type=int)
     status_filter = request.args.get("status", "all")
@@ -33,7 +32,6 @@ def list_contact_messages():
 @login_required
 @api_admin_required
 def mark_contact_message_read(msg_id):
-    from models import ContactMessage
 
     msg = ContactMessage.query.get_or_404(msg_id)
     data = _get_json_data()
@@ -48,7 +46,6 @@ def mark_contact_message_read(msg_id):
 @login_required
 @api_admin_required
 def delete_contact_message(msg_id):
-    from models import ContactMessage
 
     msg = ContactMessage.query.get_or_404(msg_id)
     db.session.delete(msg)

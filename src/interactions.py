@@ -2,6 +2,7 @@ import datetime as dt
 
 from flask import Blueprint, request, redirect, url_for, jsonify
 from app import db
+from models import Comment, Item, Rating
 from src.shared import login_required, get_current_user
 from utils.security import sanitize_html
 
@@ -11,7 +12,6 @@ bp = Blueprint("interactions", __name__)
 @bp.route("/catalogue/item/<int:item_id>/rate", methods=["POST"])
 @login_required
 def rate_item(item_id):
-    from models import Item, Rating
 
     item = Item.query.get_or_404(item_id)
     rating_value = request.form.get("rating")
@@ -34,7 +34,6 @@ def rate_item(item_id):
 @bp.route("/catalogue/item/<int:item_id>/comment", methods=["POST"])
 @login_required
 def add_comment(item_id):
-    from models import Item, Comment
 
     current_user = get_current_user()
     item = Item.query.get_or_404(item_id)
@@ -65,7 +64,6 @@ def add_comment(item_id):
 @bp.route("/api/catalogue/item/<int:item_id>/reply", methods=["POST"])
 @login_required
 def reply_comment_json(item_id):
-    from models import Item, Comment
 
     current_user = get_current_user()
     item = Item.query.get_or_404(item_id)
@@ -111,7 +109,6 @@ def reply_comment_json(item_id):
 @bp.route("/api/items/<int:item_id>/verify", methods=["POST"])
 @login_required
 def verify_item(item_id):
-    from models import Item
 
     current_user = get_current_user()
     if not current_user.is_admin:

@@ -6,7 +6,6 @@ from src.admin import bp, api_admin_required, login_required, _paginate
 @login_required
 @api_admin_required
 def admin_audit_log():
-    from models import AdminAudit
 
     page = request.args.get("page", 1, type=int)
     paginated, page, total_pages, total_items, _ = _paginate(
@@ -17,7 +16,6 @@ def admin_audit_log():
 
 
 def _get_audit_entries(entries=None):
-    from models import AdminAudit, User
     if entries is None:
         entries = AdminAudit.query.order_by(AdminAudit.created_at.desc()).limit(500).all()
     result = []

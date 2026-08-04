@@ -8,7 +8,6 @@ from src.admin import _serialize_simple_file, _log_audit, _get_json_data
 @login_required
 @api_admin_required
 def list_simple_files():
-    from models import SimpleFileItem
 
     items = SimpleFileItem.query.order_by(SimpleFileItem.display_order, SimpleFileItem.id).all()
     return jsonify({"simple_files": [_serialize_simple_file(f) for f in items]})
@@ -18,7 +17,6 @@ def list_simple_files():
 @login_required
 @api_admin_required
 def create_simple_file():
-    from models import SimpleFileItem, Item
 
     data = _get_json_data()
     if data is None:
@@ -46,7 +44,6 @@ def create_simple_file():
 @login_required
 @api_admin_required
 def update_simple_file(sf_id):
-    from models import SimpleFileItem
 
     sf = SimpleFileItem.query.get_or_404(sf_id)
     data = _get_json_data()
@@ -67,7 +64,6 @@ def update_simple_file(sf_id):
 @login_required
 @api_admin_required
 def delete_simple_file(sf_id):
-    from models import SimpleFileItem
 
     sf = SimpleFileItem.query.get_or_404(sf_id)
     db.session.delete(sf)

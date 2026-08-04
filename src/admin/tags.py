@@ -21,7 +21,6 @@ def _serialize_category(cat):
 @login_required
 @api_admin_required
 def list_tag_categories():
-    from models import PredefinedTagCategory
 
     categories = PredefinedTagCategory.query.order_by(
         PredefinedTagCategory.display_order, PredefinedTagCategory.id
@@ -33,7 +32,6 @@ def list_tag_categories():
 @login_required
 @api_admin_required
 def create_tag_category():
-    from models import PredefinedTagCategory
 
     data = _get_json_data()
     if data is None:
@@ -66,7 +64,6 @@ def create_tag_category():
 @login_required
 @api_admin_required
 def update_tag_category(category_id):
-    from models import PredefinedTagCategory
 
     cat = PredefinedTagCategory.query.get_or_404(category_id)
     data = _get_json_data()
@@ -95,7 +92,6 @@ def update_tag_category(category_id):
 @login_required
 @api_admin_required
 def delete_tag_category(category_id):
-    from models import PredefinedTagCategory
 
     cat = PredefinedTagCategory.query.get_or_404(category_id)
     db.session.delete(cat)
@@ -110,7 +106,6 @@ def delete_tag_category(category_id):
 @login_required
 @api_admin_required
 def create_tag(category_id):
-    from models import PredefinedTagCategory, PredefinedTag
 
     cat = PredefinedTagCategory.query.get_or_404(category_id)
     data = _get_json_data()
@@ -159,7 +154,6 @@ def create_tag(category_id):
 @login_required
 @api_admin_required
 def update_tag(category_id, tag_id):
-    from models import PredefinedTag
 
     tag = PredefinedTag.query.filter_by(
         id=tag_id, category_id=category_id
@@ -201,7 +195,6 @@ def update_tag(category_id, tag_id):
 @login_required
 @api_admin_required
 def delete_tag(category_id, tag_id):
-    from models import PredefinedTag
 
     tag = PredefinedTag.query.filter_by(
         id=tag_id, category_id=category_id

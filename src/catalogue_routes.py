@@ -1,6 +1,8 @@
 from flask import Blueprint, request, render_template, redirect, url_for
+from sqlalchemy.orm import joinedload, subqueryload
 from werkzeug.routing import BaseConverter
-from models import Organization
+from app import db
+from models import Item, ItemTag, Organization, PredefinedTag, PredefinedTagCategory
 from src.admin import is_catalogue_enabled
 
 _CATALOGUE_META = {
@@ -34,14 +36,12 @@ class CatalogueTypeConverter(BaseConverter):
 
 
 def _build_filtered_query(catalogue_type, filter_verified=False, filter_unofficial=False, filter_format="", org_slug=None, filter_imod="", filter_tag=None, filter_category=None):
-    from models import Item as ItemModel
-    from sqlalchemy.orm import joinedload, subqueryload
 
     item_type = type_map.get(catalogue_type)
     if not item_type:
         return None
 
-    query = ItemModel.query.filter_by(type=item_type).filter(ItemModel.status != "draft")
+    query = Item.query.filter_by(type=item_type).filter(Item.status != "draft")
 
     if org_slug:
         org = Organization.query.filter_by(slug=org_slug).first()
@@ -51,7 +51,7 @@ def _build_filtered_query(catalogue_type, filter_verified=False, filter_unoffici
     if filter_verified:
         query = query.filter_by(verification_status="verified")
     elif filter_unofficial:
-        query = query.filter(ItemModel.verification_status != "verified")
+        query = query.filter(Item.verification_status != "verified")
 
     if filter_format:
         query = query.filter_by(data_format_level=filter_format)
@@ -60,7 +60,7 @@ def _build_filtered_query(catalogue_type, filter_verified=False, filter_unoffici
         from models import ItemTag
         from app import db
         sub = db.session.query(ItemTag.item_id).filter(ItemTag.tag == filter_tag).subquery()
-        query = query.filter(ItemModel.id.in_(sub))
+        query = query.filter(Item.id.in_(sub))
 
     if filter_category:
         from models import ItemTag, PredefinedTag, PredefinedTagCategory
@@ -70,16 +70,16 @@ def _build_filtered_query(catalogue_type, filter_verified=False, filter_unoffici
         ).join(
             PredefinedTagCategory
         ).filter(PredefinedTagCategory.name == filter_category).subquery()
-        query = query.filter(ItemModel.id.in_(sub))
+        query = query.filter(Item.id.in_(sub))
 
     query = query.options(
-        subqueryload(ItemModel.tags),
-        subqueryload(ItemModel.gallery_items),
-        subqueryload(ItemModel.ratings),
-        subqueryload(ItemModel.comments),
-        subqueryload(ItemModel.visualization_links),
-        joinedload(ItemModel.verifier),
-        joinedload(ItemModel.organization),
+        subqueryload(Item.tags),
+        subqueryload(Item.gallery_items),
+        subqueryload(Item.ratings),
+        subqueryload(Item.comments),
+        subqueryload(Item.visualization_links),
+        joinedload(Item.verifier),
+        joinedload(Item.organization),
     )
 
     return query
@@ -113,7 +113,6 @@ def _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_
 
 
 def _do_catalogue(catalogue_type, page, per_page=None):
-    from models import Item
     if per_page is None:
         try:
             from src.admin.settings import get_setting
@@ -166,7 +165,6 @@ def _do_catalogue(catalogue_type, page, per_page=None):
     from src.shared import _build_page_numbers
     page_numbers = _build_page_numbers(page, total_pages)
 
-    from models import PredefinedTagCategory
     all_categories = PredefinedTagCategory.query.order_by(PredefinedTagCategory.display_order).all()
     all_category_names = [c.name for c in all_categories]
 
@@ -214,7 +212,6 @@ def catalogue_view(catalogue_type, page=1):
 
 @bp.route("/catalogue/<catalogue_type>/<int:page>/json")
 def catalogue_json_view(catalogue_type, page):
-    from models import Item
 
     if catalogue_type not in type_map:
         return redirect(url_for("catalogue.catalogue_index"))

@@ -13,7 +13,6 @@ from src.shared import ITEMS_PER_PAGE
 @login_required
 @api_admin_required
 def list_comments():
-    from models import Comment
 
     item_id = request.args.get("item_id", type=int)
     page = request.args.get("page", 1, type=int)
@@ -44,7 +43,6 @@ def list_comments():
 @login_required
 @api_admin_required
 def delete_comment(comment_id):
-    from models import Comment
 
     comment = Comment.query.get_or_404(comment_id)
     item_title = comment.item.title if comment.item else None
@@ -60,7 +58,6 @@ def delete_comment(comment_id):
 @login_required
 @api_admin_required
 def list_items():
-    from models import Item
 
     item_type = request.args.get("type", "all")
     page = int(request.args.get("page", 1))
@@ -83,7 +80,6 @@ def list_items():
 @login_required
 @api_admin_required
 def delete_item(item_id):
-    from models import Item
 
     item = Item.query.get_or_404(item_id)
     title = item.title
@@ -98,7 +94,6 @@ def delete_item(item_id):
 @login_required
 @api_admin_required
 def verify_item(item_id):
-    from models import Item
 
     current_user = get_current_user()
     item = Item.query.get_or_404(item_id)
@@ -114,7 +109,6 @@ def verify_item(item_id):
 @login_required
 @api_admin_required
 def unverify_item(item_id):
-    from models import Item
 
     item = Item.query.get_or_404(item_id)
     item.verification_status = 'unofficial'

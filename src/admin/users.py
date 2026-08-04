@@ -11,7 +11,6 @@ from src.shared import ITEMS_PER_PAGE
 @login_required
 @api_admin_required
 def ban_user(user_id):
-    from models import User
 
     target_user = User.query.get_or_404(user_id)
     current_user = get_current_user()
@@ -115,7 +114,6 @@ def _do_kick(user):
 @login_required
 @api_admin_required
 def list_banned_users():
-    from models import User
     banned = User.query.filter_by(banned=True).all()
     return jsonify([_serialize_user(u) for u in banned])
 
@@ -125,7 +123,6 @@ def list_banned_users():
 @login_required
 @require_admin
 def admin_users(page=None):
-    from models import User
     p = request.args.get("page", 1, type=int) if page is None else page
     p = min(max(p, 1), 9999)
     query = User.query.order_by(User.id)

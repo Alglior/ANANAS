@@ -40,6 +40,14 @@ class TimestampMixin:
 
 class Item(db.Model, TimestampMixin):
     __tablename__ = "items"
+    __table_args__ = (
+        db.Index("ix_items_type", "type"),
+        db.Index("ix_items_status", "status"),
+        db.Index("ix_items_owner_user_id", "owner_user_id"),
+        db.Index("ix_items_verification_status", "verification_status"),
+        db.Index("ix_items_organization_id", "organization_id"),
+        db.Index("ix_items_data_format_level", "data_format_level"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     type: Mapped[str]
@@ -304,6 +312,10 @@ def _sanitize_metrics(metrics):
 
 class ItemTag(db.Model):
     __tablename__ = "item_tags"
+    __table_args__ = (
+        db.Index("ix_item_tags_item_id", "item_id"),
+        db.Index("ix_item_tags_tag", "tag"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
@@ -314,6 +326,9 @@ class ItemTag(db.Model):
 
 class ItemGallery(db.Model):
     __tablename__ = "item_gallery"
+    __table_args__ = (
+        db.Index("ix_item_gallery_item_id", "item_id"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
@@ -427,6 +442,9 @@ class OrganizationRole(db.Model, TimestampMixin):
 
 class Rating(db.Model):
     __tablename__ = "ratings"
+    __table_args__ = (
+        db.Index("ix_ratings_item_id", "item_id"),
+    )
     id: Mapped[int] = mapped_column(primary_key=True)
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
@@ -437,6 +455,9 @@ class Rating(db.Model):
 
 class Comment(db.Model, TimestampMixin):
     __tablename__ = "comments"
+    __table_args__ = (
+        db.Index("ix_comments_item_id", "item_id"),
+    )
     id: Mapped[int] = mapped_column(primary_key=True)
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
@@ -452,6 +473,9 @@ class Comment(db.Model, TimestampMixin):
 
 class DataChunk(db.Model, TimestampMixin):
     __tablename__ = "data_chunks"
+    __table_args__ = (
+        db.Index("ix_data_chunks_parent_item_id", "parent_item_id"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     parent_item_id: Mapped[int | None] = mapped_column(ForeignKey("items.id"))
@@ -521,6 +545,9 @@ class UserUpload(db.Model):
 
 class VisualizationLink(db.Model, TimestampMixin):
     __tablename__ = "visualization_links"
+    __table_args__ = (
+        db.Index("ix_visualization_links_parent_item_id", "parent_item_id"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     parent_item_id: Mapped[int] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
@@ -550,6 +577,9 @@ class VisualizationLink(db.Model, TimestampMixin):
 
 class Report(db.Model, TimestampMixin):
     __tablename__ = "reports"
+    __table_args__ = (
+        db.Index("ix_reports_target_item_id", "target_item_id"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     reporter_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))

@@ -9,7 +9,6 @@ from utils.security import sanitize_html, validate_external_url
 @login_required
 @api_admin_required
 def list_geopackages():
-    from models import GeoPackage
 
     packages = GeoPackage.query.order_by(GeoPackage.display_order, GeoPackage.id).all()
     return jsonify({"packages": [_serialize_geopackage(p) for p in packages]})
@@ -19,7 +18,6 @@ def list_geopackages():
 @login_required
 @api_admin_required
 def create_geopackage():
-    from models import GeoPackage
 
     data = _get_json_data()
     if data is None:
@@ -52,7 +50,6 @@ def create_geopackage():
 @login_required
 @api_admin_required
 def update_geopackage(pkg_id):
-    from models import GeoPackage
 
     pkg = GeoPackage.query.get_or_404(pkg_id)
     data = _get_json_data()
@@ -84,7 +81,6 @@ def update_geopackage(pkg_id):
 @login_required
 @api_admin_required
 def delete_geopackage(pkg_id):
-    from models import GeoPackage
 
     pkg = GeoPackage.query.get_or_404(pkg_id)
     db.session.delete(pkg)

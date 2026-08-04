@@ -471,11 +471,17 @@ def _process_image_magnets_async(item_id, image_magnets):
     _image_magnets = list(image_magnets)
 
     def _process_images():
-        from app import create_app
-        _app = create_app()
-        with _app.app_context():
-            from src.image_cache import process_image_magnets
-            process_image_magnets(_item_id, _image_magnets)
+        try:
+            from app import create_app
+            _app = create_app()
+            with _app.app_context():
+                from src.image_cache import process_image_magnets
+                process_image_magnets(_item_id, _image_magnets)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).exception(
+                "Image processing failed for item %s", _item_id
+            )
 
     thread = threading.Thread(target=_process_images, daemon=True)
     thread.start()

@@ -31,11 +31,14 @@ services:
       - QBITTORRENT_URL=http://qbittorrent:8081
       - QBITTORRENT_USERNAME=${QBITTORRENT_USERNAME}
       - QBITTORRENT_PASSWORD=${QBITTORRENT_PASSWORD}
+      - REDIS_URL=redis://redis:6379/0
     expose:
       - "5000"              # internal only, behind nginx
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
     volumes:
       - qbittorrent_downloads:/qbittorrent_downloads:ro  # read qBittorrent completed downloads
       - image_cache:/app/instance/image_cache  # persist downloaded image cache
@@ -65,6 +68,13 @@ services:
       start_period: 30s
     volumes:
       - pg_data:/var/lib/postgresql
+
+  # ─── Redis (rate limiting storage) ───
+  redis:
+    image: redis:7-alpine
+    container_name: ananas_redis
+    command: ["redis-server", "--appendonly", "no", "--maxmemory", "64mb", "--maxmemory-policy", "allkeys-lru"]
+    restart: unless-stopped
 
   # ─── qBittorrent (torrent downloader/seeder for image magnets) ───
   qbittorrent:

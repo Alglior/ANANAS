@@ -5,6 +5,7 @@ import tempfile
 from flask import current_app, jsonify, redirect, request, send_file, url_for
 from sqlalchemy import inspect, text, MetaData, Table
 from sqlalchemy.schema import CreateTable
+from app import db
 
 from src.admin import bp, login_required, require_admin, api_admin_required
 
@@ -78,7 +79,6 @@ def admin_backup_page():
 @login_required
 @api_admin_required
 def admin_backup_download():
-    from app import db
 
     engine = db.engine
     dialect = engine.dialect.name
@@ -120,7 +120,6 @@ def admin_backup_download():
 @login_required
 @api_admin_required
 def admin_backup_restore():
-    from app import db
 
     if "file" not in request.files:
         return jsonify({"error": "Aucun fichier fourni"}), 400

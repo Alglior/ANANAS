@@ -11,7 +11,6 @@ from utils.security import sanitize_html, validate_external_url
 @login_required
 @api_admin_required
 def replication_fetch():
-    from models import Item, ItemTag, ItemGallery, DataChunk, VisualizationLink, PredefinedTagCategory, PredefinedTag
 
     data = _get_json_data()
     if data is None:

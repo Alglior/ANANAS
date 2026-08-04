@@ -33,7 +33,11 @@ def _is_production_env():
 
 db = SQLAlchemy()
 migrate = Migrate()
-limiter = Limiter(key_func=_get_client_ip, default_limits=["100 per hour"])
+limiter = Limiter(
+    key_func=_get_client_ip,
+    default_limits=["100 per hour"],
+    storage_uri=os.environ.get("REDIS_URL", "memory://"),
+)
 
 
 def create_app(app_name="ANANAS"):

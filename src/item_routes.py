@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, session, Response, request, g, abort, jsonify
 from app import db
+from models import Comment, DataChunk, Item, User, VisualizationLink, load_imod_config
 from src.shared import get_current_user, user_owns_item_or_admin, ITEMS_PER_PAGE, _build_page_numbers
 
 
@@ -61,7 +62,6 @@ def _build_comment_tree(comments):
 
 
 def _paginate_comments(item_id, page=1):
-    from models import Comment
     from sqlalchemy.orm import joinedload
 
     per_page = get_comments_per_page()
@@ -105,7 +105,6 @@ def favicon_route():
 
 @bp.route("/catalogue/item/<int:item_id>/comments/json")
 def item_comments_json(item_id):
-    from models import Item, Comment
 
     item = Item.query.get_or_404(item_id)
     current_user = get_current_user()
@@ -128,7 +127,6 @@ def item_comments_json(item_id):
 
 @bp.route("/catalogue/item/<int:item_id>/details/json")
 def item_details_json(item_id):
-    from models import Item, DataChunk, VisualizationLink
 
     item = Item.query.get_or_404(item_id)
     item_dict = item.to_dict()
@@ -144,7 +142,6 @@ def item_details_json(item_id):
 
 @bp.route("/api/items/<int:item_id>/image-status")
 def item_image_status(item_id):
-    from models import Item
 
     item = Item.query.get_or_404(item_id)
     return jsonify({
@@ -156,7 +153,6 @@ def item_image_status(item_id):
 
 @bp.route("/catalogue/item/<int:item_id>")
 def item_detail_view(item_id):
-    from models import Item, User
 
     item = Item.query.get_or_404(item_id)
 
@@ -175,11 +171,8 @@ def item_detail_view(item_id):
 
     img_gallery = get_image_gallery(item)
 
-    from models import Comment
 
-    from models import VisualizationLink
 
-    from models import load_imod_config
 
     comment_page = 1
     try:
@@ -191,7 +184,6 @@ def item_detail_view(item_id):
     item_dict = item.to_dict()
     item_dict["comment_count"] = Comment.query.filter_by(item_id=item_id).count()
     viz_links = [vl.to_dict() for vl in VisualizationLink.query.filter_by(parent_item_id=item_id).all()]
-    from models import DataChunk
     data_chunks = [c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=item_id).all()]
 
     if item_dict.get("magnet_links"):
@@ -231,7 +223,6 @@ ZOOM_ORDER = {"iris": 0, "communes": 1, "cantons": 2, "departements": 3, "region
 
 @bp.route("/catalogue/item/<int:item_id>/magnets/download")
 def download_item_magnets(item_id):
-    from models import Item
     item = Item.query.get_or_404(item_id)
     lines = []
     lines.append(f"# A.N.A.N.A.S — Liens Magnet")
@@ -267,12 +258,10 @@ def download_item_magnets(item_id):
 
 @bp.route("/catalogue/item/<int:item_id>/data")
 def item_data_view(item_id):
-    from models import Item, DataChunk, VisualizationLink, User
 
     item = Item.query.get_or_404(item_id)
     current_user = get_current_user()
 
-    from models import Comment
 
     comment_page = 1
     try:
@@ -313,7 +302,6 @@ def item_data_view(item_id):
 
 @bp.route("/catalogue/item/<int:item_id>/gallery")
 def item_gallery_view(item_id):
-    from models import Item, DataChunk, VisualizationLink, Comment
 
     item = Item.query.get_or_404(item_id)
     if item.type != "geodonnee":

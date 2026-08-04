@@ -75,7 +75,6 @@ def api_admin_required(f):
 
 
 def _log_audit(action_type, target_type=None, target_id=None, details=None):
-    from models import AdminAudit
     current_user = get_current_user()
     audit = AdminAudit(
         admin_user_id=current_user.id if current_user else None,

@@ -9,7 +9,6 @@ from utils.security import sanitize_html, validate_external_url
 @login_required
 @api_admin_required
 def list_mirrors():
-    from models import MirrorSite
 
     mirrors = MirrorSite.query.order_by(MirrorSite.display_order, MirrorSite.id).all()
     return jsonify({"mirrors": [_serialize_mirror(m) for m in mirrors]})
@@ -19,7 +18,6 @@ def list_mirrors():
 @login_required
 @api_admin_required
 def create_mirror():
-    from models import MirrorSite
 
     data = _get_json_data()
     if data is None:
@@ -51,7 +49,6 @@ def create_mirror():
 @login_required
 @api_admin_required
 def update_mirror(mirror_id):
-    from models import MirrorSite
 
     mirror = MirrorSite.query.get_or_404(mirror_id)
     data = _get_json_data()
@@ -81,7 +78,6 @@ def update_mirror(mirror_id):
 @login_required
 @api_admin_required
 def delete_mirror(mirror_id):
-    from models import MirrorSite
 
     mirror = MirrorSite.query.get_or_404(mirror_id)
     db.session.delete(mirror)

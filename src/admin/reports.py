@@ -10,7 +10,6 @@ from utils.security import sanitize_html
 @bp.route("/api/reports", methods=["POST"])
 @login_required
 def create_report():
-    from models import User, Item, Report
 
     current_user = get_current_user()
     data = _get_json_data()
@@ -59,7 +58,6 @@ def create_report():
 @login_required
 @api_admin_required
 def list_reports():
-    from models import Report
 
     status_filter = request.args.get("status", "all")
     report_type = request.args.get("type", "all")
@@ -85,7 +83,6 @@ def list_reports():
 @login_required
 @api_admin_required
 def resolve_report(report_id):
-    from models import Report
 
     report = Report.query.get_or_404(report_id)
     data = _get_json_data()

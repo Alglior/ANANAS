@@ -6,6 +6,7 @@ import unicodedata
 from flask import Blueprint, request, render_template, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, limiter
+from models import User
 from utils.security import sanitize_html
 from src.shared import validate_password_strength
 
@@ -16,7 +17,6 @@ def _normalize(text: str) -> str:
     return unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
 
 def _generate_pseudo(prenom: str, nom: str) -> str:
-    from models import User
 
     base = f"{_normalize(prenom).lower()}-{_normalize(nom).lower().replace(' ', '-')}"
     while True:
@@ -44,8 +44,6 @@ def connexion_post():
     pseudo = request.form.get("pseudo", "").strip()
     password = request.form.get("password", "")
     recovery_code = request.form.get("recovery_code", "").strip()
-
-    from models import User
 
     user = User.query.filter_by(pseudo=pseudo).first()
 
@@ -102,8 +100,6 @@ def inscription_post():
     nom = sanitize_html(request.form.get("nom", "").strip())
     password = request.form.get("password", "")
 
-    from models import User
-
     strength_ok, strength_errors = validate_password_strength(password)
     if not strength_ok:
         return render_template("inscription.html", form_errors=strength_errors, password=password, prenom=prenom, nom=nom), 400
@@ -135,7 +131,6 @@ def connexion_2fa_page():
     if not pending_id:
         return redirect(url_for("auth.connexion_page"))
 
-    from models import User
     user = db.session.get(User, pending_id)
     if not user or not user.totp_enabled:
         session.pop("pending_2fa_user_id", None)
@@ -157,7 +152,6 @@ def connexion_2fa_post():
 
     import pyotp
 
-    from models import User
     user = db.session.get(User, pending_id)
     if not user or not user.totp_enabled or not user.totp_secret:
         session.pop("pending_2fa_user_id", None)

@@ -8,7 +8,6 @@ from src.admin import _serialize_featured, _log_audit, _get_json_data
 @login_required
 @api_admin_required
 def list_featured():
-    from models import FeaturedItem
 
     featured = FeaturedItem.query.order_by(FeaturedItem.display_order, FeaturedItem.id).all()
     return jsonify({"featured": [_serialize_featured(f) for f in featured]})
@@ -18,7 +17,6 @@ def list_featured():
 @login_required
 @api_admin_required
 def search_items():
-    from models import Item
 
     q = (request.args.get("q") or "").strip()
     limit = int(request.args.get("limit", 20))
@@ -41,7 +39,6 @@ def search_items():
 @login_required
 @api_admin_required
 def create_featured():
-    from models import FeaturedItem, Item
 
     data = _get_json_data()
     if data is None:
@@ -69,7 +66,6 @@ def create_featured():
 @login_required
 @api_admin_required
 def update_featured(featured_id):
-    from models import FeaturedItem
 
     featured = FeaturedItem.query.get_or_404(featured_id)
     data = _get_json_data()
@@ -90,7 +86,6 @@ def update_featured(featured_id):
 @login_required
 @api_admin_required
 def delete_featured(featured_id):
-    from models import FeaturedItem
 
     featured = FeaturedItem.query.get_or_404(featured_id)
     db.session.delete(featured)
