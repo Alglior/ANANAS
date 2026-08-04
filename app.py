@@ -150,6 +150,7 @@ def create_app(app_name="ANANAS"):
     migrate.init_app(app, db=db)
 
     @app.route("/health")
+    @limiter.exempt
     def health_check():
         return {"status": "ok"}
 

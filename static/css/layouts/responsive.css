@@ -62,14 +62,15 @@
     font-size: 0.9rem;
   }
 
-  .modal-content { flex-direction: column; padding: 10px; max-width: 96vw; max-height: calc(100vh - 40px); }
-  .white-box { flex-direction: column-reverse; }
-  .modal-left { min-width: auto; padding: 8px; }
-  .modal-thumbnails { grid-template-columns: repeat(3, auto); overflow-x: auto; padding: 8px 6px; }
-  .modal-nav { width: 40px; height: 40px; font-size: 1.4rem; }
-  .modal-prev { left: 8px; }
-  .modal-next { right: 8px; }
-  .modal-close { top: 6px; right: 6px; width: 34px; height: 34px; }
+  .modal-content { padding: 0.5rem; max-width: 96vw; max-height: calc(100vh - 20px); }
+  .modal-image-area { max-height: 70vh; }
+  .modal-img { max-height: 70vh; }
+  .modal-thumbnails { max-height: 80px; }
+  .modal-thumb { width: 52px; height: 52px; }
+  .modal-prev, .modal-next { width: 36px; height: 36px; font-size: 1.4rem; }
+  .modal-prev { left: 6px; }
+  .modal-next { right: 6px; }
+  .modal-close { top: 4px; right: 4px; width: 32px; height: 32px; font-size: 1rem; }
 }
 
 @media (max-width: 680px) {
@@ -320,7 +321,3 @@
   }
 }
 
-/* ── Gallery Modal Responsive ── */
-@media (max-width: 992px) {
-  .modal-thumbnails { grid-template-columns: repeat(3, auto); }
-}

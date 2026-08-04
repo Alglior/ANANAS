@@ -174,14 +174,16 @@
             <p>Téléchargement des images en cours...</p>
           </div>
           {% else %}
-          <img class="product-img" id="mainProductImg" src="{{ item.image|e }}" alt="{{ item.title|e }}">
-          {% if item.is_official_verified %}
-          <div class="verified-img-band">
-            <img class="band-logo" src="{{ get_setting('site_logo') }}" alt="">
-            <span>A.N.A.N.A.S</span>
-            <span class="band-name">Vérifié</span>
+          <div class="product-img-wrap">
+            <img class="product-img" id="mainProductImg" src="{{ item.image|e }}" alt="{{ item.title|e }}">
+            {% if item.is_official_verified %}
+            <div class="verified-img-band">
+              <img class="band-logo" src="{{ get_setting('site_logo') }}" alt="">
+              <span>A.N.A.N.A.S</span>
+              <span class="band-name">Vérifié</span>
+            </div>
+            {% endif %}
           </div>
-          {% endif %}
           {% endif %}
 
           <!-- Inline image gallery strip -->
@@ -575,9 +577,9 @@
 </main>
 <div class="image-modal" id="imageModal">
   <div class="modal-backdrop"></div>
-  <div class="modal-content white-box">
+  <div class="modal-content">
     <button class="modal-close" aria-label="Fermer">&#10005;</button>
-    <div class="modal-left">
+    <div class="modal-image-area">
       <button class="modal-nav modal-prev" aria-label="Précédent">&#8249;</button>
       <img class="modal-img" src="" alt="">
       <div class="modal-pending-msg hidden-section">

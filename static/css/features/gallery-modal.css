@@ -18,6 +18,182 @@ body.modal-open {
   display: flex;
 }
 
+.image-modal .modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--shadow-black-88);
+}
+
+/* Modal container */
+.modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: min(92vw, 1100px);
+  max-height: 92vh;
+  padding: 0.75rem;
+  background: var(--white);
+  border-radius: 8px;
+  box-shadow: 0 0 40px var(--shadow-black-60);
+}
+
+/* Image area wrapper — holds nav buttons overlaid on image */
+.modal-image-area {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-height: 75vh;
+  overflow: hidden;
+}
+
+/* Modal image */
+.modal-img {
+  display: block;
+  max-width: 100%;
+  max-height: 75vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  user-select: none;
+}
+
+/* Modal close button */
+.modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--shadow-black-35);
+  border: none;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  color: var(--white);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  background: var(--shadow-black-60);
+}
+
+/* Modal nav buttons — overlaid on image */
+.modal-prev,
+.modal-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: var(--shadow-black-35);
+  border: none;
+  border-radius: 50%;
+  color: var(--white);
+  font-size: 1.8rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  line-height: 1;
+  padding: 0;
+}
+
+.modal-prev {
+  left: 12px;
+}
+
+.modal-next {
+  right: 12px;
+}
+
+.modal-nav:hover {
+  background: var(--shadow-black-60);
+}
+
+.modal-nav-hidden {
+  display: none !important;
+}
+
+/* Image fade transition */
+.img-fading {
+  opacity: 0 !important;
+  transition: opacity 0.15s ease;
+}
+
+/* Modal thumbnails strip */
+.modal-thumbnails {
+  display: flex;
+  gap: 6px;
+  padding: 10px 0 0;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-height: 100px;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.modal-thumb {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 2px solid var(--border-color);
+  cursor: pointer;
+  opacity: 0.5;
+  flex-shrink: 0;
+  transition: opacity 0.2s ease, border-color 0.2s ease;
+}
+
+.modal-thumb:hover {
+  opacity: 0.8;
+  border-color: var(--white-alpha-60);
+}
+
+.modal-thumb.active {
+  opacity: 1;
+  border-color: var(--mustard);
+}
+
+.modal-thumb-only {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border: 2px solid var(--border-color);
+}
+
+/* Modal pending message */
+.modal-pending-msg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: var(--specs-gray);
+  font-size: 1rem;
+  text-align: center;
+  background: var(--white);
+  border-radius: 6px;
+}
+
+.modal-pending-msg .pending-spinner {
+  width: 32px;
+  height: 32px;
+  border-width: 3px;
+}
+
 /* Report modal overlay (full-screen dimmer) */
 .modal-backdrop {
   position: fixed;
@@ -32,13 +208,6 @@ body.modal-open {
 
 .modal-backdrop.show {
   display: block;
-}
-
-/* Gallery child backdrop */
-.image-modal .modal-backdrop {
-  position: absolute;
-  inset: 0;
-  background: var(--shadow-black-88);
 }
 
 /* Report modal box content */
@@ -101,135 +270,11 @@ body.modal-open {
   color: var(--charcoal) !important;
 }
 
-
-/* Modal nav buttons visibility */
-.modal-nav-hidden {
-  display: none !important;
-}
-
-/* Image fade transition (no inline opacity) */
-.img-fading {
-  opacity: 0 !important;
-  transition: opacity 0.15s ease;
-}
-
 .gallery-backbar { display: flex; align-items: center; padding: 1.5rem 0; }
 .gallery-back-link { color: var(--specs-gray); text-decoration: none; font-size: 0.9rem; }
 .gallery-empty { color: var(--specs-gray); text-align: center; padding: 3rem 1rem; }
 
-/* Modal container */
-.modal-content {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  max-width: min(92vw, 92vh, 1100px);
-  max-height: 92vh;
-  padding: 1rem;
-  background: var(--white);
-  border-radius: 8px;
-  box-shadow: 0 0 40px var(--shadow-black-60);
-}
-
-.modal-left {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Modal image - constrained size */
-.modal-img {
-  max-width: 100%;
-  max-height: 85vh;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  border-radius: 6px;
-}
-
-/* Modal close button */
-.modal-close {
-  position: absolute;
-  top: -14px;
-  right: -14px;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--white);
-  border: 2px solid var(--border-color);
-  border-radius: 50%;
-  font-size: 1.1rem;
-  color: var(--charcoal);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.modal-close:hover {
-  background: var(--light-gray);
-  border-color: var(--mustard);
-  color: var(--mustard);
-}
-
-/* Modal nav buttons */
-.modal-nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  background: var(--shadow-black-35);
-  border: none;
-  color: var(--white);
-  font-size: 2rem;
-  cursor: pointer;
-  transition: background 0.2s ease;
-  flex-shrink: 0;
-}
-
-.modal-nav:hover {
-  background: var(--shadow-black-60);
-}
-
-/* Modal thumbnails strip */
-.modal-thumbnails {
-  display: grid;
-  grid-template-columns: repeat(3, auto);
-  gap: 6px;
-  padding: 8px;
-  justify-content: center;
-}
-
-.modal-thumb {
-  width: 106px;
-  height: 106px;
-  object-fit: cover;
-  border-radius: 4px;
-  border: 2px solid var(--border-color);
-  cursor: pointer;
-  opacity: 0.5;
-  flex-shrink: 0;
-  transition: opacity 0.2s ease, border-color 0.2s ease;
-}
-
-.modal-thumb:hover {
-  opacity: 0.8;
-  border-color: var(--white-alpha-60);
-}
-
-.modal-thumb.active {
-  opacity: 1;
-  border-color: var(--mustard);
-}
-
-.modal-thumb-only {
-  width: 106px;
-  height: 106px;
-  object-fit: cover;
-  border: 2px solid var(--border-color);
-}
-
-/* Image pending message */
+/* Inline gallery pending */
 .inline-gallery-pending {
   display: flex;
   align-items: center;
@@ -250,23 +295,4 @@ body.modal-open {
 
 @keyframes pending-spin {
   to { transform: rotate(360deg); }
-}
-
-/* Modal pending message */
-.modal-pending-msg {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 3rem;
-  color: var(--specs-gray);
-  font-size: 1rem;
-  text-align: center;
-}
-
-.modal-pending-msg .pending-spinner {
-  width: 32px;
-  height: 32px;
-  border-width: 3px;
 }
