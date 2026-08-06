@@ -142,9 +142,6 @@
           </div>
         </div>
 
-        <div class="upload-section" id="tutoSectionData">
-          <h2>Données (optionnel)</h2>
-
           <div class="form-group">
             <label class="label-with-help">Format des données <span class="help-icon" data-tooltip="Choisissez 'Simple' pour un fichier unique avec une seule couche, 'Pack' pour un fichier unique multi-couches, ou 'Individuelles' pour plusieurs fichiers distincts.">?</span></label>
             <div class="radio-group" id="dataFormatLevelGroup">
@@ -162,6 +159,9 @@
               </label>
             </div>
           </div>
+
+        <div class="upload-section" id="tutoSectionData">
+          <h2>Données (optionnel)</h2>
 
           <div id="dataTextInputGroup" class="form-group data-input-group">
             <label class="label-with-help">Coller vos données <span class="help-icon" data-tooltip="Copiez-collez votre tableau ici (format CSV : virgules ou tabs). Seules les 50 premières lignes seront conservées pour l'aperçu dans le catalogue.">?</span></label>
@@ -510,7 +510,7 @@
 {{ edit_data | tojson | safe }}
 </script>
 {% endif %}
-<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/upload_tuto.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/upload_tuto.js') }}?v=7"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/upload.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/tabs.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/data-input.js') }}"></script>

@@ -39,7 +39,7 @@ def connexion_page():
 
 
 @bp.route("/connexion", methods=["POST"])
-@limiter.limit("5 per hour")
+@limiter.limit("50 per hour")
 def connexion_post():
     pseudo = request.form.get("pseudo", "").strip()
     password = request.form.get("password", "")
@@ -94,7 +94,7 @@ def inscription_page():
 
 
 @bp.route("/inscription", methods=["POST"])
-@limiter.limit("3 per hour")
+@limiter.limit("30 per hour")
 def inscription_post():
     prenom = sanitize_html(request.form.get("prenom", "").strip())
     nom = sanitize_html(request.form.get("nom", "").strip())
@@ -144,7 +144,7 @@ def connexion_2fa_page():
 
 
 @bp.route("/connexion/2fa", methods=["POST"])
-@limiter.limit("10 per hour")
+@limiter.limit("100 per hour")
 def connexion_2fa_post():
     pending_id = session.get("pending_2fa_user_id")
     if not pending_id:

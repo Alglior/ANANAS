@@ -1,5 +1,5 @@
 (function() {
-  const TUTO_KEY = 'upload_tuto_done_v4';
+  const TUTO_KEY = 'upload_tuto_done_v7';
 
   function currentTab() {
     var active = document.querySelector('.upload-tab.active');
@@ -22,6 +22,12 @@
   const steps = [
     {
       tab: 'publish',
+      target: '#jsonDropZone',
+      position: 'bottom',
+      text: '<strong>Import JSON</strong> — Déposez ici un ou plusieurs fichiers JSON pour pré-remplir automatiquement les métadonnées de la fiche (utile pour réimporter une fiche existante).',
+    },
+    {
+      tab: 'publish',
       target: '#title',
       position: 'bottom',
       text: '<strong>Titre</strong> — Donnez un nom à votre publication. C\'est le titre qui apparaîtra dans le catalogue.',
@@ -40,6 +46,12 @@
     },
     {
       tab: 'publish',
+      target: '#tagSelector',
+      position: 'top',
+      text: '<strong>Tags</strong> — Sélectionnez des tags par catégorie ou saisissez vos propres mots-clés pour rendre vos données plus faciles à retrouver dans le catalogue.',
+    },
+    {
+      tab: 'publish',
       target: '#organization_id',
       position: 'bottom',
       text: '<strong>Organisation</strong> — Associez votre publication à une organisation (optionnel). Laissez vide pour une publication personnelle.',
@@ -52,7 +64,13 @@
     },
     {
       tab: 'publish',
-      target: '#dataInputGroup',
+      target: '#dataFormatLevelGroup',
+      position: 'top',
+      text: '<strong>Format des données</strong> — Choisissez <strong>Simple</strong> (un seul fichier, une seule couche), <strong>Pack</strong> (un seul fichier multi-couches) ou <strong>Individuelles</strong> (plusieurs fichiers distincts).',
+    },
+    {
+      tab: 'publish',
+      target: '#dataTextInputGroup',
       position: 'top',
       text: '<strong>Données</strong> — Collez un aperçu de votre tableau en CSV (optionnel). Seules les 50 premières lignes seront affichées dans le catalogue.',
     },
@@ -70,9 +88,21 @@
     },
     {
       tab: 'publish',
+      target: '#pdf_magnet_link',
+      position: 'top',
+      text: '<strong>Documentation PDF</strong> — Optionnel. Ajoutez un lien Magnet vers un document PDF (notice, rapport technique). Cela ajoute des points à votre score IMOD.',
+    },
+    {
+      tab: 'publish',
       target: '#viz_name, #viz_url',
       position: 'top',
       text: '<strong>Visualisation</strong> — Optionnel. Ajoutez un lien vers un service de visualisation externe (WMS, WFS, Mapbox, etc.).',
+    },
+    {
+      tab: 'publish',
+      target: '#imodPreviewPanel',
+      position: 'top',
+      text: '<strong>Score IMOD</strong> — Aperçu en temps réel de l\'indice de qualité de vos métadonnées (Meta, Tech, Rich). Remplissez les champs pour améliorer votre score avant publication.',
     },
     {
       tab: 'publish',
@@ -85,8 +115,15 @@
       tab: 'drafts',
       target: '#tab-drafts .upload-history-list, #tab-drafts .no-data-message',
       position: 'top',
+      switchTab: 'publications',
+      text: '<strong>Mes brouillons</strong> — Retrouvez tous vos brouillons en cours ici. Modifiez-les ou mettez-les à la corbeille. Cliquez sur <strong>Mes publications</strong> pour voir vos contenus déjà publiés.',
+    },
+    {
+      tab: 'publications',
+      target: '#tab-publications .upload-history-list, #tab-publications .no-data-message',
+      position: 'top',
       switchTab: 'trash',
-      text: '<strong>Mes brouillons</strong> — Retrouvez tous vos brouillons en cours ici. Modifiez-les ou mettez-les à la corbeille. Cliquez sur <strong>Corbeille</strong> pour voir les éléments supprimés.',
+      text: '<strong>Mes publications</strong> — Consultez les données que vous avez déjà publiées sur le catalogue. Cliquez sur <strong>Corbeille</strong> pour voir les éléments supprimés.',
     },
     {
       tab: 'trash',
@@ -187,8 +224,8 @@
     btnPrev.style.visibility = index === 0 ? 'hidden' : 'visible';
 
     if (step.switchTab) {
-      var tabLabel = step.switchTab === 'drafts' ? 'Brouillons' : 'Corbeille';
-      btnNext.textContent = tabLabel + ' →';
+      var tabLabels = { drafts: 'Mes brouillons', publications: 'Mes publications', trash: 'Corbeille' };
+      btnNext.textContent = (tabLabels[step.switchTab] || 'Continuer') + ' →';
     } else if (index === steps.length - 1) {
       btnNext.textContent = 'Terminer ✓';
     } else {

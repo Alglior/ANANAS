@@ -16,7 +16,7 @@ def contact_page():
 
 
 @bp.route("/api/contact", methods=["POST"])
-@limiter.limit("5 per hour")
+@limiter.limit("50 per hour")
 def submit_contact():
     if request.is_json:
         data = request.get_json(silent=True) or {}

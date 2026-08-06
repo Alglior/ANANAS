@@ -1,18 +1,29 @@
 (function() {
-  const TUTO_KEY = 'admin_panel_tuto_v6';
-  const STEP_KEY = 'admin_panel_tuto_step_v6';
-  const ACTIVE_KEY = 'admin_panel_tuto_active_v6';
+  const TUTO_KEY = 'admin_panel_tuto_v7';
+  const STEP_KEY = 'admin_panel_tuto_step_v7';
+  const ACTIVE_KEY = 'admin_panel_tuto_active_v7';
 
   function currentPage() {
     var p = window.location.pathname;
-    if (p.startsWith('/admin/reports')) return 'reports';
     if (p.startsWith('/admin/moderation')) return 'moderation';
-    if (p.startsWith('/admin/contact-messages')) return 'contact-messages';
-    if (p.startsWith('/admin/mirrors')) return 'mirrors';
-    if (p.startsWith('/admin/featured')) return 'featured';
-    if (p.startsWith('/admin/geopackages')) return 'geopackages';
+    if (p.startsWith('/admin/settings')) return 'settings';
     if (p.startsWith('/admin/audit')) return 'audit';
     return 'users';
+  }
+
+  function activateStepTabs(step) {
+    if (step.settingsTab) {
+      var sb = document.querySelector('.settings-sidebar-tab[data-settings-tab="' + step.settingsTab + '"]');
+      if (sb) sb.click();
+    }
+    if (step.innerTab) {
+      var it = document.querySelector('.settings-inner-tab[data-inner-tab="' + step.innerTab + '"]');
+      if (it) it.click();
+    }
+    if (step.modTab) {
+      var mt = document.querySelector('.mod-tab[data-tab="' + step.modTab + '"]');
+      if (mt) mt.click();
+    }
   }
 
   var steps = [
@@ -20,7 +31,7 @@
       page: 'any',
       target: '.admin-nav',
       position: 'bottom',
-      text: '<strong>Navigation d\'administration</strong> — Cette barre donne accès aux 8 sections du panneau. Cliquez sur <strong>Suivant</strong> pour découvrir chaque section.',
+      text: '<strong>Navigation d\'administration</strong> — Cette barre donne accès aux 4 sections du panneau : <strong>Utilisateurs</strong>, <strong>Modération</strong>, <strong>Paramètres</strong> et <strong>Journal d\'audits</strong>. Cliquez sur <strong>Suivant</strong> pour découvrir chaque section.',
     },
     {
       page: 'any',
@@ -39,83 +50,88 @@
       page: 'users',
       target: '.admin-nav a:nth-child(2)',
       position: 'bottom',
-      navigateTo: '/admin/reports',
-      text: '<strong>Signalements</strong> — Traitez les signalements de contenu inapproprié envoyés par les utilisateurs.',
-    },
-    {
-      page: 'reports',
-      target: '#report-status-filters, #reports-table',
-      position: 'top',
-      text: '<strong>Signalements</strong> — Filtrez par statut (<strong>En attente</strong>, <strong>Résolu</strong>, <strong>Non fondé</strong>). Chaque signalement peut être marqué comme résolu ou rejeté.',
-    },
-    {
-      page: 'reports',
-      target: '.admin-nav a:nth-child(3)',
-      position: 'bottom',
       navigateTo: '/admin/moderation',
-      text: '<strong>Modération</strong> — Modérez les commentaires et les publications du catalogue.',
+      text: '<strong>Modération</strong> — Modérez les commentaires, les publications du catalogue, les signalements et les messages de contact.',
     },
     {
       page: 'moderation',
       target: '.mod-tabs',
       position: 'top',
-      text: '<strong>Modération</strong> — Deux onglets : <strong>Commentaires</strong> et <strong>Cartes, Applications &amp; Données</strong>. Supprimez, vérifiez ou retirez la vérification du contenu.',
+      text: '<strong>Modération</strong> — Quatre onglets : <strong>Commentaires</strong>, <strong>Cartes, Applications &amp; Données</strong>, <strong>Signalements</strong> et <strong>Messages</strong>. Supprimez, vérifiez ou retirez la vérification du contenu.',
     },
     {
       page: 'moderation',
-      target: '.admin-nav a:nth-child(4)',
-      position: 'bottom',
-      navigateTo: '/admin/contact-messages',
-      text: '<strong>Messages</strong> — Consultez les messages envoyés par les visiteurs via la page de contact.',
+      target: '.mod-tab[data-tab="reports"], #report-status-filters, #reports-table',
+      position: 'top',
+      modTab: 'reports',
+      text: '<strong>Signalements</strong> — Filtrez par statut (<strong>En attente</strong>, <strong>Résolu</strong>, <strong>Non fondé</strong>). Chaque signalement peut être marqué comme résolu ou rejeté.',
     },
     {
-      page: 'contact-messages',
+      page: 'moderation',
       target: '#contact-msg-filters, #contact-msgs-table',
       position: 'top',
+      modTab: 'messages',
       text: '<strong>Messages de contact</strong> — Filtrez par statut (<strong>Tous</strong>, <strong>Non lus</strong>, <strong>Lus</strong>). Cliquez sur <strong>Voir</strong> pour lire le message complet, ou <strong>Supprimer</strong> pour l\'effacer.',
     },
     {
-      page: 'contact-messages',
-      target: '.admin-nav a:nth-child(5)',
+      page: 'moderation',
+      target: '.admin-nav a:nth-child(3)',
       position: 'bottom',
-      navigateTo: '/admin/mirrors',
-      text: '<strong>Sites miroirs</strong> — Ajoutez, modifiez ou supprimez les sites miroirs affichés sur la page d\'accueil.',
+      navigateTo: '/admin/settings',
+      text: '<strong>Paramètres</strong> — Configurez le site : paramètres généraux, catalogues, page d\'accueil, étiquettes, réplication et sauvegarde.',
     },
     {
-      page: 'mirrors',
-      target: '#mirrors-table, .mirrors-header',
+      page: 'settings',
+      target: '.settings-sidebar-nav',
+      position: 'right',
+      text: '<strong>Paramètres</strong> — Six sections dans le menu latéral : <strong>Général</strong>, <strong>Catalogues</strong>, <strong>Accueil</strong>, <strong>Étiquettes</strong>, <strong>Réplication</strong> et <strong>Sauvegarde</strong>.',
+    },
+    {
+      page: 'settings',
+      target: '#settings-tab-catalogues .settings-card',
       position: 'top',
-      text: '<strong>Sites miroirs</strong> — Gérez les liens affichés dans la section « Sites miroirs » de la page d\'accueil. <strong>Ajoutez</strong> un nouveau miroir, <strong>modifiez</strong> ou <strong>supprimez</strong> un miroir existant.',
+      settingsTab: 'catalogues',
+      text: '<strong>Catalogues</strong> — Activez ou désactivez chaque catalogue de la plateforme. Un catalogue désactivé n\'est plus accessible et n\'apparaît plus dans la navigation.',
     },
     {
-      page: 'mirrors',
-      target: '.admin-nav a:nth-child(6)',
-      position: 'bottom',
-      navigateTo: '/admin/featured',
-      text: '<strong>Données en avant</strong> — Choisissez les items du catalogue à afficher dans la section « Exemples de Données » de la page d\'accueil.',
-    },
-    {
-      page: 'featured',
-      target: '#featured-table, .mirrors-header',
+      page: 'settings',
+      target: '.settings-inner-nav',
       position: 'top',
+      settingsTab: 'accueil',
+      text: '<strong>Accueil</strong> — Gérez les sections de la page d\'accueil : <strong>Sites miroirs</strong>, <strong>Données en avant</strong>, <strong>Packs GeoPackage</strong> et <strong>Fichiers simples</strong>.',
+    },
+    {
+      page: 'settings',
+      target: '#featured-table, #add-featured-btn',
+      position: 'top',
+      settingsTab: 'accueil',
+      innerTab: 'featured',
       text: '<strong>Données en avant</strong> — Recherchez un item du catalogue et ajoutez-le à la section « Exemples de Données Disponibles ». Activez ou retirez les données facilement.',
     },
     {
-      page: 'featured',
-      target: '.admin-nav a:nth-child(7)',
-      position: 'bottom',
-      navigateTo: '/admin/geopackages',
-      text: '<strong>Packs GeoPackage</strong> — Créez et gérez les packs affichés dans la section « Packs de Données GeoPackage » de la page d\'accueil.',
-    },
-    {
-      page: 'geopackages',
-      target: '#geopackages-table, .mirrors-header',
+      page: 'settings',
+      target: '#tags-table',
       position: 'top',
-      text: '<strong>Packs GeoPackage</strong> — Chaque pack a un <strong>titre</strong>, une <strong>description</strong>, des <strong>infos format</strong> et un <strong>lien</strong> vers le catalogue. Ajoutez, modifiez ou supprimez des packs.',
+      settingsTab: 'etiquettes',
+      text: '<strong>Étiquettes</strong> — Gérez les <strong>catégories d\'étiquettes</strong> et leurs étiquettes associées pour le filtrage dans les formulaires.',
     },
     {
-      page: 'geopackages',
-      target: '.admin-nav a:nth-child(8)',
+      page: 'settings',
+      target: '#remote-url, .settings-card',
+      position: 'top',
+      settingsTab: 'replication',
+      text: '<strong>Réplication</strong> — Répliquez les items d\'un catalogue depuis une autre instance A.N.A.N.A.S en fournissant son URL. Les items sont importés avec leurs fiches, tags et galeries.',
+    },
+    {
+      page: 'settings',
+      target: '#backup-download-btn, .settings-card',
+      position: 'top',
+      settingsTab: 'backup',
+      text: '<strong>Sauvegarde</strong> — Téléchargez un dump complet de la base de données ou <strong>restaurez</strong> une sauvegarde existante.',
+    },
+    {
+      page: 'settings',
+      target: '.admin-nav a:nth-child(4)',
       position: 'bottom',
       navigateTo: '/admin/audit',
       text: '<strong>Journal d\'audits</strong> — Consultez l\'historique complet de toutes les actions administratives.',
@@ -204,6 +220,8 @@
       window.location.href = step.navigateTo || '/admin/' + step.page;
       return;
     }
+
+    activateStepTabs(step);
 
     var target = document.querySelector(step.target);
     if (!target) {

@@ -51,7 +51,7 @@ def update_profile():
 
 @bp.route("/api/users/change-password", methods=["POST"])
 @login_required
-@limiter.limit("5 per hour")
+@limiter.limit("50 per hour")
 def change_password():
     current_user = get_current_user()
     data = request.get_json(silent=True) or {}
@@ -74,7 +74,7 @@ def change_password():
 
 @bp.route("/api/users/generate-recovery-codes", methods=["POST"])
 @login_required
-@limiter.limit("3 per hour")
+@limiter.limit("30 per hour")
 def generate_recovery_codes():
     import secrets
     current_user = get_current_user()
