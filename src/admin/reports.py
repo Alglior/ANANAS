@@ -5,6 +5,7 @@ from app import db
 from src.admin import bp, login_required, api_admin_required
 from src.admin import get_current_user, _serialize_report, _log_audit, _paginate, _get_json_data
 from utils.security import sanitize_html
+from models import Report, User, Item
 
 
 @bp.route("/api/reports", methods=["POST"])

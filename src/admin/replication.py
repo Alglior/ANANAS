@@ -5,6 +5,7 @@ from app import db
 from src.admin import bp, api_admin_required, login_required
 from src.admin import _log_audit, _get_json_data, get_current_user, _CATALOGUES_INFO, CATALOGUE_TYPE_MAP
 from utils.security import sanitize_html, validate_external_url
+from models import User, Item, ItemGallery, ItemTag, PredefinedTag, PredefinedTagCategory
 
 
 @bp.route("/api/admin/replication/fetch", methods=["POST"])

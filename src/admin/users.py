@@ -5,6 +5,7 @@ from app import db
 from src.admin import bp, api_admin_required, require_admin, login_required
 from src.admin import get_current_user, _serialize_user, _log_audit, _paginate
 from src.shared import ITEMS_PER_PAGE
+from models import User
 
 
 @bp.route("/api/users/<int:user_id>/ban", methods=["POST"])

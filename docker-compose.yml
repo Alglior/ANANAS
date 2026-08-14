@@ -25,6 +25,7 @@ services:
   app:
     build: .
     container_name: ananas_app
+    restart: unless-stopped
     env_file: .env          # reads POSTGRES_*, FLASK_SECRET_KEY from .env
     environment:
       - FLASK_ENV=production
@@ -53,6 +54,7 @@ services:
   postgres:
     image: postgres:18-alpine
     container_name: ananas_postgres
+    restart: unless-stopped
     env_file: .env          # reads POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD from .env
    
     command: >

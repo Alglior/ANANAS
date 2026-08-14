@@ -5,6 +5,7 @@ from app import db
 from src.admin import bp, api_admin_required, login_required, get_current_user
 from src.admin import _serialize_comment, _serialize_item, _log_audit, _paginate
 from src.shared import ITEMS_PER_PAGE
+from models import Comment, Item
 
 
 # --- Comments ---

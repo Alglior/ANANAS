@@ -2,6 +2,7 @@ from flask import request, jsonify
 from app import db
 from src.admin import bp, api_admin_required, login_required
 from src.admin import _serialize_contact_message, _log_audit, _paginate, _get_json_data
+from models import ContactMessage
 
 
 @bp.route("/api/admin/contact-messages", methods=["GET"])

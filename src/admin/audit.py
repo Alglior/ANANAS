@@ -1,5 +1,6 @@
 from flask import request, jsonify
 from src.admin import bp, api_admin_required, login_required, _paginate
+from models import AdminAudit
 
 
 @bp.route("/api/admin/audit")

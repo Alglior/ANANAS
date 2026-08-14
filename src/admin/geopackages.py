@@ -3,6 +3,7 @@ from app import db
 from src.admin import bp, api_admin_required, login_required
 from src.admin import _serialize_geopackage, _log_audit, _get_json_data
 from utils.security import sanitize_html, validate_external_url
+from models import GeoPackage
 
 
 @bp.route("/api/admin/geopackages", methods=["GET"])

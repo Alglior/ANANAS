@@ -94,5 +94,6 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{{ super() }}
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/users.js') }}"></script>
 {% endblock %}

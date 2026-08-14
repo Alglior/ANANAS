@@ -3,6 +3,7 @@ from app import db
 from src.admin import bp, api_admin_required, login_required
 from src.admin import _log_audit, _get_json_data
 from utils.security import sanitize_html
+from models import PredefinedTag, PredefinedTagCategory
 
 
 def _serialize_category(cat):

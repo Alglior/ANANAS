@@ -2,6 +2,7 @@ from flask import request, jsonify
 from app import db
 from src.admin import bp, api_admin_required, login_required
 from src.admin import _serialize_simple_file, _log_audit, _get_json_data
+from models import SimpleFileItem, Item
 
 
 @bp.route("/api/admin/simple-files", methods=["GET"])
