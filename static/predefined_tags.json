@@ -288,6 +288,134 @@
         "Web",
         "Application"
       ]
+    },
+    {
+      "name": "Emploi & activité professionnelle",
+      "tags": [
+        "Actifs",
+        "Actifs occupés",
+        "Salariés",
+        "Non salariés",
+        "Chômeurs",
+        "Inactifs",
+        "Étudiants",
+        "Retraités",
+        "Temps plein",
+        "CDI",
+        "CDD",
+        "Intérim",
+        "Apprentis",
+        "Indépendants",
+        "Employeurs",
+        "Temps de trajet",
+        "Voiture",
+        "Transport en commun",
+        "Catégories socioprofessionnelles"
+      ]
+    },
+    {
+      "name": "Familles & ménages",
+      "tags": [
+        "Ménages unipersonnels",
+        "Hommes seuls",
+        "Femmes seules",
+        "Ménages sans famille",
+        "Ménages familles",
+        "Couples sans enfant",
+        "Couples avec enfant",
+        "Familles monoparentales"
+      ]
+    },
+    {
+      "name": "Éducation & formation",
+      "tags": [
+        "Élèves scolarisés",
+        "Non scolarisés",
+        "Sans diplôme",
+        "CEP",
+        "BEPC",
+        "CAP/BEP",
+        "Bac",
+        "Bac+2",
+        "Bac+3",
+        "Bac+5",
+        "Bac+8",
+        "Diplômes"
+      ]
+    },
+    {
+      "name": "Logement INSEE",
+      "tags": [
+        "Résidences principales",
+        "Résidences secondaires",
+        "Logements vacants",
+        "Maisons",
+        "Appartements",
+        "Propriétaires",
+        "Locataires",
+        "Locatifs HLM",
+        "Salle de bain",
+        "Chauffage collectif",
+        "Chauffage individuel",
+        "Garage",
+        "Climatisation",
+        "Tout-à-l'égout",
+        "Matériau bois",
+        "Matériau dur",
+        "Ancienneté ménage",
+        "Ancienneté RP"
+      ]
+    },
+    {
+      "name": "Revenus & distribution",
+      "tags": [
+        "Médiane revenus",
+        "Taux pauvreté",
+        "Indice Gini",
+        "Déciles revenus",
+        "Écart interdécile",
+        "Rapport S80/S20",
+        "Part imposables",
+        "Minima sociaux",
+        "Niveau de vie"
+      ]
+    },
+    {
+      "name": "Géographie IRIS",
+      "tags": [
+        "Code IRIS",
+        "Nom IRIS",
+        "Type IRIS",
+        "Tranche IRIS",
+        "Grand quartier",
+        "Unité urbaine",
+        "Données locales"
+      ]
+    },
+    {
+      "name": "Démographie détaillée",
+      "tags": [
+        "Hommes",
+        "Femmes",
+        "Enfants",
+        "Jeunes adultes",
+        "Adultes",
+        "Âge mûr",
+        "Seniors",
+        "Personnes âgées",
+        "Français",
+        "Étrangers",
+        "Immigrés"
+      ]
+    },
+    {
+      "name": "Parc social & politique de la ville",
+      "tags": [
+        "RPLS",
+        "Logements sociaux",
+        "QPV",
+        "Quartiers prioritaires"
+      ]
     }
   ]
 }

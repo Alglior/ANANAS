@@ -1,7 +1,7 @@
 """
-Seed les tags prédéfinis depuis predefined_tags.json.
-Ajoute les nouvelles catégories ET les tags manquants aux catégories existantes.
-S'exécute automatiquement au démarrage du Docker (docker-entrypoint.sh).
+Script pour mettre à jour les tags prédéfinis dans la base de données.
+Ajoute les nouvelles catégories et tags depuis predefined_tags.json,
+et ajoute les tags manquants aux catégories existantes.
 """
 import json
 import sys
@@ -14,7 +14,7 @@ from app import create_app, db
 from models import PredefinedTagCategory, PredefinedTag
 
 
-def seed_predefined_tags():
+def update_predefined_tags():
     app = create_app()
     with app.app_context():
         inspector = db.inspect(db.engine)
@@ -73,16 +73,11 @@ def seed_predefined_tags():
                     db.session.add(tag)
 
                 added_cats += 1
-                print(f"  + Nouvelle catégorie « {cat_name} » ({len(cat_data.get('tags', []))} tags)")
+                print(f"  + Nouvelle catégorie « {cat_name }» avec {len(cat_data.get('tags', []))} tags")
 
         db.session.commit()
-
-        total_cats = PredefinedTagCategory.query.count()
-        total_tags = PredefinedTag.query.count()
-        print(f"\n✅ Seed terminé : {total_cats} catégories, {total_tags} tags au total")
-        if added_cats or added_tags:
-            print(f"   ({added_cats} catégorie(s) neuve(s), {added_tags} tag(s) ajouté(s))")
+        print(f"\n✅ Terminé : {added_cats} catégorie(s) ajoutée(s), {added_tags} tag(s) ajouté(s)")
 
 
 if __name__ == "__main__":
-    seed_predefined_tags()
+    update_predefined_tags()

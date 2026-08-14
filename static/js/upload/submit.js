@@ -335,6 +335,15 @@ UploadModule.submit = (function () {
         });
       }
     }
+
+    // Restore data text for preview
+    if (d.data_text) {
+      var dataInput = document.getElementById('data_input');
+      if (dataInput) {
+        dataInput.value = d.data_text;
+        dataInput.dispatchEvent(new Event('input'));
+      }
+    }
   }
 
   function initMultiJsonUpload() {
@@ -357,6 +366,26 @@ UploadModule.submit = (function () {
         return;
       }
 
+      // Si 1 seul fichier JSON : remplir le formulaire au lieu de créer directement
+      if (validFiles.length === 1) {
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+          try {
+            var data = JSON.parse(ev.target.result);
+            if (!data.title && !data.type) {
+              throw new Error('Champs title/type manquants');
+            }
+            populateFormFromJSON(data);
+            resultsContainer.innerHTML = '<div class="json-upload-result success"><span class="status-icon"></span><span class="file-name">' + validFiles[0].name + '</span><span class="file-status">Formulaire rempli \u2014 vérifiez puis enregistrez</span></div>';
+          } catch (err) {
+            resultsContainer.innerHTML = '<div class="json-upload-result error"><span class="status-icon"></span><span class="file-name">' + validFiles[0].name + '</span><span class="file-status">JSON invalide: ' + err.message + '</span></div>';
+          }
+        };
+        reader.readAsText(validFiles[0]);
+        return;
+      }
+
+      // Sinon : batch create via API
       resultsContainer.innerHTML = '';
       var total = validFiles.length;
       var done = 0;
@@ -407,33 +436,64 @@ UploadModule.submit = (function () {
             }
 
             var csrfToken = CsrfModule.getCsrfToken();
-            fetch('/api/upload/item', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': csrfToken,
-              },
-              body: JSON.stringify(payload),
-            })
-            .then(function(resp) {
-              if (!resp.ok) {
-                return resp.json().then(function(d) { throw new Error(d.error || 'Erreur serveur'); });
+            
+            // Upload data_text first if present
+            function uploadDataAndCreateItem() {
+              if (data.data_text && data.data_text.trim()) {
+                var formData = new FormData();
+                formData.append('data_text', data.data_text);
+                formData.append('title', payload.title);
+                formData.append('type', payload.type);
+                formData.append('format_type', payload.format_type);
+                formData.append('description', payload.description);
+                formData.append('organization_id', payload.organization_id || '');
+                
+                return fetch('/api/upload/file', {
+                  method: 'POST',
+                  headers: { 'X-CSRF-Token': csrfToken },
+                  body: formData,
+                })
+                .then(function(resp) { return resp.json(); })
+                .then(function(result) {
+                  if (result.chunk_id) {
+                    payload.chunk_id = result.chunk_id;
+                  }
+                  return payload;
+                })
+                .catch(function() { return payload; });
               }
-              return resp.json();
-            })
-            .then(function() {
-              row.className = 'json-upload-result success';
-              row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + file.name + '</span><span class="file-status">Brouillon cr\u00e9\u00e9</span>';
-            })
-            .catch(function(err) {
-              row.className = 'json-upload-result error';
-              row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + file.name + '</span><span class="file-status">' + err.message + '</span>';
-            })
-            .finally(function() {
-              done++;
-              if (done >= total) {
-                setTimeout(function() { location.reload(); }, 1500);
-              }
+              return Promise.resolve(payload);
+            }
+            
+            uploadDataAndCreateItem().then(function(finalPayload) {
+              return fetch('/api/upload/item', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRF-Token': csrfToken,
+                },
+                body: JSON.stringify(finalPayload),
+              })
+              .then(function(resp) {
+                if (!resp.ok) {
+                  return resp.json().then(function(d) { throw new Error(d.error || 'Erreur serveur'); });
+                }
+                return resp.json();
+              })
+              .then(function() {
+                row.className = 'json-upload-result success';
+                row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + file.name + '</span><span class="file-status">Brouillon cr\u00e9\u00e9</span>';
+              })
+              .catch(function(err) {
+                row.className = 'json-upload-result error';
+                row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + file.name + '</span><span class="file-status">' + err.message + '</span>';
+              })
+              .finally(function() {
+                done++;
+                if (done >= total) {
+                  setTimeout(function() { location.reload(); }, 1500);
+                }
+              });
             });
           } catch (err) {
             row.className = 'json-upload-result error';

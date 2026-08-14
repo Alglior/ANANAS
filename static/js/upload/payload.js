@@ -62,6 +62,11 @@ UploadModule.payload = (function () {
       }
     }
 
+    var dataInput = document.getElementById('data_input');
+    if (dataInput && dataInput.value.trim()) {
+      payload.data_text = dataInput.value.trim();
+    }
+
     return payload;
   }
 

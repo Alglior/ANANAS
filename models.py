@@ -120,8 +120,6 @@ class Item(db.Model, TimestampMixin):
             tech_score += 2
         fmt_level = cfg["format_level_points"]
         tech_score += fmt_level.get(self.data_format_level, 0)
-        if self.verification_status == "verified":
-            tech_score += 1
         tech_pct = (min(tech_score, mr["tech"]) / mr["tech"]) * w["tech"]
 
         rich_score = 0
@@ -152,6 +150,11 @@ class Item(db.Model, TimestampMixin):
         rich_pct = (min(rich_score, mr["rich"]) / mr["rich"]) * w["rich"]
 
         imod = round(meta_pct + tech_pct + rich_pct, 1)
+
+        # +20 pts de bonus quand l'item est vérifié par un admin
+        if self.verification_status == "verified":
+            imod = min(imod + 20, 100)
+
         if imod >= thr["high"]:
             level = "Eleve"
         elif imod >= thr["medium"]:
