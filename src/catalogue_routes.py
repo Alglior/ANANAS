@@ -35,13 +35,23 @@ class CatalogueTypeConverter(BaseConverter):
         return value
 
 
-def _build_filtered_query(catalogue_type, filter_verified=False, filter_unofficial=False, filter_format="", org_slug=None, filter_imod="", filter_tag=None, filter_category=None):
+def _build_filtered_query(catalogue_type, filter_verified=False, filter_unofficial=False, filter_format="", org_slug=None, filter_imod="", filter_tag=None, filter_category=None, search_query=None):
 
     item_type = type_map.get(catalogue_type)
     if not item_type:
         return None
 
     query = Item.query.filter_by(type=item_type).filter(Item.status != "draft")
+
+    # Recherche par titre ou description
+    if search_query:
+        search = f"%{search_query}%"
+        query = query.filter(
+            db.or_(
+                Item.title.ilike(search),
+                Item.description.ilike(search)
+            )
+        )
 
     if org_slug:
         org = Organization.query.filter_by(slug=org_slug).first()
@@ -57,14 +67,10 @@ def _build_filtered_query(catalogue_type, filter_verified=False, filter_unoffici
         query = query.filter_by(data_format_level=filter_format)
 
     if filter_tag:
-        from models import ItemTag
-        from app import db
         sub = db.session.query(ItemTag.item_id).filter(ItemTag.tag == filter_tag).subquery()
         query = query.filter(Item.id.in_(sub))
 
     if filter_category:
-        from models import ItemTag, PredefinedTag, PredefinedTagCategory
-        from app import db
         sub = db.session.query(ItemTag.item_id).join(
             PredefinedTag, ItemTag.tag == PredefinedTag.name
         ).join(
@@ -134,8 +140,9 @@ def _do_catalogue(catalogue_type, page, per_page=None):
     filter_tag = request.args.get("tag", "")
     filter_category = request.args.get("category", "")
     format_param = request.args.get("format", "")
+    search_query = request.args.get("q", "").strip()
 
-    query = _build_filtered_query(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod, filter_tag, filter_category)
+    query = _build_filtered_query(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod, filter_tag, filter_category, search_query)
     all_items = query.all()
 
     if filter_imod == "high":
@@ -178,6 +185,7 @@ def _do_catalogue(catalogue_type, page, per_page=None):
         "filter_verified": filter_verified, "filter_unofficial": filter_unofficial,
         "filter_format": filter_format, "filter_imod": filter_imod, "org_slug": org_slug,
         "filter_tag": filter_tag, "filter_category": filter_category,
+        "search_query": search_query,
         "all_categories": all_category_names,
         **urls,
         "items": result_items, "page": page, "per_page": per_page,

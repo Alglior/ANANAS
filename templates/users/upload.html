@@ -36,6 +36,77 @@
       </div>
       <div class="json-upload-results" id="jsonUploadResults"></div>
 
+      <details class="bulk-script-section">
+        <summary>Script Python pour publier en masse</summary>
+        <p class="script-help">Copiez ce script, modifiez les identifiants et le chemin du dossier, puis lancez-le.</p>
+        <div class="script-code-wrapper">
+          <button class="copy-script-btn">Copier</button>
+          <pre id="bulkUploadScript" class="bulk-script-code">import requests, json, os, sys
+
+# ─── Configuration ───
+SITE_URL = "https://votre-site-ananas.fr"
+USERNAME = "votre-pseudo"
+PASSWORD = "votre-mot-de-passe"
+JSON_DIR = "/chemin/vers/vos/json"  # dossier contenant les fichiers .json
+
+session = requests.Session()
+
+# 1. Récupérer le token CSRF
+resp = session.get(f"{SITE_URL}/connexion")
+csrf_token = session.cookies.get("csrf_token", "")
+
+# 2. Se connecter
+resp = session.post(
+    f"{SITE_URL}/connexion",
+    data={"pseudo": USERNAME, "password": PASSWORD, "_csrf_token": csrf_token},
+    allow_redirects=False,
+)
+if resp.status_code not in (302, 200):
+    print(f"Erreur de connexion: {resp.status_code}")
+    sys.exit(1)
+print(f"Connecté en tant que {USERNAME}")
+
+# 3. Récupérer le token CSRF pour les API
+resp = session.get(f"{SITE_URL}/upload")
+csrf_token = session.cookies.get("csrf_token", "")
+
+# 4. Parcourir les JSON du dossier
+json_files = sorted([f for f in os.listdir(JSON_DIR) if f.endswith(".json")])
+print(f"{len(json_files)} fichiers JSON trouvés")
+
+created = 0
+for fname in json_files:
+    fpath = os.path.join(JSON_DIR, fname)
+    with open(fpath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    payload = {
+        "title": data.get("title", fname.replace(".json", "")),
+        "type": data.get("type", "geodonnee"),
+        "format_type": data.get("format_type", ""),
+        "description": data.get("description", ""),
+        "organization_id": data.get("organization_id", ""),
+        "license_type": data.get("license_type", ""),
+        "custom_license_text": data.get("custom_license_text", ""),
+        "status": "draft",
+        "tags": data.get("tags", []),
+    }
+
+    resp = session.post(
+        f"{SITE_URL}/api/upload/item",
+        json=payload,
+        headers={"X-CSRF-Token": csrf_token, "Content-Type": "application/json"},
+    )
+    if resp.status_code == 200:
+        print(f"  ✓ {fname}")
+        created += 1
+    else:
+        print(f"  ✗ {fname}: {resp.status_code} {resp.text[:100]}")
+
+print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
+        </div>
+      </details>
+
       <form class="upload-form" id="uploadForm">
         <div class="upload-section" id="tutoSectionInfo">
           <h2>Informations de l'item</h2>
@@ -522,4 +593,5 @@
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/tag-selector.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/submit.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/imod-preview.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/copy-script.js') }}"></script>
 {% endblock %}
