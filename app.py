@@ -200,6 +200,7 @@ def create_app(app_name="ANANAS"):
     def inject_vars():
         from src.admin import is_catalogue_enabled
         from src.admin.settings import get_setting
+        from src.doc_routes import _list_docs
         cu = get_current_user()
         return {
             "csp_nonce": getattr(g, "csp_nonce", ""),
@@ -207,6 +208,7 @@ def create_app(app_name="ANANAS"):
             "current_user": cu,
             "is_catalogue_enabled": is_catalogue_enabled,
             "get_setting": get_setting,
+            "nav_docs": _list_docs(),
         }
 
     # Configuration des cookies sécurisés

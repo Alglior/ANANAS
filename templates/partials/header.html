@@ -95,7 +95,20 @@
       </div>
 
       <a href="/contact">Contact</a>
-      <a href="/docs">Documentation</a>
+
+      <div class="catalogue-dropdown-wrapper">
+        <button class="dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
+          Documentation &#9662;
+        </button>
+        <div class="catalogue-dropdown docs-dropdown" id="docsDropdown">
+          <a href="/docs" class="dropdown-item dropdown-item-bold">Accueil documentation</a>
+          <a href="/api" class="dropdown-item">API REST</a>
+          {% for doc in nav_docs %}
+          <a href="/docs/{{ doc.slug }}" class="dropdown-item">{{ doc.title }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
       <a href="/organizations">Organisations</a>
 
       {% if current_user %}

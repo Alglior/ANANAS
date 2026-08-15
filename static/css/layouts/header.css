@@ -189,6 +189,16 @@
   display: block;
 }
 
+.docs-dropdown {
+  min-width: 320px;
+  column-count: 2;
+  column-gap: 0;
+}
+
+.docs-dropdown .dropdown-item {
+  break-inside: avoid;
+}
+
 .dropdown-item {
   display: block;
   padding: 0.5rem 1.2rem;
@@ -196,6 +206,13 @@
   color: inherit;
   font-size: 0.92rem;
   transition: background-color 0.15s ease;
+}
+
+.dropdown-item-bold {
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-header);
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.6rem;
 }
 
 .user-dropdown-wrapper {

@@ -101,25 +101,29 @@ var MainModule = (function () {
   /* -------------------------------------------------------------------------- */
 
   function initDropdown() {
-    const toggle = document.querySelector(".dropdown-toggle");
-    const menu = document.getElementById("catalogueDropdown");
+    const wrappers = document.querySelectorAll(".catalogue-dropdown-wrapper");
+    
+    wrappers.forEach(wrapper => {
+      const toggle = wrapper.querySelector(".dropdown-toggle");
+      const menu = wrapper.querySelector(".catalogue-dropdown");
 
-    if (!toggle || !menu) return;
+      if (!toggle || !menu) return;
 
-    function open() { menu.classList.add("open"); toggle.setAttribute("aria-expanded", "true"); }
-    function close() { menu.classList.remove("open"); toggle.setAttribute("aria-expanded", "false"); }
+      function open() { menu.classList.add("open"); toggle.setAttribute("aria-expanded", "true"); }
+      function close() { menu.classList.remove("open"); toggle.setAttribute("aria-expanded", "false"); }
 
-    toggle.addEventListener("click", (e) => {
-      e.stopPropagation();
-      menu.classList.contains("open") ? close() : open();
-    });
+      toggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        menu.classList.contains("open") ? close() : open();
+      });
 
-    document.addEventListener("click", (e) => {
-      if (!menu.contains(e.target) && !toggle.contains(e.target)) close();
-    });
+      document.addEventListener("click", (e) => {
+        if (!menu.contains(e.target) && !toggle.contains(e.target)) close();
+      });
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && menu.classList.contains("open")) close();
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && menu.classList.contains("open")) close();
+      });
     });
   }
 
