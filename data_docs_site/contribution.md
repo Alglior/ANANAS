@@ -129,7 +129,11 @@ Le projet suit une architecture Flask classique avec blueprints :
 - `src/organization_routes.py` — Organisations
 - `src/user_routes.py` — Profils, upload, brouillons
 - `src/contact_routes.py` — Formulaire de contact
+- `src/privacy_routes.py` — Politique de confidentialité
+- `src/legal_routes.py` — Mentions légales
+- `src/tos_routes.py` — Conditions d'utilisation
 - `src/doc_routes.py` — Documentation (Markdown)
-- `src/admin/` — Panneau d'administration
+- `src/index_routes.py` — Route d'accueil dynamique
+- `src/admin/` — Panneau d'administration (14 sous-modules)
 - `src/image_cache.py` — Cache d'images depuis magnet links
-- `models.py` — 18 modèles SQLAlchemy
+- `models.py` — 20 modèles SQLAlchemy

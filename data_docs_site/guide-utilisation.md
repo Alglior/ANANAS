@@ -46,7 +46,7 @@ Les items sont présentés avec leur **format de distribution** (simple, pack ou
 Une fois connecté, accédez à votre tableau de bord via `/compte` :
 
 - **Informations** — Modifier votre prénom et nom
-- **Sécurité** — Changer votre mot de passe (invalide les sessions existantes)
+- **Sécurité** — Changer votre mot de passe (invalide les sessions existantes), activer la 2FA (authentification à deux facteurs)
 - **Activité** — Historique de vos notes, commentaires, publications
 - **Organisations** — Vos organisations et rôles
 
@@ -118,4 +118,4 @@ Chaque utilisateur dispose d'un profil public accessible via `/profile/<id>`, af
 
 - `/mentions-legales` — Mentions légales
 - `/confidentialite` — Politique de confidentialité
-- `/conditions-utilisation` — Conditions d'utilisation
+- `/cgu` — Conditions d'utilisation

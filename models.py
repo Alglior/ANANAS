@@ -481,7 +481,7 @@ class DataChunk(db.Model, TimestampMixin):
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    parent_item_id: Mapped[int | None] = mapped_column(ForeignKey("items.id"))
+    parent_item_id: Mapped[int | None] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
     name: Mapped[str]
     owner_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     description: Mapped[str | None]
@@ -530,7 +530,7 @@ class UserUpload(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     owner_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    parent_item_id: Mapped[int | None] = mapped_column(ForeignKey("items.id"))
+    parent_item_id: Mapped[int | None] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
     chunk_id: Mapped[int | None] = mapped_column(ForeignKey("data_chunks.id"))
     file_name: Mapped[str]
     file_size_bytes: Mapped[int | None]
@@ -540,7 +540,7 @@ class UserUpload(db.Model):
     processing_status: Mapped[str] = mapped_column(default="queued")
     error_message: Mapped[str | None]
     organization_id: Mapped[int | None] = mapped_column(ForeignKey("organizations.id"))
-    published_item_id: Mapped[int | None] = mapped_column(ForeignKey("items.id"))
+    published_item_id: Mapped[int | None] = mapped_column(ForeignKey("items.id", ondelete="SET NULL"))
 
     owner = relationship("User", back_populates="user_uploads")
     organization = relationship("Organization")
@@ -730,4 +730,17 @@ Item.reports = relationship(
     "Report",
     foreign_keys=[Report.target_item_id],
     backref="reported_items",
+    cascade="all, delete-orphan",
+)
+Item.data_chunks = relationship(
+    "DataChunk",
+    foreign_keys="DataChunk.parent_item_id",
+    backref="parent_item",
+    cascade="all, delete-orphan",
+)
+Item.user_uploads = relationship(
+    "UserUpload",
+    foreign_keys="UserUpload.parent_item_id",
+    backref="parent_item",
+    cascade="all, delete-orphan",
 )

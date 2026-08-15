@@ -774,8 +774,24 @@ def purge_draft_item(item_id):
     if item.status != "trashed":
         return jsonify({"error": "Non autorisé"}), 403
 
-    db.session.delete(item)
-    db.session.commit()
+    try:
+        from models import DataChunk, UserUpload, Report, VisualizationLink, Rating, Comment, ItemTag, ItemGallery
+
+        UserUpload.query.filter_by(parent_item_id=item.id).update({"chunk_id": None, "published_item_id": None})
+        DataChunk.query.filter_by(parent_item_id=item.id).delete()
+        UserUpload.query.filter_by(parent_item_id=item.id).delete()
+        Report.query.filter_by(target_item_id=item.id).delete()
+        VisualizationLink.query.filter_by(parent_item_id=item.id).delete()
+        Rating.query.filter_by(item_id=item.id).delete()
+        Comment.query.filter_by(item_id=item.id).delete()
+        ItemTag.query.filter_by(item_id=item.id).delete()
+        ItemGallery.query.filter_by(item_id=item.id).delete()
+
+        db.session.delete(item)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Erreur lors de la suppression: " + str(e)}), 500
     return jsonify({"status": "deleted"})
 
 

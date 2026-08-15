@@ -104,3 +104,22 @@ Les items peuvent avoir les statuts suivants :
 - `rejected` — Rejeté par la modération
 
 La vérification est effectuée par les administrateurs depuis le panneau d'administration.
+
+---
+
+## Score IMOD (Indice de qualité)
+
+Chaque item dispose d'un **score IMOD** qui évalue sa qualité de manière composite. Le score est calculé selon trois dimensions :
+
+| Dimension | Poids | Critères évalués |
+|-----------|-------|------------------|
+| **Métadonnées** | 45% | Description (0-2pts), tags (0-2pts), licence (0-2pts), auteur (0-1pt), organisation (0-1pt), documentation PDF (0-2pts) |
+| **Technique** | 36% | Format type (0-2pts), magnet valide (0-2pts), niveau de format (0-3pts) |
+| **Richesse** | 19% | Galerie (0-3pts), liens visualisation (0-2pts), ratings (0-2pts), commentaires (0-2pts), images magnet (0-1pt) |
+
+**Bonus** : +20 points si l'item est vérifié par un administrateur.
+
+**Seuils d'interprétation** :
+- **Élevé** (≥70) — Item de qualité optimale
+- **Moyen** (≥40) — Item avec des métadonnées complètes
+- **Faible** (<40) — Item nécessitant des améliorations

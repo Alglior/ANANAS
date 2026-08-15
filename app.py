@@ -83,30 +83,18 @@ def create_app(app_name="ANANAS"):
     config.validate()
     app.config.update(config.__dict__)
 
-    # Protection CSRF: formulaires HTML protégés, routes /api/* exemptées (X-CSRF-Token header requis)
+    # Protection CSRF: formulaires HTML protégées, routes API validées par X-CSRF-Token header
     app.config["WTF_CSRF_FIELD_NAME"] = "_csrf_token"
     csrf = CSRFProtect(app)
 
-    # Patch Flask-WTF : seul le healthcheck est exempté de CSRF
-    EXEMPTED_ENDPOINTS = {
-        "health_check",
-    }
-
-    _original_protect = csrf.protect
-
-    def _patched_protect():
-        from flask import request as req
-        if req.path == "/health":
-            return
-        endpoint = req.endpoint or ""
-        if endpoint in EXEMPTED_ENDPOINTS:
-            return
-        # API requests are validated in combined_before_request (X-CSRF-Token header check)
-        if "/api/" in req.path:
-            return
-        return _original_protect()
-
-    csrf.protect = _patched_protect
+    # Exempter les routes /api/* et /health du validateur CSRF Flask-WTF
+    # (la validation API est faite dans combined_before_request via X-CSRF-Token header)
+    @app.before_request
+    def _csrf_exempt_api_routes():
+        path = request.path
+        if path == "/health" or path.startswith("/api/"):
+            endpoint = request.endpoint or ""
+            csrf._exempt_views.add(endpoint)
 
     # Rate limiting pour prévenir le brute-force sur les routes d'authentification
     limiter.init_app(app)

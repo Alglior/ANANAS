@@ -43,7 +43,15 @@ UploadModule.history = (function () {
       method: 'DELETE',
       headers: { 'X-CSRF-Token': CsrfModule.getCsrfToken() },
     }).then(function(resp) {
-      if (resp.ok) window.location.reload();
+      if (resp.ok) {
+        window.location.reload();
+      } else {
+        resp.json().then(function(data) {
+          alert(data.error || 'Erreur ' + resp.status);
+        }).catch(function() {
+          alert('Erreur ' + resp.status);
+        });
+      }
     });
   }
 
