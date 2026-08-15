@@ -707,6 +707,31 @@ class GeoPackage(db.Model, TimestampMixin):
     is_active: Mapped[bool] = mapped_column(default=True)
 
 
+class ChangelogVersion(db.Model, TimestampMixin):
+    __tablename__ = "changelog_versions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    version: Mapped[str] = mapped_column(nullable=False)
+    date: Mapped[str] = mapped_column(nullable=False)
+    display_order: Mapped[int] = mapped_column(default=0)
+    is_active: Mapped[bool] = mapped_column(default=True)
+    sections: Mapped[list["ChangelogSection"]] = relationship(
+        "ChangelogSection", back_populates="version",
+        cascade="all, delete-orphan", order_by="ChangelogSection.display_order",
+    )
+
+
+class ChangelogSection(db.Model):
+    __tablename__ = "changelog_sections"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    version_id: Mapped[int] = mapped_column(ForeignKey("changelog_versions.id", ondelete="CASCADE"))
+    title: Mapped[str] = mapped_column(nullable=False)
+    items: Mapped[str] = mapped_column(nullable=False, default="[]")
+    display_order: Mapped[int] = mapped_column(default=0)
+    version: Mapped["ChangelogVersion"] = relationship("ChangelogVersion", back_populates="sections")
+
+
 # Back-references
 User.data_chunks = relationship("DataChunk", back_populates="owner")
 User.user_uploads = relationship("UserUpload", back_populates="owner")

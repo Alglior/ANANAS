@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<main class="apropos-page">
+  <div class="container">
+    <h1>A propos</h1>
+    <p class="apropos-update">Dernière mise à jour : juillet 2026</p>
+
+    <section>
+      <h2>Le projet A.N.A.N.A.S</h2>
+      <p>
+        <strong>A.N.A.N.A.S</strong> est une plateforme open source de diffusion et de partage de données géospatiales.
+        Elle a été développée dans le cadre d'un <strong>mémoire de recherche de M2 du Master GeoNum</strong>.
+        Elle a pour mission de faciliter l'accès, le téléchargement et la réutilisation de ressources géographiques
+        pour les professionnels, chercheurs et citoyens.
+      </p>
+    </section>
+
+    <section>
+      <h2>Notre mission</h2>
+      <p>
+        Rendre les données géospatiales accessibles à tous en proposant un catalogue centralisé,
+        une interface de recherche intuitive et des outils de téléchargement flexibles.
+        A.N.A.N.A.S promeut l'ouverture des données et la collaboration entre contributeurs.
+      </p>
+    </section>
+
+    <section>
+      <h2>Fonctionnalités</h2>
+      <ul>
+        <li>Un catalogue complet de géodonnées, cartes et applications (pour le moment, uniquement des géodonnées sont disponibles)</li>
+        <li>Une recherche avancée avec filtres par catégorie, licence et format</li>
+        <li>Le téléchargement direct ou via peer-to-peer</li>
+        <li>La publication de jeux de données par les contributeurs</li>
+        <li>La création et la gestion d'organisations</li>
+        <li>Un système de commentaires et d'évaluations</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Technologies</h2>
+      <p>
+        Le projet est développé en <strong>Python</strong> avec le framework <strong>Flask</strong>.
+        Le front-end utilise <strong>HTML</strong>, <strong>CSS</strong> et <strong>JavaScript</strong> vanilla.
+        Les données sont stockées en <strong>PostgreSQL</strong> avec l'extension <strong>PostGIS</strong>
+        pour la gestion des données géospatiales.
+      </p>
+    </section>
+
+    <section>
+      <h2>Licence</h2>
+      <p>
+        Le code source d'A.N.A.N.A.S est distribué sous licence libre.
+        Les données publiées sur la plateforme sont soumises aux licences choisies par leurs auteurs respectifs.
+      </p>
+    </section>
+
+    <section>
+      <h2>Contact</h2>
+      <p>
+        Pour toute question ou suggestion, rendez-vous sur la page <a href="/contact">Contact</a>.
+      </p>
+    </section>
+  </div>
+</main>
+{% endblock %}
