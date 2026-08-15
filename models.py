@@ -229,6 +229,7 @@ class Item(db.Model, TimestampMixin):
             "image_magnets_pending": self.image_magnets_pending,
             "image_magnets_total": self.image_magnets_total,
             "image_magnets": self._get_image_magnets(),
+            "image_magnet_links": self.image_magnet_links if isinstance(self.image_magnet_links, list) else [],
             "visualization_links": [vl.to_dict() for vl in self.visualization_links],
             "imod": imod,
         }

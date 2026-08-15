@@ -218,3 +218,27 @@
   background: var(--forest) !important;
   color: var(--white) !important;
 }
+
+/* ── Image Magnet Links ── */
+.image-magnets-block {
+  margin-top: 2rem;
+}
+
+.image-magnets-block .image-magnet-label {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--specs-gray);
+  min-width: 70px;
+}
+
+@media (max-width: 600px) {
+  .image-magnets-block .magnet-level-link-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
+  .image-magnets-block .image-magnet-label {
+    min-width: auto;
+  }
+}

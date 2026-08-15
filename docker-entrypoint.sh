@@ -111,36 +111,18 @@ if [ -z "${QBITTORRENT_PASSWORD:-}" ]; then
 else
     QB_PASS="$QBITTORRENT_PASSWORD"
     python3 -c "
-import requests, os, time, hashlib, base64, re
+import requests, os, time
 
 qb_url = os.environ.get('QBITTORRENT_URL', 'http://qbittorrent:8081')
 qb_user = os.environ.get('QBITTORRENT_USERNAME', 'admin')
 qb_pass_new = '$QB_PASS'
-config_path = '/qbittorrent_config/qBittorrent.conf'
 
-# Generate PBKDF2 hash for the password
-salt = os.urandom(16)
-dk = hashlib.pbkdf2_hmac('sha1', qb_pass_new.encode(), salt, 600000)
-qb_hash = '@ByteArray(' + base64.b64encode(salt).decode() + ':' + base64.b64encode(dk).decode() + ')'
-
-# Write PBKDF2 hash to config file
-if os.path.exists(config_path):
-    with open(config_path, 'r') as f:
-        config = f.read()
-    config = re.sub(r'WebUI\\\\Password_PBKDF2=.*', 'WebUI\\\\Password_PBKDF2=\"' + qb_hash + '\"', config)
-    with open(config_path, 'w') as f:
-        f.write(config)
-    print('qBittorrent config updated with generated password hash')
-else:
-    print(f'Config file not found at {config_path}')
-
-# Wait for qBittorrent and verify login
 s = requests.Session()
 for attempt in range(30):
     try:
         r = s.post(f'{qb_url}/api/v2/auth/login', data={'username': qb_user, 'password': qb_pass_new}, timeout=5)
         if r.status_code == 204:
-            print('qBittorrent password configured successfully')
+            print('qBittorrent connection verified')
             break
     except Exception as e:
         pass

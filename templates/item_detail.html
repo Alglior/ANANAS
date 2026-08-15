@@ -490,6 +490,20 @@
         </div>
       </section>
 
+      <!-- Image Magnet Links -->
+      {% if item.image_magnet_links and item.image_magnet_links|length > 0 %}
+      <section class="tech-code-block image-magnets-block">
+        <h3>{{ item.image_magnet_links|length }} lien{{ 's' if item.image_magnet_links|length > 1 }} magnet image{{ 's' if item.image_magnet_links|length > 1 }}</h3>
+        {% for img in item.image_magnet_links %}
+        <div class="magnet-level-link-row">
+          <span class="image-magnet-label">{{ img.label or ('Image ' ~ loop.index) }}</span>
+          <code class="magnet-level-code">{{ img.magnet_link|e }}</code>
+          <button class="btn btn-copy-tech btn-copy-magnet" type="button" data-magnet="{{ img.magnet_link|e }}">Copier</button>
+        </div>
+        {% endfor %}
+      </section>
+      {% endif %}
+
       <!-- Comments -->
       <section class="comments-section">
         <h2>Commentaires {% if comment_count %}<span class="comment-count-badge">{{ comment_count }}</span>{% endif %}</h2>

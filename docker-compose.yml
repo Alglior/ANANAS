@@ -43,7 +43,6 @@ services:
     volumes:
       - qbittorrent_downloads:/qbittorrent_downloads:ro  # read qBittorrent completed downloads
       - image_cache:/app/instance/image_cache  # persist downloaded image cache
-      - ./conf/qbittorrent:/qbittorrent_config  # for entrypoint password setup
     healthcheck:
       test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:5000/health')\" || exit 1"]
       interval: 10s
