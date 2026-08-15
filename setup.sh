@@ -32,6 +32,14 @@ docker_setup() {
         local admin_pseudo="systeme-ananas#$(python3 -c "import secrets,string; print(''.join(secrets.choice(string.ascii_lowercase) for _ in range(2)) + ''.join(secrets.choice(string.digits) for _ in range(4)))")"
         local qb_pass=$(generate_password)
 
+        # Generate PBKDF2 hash for qBittorrent config
+        local qb_hash=$(python3 -c "
+import hashlib, base64, os
+salt = os.urandom(16)
+dk = hashlib.pbkdf2_hmac('sha1', '${qb_pass}'.encode(), salt, 600000)
+print('@ByteArray(' + base64.b64encode(salt).decode() + ':' + base64.b64encode(dk).decode() + ')')
+")
+
         cat > "$ENV_FILE" <<EOF
 # ─── Postgres (generated automatically — SAVE THESE!) ───
 POSTGRES_DB=${pg_db}
@@ -66,6 +74,14 @@ printf "ADMIN_PSEUDO        : %s\n" "${admin_pseudo}"
         printf "QBITTORRENT_USERNAME: %s\n" "admin"
         printf "QBITTORRENT_PASSWORD: %s\n" "${qb_pass}"
         echo "=============================================="
+
+        # Write PBKDF2 hash to qBittorrent config
+        if [ -f "conf/qbittorrent/qBittorrent.conf" ]; then
+            sed -i "s|WebUI\\\\Password_PBKDF2=.*|WebUI\\\\Password_PBKDF2=\"${qb_hash}\"|" "conf/qbittorrent/qBittorrent.conf"
+            echo "[OK] qBittorrent config updated with generated password."
+        else
+            echo "[WARN] qBittorrent config not found, skipping password setup."
+        fi
     else
         echo "[SKIP] .env already exists."
     fi
