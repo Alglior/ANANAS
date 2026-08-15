@@ -13,14 +13,15 @@ Organisation
         ├── Ratings (notes 1-5)
         ├── Commentaires (hiérarchiques avec réponses)
         ├── DataChunks (sous-éléments, pour les items individuels)
-        └── UserUploads (historique des uploads)
+        ├── UserUploads (historique des uploads)
+        └── SimpleFileItem (fichier simple mis en avant sur l'accueil)
 ```
 
 ---
 
 ## Le modèle Item
 
-Chaque élément du catalogue (`Item`) possède les attributs suivants liés à la distribution :
+Le modèle Item (`Item`) possède les attributs suivants liés à la distribution :
 
 | Champ | Description |
 |-------|-------------|
@@ -31,6 +32,26 @@ Chaque élément du catalogue (`Item`) possède les attributs suivants liés à 
 | `pdf_magnet_link` | Lien magnet optionnel pour la documentation PDF |
 | `image_magnet_links` | Liste de magnets pour les images de la galerie |
 | `license_type` | Licence associée (ex: Open Data Commons, CC-BY, etc.) |
+
+---
+
+## Fichiers simples (SimpleFileItem)
+
+Les **fichiers simples** sont des items mis en avant sur la page d'accueil par les administrateurs. Le modèle `SimpleFileItem` permet de sélectionner et ordonner des items du catalogue pour les afficher dans une section dédiée.
+
+| Champ | Description |
+|-------|-------------|
+| `item_id` | Référence vers l'Item à mettre en avant |
+| `display_order` | Ordre d'affichage sur la page d'accueil |
+| `is_active` | Active/Désactive l'affichage sans supprimer |
+
+**API d'administration** :
+- `GET /api/admin/simple-files` — Lister tous les fichiers simples
+- `POST /api/admin/simple-files` — Ajouter un fichier simple (nécessite `item_id`)
+- `PUT /api/admin/simple-files/<id>` — Modifier l'ordre ou l'état d'activation
+- `DELETE /api/admin/simple-files/<id>` — Supprimer un fichier simple
+
+**Paramètre global** : `home_show_simple_files` (activé par défaut) — contrôle l'affichage de la section "Fichiers Simples" sur la page d'accueil. Configurable depuis `/admin/settings`.
 
 ---
 

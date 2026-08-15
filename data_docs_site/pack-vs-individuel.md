@@ -12,6 +12,13 @@ Les fichiers **simples** sont des fichiers unitaires contenant une seule couche 
 
 - **Usage** : Idéal pour un fichier unique sans organisation multi-couche (ex: un CSV, un GeoJSON simple, un shapefile)
 - **Distribution** : Magnet link uniquement
+- **Avantages** :
+  - Léger et rapide à télécharger
+  - Prêt à l'emploi — ouvrez directement dans QGIS, ArcGIS ou tout autre logiciel SIG
+  - Pas de configuration complexe nécessaire
+- **Fichiers simples en accueil** : Les administrateurs peuvent mettre en avant des fichiers simples sur la page d'accueil via la section "Fichiers Simples" (géré depuis `/admin/simple-files`)
+
+> **Note** : Ne pas confondre le niveau de format "Simple" avec les "Fichiers Simples" de la page d'accueil. Le premier est un attribut de l'item, le second est une sélection admin d'items à mettre en avant.
 
 ---
 
@@ -34,7 +41,7 @@ Les **packs** sont des fichiers uniques au format **GeoPackage** (.gpkg) contena
 
 Les fichiers **individuels** sont des fichiers unitaires distribués **obligatoirement via magnet link**. L'interface d'upload permet uniquement d'ajouter des données de prévisualisation (CSV d'aperçu, galerie d'images) — les données réelles transitent exclusivement par le réseau P2P.
 
-- **Formats supportés** : `.csv`, `.shp`, `.geojson`, `.gpkg`, `.json`, `.xml`, `.png`, `.jpg`, `.gif`, `.svg`, `.pdf`
+- **Formats supportés** : `.gpkg`, `.csv`, `.shp`, `.geojson`, `.kml`, `.gml`, `.gpx`, `.topojson`, `.geoparquet`, `.tab`, `.xml`
 
 ---
 
@@ -46,3 +53,4 @@ Les fichiers **individuels** sont des fichiers unitaires distribués **obligatoi
 | Distribution | Magnet link uniquement | Magnet link uniquement | Magnet link obligatoire |
 | Taille typique | Variable (Ko à Mo) | Volumineux (Mo à Go) | Variable (Ko à Mo) |
 | Cas d'usage | Fichier cartographique unitaire | Collection thématique SIG complète | Ensemble de fichiers distincts |
+| Mise en avant | Possible via "Fichiers Simples" admin | Non | Non |

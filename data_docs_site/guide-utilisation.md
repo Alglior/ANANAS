@@ -28,6 +28,16 @@ Chaque catalogue est paginé (30 éléments par page) et propose des filtres par
 
 Les items sont présentés avec leur **format de distribution** (simple, pack ou individuel) et leur **lien magnet** direct, permettant de lancer le téléchargement P2P en un clic.
 
+### Fichiers simples
+
+La section **Fichiers Simples** de la page d'accueil (`/`) met en avant des items sélectionnés par les administrateurs. Ces fichiers sont des jeux de données au format **simple** (un seul fichier, une seule couche), prêts à l'emploi et disponibles en téléchargement direct via magnet.
+
+- **Accès rapide** : un fichier unique, une seule couche, pas de configuration complexe
+- **Prêt à l'emploi** : ouvrez directement dans QGIS, ArcGIS ou tout autre logiciel SIG
+- **Sélection admin** : les fichiers simples sont curatés par les administrateurs de la plateforme
+
+La visibilité de cette section peut être activée/désactivée depuis le panneau d'administration (`/admin/settings`).
+
 ### Navigation par page
 
 | Page | URL | Description |
@@ -54,11 +64,24 @@ Une fois connecté, accédez à votre tableau de bord via `/compte` :
 
 1. Rendez-vous sur `/upload`
 2. Remplissez les métadonnées (titre, description, type, format, licence)
-3. **Ajoutez un lien magnet** (obligatoire — les données ne sont pas hébergées sur le serveur)
-4. Ajoutez des tags et des liens de visualisation
-5. Publiez ou sauvegardez comme brouillon
+3. **Choisissez le niveau de format** :
+   - **Simple** : un seul fichier, une seule couche (ex: un CSV, un GeoJSON)
+   - **Pack** : un seul fichier GeoPackage (.gpkg) contenant plusieurs couches
+   - **Individuel** : plusieurs fichiers distincts
+4. **Ajoutez un lien magnet** (obligatoire — les données ne sont pas hébergées sur le serveur)
+5. Ajoutez des images via magnet links (optionnel — pour la galerie)
+6. Ajoutez un lien magnet pour la documentation PDF (optionnel — améliore le score IMOD)
+7. Ajoutez un lien de visualisation externe (optionnel — WMS, WFS, dashboard)
+8. Ajoutez des tags et choisissez une organisation/licence
+9. Publiez ou sauvegardez comme brouillon
 
-Les brouillons et la corbeille sont accessibles depuis la page de publication.
+**Fonctionnalités avancées de l'upload** :
+- **Import JSON en masse** : déposez un ou plusieurs fichiers JSON pour créer plusieurs items d'un coup
+- **Script Python** : un script de publication en masse est inclus dans l'interface
+- **Score IMOD** : aperçu en temps réel de la qualité de vos métadonnées (score /100)
+- **Tutorial interactif** : guide pas-à-pas pour les nouveaux utilisateurs
+- **Brouillons** : sauvegardez votre travail et reprenez-le plus tard
+- **Corbeille** : les éléments supprimés restent récupérables pendant 7 jours
 
 ### Organisations
 
@@ -101,8 +124,9 @@ Les organisations permettent de collaborer autour de jeux de données, structura
 
 ## Formats disponibles
 
+- **Simples** : fichiers unitaires contenant une seule couche de données (ex: un CSV, un GeoJSON simple, un shapefile). Distribués exclusivement via magnet link. Idéal pour un fichier unique sans organisation multi-couche.
 - **Packs (GeoPackage)** : fichiers uniques au format `.gpkg` (standard OGC) contenant plusieurs couches de données organisées par thématique. Distribués exclusivement via magnet link. Idéal pour les collections SIG complètes avec styles QML intégrés.
-- **Individuels** : fichiers unitaires (csv, shp, geojson, gpkg, json, xml, png, jpg, gif, svg, pdf). Distribués obligatoirement via magnet link.
+- **Individuels** : fichiers unitaires multiples (gpkg, csv, shp, geojson, kml, gml, gpx, topojson, geoparquet, tab, xml). Distribués obligatoirement via magnet link.
 
 > **Pour une comparaison détaillée entre fichiers simples, packs et fichiers individuels**, consultez la page [Simple, Pack (GeoPackage) vs Individuel](/docs/pack-vs-individuel).
 

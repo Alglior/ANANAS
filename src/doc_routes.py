@@ -22,7 +22,17 @@ def _list_docs():
     for f in sorted(os.listdir(DOCS_DIR)):
         if f.endswith(".md"):
             slug = _slugify(f)
+            filepath = os.path.join(DOCS_DIR, f)
             title = f.replace(".md", "").replace("-", " ").title()
+            try:
+                with open(filepath, "r", encoding="utf-8") as fh:
+                    for line in fh:
+                        line = line.strip()
+                        if line.startswith("# "):
+                            title = line[2:].strip()
+                            break
+            except (FileNotFoundError, IOError):
+                pass
             docs.append({"slug": slug, "title": title, "filename": f})
     return docs
 

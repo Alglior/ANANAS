@@ -34,12 +34,20 @@ Avant de publier, vous devez créer un compte :
    - Format
    - **Lien magnet** (obligatoire — les données ne sont pas hébergées sur le serveur)
 4. Choisissez le **niveau de format** :
+   - **Simple** : fichier unique avec une seule couche (ex: un CSV, un GeoJSON) — distribué exclusivement par magnet link
    - **Pack** : fichier GeoPackage (.gpkg) multi-couches — distribué exclusivement par magnet link
-   - **Individuel** : fichier unitaire — distribué obligatoirement par magnet link
-5. Ajoutez des tags et des liens de visualisation (optionnel)
-6. Choisissez une licence
-7. Associez à une organisation (optionnel)
-8. Publiez ou sauvegardez comme brouillon
+   - **Individuel** : plusieurs fichiers distincts — distribué obligatoirement par magnet link
+5. Ajoutez des images via magnet links (optionnel — pour la galerie)
+6. Ajoutez un lien magnet pour la documentation PDF (optionnel — améliore le score IMOD de +2 points)
+7. Ajoutez un lien de visualisation externe (optionnel — WMS, WFS, dashboard)
+8. Ajoutez des tags et choisissez une licence
+9. Associez à une organisation (optionnel)
+10. Publiez ou sauvegardez comme brouillon
+
+**Options avancées** :
+- **Import JSON en masse** : déposez un ou plusieurs fichiers JSON pour créer plusieurs items d'un coup
+- **Script Python** : utilisez le script de publication en masse inclus dans l'interface
+- **Score IMOD** : aperçu en temps réel de la qualité de vos métadonnées (score /100)
 
 > **Important — Modèle de distribution P2P** : A.N.A.N.A.S. n'héberge **aucune donnée** sur son serveur. La plateforme est un catalogue d'indexation : seuls les métadonnées et les liens magnet sont stockés. Les données réelles circulent exclusivement sur le réseau BitTorrent entre les pairs. Sans lien magnet valide, la publication est impossible. Assurez-vous que votre client torrent reste actif (en *seed*) après publication pour garantir la disponibilité des données.
 
