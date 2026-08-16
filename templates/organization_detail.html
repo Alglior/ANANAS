@@ -24,6 +24,7 @@
         {% endif %}
       </div>
       <h1 class="org-profile-name">{{ org.name|e }}</h1>
+      <p class="org-profile-id">ID : {{ org.id }}</p>
       {% if org.website_url %}
       <a href="{{ org.website_url|e }}" class="org-profile-url" target="_blank" rel="noopener">{{ org.website_url|e }}</a>
       {% endif %}

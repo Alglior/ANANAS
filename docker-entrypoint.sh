@@ -102,6 +102,32 @@ with app.app_context():
         print(f'Admin created: {pseudo}')
 "
 
+echo "[entrypoint] Seeding default organization..."
+python3 -c "
+import os, sys
+sys.path.insert(0, '/app')
+from app import create_app, db
+from models import Organization, User
+app = create_app()
+with app.app_context():
+    existing = Organization.query.filter_by(slug='ananas-geographique').first()
+    if existing:
+        print(f'Default organization already exists (id={existing.id})')
+    else:
+        admin = User.query.filter_by(prenom='Système', nom='ANANAS').first()
+        created_by = admin.id if admin else None
+        org = Organization(
+            name='ANANAS Géographique',
+            slug='ananas-geographique',
+            description='Organisation officielle A.N.A.N.A.S Géographique — données géospatiales vérifiées et partagées.',
+            created_by=created_by,
+            is_active=True,
+        )
+        db.session.add(org)
+        db.session.commit()
+        print(f'Default organization created: ANANAS Géographique (id={org.id})')
+"
+
 echo "[entrypoint] Ensuring image cache directory..."
 mkdir -p /app/instance/image_cache /app/static/uploads/avatars
 
