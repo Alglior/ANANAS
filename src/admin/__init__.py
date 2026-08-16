@@ -1,7 +1,7 @@
 import datetime as dt
 import os
 
-from flask import Blueprint, request, jsonify, redirect, url_for, render_template, current_app
+from flask import Blueprint, request, jsonify, redirect, url_for, current_app
 from app import db
 from src.shared import login_required, get_current_user
 from models import CatalogueConfig, AdminAudit
@@ -46,19 +46,14 @@ bp = Blueprint("admin", __name__)
 
 def require_admin(f):
     from functools import wraps
+    from flask import abort as _abort
     @wraps(f)
     def decorated(*args, **kwargs):
         current_user = get_current_user()
         if not current_user:
             return redirect(url_for("auth.connexion_page"))
         if not current_user.is_admin:
-            return render_template(
-                "error.html",
-                title="Accès refusé — A.N.A.N.A.S",
-                meta_description="Vous n'avez pas accès à cette page.",
-                message="Accès non autorisé. Vous devez être administrateur.",
-                code=403,
-            ), 403
+            _abort(403)
         return f(*args, **kwargs)
     return decorated
 

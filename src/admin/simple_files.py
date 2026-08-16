@@ -67,7 +67,8 @@ def update_simple_file(sf_id):
 def delete_simple_file(sf_id):
 
     sf = SimpleFileItem.query.get_or_404(sf_id)
+    title = sf.item.title if sf.item else None
     db.session.delete(sf)
     db.session.commit()
-    _log_audit("simple_file_deleted", "simple_file", sf_id, {"title": sf.item.title if sf.item else None})
+    _log_audit("simple_file_deleted", "simple_file", sf_id, {"title": title})
     return jsonify({"status": "deleted", "id": sf_id})

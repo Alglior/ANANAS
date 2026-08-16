@@ -12,6 +12,10 @@ def app_config():
     app = create_app()
     app.config["TESTING"] = True
     app.config["WTF_CSRF_ENABLED"] = False
+    # Désactiver le rate limiting : le plafond par défaut (1000/h) serait
+    # atteint en exécutant l'ensemble de la suite de tests.
+    for ext in app.extensions.get("limiter", ()):
+        ext.enabled = False
     return app
 
 
@@ -19,6 +23,7 @@ def app_config():
 def client(app_config):
     with app_config.test_client() as client:
         with app_config.app_context():
+            db.drop_all()
             db.create_all()
             yield client
 
@@ -27,6 +32,7 @@ def client(app_config):
 def app_ctx(app_config):
     """Fournir un contexte d'application pour les tests unitaires de modèles."""
     with app_config.app_context():
+        db.drop_all()
         db.create_all()
         yield
 
@@ -75,7 +81,34 @@ def seeded(client):
             data_format_level="simple" if i % 3 == 0 else "individual",
             image_magnet_links=[f"magnet:?xt=urn:btih:img{i:040x}a"],
         )
+        item.imod_score = item._compute_imod_score()["score"]
         db.session.add(item)
 
     db.session.commit()
     return {"admin": admin, "user": user, "seeder": seeder}
+
+
+def _login_as(client, user):
+    """Connecte la session Flask en tant que user sans passer par le formulaire."""
+    with client.session_transaction() as sess:
+        sess["user_id"] = user.id
+        sess["session_version"] = user.session_version
+    return client
+
+
+@pytest.fixture
+def user_client(client, seeded):
+    """Client connecté en tant qu'utilisateur standard."""
+    return _login_as(client, seeded["user"])
+
+
+@pytest.fixture
+def admin_client(client, seeded):
+    """Client connecté en tant qu'administrateur."""
+    return _login_as(client, seeded["admin"])
+
+
+@pytest.fixture
+def seeder_client(client, seeded):
+    """Client connecté en tant que seeder (propriétaire d'org)."""
+    return _login_as(client, seeded["seeder"])

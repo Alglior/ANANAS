@@ -1,7 +1,7 @@
 from flask import Blueprint, request, render_template, redirect, url_for
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload, subqueryload
-from werkzeug.routing import BaseConverter
+from werkzeug.routing import BaseConverter, ValidationError
 from app import db
 from models import Item, ItemTag, Organization, PredefinedTag, PredefinedTagCategory
 from src.admin import is_catalogue_enabled
@@ -33,7 +33,7 @@ class CatalogueTypeConverter(BaseConverter):
 
     def to_python(self, value):
         if value not in type_map:
-            raise ValueError()
+            raise ValidationError()
         return value
 
 
@@ -129,10 +129,10 @@ def _do_catalogue(catalogue_type, page, per_page=None):
             per_page = 30
     catalogue = catalogue_type
     if catalogue not in type_map:
-        return redirect(url_for("catalogue.catalogue_index"))
+        return redirect(url_for("catalogue.catalogue_view", catalogue_type="donnees"))
 
     if not is_catalogue_enabled(catalogue):
-        return redirect(url_for("catalogue.catalogue_index"))
+        return redirect(url_for("catalogue.catalogue_view", catalogue_type="donnees"))
 
     filter_verified = request.args.get("verified") == "1"
     filter_unofficial = request.args.get("unofficial") == "1"
@@ -221,7 +221,7 @@ def catalogue_view(catalogue_type, page=1):
 def catalogue_json_view(catalogue_type, page):
 
     if catalogue_type not in type_map:
-        return redirect(url_for("catalogue.catalogue_index"))
+        return redirect(url_for("catalogue.catalogue_view", catalogue_type="donnees"))
 
     try:
         from src.admin.settings import get_setting

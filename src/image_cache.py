@@ -2,6 +2,7 @@ import hashlib
 import logging
 import os
 import re
+import threading
 import time
 from pathlib import Path
 
@@ -20,6 +21,27 @@ QBITTORRENT_USERNAME = os.environ.get("QBITTORRENT_USERNAME") or ""
 QBITTORRENT_PASSWORD = os.environ.get("QBITTORRENT_PASSWORD") or ""
 QBITTORRENT_DOWNLOADS = Path("/qbittorrent_downloads")
 QBITTORRENT_SAVE_PATH = "/downloads/ananas"
+
+# Temps maximum global accordé au traitement des aimants d'un même item.
+ITEM_PROCESS_BUDGET = float(os.environ.get("ITEM_IMAGE_PROCESS_BUDGET", "900"))
+
+# Registre de verrous par item : empêche que deux tâches de fond traitent le même
+# item simultanément (édition rapide / double soumission -> doublons de galerie).
+_item_locks = {}
+_item_locks_guard = threading.Lock()
+
+
+def _acquire_item_processing_lock(item_id):
+    with _item_locks_guard:
+        lock = _item_locks.setdefault(item_id, threading.Lock())
+    acquired = lock.acquire(blocking=False)
+    return lock if acquired else None
+
+
+def _release_item_processing_lock(item_id, lock):
+    lock.release()
+    with _item_locks_guard:
+        _item_locks.pop(item_id, None)
 
 
 def _cache_path(magnet_link):
@@ -203,9 +225,27 @@ def download_image_from_magnet(magnet_link, timeout=300):
 
 
 def process_image_magnets(item_id, image_magnets):
+    lock = _acquire_item_processing_lock(item_id)
+    if lock is None:
+        logger.info("Image processing already running for item %s; skipping duplicate.", item_id)
+        return
+
     first_image = True
+    processed = 0
+    failed = 0
+    skipped_timeout = 0
+    deadline = time.time() + ITEM_PROCESS_BUDGET
+
     try:
         for img in image_magnets:
+            if time.time() > deadline:
+                skipped_timeout = len([m for m in image_magnets if m]) - processed - failed
+                logger.warning(
+                    "Item %s: time budget exceeded, skipping %s remaining magnets.",
+                    item_id, skipped_timeout,
+                )
+                break
+
             magnet = img.get("magnet_link", "").strip()
             label = img.get("label", "").strip()
             if not magnet:
@@ -217,6 +257,8 @@ def process_image_magnets(item_id, image_magnets):
                 if data is None:
                     data, ext = download_image_from_magnet(magnet)
                     if data is None:
+                        failed += 1
+                        logger.warning("Item %s: failed to download magnet %s", item_id, magnet)
                         continue
                     ext = ext or ".png"
 
@@ -233,6 +275,7 @@ def process_image_magnets(item_id, image_magnets):
                     },
                 )
                 db.session.add(gallery)
+                processed += 1
 
                 if first_image:
                     item = db.session.get(Item, item_id)
@@ -240,7 +283,8 @@ def process_image_magnets(item_id, image_magnets):
                         item.image_path = src
                     first_image = False
             except Exception as e:
-                logger.error("Error downloading image magnet %s: %s", magnet, e)
+                failed += 1
+                logger.exception("Item %s: error downloading image magnet %s: %s", item_id, magnet, e)
                 continue
     finally:
         item = db.session.get(Item, item_id)
@@ -249,3 +293,8 @@ def process_image_magnets(item_id, image_magnets):
             item.image_magnets_total = 0
             item.refresh_imod_cache()
         db.session.commit()
+        _release_item_processing_lock(item_id, lock)
+        logger.info(
+            "Item %s: image processing done (processed=%s, failed=%s, skipped_timeout=%s)",
+            item_id, processed, failed, skipped_timeout,
+        )

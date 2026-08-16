@@ -89,7 +89,8 @@ def update_featured(featured_id):
 def delete_featured(featured_id):
 
     featured = FeaturedItem.query.get_or_404(featured_id)
+    title = featured.item.title if featured.item else None
     db.session.delete(featured)
     db.session.commit()
-    _log_audit("featured_deleted", "featured", featured_id, {"title": featured.item.title if featured.item else None})
+    _log_audit("featured_deleted", "featured", featured_id, {"title": title})
     return jsonify({"status": "deleted", "id": featured_id})

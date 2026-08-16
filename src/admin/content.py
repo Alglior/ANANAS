@@ -47,9 +47,10 @@ def delete_comment(comment_id):
 
     comment = Comment.query.get_or_404(comment_id)
     item_title = comment.item.title if comment.item else None
+    content_preview = comment.content[:80] if comment.content else ""
     db.session.delete(comment)
     db.session.commit()
-    _log_audit("comment_deleted", "comment", comment_id, {"item_title": item_title, "content_preview": (comment.content[:80] if comment.content else "")})
+    _log_audit("comment_deleted", "comment", comment_id, {"item_title": item_title, "content_preview": content_preview})
     return jsonify({"status": "deleted", "comment_id": comment_id})
 
 
