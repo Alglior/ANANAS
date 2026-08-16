@@ -58,13 +58,6 @@ def admin_replication():
     return redirect(url_for("admin.admin_settings"))
 
 
-@bp.route("/admin/backup")
-@login_required
-@require_admin
-def admin_backup():
-    return redirect(url_for("admin.admin_settings"))
-
-
 @bp.route("/admin/tags")
 @login_required
 @require_admin

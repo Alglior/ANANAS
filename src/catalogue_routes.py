@@ -4,6 +4,7 @@ from werkzeug.routing import BaseConverter
 from app import db
 from models import Item, ItemTag, Organization, PredefinedTag, PredefinedTagCategory
 from src.admin import is_catalogue_enabled
+from src.shared import ITEM_TYPE_MAP, _build_page_numbers, _paginate
 
 _CATALOGUE_META = {
     "donnees": {
@@ -20,7 +21,7 @@ _CATALOGUE_META = {
     },
 }
 
-type_map = {"donnees": "geodonnee", "cartes": "carte", "applications": "application"}
+type_map = ITEM_TYPE_MAP
 
 bp = Blueprint("catalogue", __name__)
 
@@ -145,9 +146,9 @@ def _do_catalogue(catalogue_type, page, per_page=None):
     query = _build_filtered_query(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod, filter_tag, filter_category, search_query)
     all_items = query.all()
 
-    if filter_imod == "high":
-        all_items.sort(key=lambda it: it._compute_imod_score()["score"], reverse=True)
-    elif filter_imod == "low":
+    # Le tri par score IMOD est un calcul Python (non exprimable en SQL) :
+    # on charge tous les résultats puis on trie. Par défaut, tri descendant.
+    if filter_imod == "low":
         all_items.sort(key=lambda it: it._compute_imod_score()["score"])
     else:
         all_items.sort(key=lambda it: it._compute_imod_score()["score"], reverse=True)
@@ -169,7 +170,6 @@ def _do_catalogue(catalogue_type, page, per_page=None):
     items_page = all_items[start:end]
     result_items = [item.to_dict(include_details=True) for item in items_page]
 
-    from src.shared import _build_page_numbers
     page_numbers = _build_page_numbers(page, total_pages)
 
     all_categories = PredefinedTagCategory.query.order_by(PredefinedTagCategory.display_order).all()
@@ -229,10 +229,6 @@ def catalogue_json_view(catalogue_type, page):
         per_page = int(get_setting("catalogue_per_page", "20"))
     except Exception:
         per_page = 20
-    item_type = type_map[catalogue_type]
-    total_items = Item.query.filter_by(type=item_type).count()
-    total_pages = max((total_items + per_page - 1) // per_page, 1)
-    page = min(max(page, 1), total_pages) or 1
 
     filter_verified = request.args.get("verified") == "1"
     filter_unofficial = request.args.get("unofficial") == "1"
@@ -242,11 +238,8 @@ def catalogue_json_view(catalogue_type, page):
     filter_category = request.args.get("category", "")
 
     query = _build_filtered_query(catalogue_type, filter_verified, filter_unofficial, filter_format, org_slug, filter_tag=filter_tag, filter_category=filter_category)
-    items = query.offset((page - 1) * per_page).limit(per_page).all()
+    items, page, total_items, total_pages, page_numbers = _paginate(query, page, per_page)
     result_items = [item.to_dict() for item in items]
-
-    from src.shared import _build_page_numbers
-    page_numbers = _build_page_numbers(page, total_pages)
 
     return {
         "items": result_items, "page": page, "per_page": per_page,

@@ -3,7 +3,7 @@ import datetime as dt
 from flask import request, jsonify
 from app import db
 from src.admin import bp, login_required, api_admin_required
-from src.admin import get_current_user, _serialize_report, _log_audit, _paginate, _get_json_data
+from src.admin import get_current_user, _serialize_report, _log_audit, _paginate, _require_json
 from utils.security import sanitize_html
 from models import Report, User, Item
 
@@ -13,9 +13,9 @@ from models import Report, User, Item
 def create_report():
 
     current_user = get_current_user()
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
 
     target_type = data.get("target_type")
     target_id = data.get("target_id")
@@ -86,9 +86,9 @@ def list_reports():
 def resolve_report(report_id):
 
     report = Report.query.get_or_404(report_id)
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
     new_status = data.get("status", "")
 
     if new_status not in ("resolved", "dismissed"):

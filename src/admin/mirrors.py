@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from app import db
 from src.admin import bp, api_admin_required, login_required
-from src.admin import _serialize_mirror, _log_audit, _get_json_data
+from src.admin import _serialize_mirror, _log_audit, _require_json
 from utils.security import sanitize_html, validate_external_url
 from models import MirrorSite
 
@@ -20,9 +20,9 @@ def list_mirrors():
 @api_admin_required
 def create_mirror():
 
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
     name = (data.get("name") or "").strip()
     url = (data.get("url") or "").strip()
     description = (data.get("description") or "").strip()
@@ -52,9 +52,9 @@ def create_mirror():
 def update_mirror(mirror_id):
 
     mirror = MirrorSite.query.get_or_404(mirror_id)
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
 
     if "name" in data:
         mirror.name = sanitize_html(data["name"].strip())

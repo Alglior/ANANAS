@@ -3,7 +3,7 @@ import string
 
 from flask import Blueprint, request, render_template, jsonify
 from app import db
-from src.shared import login_required, get_current_user, ITEMS_PER_PAGE, _build_page_numbers
+from src.shared import login_required, get_current_user, ITEMS_PER_PAGE, _paginate
 
 ALLOWED_SLUG_CHARS = set(string.ascii_lowercase + string.digits + "-")
 ALLOWED_MEMBER_ROLES = {"member", "moderator", "editor", "admin", "owner"}
@@ -19,6 +19,28 @@ def sanitize_slug(name):
     if len(slug) > 80:
         slug = slug[:80]
     return slug or "org"
+
+
+def _get_org(slug):
+    from models import Organization
+    return Organization.query.filter_by(slug=slug).first_or_404()
+
+
+def _get_member(user_id, org):
+    from models import OrganizationMember
+    return OrganizationMember.query.filter_by(
+        user_id=user_id, organization_id=org.id
+    ).first()
+
+
+def _require_permission(slug, permission):
+    """Résout org + membre courant et vérifie la permission. Renvoie (org, member) ou une réponse d'erreur."""
+    current_user = get_current_user()
+    org = _get_org(slug)
+    member = _get_member(current_user.id, org)
+    if not member or not member.has_permission(permission):
+        return None, None, jsonify({"error": "Non autorisé"}), 403
+    return org, member, None, None
 
 
 @bp.route("/api/organizations", methods=["POST"])
@@ -57,14 +79,12 @@ def create_organization():
 @bp.route("/api/organizations/<slug>/join", methods=["POST"])
 @login_required
 def join_organization(slug):
-    from models import Organization, OrganizationMember
+    from models import OrganizationMember
 
     current_user = get_current_user()
-    org = Organization.query.filter_by(slug=slug).first_or_404()
+    org = _get_org(slug)
 
-    existing = OrganizationMember.query.filter_by(
-        user_id=current_user.id, organization_id=org.id
-    ).first()
+    existing = _get_member(current_user.id, org)
     if existing:
         return jsonify({"error": "Déjà membre"}), 409
 
@@ -82,14 +102,10 @@ def join_organization(slug):
 @bp.route("/api/organizations/<slug>/leave", methods=["POST"])
 @login_required
 def leave_organization(slug):
-    from models import Organization, OrganizationMember
-
     current_user = get_current_user()
-    org = Organization.query.filter_by(slug=slug).first_or_404()
+    org = _get_org(slug)
 
-    member = OrganizationMember.query.filter_by(
-        user_id=current_user.id, organization_id=org.id
-    ).first()
+    member = _get_member(current_user.id, org)
     if member and member.role != "owner":
         db.session.delete(member)
         db.session.commit()
@@ -100,16 +116,11 @@ def leave_organization(slug):
 @bp.route("/api/organizations/<slug>/members/<int:user_id>/role", methods=["POST"])
 @login_required
 def update_member_role(slug, user_id):
-    from models import Organization, OrganizationMember
+    from models import OrganizationMember
 
-    current_user = get_current_user()
-    org = Organization.query.filter_by(slug=slug).first_or_404()
-
-    member = OrganizationMember.query.filter_by(
-        user_id=current_user.id, organization_id=org.id
-    ).first()
-    if not member or not member.has_permission("manage_roles"):
-        return jsonify({"error": "Non autorisé"}), 403
+    org, member, error, code = _require_permission(slug, "manage_roles")
+    if error:
+        return error, code
 
     data = request.get_json(silent=True) or {}
     target_member = OrganizationMember.query.filter_by(
@@ -143,16 +154,11 @@ def update_member_role(slug, user_id):
 @bp.route("/api/organizations/<slug>/members/<int:user_id>", methods=["DELETE"])
 @login_required
 def remove_member(slug, user_id):
-    from models import Organization, OrganizationMember
+    from models import OrganizationMember
 
-    current_user = get_current_user()
-    org = Organization.query.filter_by(slug=slug).first_or_404()
-
-    member = OrganizationMember.query.filter_by(
-        user_id=current_user.id, organization_id=org.id
-    ).first()
-    if not member or not member.has_permission("remove_members"):
-        return jsonify({"error": "Non autorisé"}), 403
+    org, member, error, code = _require_permission(slug, "remove_members")
+    if error:
+        return error, code
 
     target_member = OrganizationMember.query.filter_by(
         user_id=user_id, organization_id=org.id
@@ -172,16 +178,11 @@ def remove_member(slug, user_id):
 @bp.route("/api/organizations/<slug>/invite", methods=["POST"])
 @login_required
 def invite_member(slug):
-    from models import Organization, OrganizationMember, User
+    from models import OrganizationMember, User
 
-    current_user = get_current_user()
-    org = Organization.query.filter_by(slug=slug).first_or_404()
-
-    member = OrganizationMember.query.filter_by(
-        user_id=current_user.id, organization_id=org.id
-    ).first()
-    if not member or not member.has_permission("invite_members"):
-        return jsonify({"error": "Non autorisé"}), 403
+    org, member, error, code = _require_permission(slug, "invite_members")
+    if error:
+        return error, code
 
     data = request.get_json(silent=True) or {}
     pseudo = data.get("pseudo", "").strip().lower()
@@ -212,16 +213,11 @@ def invite_member(slug):
 @bp.route("/api/organizations/<slug>/roles", methods=["GET"])
 @login_required
 def list_roles(slug):
-    from models import Organization, OrganizationMember, OrganizationRole
+    from models import OrganizationRole
 
-    current_user = get_current_user()
-    org = Organization.query.filter_by(slug=slug).first_or_404()
-
-    member = OrganizationMember.query.filter_by(
-        user_id=current_user.id, organization_id=org.id
-    ).first()
-    if not member or not member.has_permission("manage_roles"):
-        return jsonify({"error": "Non autorisé"}), 403
+    org, member, error, code = _require_permission(slug, "manage_roles")
+    if error:
+        return error, code
 
     roles = OrganizationRole.query.filter_by(organization_id=org.id).all()
     return jsonify([
@@ -233,16 +229,11 @@ def list_roles(slug):
 @bp.route("/api/organizations/<slug>/roles", methods=["POST"])
 @login_required
 def create_role(slug):
-    from models import Organization, OrganizationMember, OrganizationRole
+    from models import OrganizationRole
 
-    current_user = get_current_user()
-    org = Organization.query.filter_by(slug=slug).first_or_404()
-
-    member = OrganizationMember.query.filter_by(
-        user_id=current_user.id, organization_id=org.id
-    ).first()
-    if not member or not member.has_permission("manage_roles"):
-        return jsonify({"error": "Non autorisé"}), 403
+    org, member, error, code = _require_permission(slug, "manage_roles")
+    if error:
+        return error, code
 
     data = request.get_json(silent=True) or {}
     name = data.get("name", "").strip()
@@ -275,16 +266,11 @@ def create_role(slug):
 @bp.route("/api/organizations/<slug>/roles/<int:role_id>", methods=["PUT"])
 @login_required
 def update_role(slug, role_id):
-    from models import Organization, OrganizationMember, OrganizationRole
+    from models import OrganizationRole
 
-    current_user = get_current_user()
-    org = Organization.query.filter_by(slug=slug).first_or_404()
-
-    member = OrganizationMember.query.filter_by(
-        user_id=current_user.id, organization_id=org.id
-    ).first()
-    if not member or not member.has_permission("manage_roles"):
-        return jsonify({"error": "Non autorisé"}), 403
+    org, member, error, code = _require_permission(slug, "manage_roles")
+    if error:
+        return error, code
 
     role = OrganizationRole.query.filter_by(
         id=role_id, organization_id=org.id
@@ -307,16 +293,11 @@ def update_role(slug, role_id):
 @bp.route("/api/organizations/<slug>/roles/<int:role_id>", methods=["DELETE"])
 @login_required
 def delete_role(slug, role_id):
-    from models import Organization, OrganizationMember, OrganizationRole
+    from models import OrganizationRole
 
-    current_user = get_current_user()
-    org = Organization.query.filter_by(slug=slug).first_or_404()
-
-    member = OrganizationMember.query.filter_by(
-        user_id=current_user.id, organization_id=org.id
-    ).first()
-    if not member or not member.has_permission("manage_roles"):
-        return jsonify({"error": "Non autorisé"}), 403
+    org, member, error, code = _require_permission(slug, "manage_roles")
+    if error:
+        return error, code
 
     role = OrganizationRole.query.filter_by(
         id=role_id, organization_id=org.id
@@ -337,20 +318,10 @@ def organization_list_view(page=1):
 
     if "page" in request.args:
         page = request.args.get("page", 1, type=int)
-    per_page = ITEMS_PER_PAGE
-    total = Organization.query.filter_by(is_active=True).count()
-    total_pages = max((total + per_page - 1) // per_page, 1)
-
-    if page < 1:
-        page = 1
-    elif page > total_pages:
-        page = total_pages
-
-    orgs = Organization.query.filter_by(is_active=True).order_by(
+    query = Organization.query.filter_by(is_active=True).order_by(
         Organization.created_at.desc()
-    ).offset((page - 1) * per_page).limit(per_page).all()
-
-    page_numbers = _build_page_numbers(page, total_pages)
+    )
+    orgs, page, total, total_pages, page_numbers = _paginate(query, page, per_page=ITEMS_PER_PAGE)
 
     return render_template(
         "organization_list.html",
@@ -406,15 +377,8 @@ def organization_detail_view(slug):
 @bp.route("/api/organizations/<slug>", methods=["DELETE"])
 @login_required
 def delete_organization(slug):
-    from models import Organization, OrganizationMember
-
-    current_user = get_current_user()
-    org = Organization.query.filter_by(slug=slug).first_or_404()
-
-    member = OrganizationMember.query.filter_by(
-        user_id=current_user.id, organization_id=org.id
-    ).first()
-    if not member or not member.has_permission("delete_org"):
+    org, member, error, code = _require_permission(slug, "delete_org")
+    if error:
         return jsonify({"error": "Vous n'avez pas la permission de supprimer l'organisation"}), 403
 
     db.session.delete(org)

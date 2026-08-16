@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from src.admin import bp, api_admin_required, login_required
-from src.admin import _log_audit, _get_json_data, get_catalogues_status, _save_catalogues_status, _CATALOGUES_INFO
+from src.admin import _log_audit, _require_json, get_catalogues_status, _save_catalogues_status, _CATALOGUES_INFO
 
 
 @bp.route("/api/admin/catalogues/<catalogue_type>/toggle", methods=["POST"])
@@ -11,9 +11,9 @@ def toggle_catalogue(catalogue_type):
     if catalogue_type not in valid_types:
         return jsonify({"error": "Type de catalogue invalide"}), 400
 
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
     active = data.get("active", True)
 
     status = get_catalogues_status()

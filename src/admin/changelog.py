@@ -4,7 +4,7 @@ import datetime
 from flask import request, jsonify, render_template
 from app import db
 from src.admin import bp, api_admin_required, login_required, require_admin
-from src.admin import _log_audit, _get_json_data
+from src.admin import _log_audit, _require_json
 from models import ChangelogVersion, ChangelogSection
 
 
@@ -53,9 +53,9 @@ def list_versions():
 @login_required
 @api_admin_required
 def create_version():
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
 
     version = (data.get("version") or "").strip()
     if not version:
@@ -95,9 +95,9 @@ def create_version():
 @api_admin_required
 def update_version(version_id):
     v = ChangelogVersion.query.get_or_404(version_id)
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
 
     if "version" in data:
         v.version = data["version"].strip()

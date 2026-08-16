@@ -9,6 +9,11 @@ from flask import url_for, redirect, session
 SECRET_FILE = ".secret"
 ITEMS_PER_PAGE = 30
 
+CATALOGUE_TYPES = ("donnees", "cartes", "applications")
+ITEM_TYPE_MAP = {"donnees": "geodonnee", "cartes": "carte", "applications": "application"}
+ALLOWED_ITEM_TYPES = set(ITEM_TYPE_MAP.values())
+ITEM_TYPE_LABELS = {"geodonnee": "Géodonnée", "carte": "Carte", "application": "Application"}
+
 
 def get_items_per_page():
     try:
@@ -16,6 +21,17 @@ def get_items_per_page():
         return int(get_setting("items_per_page", "30"))
     except Exception:
         return 30
+
+
+def _paginate(query, page=1, per_page=None):
+    """Applique une pagination SQL à une query et renvoie (items, page, total, total_pages, page_numbers)."""
+    if per_page is None:
+        per_page = get_items_per_page()
+    total = query.count()
+    total_pages = max((total + per_page - 1) // per_page, 1) if total else 1
+    page = max(1, min(page or 1, total_pages))
+    items = query.limit(per_page).offset((page - 1) * per_page).all()
+    return items, page, total, total_pages, _build_page_numbers(page, total_pages)
 
 
 def validate_password_strength(password: str) -> tuple[bool, list[str]]:

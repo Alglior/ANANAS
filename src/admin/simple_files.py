@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from app import db
 from src.admin import bp, api_admin_required, login_required
-from src.admin import _serialize_simple_file, _log_audit, _get_json_data
+from src.admin import _serialize_simple_file, _log_audit, _require_json
 from models import SimpleFileItem, Item
 
 
@@ -19,9 +19,9 @@ def list_simple_files():
 @api_admin_required
 def create_simple_file():
 
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
     item_id = data.get("item_id")
 
     if not item_id:
@@ -47,9 +47,9 @@ def create_simple_file():
 def update_simple_file(sf_id):
 
     sf = SimpleFileItem.query.get_or_404(sf_id)
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
 
     if "display_order" in data:
         sf.display_order = int(data["display_order"])

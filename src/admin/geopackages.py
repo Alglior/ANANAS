@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from app import db
 from src.admin import bp, api_admin_required, login_required
-from src.admin import _serialize_geopackage, _log_audit, _get_json_data
+from src.admin import _serialize_geopackage, _log_audit, _require_json
 from utils.security import sanitize_html, validate_external_url
 from models import GeoPackage
 
@@ -20,9 +20,9 @@ def list_geopackages():
 @api_admin_required
 def create_geopackage():
 
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
     title = (data.get("title") or "").strip()
     description = (data.get("description") or "").strip()
     format_info = (data.get("format_info") or "").strip()
@@ -53,9 +53,9 @@ def create_geopackage():
 def update_geopackage(pkg_id):
 
     pkg = GeoPackage.query.get_or_404(pkg_id)
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
 
     if "title" in data:
         pkg.title = sanitize_html(data["title"].strip())

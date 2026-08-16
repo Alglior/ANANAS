@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from app import db
-from src.admin import bp, api_admin_required, login_required, _log_audit, _get_json_data
+from src.admin import bp, api_admin_required, login_required, _log_audit, _require_json
 from models import HomeSection
 
 
@@ -19,9 +19,9 @@ def list_home_sections():
 @login_required
 @api_admin_required
 def create_home_section():
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
     section_type = (data.get("section_type") or "").strip()
     title = (data.get("title") or "").strip()
     if not section_type or not title:
@@ -45,9 +45,9 @@ def create_home_section():
 @login_required
 @api_admin_required
 def update_home_section(section_id):
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
     hs = db.session.get(HomeSection, section_id)
     if not hs:
         return jsonify({"error": "Section introuvable"}), 404
@@ -83,7 +83,7 @@ def delete_home_section(section_id):
 @login_required
 @api_admin_required
 def reorder_home_sections():
-    data = _get_json_data()
+    data = _require_json()
     if data is None or "order" not in data:
         return jsonify({"error": "Liste order requise"}), 400
     for idx, section_id in enumerate(data["order"]):

@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from app import db
 from src.admin import bp, api_admin_required, login_required
-from src.admin import _serialize_contact_message, _log_audit, _paginate, _get_json_data
+from src.admin import _serialize_contact_message, _log_audit, _paginate, _require_json
 from models import ContactMessage
 
 
@@ -35,9 +35,9 @@ def list_contact_messages():
 def mark_contact_message_read(msg_id):
 
     msg = ContactMessage.query.get_or_404(msg_id)
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
     msg.is_read = bool(data.get("is_read", True))
     db.session.commit()
     return jsonify({"status": "updated", "id": msg.id, "is_read": msg.is_read})

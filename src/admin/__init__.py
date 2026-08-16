@@ -3,7 +3,7 @@ import os
 
 from flask import Blueprint, request, jsonify, redirect, url_for, render_template
 from app import db
-from src.shared import login_required, get_current_user, _build_page_numbers
+from src.shared import login_required, get_current_user
 from models import CatalogueConfig, AdminAudit
 
 _CATALOGUES_INFO = [
@@ -92,11 +92,8 @@ def _log_audit(action_type, target_type=None, target_id=None, details=None):
 
 
 def _paginate(query, page=1, per_page=30):
-    total_items = query.count()
-    total_pages = max((total_items + per_page - 1) // per_page, 1)
-    page = min(max(page, 1), total_pages) or 1
-    items = query.limit(per_page).offset((page - 1) * per_page).all()
-    page_numbers = _build_page_numbers(page, total_pages)
+    from src.shared import _paginate as _shared_paginate
+    items, page, total_items, total_pages, page_numbers = _shared_paginate(query, page, per_page)
     return items, page, total_pages, total_items, page_numbers
 
 
@@ -104,6 +101,14 @@ def _get_json_data():
     if not request.is_json:
         return None
     return request.get_json(silent=True) or {}
+
+
+def _require_json():
+    """Retourne le corps JSON ou échoue avec 415 si Content-Type n'est pas application/json."""
+    data = _get_json_data()
+    if data is None:
+        return None, jsonify({"error": "Content-Type must be application/json"}), 415
+    return data, None, None
 
 
 def _serialize_user(u):
@@ -156,7 +161,8 @@ def _serialize_mirror(m):
     }
 
 
-def _serialize_featured(f):
+def _serialize_item_reference(f):
+    """Sérialise un élément référencé (featured / simple_file)."""
     return {
         "id": f.id, "item_id": f.item_id,
         "item_title": f.item.title if f.item else None,
@@ -184,14 +190,7 @@ def _serialize_geopackage(p):
 
 
 def _serialize_simple_file(f):
-    return {
-        "id": f.id, "item_id": f.item_id,
-        "item_title": f.item.title if f.item else None,
-        "item_type": f.item.type if f.item else None,
-        "item_format": f.item.format_type if f.item else None,
-        "item_description": f.item.description[:100] if f.item else None,
-        "display_order": f.display_order, "is_active": f.is_active,
-    }
+    return _serialize_item_reference(f)
 
 
 import src.admin.users

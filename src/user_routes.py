@@ -6,12 +6,10 @@ from flask import Blueprint, request, render_template, redirect, url_for, sessio
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
 from app import db, limiter
-from src.shared import login_required, get_current_user, user_owns_item_or_admin, _build_page_numbers, ITEMS_PER_PAGE, validate_password_strength
+from src.shared import login_required, get_current_user, user_owns_item_or_admin, ITEMS_PER_PAGE, validate_password_strength, _paginate, ALLOWED_ITEM_TYPES, ITEM_TYPE_LABELS
 from src.admin import is_catalogue_enabled
 from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, OrganizationMember, ItemGallery, ItemTag, PredefinedTagCategory, PredefinedTag
 from utils.security import sanitize_html, validate_magnet_link
-
-ALLOWED_ITEM_TYPES = {"geodonnee", "carte", "application"}
 
 bp = Blueprint("users", __name__)
 
@@ -230,25 +228,13 @@ def compte_page():
         active_tab = "infos"
 
     ratings_query = db.session.query(Rating, Item.title.label("item_title"), Item.type.label("item_type")).join(Item, Rating.item_id == Item.id).filter(Rating.user_id == current_user.id).order_by(Rating.rating.desc())
-    total_ratings = ratings_query.count()
-    ratings_max_page = max((total_ratings + per_page - 1) // per_page, 1) if total_ratings else 1
-    ratings_page = max(1, min(page, ratings_max_page))
-    ratings = ratings_query.limit(per_page).offset((ratings_page - 1) * per_page).all()
-    ratings_page_numbers = _build_page_numbers(ratings_page, ratings_max_page)
+    ratings, ratings_page, total_ratings, ratings_max_page, ratings_page_numbers = _paginate(ratings_query, page, per_page)
 
     comments_query = db.session.query(Comment, Item.title.label("item_title"), Item.type.label("item_type")).join(Item, Comment.item_id == Item.id).filter(Comment.user_id == current_user.id).order_by(Comment.created_at.desc())
-    total_comments = comments_query.count()
-    comments_max_page = max((total_comments + per_page - 1) // per_page, 1) if total_comments else 1
-    comments_page = max(1, min(page, comments_max_page))
-    comments = comments_query.limit(per_page).offset((comments_page - 1) * per_page).all()
-    comments_page_numbers = _build_page_numbers(comments_page, comments_max_page)
+    comments, comments_page, total_comments, comments_max_page, comments_page_numbers = _paginate(comments_query, page, per_page)
 
     publications_query = Item.query.filter(Item.owner_user_id == current_user.id, Item.status == "published").order_by(Item.created_at.desc())
-    total_publications = publications_query.count()
-    publications_max_page = max((total_publications + per_page - 1) // per_page, 1) if total_publications else 1
-    publications_page = max(1, min(page, publications_max_page))
-    publications = publications_query.limit(per_page).offset((publications_page - 1) * per_page).all()
-    publications_page_numbers = _build_page_numbers(publications_page, publications_max_page)
+    publications, publications_page, total_publications, publications_max_page, publications_page_numbers = _paginate(publications_query, page, per_page)
 
     data_chunks = db.session.query(DataChunk, Item.title.label("parent_title"), Item.type.label("parent_type")).outerjoin(Item, DataChunk.parent_item_id == Item.id).filter(DataChunk.owner_user_id == current_user.id).order_by(DataChunk.created_at.desc()).limit(10).all()
 
@@ -294,30 +280,14 @@ def upload_page():
         owner_user_id=current_user.id, status="trashed",
     ).order_by(Item.deleted_at.desc())
 
-    total_drafts = drafts_query.count()
-    total_trash = trashed_query.count()
-
-    max_draft_page = max((total_drafts + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE, 1) if total_drafts else 1
-    max_trash_page = max((total_trash + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE, 1) if total_trash else 1
-
-    draft_page = max(1, min(draft_page, max_draft_page))
-    trash_page = max(1, min(trash_page, max_trash_page))
-
-    drafts = drafts_query.limit(ITEMS_PER_PAGE).offset((draft_page - 1) * ITEMS_PER_PAGE).all()
-    trashed = trashed_query.limit(ITEMS_PER_PAGE).offset((trash_page - 1) * ITEMS_PER_PAGE).all()
+    drafts, draft_page, total_drafts, max_draft_page, draft_page_numbers = _paginate(drafts_query, draft_page, ITEMS_PER_PAGE)
+    trashed, trash_page, total_trash, max_trash_page, trash_page_numbers = _paginate(trashed_query, trash_page, ITEMS_PER_PAGE)
 
     publications_query = Item.query.filter_by(
         owner_user_id=current_user.id, status="published",
     ).order_by(Item.created_at.desc())
 
-    total_publications = publications_query.count()
-    max_publications_page = max((total_publications + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE, 1) if total_publications else 1
-    publications_page = max(1, min(publications_page, max_publications_page))
-    publications = publications_query.limit(ITEMS_PER_PAGE).offset((publications_page - 1) * ITEMS_PER_PAGE).all()
-    publications_page_numbers = _build_page_numbers(publications_page, max_publications_page)
-
-    draft_page_numbers = _build_page_numbers(draft_page, max_draft_page)
-    trash_page_numbers = _build_page_numbers(trash_page, max_trash_page)
+    publications, publications_page, total_publications, max_publications_page, publications_page_numbers = _paginate(publications_query, publications_page, ITEMS_PER_PAGE)
 
     edit_id = request.args.get("edit", "")
     edit_data = None
@@ -601,12 +571,8 @@ def upload_file():
     })
 
 
-@bp.route("/api/upload/item", methods=["POST"])
-@login_required
-def create_upload_item():
-    current_user = get_current_user()
-
-    data = request.get_json(silent=True) or {}
+def _apply_item_payload(current_user, item, data, is_new=False):
+    """Applique un payload item (création ou mise à jour) partagé entre create/update."""
     title, item_type, format_type, description, data_format_level, organization_id, license_type, pdf_magnet_link, status = _parse_item_data(data)
     chunk_id = data.get("chunk_id")
 
@@ -619,63 +585,13 @@ def create_upload_item():
     if error:
         return error, code
 
-    item = Item(
-        type=item_type, title=title, description=description or "",
-        format_type=format_type or None, magnet_link="",
-        owner_user_id=current_user.id, author_name=f"{current_user.prenom} {current_user.nom}",
-        organization_id=org_id, verification_status="unofficial",
-        data_format_level=data_format_level,
-        license_type=license_type or None,
-        pdf_magnet_link=pdf_magnet_link if validate_magnet_link(pdf_magnet_link) else None,
-        status=status,
-    )
-    db.session.add(item)
-    db.session.flush()
+    if is_new:
+        item.type = item_type
+        item.author_name = f"{current_user.prenom} {current_user.nom}"
+        item.owner_user_id = current_user.id
+        item.magnet_link = ""
+        item.verification_status = "unofficial"
 
-    _link_chunk(current_user, chunk_id, item.id)
-    err = _create_viz_link(data, item.id)
-    if err:
-        return err
-    _process_tags(item, data.get("tags", []))
-
-    err = _process_magnets(item, data_format_level, data)
-    if err:
-        return err
-    image_magnets = data.get("image_magnets", [])
-    if image_magnets:
-        item.image_magnet_links = image_magnets
-        if status != "draft":
-            item.image_magnets_pending = True
-            item.image_magnets_total = len(image_magnets)
-    _process_image_magnets_async(item.id, image_magnets)
-
-    db.session.commit()
-    return jsonify({"status": "created", "id": item.id})
-
-
-@bp.route("/api/upload/item/<int:item_id>", methods=["PUT"])
-@login_required
-def update_draft_item(item_id):
-    current_user = get_current_user()
-    item = Item.query.get_or_404(item_id)
-
-    if not user_owns_item_or_admin(current_user, item):
-        return jsonify({"error": "Non autorisé"}), 403
-
-    data = request.get_json(silent=True) or {}
-    title, item_type, format_type, description, data_format_level, organization_id, license_type, pdf_magnet_link, status = _parse_item_data(data)
-    chunk_id = data.get("chunk_id")
-
-    if not title:
-        return jsonify({"error": "Le titre est requis"}), 400
-    if item_type not in ALLOWED_ITEM_TYPES:
-        return jsonify({"error": "Type de contenu invalide"}), 400
-
-    org_id, error, code = _check_org_membership(current_user, organization_id)
-    if error:
-        return error, code
-
-    item.type = item_type
     item.title = title
     item.description = description or ""
     item.format_type = format_type or None
@@ -697,14 +613,60 @@ def update_draft_item(item_id):
     image_magnets = data.get("image_magnets", [])
     if image_magnets:
         item.image_magnet_links = image_magnets
-        # Remove existing image gallery entries before re-processing
-        ItemGallery.query.filter_by(item_id=item.id, media_type="image").delete()
-        item.image_magnets_pending = True
-        item.image_magnets_total = len(image_magnets)
-    else:
+        if not is_new:
+            ItemGallery.query.filter_by(item_id=item.id, media_type="image").delete()
+            item.image_magnets_pending = True
+            item.image_magnets_total = len(image_magnets)
+        elif status != "draft":
+            item.image_magnets_pending = True
+            item.image_magnets_total = len(image_magnets)
+    elif not is_new:
         item.image_magnets_pending = False
         item.image_magnets_total = 0
     _process_image_magnets_async(item.id, image_magnets)
+    return None
+
+
+@bp.route("/api/upload/item", methods=["POST"])
+@login_required
+def create_upload_item():
+    current_user = get_current_user()
+
+    data = request.get_json(silent=True) or {}
+    title = data.get("title", "").strip()
+    if not title:
+        return jsonify({"error": "Le titre est requis"}), 400
+    item_type = data.get("type", "geodonnee").strip()
+    if item_type not in ALLOWED_ITEM_TYPES:
+        return jsonify({"error": "Type de contenu invalide"}), 400
+
+    item = Item(type=item_type, title=title, description=data.get("description", "").strip() or "", magnet_link="")
+    db.session.add(item)
+    db.session.flush()
+
+    err = _apply_item_payload(current_user, item, data, is_new=True)
+    if err:
+        db.session.rollback()
+        return err
+
+    db.session.commit()
+    return jsonify({"status": "created", "id": item.id})
+
+
+@bp.route("/api/upload/item/<int:item_id>", methods=["PUT"])
+@login_required
+def update_draft_item(item_id):
+    current_user = get_current_user()
+    item = Item.query.get_or_404(item_id)
+
+    if not user_owns_item_or_admin(current_user, item):
+        return jsonify({"error": "Non autorisé"}), 403
+
+    data = request.get_json(silent=True) or {}
+    err = _apply_item_payload(current_user, item, data, is_new=False)
+    if err:
+        db.session.rollback()
+        return err
 
     db.session.commit()
     return jsonify({"status": "updated", "id": item.id})
@@ -806,12 +768,7 @@ def list_drafts():
         status="draft",
     ).order_by(Item.created_at.desc())
 
-    total = query.count()
-    total_pages = max((total + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE, 1) if total else 1
-    page = max(1, min(page, total_pages))
-
-    items = query.limit(ITEMS_PER_PAGE).offset((page - 1) * ITEMS_PER_PAGE).all()
-    page_numbers = _build_page_numbers(page, total_pages)
+    items, page, total, total_pages, page_numbers = _paginate(query, page, ITEMS_PER_PAGE)
 
     return jsonify({
         "drafts": [
@@ -841,12 +798,7 @@ def list_trash():
         status="trashed",
     ).order_by(Item.deleted_at.desc())
 
-    total = query.count()
-    total_pages = max((total + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE, 1) if total else 1
-    page = max(1, min(page, total_pages))
-
-    items = query.limit(ITEMS_PER_PAGE).offset((page - 1) * ITEMS_PER_PAGE).all()
-    page_numbers = _build_page_numbers(page, total_pages)
+    items, page, total, total_pages, page_numbers = _paginate(query, page, ITEMS_PER_PAGE)
 
     return jsonify({
         "trashed": [
@@ -876,14 +828,7 @@ def list_publications():
         status="published",
     ).order_by(Item.created_at.desc())
 
-    total = query.count()
-    total_pages = max((total + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE, 1) if total else 1
-    page = max(1, min(page, total_pages))
-
-    items = query.limit(ITEMS_PER_PAGE).offset((page - 1) * ITEMS_PER_PAGE).all()
-    page_numbers = _build_page_numbers(page, total_pages)
-
-    type_labels = {"geodonnee": "Géodonnée", "carte": "Carte", "application": "Application"}
+    items, page, total, total_pages, page_numbers = _paginate(query, page, ITEMS_PER_PAGE)
 
     return jsonify({
         "publications": [
@@ -891,7 +836,7 @@ def list_publications():
                 "id": p.id,
                 "title": p.title,
                 "type": p.type,
-                "type_label": type_labels.get(p.type, p.type),
+                "type_label": ITEM_TYPE_LABELS.get(p.type, p.type),
                 "created_at": p.created_at.strftime("%d/%m/%Y") if p.created_at else "",
             }
             for p in items

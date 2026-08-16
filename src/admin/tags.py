@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from app import db
 from src.admin import bp, api_admin_required, login_required
-from src.admin import _log_audit, _get_json_data
+from src.admin import _log_audit, _require_json
 from utils.security import sanitize_html
 from models import PredefinedTag, PredefinedTagCategory
 
@@ -34,9 +34,9 @@ def list_tag_categories():
 @api_admin_required
 def create_tag_category():
 
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
     name = (data.get("name") or "").strip()
 
     if not name:
@@ -67,9 +67,9 @@ def create_tag_category():
 def update_tag_category(category_id):
 
     cat = PredefinedTagCategory.query.get_or_404(category_id)
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
 
     if "name" in data:
         name = data["name"].strip()
@@ -109,9 +109,9 @@ def delete_tag_category(category_id):
 def create_tag(category_id):
 
     cat = PredefinedTagCategory.query.get_or_404(category_id)
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
     name = (data.get("name") or "").strip()
 
     if not name:
@@ -159,9 +159,9 @@ def update_tag(category_id, tag_id):
     tag = PredefinedTag.query.filter_by(
         id=tag_id, category_id=category_id
     ).first_or_404()
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
 
     if "name" in data:
         name = data["name"].strip()

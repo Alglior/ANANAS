@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from app import db
 from src.admin import bp, api_admin_required, login_required
-from src.admin import _serialize_featured, _log_audit, _get_json_data
+from src.admin import _serialize_item_reference, _log_audit, _require_json
 from models import FeaturedItem, Item
 
 
@@ -11,7 +11,7 @@ from models import FeaturedItem, Item
 def list_featured():
 
     featured = FeaturedItem.query.order_by(FeaturedItem.display_order, FeaturedItem.id).all()
-    return jsonify({"featured": [_serialize_featured(f) for f in featured]})
+    return jsonify({"featured": [_serialize_item_reference(f) for f in featured]})
 
 
 @bp.route("/api/admin/items/search", methods=["GET"])
@@ -41,9 +41,9 @@ def search_items():
 @api_admin_required
 def create_featured():
 
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
     item_id = data.get("item_id")
 
     if not item_id:
@@ -60,7 +60,7 @@ def create_featured():
     db.session.commit()
     _log_audit("featured_created", "featured", featured.id, {"item_id": item_id, "title": item.title})
 
-    return jsonify({"status": "created", "featured": _serialize_featured(featured)})
+    return jsonify({"status": "created", "featured": _serialize_item_reference(featured)})
 
 
 @bp.route("/api/admin/featured/<int:featured_id>", methods=["PUT"])
@@ -69,9 +69,9 @@ def create_featured():
 def update_featured(featured_id):
 
     featured = FeaturedItem.query.get_or_404(featured_id)
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
 
     if "display_order" in data:
         featured.display_order = int(data["display_order"])
@@ -80,7 +80,7 @@ def update_featured(featured_id):
 
     db.session.commit()
     _log_audit("featured_updated", "featured", featured_id, {"item_id": featured.item_id})
-    return jsonify({"status": "updated", "featured": _serialize_featured(featured)})
+    return jsonify({"status": "updated", "featured": _serialize_item_reference(featured)})
 
 
 @bp.route("/api/admin/featured/<int:featured_id>", methods=["DELETE"])

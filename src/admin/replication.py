@@ -3,7 +3,7 @@ import json
 from flask import request, jsonify
 from app import db
 from src.admin import bp, api_admin_required, login_required
-from src.admin import _log_audit, _get_json_data, get_current_user, _CATALOGUES_INFO, CATALOGUE_TYPE_MAP
+from src.admin import _log_audit, _require_json, get_current_user, _CATALOGUES_INFO, CATALOGUE_TYPE_MAP
 from utils.security import sanitize_html, validate_external_url
 from models import User, Item, ItemGallery, ItemTag, PredefinedTag, PredefinedTagCategory
 
@@ -13,9 +13,9 @@ from models import User, Item, ItemGallery, ItemTag, PredefinedTag, PredefinedTa
 @api_admin_required
 def replication_fetch():
 
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
     remote_url = (data.get("url") or "").strip().rstrip("/")
     selected_types = data.get("types", [])
 
@@ -169,9 +169,9 @@ def replication_fetch():
 @login_required
 @api_admin_required
 def replication_preview():
-    data = _get_json_data()
-    if data is None:
-        return jsonify({"error": "Content-Type must be application/json"}), 415
+    data, error, code = _require_json()
+    if error:
+        return error, code
     remote_url = (data.get("url") or "").strip().rstrip("/")
 
     if not remote_url:
