@@ -68,15 +68,21 @@ def create_app(app_name="ANANAS"):
 
         current_app.config["SESSION_COOKIE_SECURE"] = request.is_secure
 
-        from flask_wtf.csrf import generate_csrf
+        from flask_wtf.csrf import generate_csrf, validate_csrf
         g.csrf_token = generate_csrf()
 
         if request.method in ("POST", "PUT", "PATCH", "DELETE"):
             if "/api/" in request.path:
                 if current_app.config.get("TESTING") or not current_app.config.get("WTF_CSRF_ENABLED", True):
                     pass
-                elif not request.headers.get("X-CSRF-Token"):
-                    return jsonify({"error": "Token CSRF requis pour les requêtes API"}), 422
+                else:
+                    token = request.headers.get("X-CSRF-Token", "")
+                    if not token:
+                        return jsonify({"error": "Token CSRF requis pour les requêtes API"}), 422
+                    try:
+                        validate_csrf(token)
+                    except Exception:
+                        return jsonify({"error": "Token CSRF invalide"}), 422
 
     # Chargement de la configuration
     config = Config()
@@ -175,10 +181,16 @@ def create_app(app_name="ANANAS"):
             f"upgrade-insecure-requests"
         )
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Access-Control-Allow-Origin"] = request.origin if request.origin else request.host_url.rstrip("/")
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-CSRF-Token"
-        response.headers["Access-Control-Allow-Credentials"] = "true"
+
+        # CORS : n'autoriser que les requêtes même-origine (aucun origin reflété arbitraire).
+        # Les credentials ne sont jamais accordés à un site tiers.
+        from urllib.parse import urlparse
+        origin = request.headers.get("Origin")
+        if origin and urlparse(origin).netloc == request.host:
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-CSRF-Token"
+            response.headers["Access-Control-Allow-Credentials"] = "true"
 
         csrf_signed = g.get("csrf_token", "")
         if csrf_signed:

@@ -148,16 +148,22 @@ class TestUserModel:
         u = User(prenom="Jean", nom="Dupont", pseudo="jean-dupont", password_hash="pbkdf2:test", is_active=True)
         assert str(u) == "Jean Dupont"
 
-    def test_user_banned_default(self):
+    def test_user_banned_default(self, app_ctx):
+        from app import db
         from models import User
         u = User(prenom="New", nom="User", pseudo="new-user", password_hash="pbkdf2:test")
+        db.session.add(u)
+        db.session.flush()
         assert u.banned is False
 
 
 class TestTagModel:
-    def test_item_tags(self):
+    def test_item_tags(self, app_ctx):
+        from app import db
         from models import Item, ItemTag
         item = Item(type="geodonnee", title="Tagged", description="Desc", format_type="shp", magnet_link="magnet:?xt=tags")
+        db.session.add(item)
+        db.session.flush()
         tag1 = ItemTag(item_id=item.id, tag="tag-alpha")
         tag2 = ItemTag(item_id=item.id, tag="tag-beta")
         item.tags = [tag1, tag2]
@@ -179,15 +185,21 @@ class TestReportModel:
 
 
 class TestVisualizationLinkModel:
-    def test_viz_link_defaults(self):
+    def test_viz_link_defaults(self, app_ctx):
+        from app import db
         from models import VisualizationLink
         v = VisualizationLink(parent_item_id=1, name="Map", url="https://map.test", link_type="embed")
+        db.session.add(v)
+        db.session.flush()
         assert v.link_type == "embed"
         assert v.is_active is True
 
 
 class TestDataChunkModel:
-    def test_chunk_defaults(self):
+    def test_chunk_defaults(self, app_ctx):
+        from app import db
         from models import DataChunk
         c = DataChunk(name="Test Chunk", owner_user_id=1)
+        db.session.add(c)
+        db.session.flush()
         assert c.upload_status == "uploaded"

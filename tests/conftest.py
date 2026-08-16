@@ -24,12 +24,24 @@ def client(app_config):
 
 
 @pytest.fixture(scope="function")
+def app_ctx(app_config):
+    """Fournir un contexte d'application pour les tests unitaires de modèles."""
+    with app_config.app_context():
+        db.create_all()
+        yield
+
+
+@pytest.fixture(scope="function")
 def seeded(client):
     """Seed database with test data."""
-    from models import User, Organization, OrganizationMember, Item, Report, Rating, Comment
+    from models import User, Organization, OrganizationMember, Item, Report, Rating, Comment, CatalogueConfig
 
-    for m in [Report, Rating, Comment, Item, OrganizationMember, Organization, User]:
+    for m in [CatalogueConfig, Report, Rating, Comment, Item, OrganizationMember, Organization, User]:
         db.session.query(m).delete()
+    db.session.commit()
+
+    for ctype, enabled in (("donnees", True), ("cartes", True), ("applications", True)):
+        db.session.add(CatalogueConfig(catalogue_type=ctype, enabled=enabled))
     db.session.commit()
 
     admin = User(prenom="Admin", nom="Super", pseudo="admin-super", password_hash="pbkdf2:sha256:260000$xxx$yyy", is_active=True, banned=False, is_admin=True)
