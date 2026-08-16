@@ -5,7 +5,50 @@ from app import db
 from src.admin import bp, api_admin_required, login_required
 from src.admin import _log_audit, _require_json, get_current_user, _CATALOGUES_INFO, CATALOGUE_TYPE_MAP
 from utils.security import sanitize_html, validate_external_url
-from models import User, Item, ItemGallery, ItemTag, PredefinedTag, PredefinedTagCategory
+from models import User, Item, ItemGallery, ItemTag, VisualizationLink, DataChunk, PredefinedTag, PredefinedTagCategory
+
+MAX_PAYLOAD_SIZE = 5 * 1024 * 1024  # 5 Mo
+MAX_URL_REDIRECTS = 3
+
+
+def _is_unsafe_host(hostname):
+    """Rejette les hôtes résolvant vers des adresses privées/réservées (anti-SSRF)."""
+    import socket
+    import ipaddress
+    try:
+        infos = socket.getaddrinfo(hostname, None)
+    except OSError:
+        return True
+    for info in infos:
+        try:
+            addr = ipaddress.ip_address(info[4][0])
+            if addr.is_private or addr.is_loopback or addr.is_reserved or addr.is_link_local or addr.is_multicast or addr.is_unspecified:
+                return True
+        except ValueError:
+            return True
+    return False
+
+
+def _fetch_json(url):
+    import urllib.request
+    import urllib.error
+    import ssl
+    import socket
+
+    if not validate_external_url(url):
+        raise urllib.error.URLError("URL invalide ou non autorisée.")
+    from urllib.parse import urlparse
+    hostname = urlparse(url).hostname
+    if hostname and _is_unsafe_host(hostname):
+        raise urllib.error.URLError("Hôte distant non autorisé.")
+
+    ctx = ssl.create_default_context()
+    req = urllib.request.Request(url, headers={"User-Agent": "ANANAS-Replicator/1.0"})
+    with urllib.request.urlopen(req, timeout=30, context=ctx) as resp:
+        data = resp.read(MAX_PAYLOAD_SIZE + 1)
+        if len(data) > MAX_PAYLOAD_SIZE:
+            raise urllib.error.URLError("Réponse trop volumineuse.")
+        return json.loads(data.decode("utf-8"))
 
 
 @bp.route("/api/admin/replication/fetch", methods=["POST"])
@@ -30,21 +73,12 @@ def replication_fetch():
     if not valid_types:
         return jsonify({"error": "Types de catalogue invalides."}), 400
 
-    import urllib.request
-    import urllib.error
-    import ssl
     import datetime as dt
 
-    ctx = ssl.create_default_context()
     current_user = get_current_user()
     created = []
     skipped = []
     errors = []
-
-    def _fetch_json(url):
-        req = urllib.request.Request(url, headers={"User-Agent": "ANANAS-Replicator/1.0"})
-        with urllib.request.urlopen(req, timeout=30, context=ctx) as resp:
-            return json.loads(resp.read().decode("utf-8"))
 
     def _parse_date(date_str):
         if not date_str or not isinstance(date_str, str):
@@ -178,18 +212,11 @@ def replication_preview():
         return jsonify({"error": "URL requise."}), 400
     if not validate_external_url(remote_url):
         return jsonify({"error": "URL distante invalide ou non autorisée."}), 400
-    import urllib.request
-    import urllib.error
-    import ssl
-
-    ctx = ssl.create_default_context()
     result = []
     for cat_type, item_type in CATALOGUE_TYPE_MAP.items():
         json_url = f"{remote_url}/catalogue/{cat_type}/1/json"
         try:
-            req = urllib.request.Request(json_url, headers={"User-Agent": "ANANAS-Replicator/1.0"})
-            with urllib.request.urlopen(req, timeout=15, context=ctx) as resp:
-                catalog_data = json.loads(resp.read().decode("utf-8"))
+            catalog_data = _fetch_json(json_url)
             result.append({
                 "type": cat_type,
                 "label": next((i["label"] for i in _CATALOGUES_INFO if i["type"] == cat_type), cat_type),

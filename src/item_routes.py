@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, Response, request, g, abort, jsonify
+from flask import Blueprint, render_template, Response, request, g, abort, jsonify
 from app import db
 from models import Comment, DataChunk, Item, User, VisualizationLink, load_imod_config
 from src.shared import get_current_user, user_owns_item_or_admin, ITEMS_PER_PAGE, _build_page_numbers
@@ -11,8 +11,6 @@ def get_comments_per_page():
     except Exception:
         return 10
 
-
-COMMENTS_PER_PAGE = 10
 
 bp = Blueprint("items", __name__)
 

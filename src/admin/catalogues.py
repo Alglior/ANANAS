@@ -22,7 +22,7 @@ def toggle_catalogue(catalogue_type):
 
     _log_audit(
         "catalogue_toggle" if not active else "catalogue_enable",
-        "catalogue", target_type=catalogue_type,
+        target_type=catalogue_type,
         details={"catalogue": catalogue_type, "active": bool(active)},
     )
     return jsonify({"status": "updated", "catalogue": catalogue_type, "active": bool(active)})

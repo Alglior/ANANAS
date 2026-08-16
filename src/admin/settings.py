@@ -124,10 +124,13 @@ def admin_settings_update():
     data = request.get_json(silent=True)
     if not data or not isinstance(data, dict):
         return jsonify({"error": "Données invalides"}), 400
+    allowed = {meta["key"] for meta in _SETTING_META if meta["key"]}
+    rejected = [key for key in data if key not in allowed]
     for key, value in data.items():
-        set_setting(key, value)
-    _log_audit("settings_update", details=data)
-    return jsonify({"status": "updated", "settings": get_all_settings()})
+        if key in allowed:
+            set_setting(key, value)
+    _log_audit("settings_update", details={k: v for k, v in data.items() if k in allowed})
+    return jsonify({"status": "updated", "settings": get_all_settings(), "rejected": rejected})
 
 
 @bp.route("/api/admin/settings/logo-upload", methods=["POST"])
@@ -145,8 +148,9 @@ def admin_logo_upload():
         return jsonify({"error": "Fichier invalide"}), 400
 
     ext = os.path.splitext(file.filename)[1].lower()
-    if ext not in (".png", ".jpg", ".jpeg", ".webp", ".svg", ".ico"):
-        return jsonify({"error": "Format d'image non supporté (png, jpg, webp, svg, ico)"}), 400
+    # SVG non autorisé : les fichiers SVG peuvent embarquer du <script> (XSS stocké).
+    if ext not in (".png", ".jpg", ".jpeg", ".webp", ".ico"):
+        return jsonify({"error": "Format d'image non supporté (png, jpg, webp, ico)"}), 400
 
     header = file.read(16)
     file.seek(0)
@@ -156,8 +160,6 @@ def admin_logo_upload():
     elif ext == ".png" and header[:8] == b"\x89PNG\r\n\x1a\n":
         is_valid = True
     elif ext == ".webp" and header[:4] == b"RIFF" and header[8:12] == b"WEBP":
-        is_valid = True
-    elif ext == ".svg":
         is_valid = True
     elif ext == ".ico":
         is_valid = True

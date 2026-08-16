@@ -9,21 +9,23 @@ from app import db
 
 from src.admin import bp, login_required, require_admin, api_admin_required
 
+MAX_RESTORE_SIZE = 100 * 1024 * 1024  # 100 Mo
+
 _RESTORE_ALLOWED = [
     (
-        re.compile(r"^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?\w+\s*\(", re.I),
+        re.compile(r"^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(\w+)\s*\(", re.I),
         None,
     ),
     (
-        re.compile(r"^CREATE\s+OR\s+REPLACE\s+VIEW\s+\w+\s+AS\s+", re.I),
+        re.compile(r"^CREATE\s+OR\s+REPLACE\s+VIEW\s+(\w+)\s+AS\s+", re.I),
         None,
     ),
     (
-        re.compile(r"^INSERT\s+INTO\s+\w+\s*\([^)]*\)\s*VALUES", re.I),
+        re.compile(r"^INSERT\s+INTO\s+(\w+)\s*\([^)]*\)\s*VALUES", re.I),
         lambda c: not _has_select_outside_strings(c),
     ),
     (
-        re.compile(r"^DELETE\s+FROM\s+\w+", re.I),
+        re.compile(r"^DELETE\s+FROM\s+(\w+)", re.I),
         lambda c: not _has_select_outside_strings(c),
     ),
     (
@@ -58,12 +60,19 @@ def _has_select_outside_strings(stmt):
     return False
 
 
-def _is_allowed_restore_statement(stmt):
+def _is_allowed_restore_statement(stmt, valid_tables):
     compact = " ".join(stmt.split())
     for pattern, validator in _RESTORE_ALLOWED:
-        if pattern.match(compact):
+        m = pattern.match(compact)
+        if m:
             if validator and not validator(compact):
                 return False
+            # Restreint les tables cibles à celles existant déjà dans le schéma,
+            # pour empêcher la création/drop de tables arbitraires via le fichier.
+            if m.lastindex and m.group(1):
+                table = m.group(1).lower()
+                if valid_tables and table not in valid_tables:
+                    return False
             return True
     return False
 
@@ -131,6 +140,8 @@ def admin_backup_restore():
     raw = f.read()
     if not raw:
         return jsonify({"error": "Fichier vide"}), 400
+    if len(raw) > MAX_RESTORE_SIZE:
+        return jsonify({"error": "Fichier trop volumineux"}), 400
 
     try:
         decompressed = gzip.decompress(raw).decode("utf-8")
@@ -138,6 +149,7 @@ def admin_backup_restore():
         return jsonify({"error": "Impossible de décompresser le fichier"}), 400
 
     engine = db.engine
+    valid_tables = {t.lower() for t in inspect(engine).get_table_names()}
 
     sql_statements = []
     current_stmt = []
@@ -177,7 +189,7 @@ def admin_backup_restore():
                 stmt_upper = stmt.upper().strip()
                 if stmt_upper.startswith("SET "):
                     continue
-                if not _is_allowed_restore_statement(stmt):
+                if not _is_allowed_restore_statement(stmt, valid_tables):
                     errors.append({
                         "statement": stmt[:200],
                         "error": "Instruction non autorisée",

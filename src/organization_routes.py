@@ -1,12 +1,12 @@
 import re
-import string
 
 from flask import Blueprint, request, render_template, jsonify
 from app import db
 from src.shared import login_required, get_current_user, ITEMS_PER_PAGE, _paginate
 
-ALLOWED_SLUG_CHARS = set(string.ascii_lowercase + string.digits + "-")
 ALLOWED_MEMBER_ROLES = {"member", "moderator", "editor", "admin", "owner"}
+
+_ROLE_RANK = {"member": 1, "moderator": 2, "editor": 3, "admin": 4, "owner": 5}
 
 bp = Blueprint("organizations", __name__)
 
@@ -130,6 +130,8 @@ def update_member_role(slug, user_id):
     if target_member.role == "owner":
         return jsonify({"error": "Impossible de modifier le rôle du propriétaire"}), 403
 
+    actor_rank = _ROLE_RANK.get(member.role, 0)
+
     custom_role_id = data.get("custom_role_id")
     if custom_role_id is not None:
         from models import OrganizationRole
@@ -144,6 +146,10 @@ def update_member_role(slug, user_id):
         role = data.get("role", "member")
         if role not in ALLOWED_MEMBER_ROLES:
             return jsonify({"error": "Rôle invalide"}), 400
+        # Empêche une montée de privilèges : on ne peut attribuer qu'un rôle
+        # de rang inférieur ou égal au sien.
+        if _ROLE_RANK.get(role, 0) > actor_rank:
+            return jsonify({"error": "Vous ne pouvez pas attribuer un rôle supérieur au vôtre"}), 403
         target_member.role = role
         target_member.custom_role_id = None
     db.session.commit()

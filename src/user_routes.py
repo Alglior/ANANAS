@@ -59,8 +59,8 @@ def change_password():
     if not check_password_hash(current_user.password_hash, current_password):
         return jsonify({"error": "Mot de passe actuel incorrect"}), 400
 
-    errors = validate_password_strength(new_password)
-    if errors:
+    valid, errors = validate_password_strength(new_password)
+    if not valid:
         return jsonify({"error": "Mot de passe invalide", "details": errors}), 400
 
     current_user.password_hash = generate_password_hash(new_password)
@@ -185,6 +185,13 @@ def upload_avatar():
     ext = os.path.splitext(file.filename)[1].lower()
     if ext not in (".png", ".jpg", ".jpeg", ".webp"):
         return jsonify({"error": "Format d'image non supporté (png, jpg, webp)"}), 400
+
+    MAX_AVATAR_SIZE = 5 * 1024 * 1024  # 5 Mo
+    file.seek(0, os.SEEK_END)
+    size = file.tell()
+    file.seek(0)
+    if size > MAX_AVATAR_SIZE:
+        return jsonify({"error": "Image trop volumineuse (5 Mo maximum)"}), 400
 
     header = file.read(16)
     file.seek(0)
@@ -753,7 +760,8 @@ def purge_draft_item(item_id):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "Erreur lors de la suppression: " + str(e)}), 500
+        current_app.logger.exception("Failed to purge item %s", item_id)
+        return jsonify({"error": "Erreur lors de la suppression"}), 500
     return jsonify({"status": "deleted"})
 
 

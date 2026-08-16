@@ -48,7 +48,7 @@ def connexion_post():
     user = User.query.filter_by(pseudo=pseudo).first()
 
     if not user or not user.is_active or user.banned:
-        return render_template("connexion.html", recovery_code_mode=bool(recovery_code), error="banned" if user and (not user.is_active or user.banned) else "Identifiants incorrects"), 401
+        return render_template("connexion.html", recovery_code_mode=bool(recovery_code), error="Identifiants incorrects"), 401
 
     authenticated = False
 
@@ -56,10 +56,10 @@ def connexion_post():
         if user.recovery_codes_hash:
             for i, hashed in enumerate(user.recovery_codes_hash):
                 if check_password_hash(hashed, recovery_code):
-                    hashed_codes = list(user.recovery_codes_hash)
-                    hashed_codes.pop(i)
-                    user.recovery_codes_hash = hashed_codes if hashed_codes else None
-                    db.session.commit()
+                    # On ne consomme le code qu'après authentification complète
+                    # (y compris 2FA), pour ne pas le perdre si l'utilisateur abandonne.
+                    session["_recovery_consume"] = {"user_id": user.id, "index": i}
+                    session.modified = True
                     authenticated = True
                     break
         if not authenticated:
@@ -72,16 +72,36 @@ def connexion_post():
     if authenticated:
         if user.totp_enabled:
             session["pending_2fa_user_id"] = user.id
+            session["pending_2fa_expiry"] = datetime.datetime.now().timestamp() + 300  # 5 minutes
             session.modified = True
             return redirect(url_for("auth.connexion_2fa_page"))
 
-        session.clear()
-        session.pop("_csrf_token", None)
-        session["user_id"] = user.id
-        session["session_version"] = user.session_version
-        session["_auth_time"] = datetime.datetime.now().isoformat()
-        session.modified = True
+        _establish_session(user)
         return redirect(url_for("index.home"))
+
+
+def _consume_recovery_code(user):
+    """Consomme le code de récupération mis en attente, s'il y a lieu."""
+    pending = session.pop("_recovery_consume", None)
+    if not pending or pending.get("user_id") != user.id:
+        return
+    index = pending.get("index")
+    if user.recovery_codes_hash and 0 <= index < len(user.recovery_codes_hash):
+        hashed_codes = list(user.recovery_codes_hash)
+        hashed_codes.pop(index)
+        user.recovery_codes_hash = hashed_codes if hashed_codes else None
+        db.session.commit()
+
+
+def _establish_session(user):
+    """Établit la session de l'utilisateur authentifié."""
+    _consume_recovery_code(user)
+    session.clear()
+    session.pop("_csrf_token", None)
+    session["user_id"] = user.id
+    session["session_version"] = user.session_version
+    session["_auth_time"] = datetime.datetime.now().isoformat()
+    session.modified = True
 
 
 @bp.route("/inscription")
@@ -131,9 +151,18 @@ def connexion_2fa_page():
     if not pending_id:
         return redirect(url_for("auth.connexion_page"))
 
+    # Expiration du processus 2FA : on nettoie l'état si le délai est dépassé.
+    expiry = session.get("pending_2fa_expiry")
+    if expiry is None or datetime.datetime.now().timestamp() > expiry:
+        session.pop("pending_2fa_user_id", None)
+        session.pop("pending_2fa_expiry", None)
+        session.modified = True
+        return redirect(url_for("auth.connexion_page"))
+
     user = db.session.get(User, pending_id)
     if not user or not user.totp_enabled:
         session.pop("pending_2fa_user_id", None)
+        session.pop("pending_2fa_expiry", None)
         return redirect(url_for("auth.connexion_page"))
 
     return render_template(
@@ -155,6 +184,15 @@ def connexion_2fa_post():
     user = db.session.get(User, pending_id)
     if not user or not user.totp_enabled or not user.totp_secret:
         session.pop("pending_2fa_user_id", None)
+        session.pop("pending_2fa_expiry", None)
+        return redirect(url_for("auth.connexion_page"))
+
+    # Expiration du processus 2FA.
+    expiry = session.get("pending_2fa_expiry")
+    if expiry is None or datetime.datetime.now().timestamp() > expiry:
+        session.pop("pending_2fa_user_id", None)
+        session.pop("pending_2fa_expiry", None)
+        session.modified = True
         return redirect(url_for("auth.connexion_page"))
 
     code = request.form.get("code", "").strip()
@@ -165,10 +203,7 @@ def connexion_2fa_post():
     if not totp.verify(code, valid_window=1):
         return render_template("connexion_2fa.html", error="Code invalide. Vérifiez l'heure de votre appareil."), 401
 
-    session.clear()
-    session.pop("_csrf_token", None)
-    session["user_id"] = user.id
-    session["session_version"] = user.session_version
-    session["_auth_time"] = datetime.datetime.now().isoformat()
-    session.modified = True
+    session.pop("pending_2fa_user_id", None)
+    session.pop("pending_2fa_expiry", None)
+    _establish_session(user)
     return redirect(url_for("index.home"))

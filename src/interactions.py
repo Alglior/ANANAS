@@ -8,6 +8,9 @@ from utils.security import sanitize_html
 
 bp = Blueprint("interactions", __name__)
 
+MAX_COMMENT_LENGTH = 2000
+MAX_AUTHOR_NAME_LENGTH = 80
+
 
 @bp.route("/catalogue/item/<int:item_id>/rate", methods=["POST"])
 @login_required
@@ -21,6 +24,9 @@ def rate_item(item_id):
         return redirect(url_for("items.item_detail_view", item_id=item_id))
 
     rating = int(rating_value)
+    if rating < 1 or rating > 5:
+        return redirect(url_for("items.item_detail_view", item_id=item_id))
+
     existing = Rating.query.filter_by(item_id=item_id, user_id=current_user.id).first()
     if existing:
         existing.rating = rating
@@ -38,8 +44,8 @@ def add_comment(item_id):
     current_user = get_current_user()
     item = Item.query.get_or_404(item_id)
     raw_author = request.form.get("author", "").strip() or (f"{current_user.prenom} {current_user.nom}" if current_user else "")
-    author_name = sanitize_html(raw_author)
-    content = sanitize_html(request.form.get("text", ""))
+    author_name = sanitize_html(raw_author)[:MAX_AUTHOR_NAME_LENGTH]
+    content = sanitize_html(request.form.get("text", ""))[:MAX_COMMENT_LENGTH]
     parent_id = request.form.get("parent_id", type=int)
 
     if not content:
@@ -75,7 +81,7 @@ def reply_comment_json(item_id):
             parent_id = int(parent_id)
         except (TypeError, ValueError):
             parent_id = None
-    content = sanitize_html(data.get("text", ""))
+    content = sanitize_html(data.get("text", ""))[:MAX_COMMENT_LENGTH]
 
     if not content:
         return jsonify({"error": "Le commentaire ne peut pas être vide"}), 400
@@ -86,7 +92,7 @@ def reply_comment_json(item_id):
             return jsonify({"error": "Commentaire parent introuvable"}), 404
 
     raw_author = f"{current_user.prenom} {current_user.nom}" if current_user else ""
-    author_name = sanitize_html(raw_author)
+    author_name = sanitize_html(raw_author)[:MAX_AUTHOR_NAME_LENGTH]
 
     comment = Comment(
         item_id=item_id, user_id=current_user.id if current_user else None,

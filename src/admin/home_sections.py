@@ -2,6 +2,7 @@ from flask import request, jsonify
 from app import db
 from src.admin import bp, api_admin_required, login_required, _log_audit, _require_json
 from models import HomeSection
+from utils.security import sanitize_html
 
 
 @bp.route("/api/admin/home-sections", methods=["GET"])
@@ -52,9 +53,9 @@ def update_home_section(section_id):
     if not hs:
         return jsonify({"error": "Section introuvable"}), 404
     if "title" in data:
-        hs.title = data["title"].strip()
+        hs.title = sanitize_html(data["title"].strip())
     if "content" in data:
-        hs.content = data["content"]
+        hs.content = sanitize_html(data["content"])
     if "enabled" in data:
         hs.enabled = bool(data["enabled"])
     if "display_order" in data:

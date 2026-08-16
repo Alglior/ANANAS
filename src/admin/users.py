@@ -6,6 +6,7 @@ from src.admin import bp, api_admin_required, require_admin, login_required
 from src.admin import get_current_user, _serialize_user, _log_audit, _paginate
 from src.shared import ITEMS_PER_PAGE
 from models import User
+from utils.security import sanitize_html
 
 
 @bp.route("/api/users/<int:user_id>/ban", methods=["POST"])
@@ -18,7 +19,10 @@ def ban_user(user_id):
     if target_user.id == current_user.id:
         return jsonify({"error": "Action interdite"}), 403
 
-    data = request.get_json(silent=True) or {} if request.is_json and request.content_type == "application/json" else request.form
+    if request.is_json and request.content_type == "application/json":
+        data = request.get_json(silent=True) or {}
+    else:
+        data = request.form
     action = data.get("action", "")
     duration = data.get("duration")
 
@@ -61,6 +65,8 @@ def _do_tempban(user, duration):
         hours = int(duration)
     except (TypeError, ValueError):
         return jsonify({"error": "Durée invalide"}), 400
+    if hours <= 0:
+        return jsonify({"error": "La durée doit être strictement positive"}), 400
     ban_until = dt.datetime.now() + dt.timedelta(hours=hours)
     user.banned = True
     user.is_active = False
@@ -75,6 +81,8 @@ def _do_mute(user, duration):
         hours = int(duration)
     except (TypeError, ValueError):
         return jsonify({"error": "Durée invalide"}), 400
+    if hours <= 0:
+        return jsonify({"error": "La durée doit être strictement positive"}), 400
     user.muted_until = dt.datetime.now() + dt.timedelta(hours=hours)
     db.session.commit()
     _log_audit("mute", "user", user.id, {"pseudo": user.pseudo, "duration_hours": hours, "muted_until": user.muted_until.isoformat()})
@@ -89,7 +97,7 @@ def _do_unmute(user):
 
 
 def _do_warn(user, data):
-    reason = data.get("reason", "")
+    reason = sanitize_html(str(data.get("reason", "")))[:200]
     user.warned = True
     user.warnings = (user.warnings or "") + f"[{dt.datetime.now().strftime('%Y-%m-%d %H:%M')}] {reason}\n"
     db.session.commit()
@@ -106,6 +114,8 @@ def _do_unwarn(user):
 
 
 def _do_kick(user):
+    # Invalide toutes les sessions actives de l'utilisateur.
+    user.session_version += 1
     db.session.commit()
     _log_audit("kick", "user", user.id, {"pseudo": user.pseudo})
     return jsonify({"status": "updated", "user_id": user.id, "action": "kick"})

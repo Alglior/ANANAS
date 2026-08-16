@@ -61,7 +61,7 @@ def delete_comment(comment_id):
 def list_items():
 
     item_type = request.args.get("type", "all")
-    page = int(request.args.get("page", 1))
+    page = request.args.get("page", 1, type=int)
 
     query = Item.query
     if item_type != "all":

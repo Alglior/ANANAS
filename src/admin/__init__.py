@@ -1,7 +1,7 @@
 import datetime as dt
 import os
 
-from flask import Blueprint, request, jsonify, redirect, url_for, render_template
+from flask import Blueprint, request, jsonify, redirect, url_for, render_template, current_app
 from app import db
 from src.shared import login_required, get_current_user
 from models import CatalogueConfig, AdminAudit
@@ -129,7 +129,7 @@ def _serialize_report(r):
         "status": r.status,
         "reviewed_by": {"id": r.reviewer.id, "name": str(r.reviewer)} if r.reviewer else None,
         "reviewed_at": r.reviewed_at.isoformat() if hasattr(r, "reviewed_at") and r.reviewed_at else None,
-        "created_at": r.created_at.isoformat(),
+        "created_at": r.created_at.isoformat() if hasattr(r, "created_at") and r.created_at else None,
     }
 
 

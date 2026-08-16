@@ -1,5 +1,5 @@
 from flask import render_template, redirect, url_for
-from src.admin import bp, login_required, require_admin, get_catalogues_status, _CATALOGUES_INFO
+from src.admin import bp, login_required, require_admin
 
 
 @bp.route("/admin/reports")
