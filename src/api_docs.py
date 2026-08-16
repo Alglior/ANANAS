@@ -60,7 +60,7 @@ _ENDPOINTS = [
     {"method": "GET", "path": "/catalogue/item/<id>/comments/json", "desc": "Commentaires pagines (JSON)", "auth": False, "rate": None},
     {"method": "GET", "path": "/catalogue/item/<id>/magnets/download", "desc": "Telecharger tous les liens magnet (fichier .magnet)", "auth": False, "rate": None},
     {"method": "GET", "path": "/catalogue/item/<id>/details/json", "desc": "Details complets (liens de visualisation, chunks)", "auth": False, "rate": None},
-    {"method": "GET", "path": "/api/items/<id>/image-status", "desc": "Statut de telechargement des images", "auth": False, "rate": None},
+    {"method": "GET", "path": "/api/items/<id>/image-status", "desc": "Statut de téléchargement des images (suivi par aimant: statut, progression)", "auth": False, "rate": None},
     {"method": "POST", "path": "/catalogue/item/<id>/rate", "desc": "Noter un element (1-5 etoiles)", "auth": True, "rate": None,
      "body": '{"rating": 4}'},
     {"method": "POST", "path": "/catalogue/item/<id>/comment", "desc": "Ajouter un commentaire", "auth": True, "rate": None,

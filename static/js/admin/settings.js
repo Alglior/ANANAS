@@ -238,9 +238,9 @@
 
     function uploadFile(file) {
       if (!file) return;
-      var allowed = ["image/png", "image/jpeg", "image/webp", "image/svg+xml", "image/x-icon"];
+      var allowed = ["image/png", "image/jpeg", "image/webp", "image/x-icon"];
       if (allowed.indexOf(file.type) === -1) {
-        showFeedback("Format non support\u00e9 (png, jpg, webp, svg, ico)", true);
+        showFeedback("Format non support\u00e9 (png, jpg, webp, ico)", true);
         return;
       }
       if (file.size > 5 * 1024 * 1024) {

@@ -266,12 +266,63 @@
 
   var imagePending = mainEl.getAttribute('data-image-pending') === 'true';
   if (imagePending) {
+    var SUMMARY_LABELS = {
+      pending: 'En attente',
+      downloading: 'T\u00e9l\u00e9chargement du torrent...',
+      saving: 'Enregistrement...',
+      done: 'Termin\u00e9',
+      failed: '\u00c9chec',
+      skipped: 'Ignor\u00e9'
+    };
+
+    var progressEl = document.getElementById('imageProgress');
+    var summaryEl = document.getElementById('imageProgressSummary');
+
+    function getJobText(job) {
+      if (job.details) return job.details;
+      return SUMMARY_LABELS[job.status] || job.status;
+    }
+
+    function renderImageJobs(data) {
+      var jobs = data.jobs || [];
+      if (summaryEl) {
+        if (jobs.length) {
+          var done = 0;
+          for (var i = 0; i < jobs.length; i++) {
+            if (jobs[i].status === 'done') done++;
+          }
+          summaryEl.textContent = 'T\u00e9l\u00e9chargement des images : ' + done + '/' + jobs.length + ' termin\u00e9s';
+        } else {
+          summaryEl.textContent = 'T\u00e9l\u00e9chargement des images en cours...';
+        }
+      }
+      if (!progressEl || !jobs.length) return;
+
+      var html = '';
+      for (var j = 0; j < jobs.length; j++) {
+        var job = jobs[j];
+        var label = job.label || 'Image ' + (job.idx + 1);
+        var pct = Math.round((job.progress || 0) * 100);
+        var bar = '';
+        if (job.status === 'downloading' || job.status === 'saving') {
+          bar = '<div class="image-job-bar"><div class="image-job-bar-fill" style="width:' + pct + '%"></div></div>';
+        }
+        html += '<div class="image-job-row ' + escapeHtml(job.status) + '">' +
+          '<span class="image-job-label">' + escapeHtml(label) + '</span>' +
+          '<span class="image-job-status">' + escapeHtml(getJobText(job)) + '</span>' +
+          bar +
+          '</div>';
+      }
+      progressEl.innerHTML = html;
+    }
+
     var pollInterval = setInterval(function () {
       fetch('/api/items/' + itemId + '/image-status', {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
       })
         .then(function (r) { return r.json(); })
         .then(function (data) {
+          renderImageJobs(data);
           if (!data.pending) {
             clearInterval(pollInterval);
             window.location.reload();

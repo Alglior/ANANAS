@@ -9,7 +9,7 @@ from pathlib import Path
 import requests
 
 from app import db
-from models import Item, ItemGallery
+from models import Item, ItemGallery, ItemImageJob
 
 logger = logging.getLogger(__name__)
 
@@ -88,8 +88,9 @@ def _extract_info_hashes(magnet_link):
     return hashes
 
 
-def _qb_await_complete(session, info_hash, timeout=300):
+def _qb_await_complete(session, info_hash, timeout=300, on_progress=None):
     start = time.time()
+    last_reported = -1.0
     while True:
         if time.time() - start > timeout:
             return None
@@ -105,7 +106,11 @@ def _qb_await_complete(session, info_hash, timeout=300):
             return None
 
         torrent = torrents[0]
-        if torrent.get("progress", 0) >= 1:
+        progress = torrent.get("progress", 0)
+        if on_progress is not None and progress != last_reported:
+            on_progress(float(progress))
+            last_reported = progress
+        if progress >= 1:
             return torrent
         time.sleep(2)
 
@@ -138,7 +143,7 @@ def _qb_get_torrent(session, info_hash):
     return torrents[0] if torrents else None
 
 
-def download_image_from_magnet(magnet_link, timeout=300):
+def download_image_from_magnet(magnet_link, timeout=300, on_progress=None):
     info_hashes = _extract_info_hashes(magnet_link)
     if not info_hashes:
         return None, None
@@ -165,7 +170,7 @@ def download_image_from_magnet(magnet_link, timeout=300):
                     torrent = existing
                     break
                 elif existing:
-                    torrent = _qb_await_complete(session, h, timeout)
+                    torrent = _qb_await_complete(session, h, timeout, on_progress)
                     if torrent:
                         break
             if torrent is None:
@@ -177,7 +182,7 @@ def download_image_from_magnet(magnet_link, timeout=300):
     else:
         torrent = None
         for h in info_hashes:
-            torrent = _qb_await_complete(session, h, timeout)
+            torrent = _qb_await_complete(session, h, timeout, on_progress)
             if torrent:
                 break
         if torrent is None:
@@ -237,30 +242,68 @@ def process_image_magnets(item_id, image_magnets):
     deadline = time.time() + ITEM_PROCESS_BUDGET
 
     try:
-        for img in image_magnets:
-            if time.time() > deadline:
-                skipped_timeout = len([m for m in image_magnets if m]) - processed - failed
-                logger.warning(
-                    "Item %s: time budget exceeded, skipping %s remaining magnets.",
-                    item_id, skipped_timeout,
-                )
-                break
-
-            magnet = img.get("magnet_link", "").strip()
-            label = img.get("label", "").strip()
+        ItemImageJob.query.filter_by(item_id=item_id).delete()
+        jobs = []
+        for i, img in enumerate(image_magnets):
+            if not isinstance(img, dict):
+                continue
+            magnet = (img.get("magnet_link") or "").strip()
             if not magnet:
                 continue
+            jobs.append(ItemImageJob(
+                item_id=item_id, idx=i, magnet_link=magnet,
+                label=(img.get("label") or "").strip() or "Image",
+                status="pending", progress=0.0,
+            ))
+        for j in jobs:
+            db.session.add(j)
+        item = db.session.get(Item, item_id)
+        if item:
+            item.image_magnets_pending = True
+            item.image_magnets_total = len(jobs)
+        db.session.commit()
+
+        for job in jobs:
+            if time.time() > deadline:
+                skipped_timeout += 1
+                job.status = "skipped"
+                job.progress = 0.0
+                job.details = "Budget de temps dépassé"
+                db.session.commit()
+                continue
+
+            magnet = job.magnet_link
+            label = job.label or "Image"
 
             try:
                 data = get_cached_image(magnet)
                 ext = ".png"
                 if data is None:
-                    data, ext = download_image_from_magnet(magnet)
+                    job.status = "downloading"
+                    job.progress = 0.0
+                    job.details = "Téléchargement du torrent en cours..."
+                    db.session.commit()
+
+                    def _on_progress(p, _job=job):
+                        _job.progress = p
+                        if _job.status != "downloading":
+                            _job.status = "downloading"
+                        _job.details = f"Téléchargement en cours ({round(p * 100)} %)"
+                        db.session.commit()
+
+                    data, ext = download_image_from_magnet(magnet, on_progress=_on_progress)
                     if data is None:
                         failed += 1
-                        logger.warning("Item %s: failed to download magnet %s", item_id, magnet)
+                        job.status = "failed"
+                        job.progress = 0.0
+                        job.details = "Échec : aucune source disponible ou délai dépassé"
+                        db.session.commit()
                         continue
                     ext = ext or ".png"
+
+                job.status = "saving"
+                job.details = "Enregistrement de l'image..."
+                db.session.commit()
 
                 src = cache_image(magnet, data, ext)
 
@@ -268,7 +311,7 @@ def process_image_magnets(item_id, image_magnets):
                     item_id=item_id,
                     media_type="image",
                     src=src,
-                    label=label or "Image",
+                    label=label,
                     data_json={
                         "magnet_link": magnet,
                         "original_filename": "image" + ext,
@@ -277,14 +320,23 @@ def process_image_magnets(item_id, image_magnets):
                 db.session.add(gallery)
                 processed += 1
 
+                job.status = "done"
+                job.progress = 1.0
+                job.details = "Terminé"
+                db.session.commit()
+
                 if first_image:
                     item = db.session.get(Item, item_id)
                     if item:
                         item.image_path = src
+                        db.session.commit()
                     first_image = False
             except Exception as e:
                 failed += 1
                 logger.exception("Item %s: error downloading image magnet %s: %s", item_id, magnet, e)
+                job.status = "failed"
+                job.details = str(e)[:200]
+                db.session.commit()
                 continue
     finally:
         item = db.session.get(Item, item_id)

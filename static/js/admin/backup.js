@@ -138,12 +138,12 @@
         try {
           resp = JSON.parse(xhr.responseText);
         } catch (_) {
-          showError("R&#233;ponse invalide du serveur.");
+          showError("Réponse invalide du serveur.");
           return;
         }
 
         if (xhr.status === 200) {
-          showSuccess(resp.message || "Restauration termin&#233;e.");
+          showSuccess(resp.message || "Restauration terminée.");
         } else {
           var msg = resp.error || "Erreur lors de la restauration.";
           if (resp.errors && resp.errors.length) {
@@ -157,7 +157,7 @@
 
       xhr.onerror = function () {
         setLoading(restoreBtn, false);
-        showError("Erreur r&#233;seau lors de la restauration.");
+        showError("Erreur réseau lors de la restauration.");
       };
 
       xhr.send(formData);

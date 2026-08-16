@@ -29,6 +29,15 @@ UploadModule.submit = (function () {
     document.body.style.overflow = '';
   }
 
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   async function submitPublish(magnetLinks) {
     var typeSelect = document.getElementById('type');
     var dataInput = document.getElementById('data_input');
@@ -376,9 +385,9 @@ UploadModule.submit = (function () {
               throw new Error('Champs title/type manquants');
             }
             populateFormFromJSON(data);
-            resultsContainer.innerHTML = '<div class="json-upload-result success"><span class="status-icon"></span><span class="file-name">' + validFiles[0].name + '</span><span class="file-status">Formulaire rempli \u2014 vérifiez puis enregistrez</span></div>';
+            resultsContainer.innerHTML = '<div class="json-upload-result success"><span class="status-icon"></span><span class="file-name">' + escapeHtml(validFiles[0].name) + '</span><span class="file-status">Formulaire rempli \u2014 vérifiez puis enregistrez</span></div>';
           } catch (err) {
-            resultsContainer.innerHTML = '<div class="json-upload-result error"><span class="status-icon"></span><span class="file-name">' + validFiles[0].name + '</span><span class="file-status">JSON invalide: ' + err.message + '</span></div>';
+            resultsContainer.innerHTML = '<div class="json-upload-result error"><span class="status-icon"></span><span class="file-name">' + escapeHtml(validFiles[0].name) + '</span><span class="file-status">JSON invalide: ' + escapeHtml(err.message) + '</span></div>';
           }
         };
         reader.readAsText(validFiles[0]);
@@ -393,7 +402,7 @@ UploadModule.submit = (function () {
       validFiles.forEach(function(file) {
         var row = document.createElement('div');
         row.className = 'json-upload-result';
-        row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + file.name + '</span><span class="file-status">Envoi...</span>';
+        row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + escapeHtml(file.name) + '</span><span class="file-status">Envoi...</span>';
         resultsContainer.appendChild(row);
 
         var reader = new FileReader();
@@ -482,11 +491,11 @@ UploadModule.submit = (function () {
               })
               .then(function() {
                 row.className = 'json-upload-result success';
-                row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + file.name + '</span><span class="file-status">Brouillon cr\u00e9\u00e9</span>';
+                row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + escapeHtml(file.name) + '</span><span class="file-status">Brouillon cr\u00e9\u00e9</span>';
               })
               .catch(function(err) {
                 row.className = 'json-upload-result error';
-                row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + file.name + '</span><span class="file-status">' + err.message + '</span>';
+                row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + escapeHtml(file.name) + '</span><span class="file-status">' + escapeHtml(err.message) + '</span>';
               })
               .finally(function() {
                 done++;
@@ -497,7 +506,7 @@ UploadModule.submit = (function () {
             });
           } catch (err) {
             row.className = 'json-upload-result error';
-            row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + file.name + '</span><span class="file-status">JSON invalide</span>';
+            row.innerHTML = '<span class="status-icon"></span><span class="file-name">' + escapeHtml(file.name) + '</span><span class="file-status">JSON invalide</span>';
             done++;
             if (done >= total) {
               setTimeout(function() { location.reload(); }, 1500);

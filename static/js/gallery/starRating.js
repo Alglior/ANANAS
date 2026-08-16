@@ -2,7 +2,12 @@
  * A.N.A.N.A.S — Star rating hover + auto-submit (detail page)
  */
 var StarRatingModule = (function () {
+  var initialized = false;
+
   function init() {
+    if (initialized) return;
+    initialized = true;
+
     var rateForms = document.querySelectorAll(".rate-form");
     rateForms.forEach(function (form) {
       var labels = Array.from(form.querySelectorAll("label"));

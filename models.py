@@ -76,6 +76,7 @@ class Item(db.Model, TimestampMixin):
 
     tags = relationship("ItemTag", back_populates="item", cascade="all, delete-orphan")
     gallery_items = relationship("ItemGallery", back_populates="item", cascade="all, delete-orphan")
+    image_jobs = relationship("ItemImageJob", back_populates="item", cascade="all, delete-orphan")
     ratings = relationship("Rating", back_populates="item", cascade="all, delete-orphan")
     comments = relationship("Comment", back_populates="item", cascade="all, delete-orphan")
     verifier = relationship("User", foreign_keys=[verifier_user_id])
@@ -348,6 +349,24 @@ class ItemGallery(db.Model):
     label: Mapped[str | None]
 
     item = relationship("Item", back_populates="gallery_items")
+
+
+class ItemImageJob(db.Model):
+    __tablename__ = "item_image_jobs"
+    __table_args__ = (
+        db.Index("ix_item_image_jobs_item_id", "item_id"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    item_id: Mapped[int] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"))
+    idx: Mapped[int] = mapped_column(default=0)
+    magnet_link: Mapped[str]
+    label: Mapped[str | None] = mapped_column(default=None)
+    status: Mapped[str] = mapped_column(default="pending")
+    progress: Mapped[float] = mapped_column(default=0.0)
+    details: Mapped[str | None] = mapped_column(default=None)
+
+    item = relationship("Item", back_populates="image_jobs")
 
 
 class User(db.Model):

@@ -277,12 +277,72 @@ body.modal-open {
 /* Inline gallery pending */
 .inline-gallery-pending {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.75rem;
   padding: 1rem;
   color: var(--specs-gray);
   font-size: 0.9rem;
 }
+
+.image-pending-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.image-jobs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.image-job-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.image-job-label {
+  font-weight: 600;
+  color: var(--charcoal);
+  flex-shrink: 0;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-job-status {
+  color: var(--specs-gray);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-job-bar {
+  height: 6px;
+  flex-basis: 30%;
+  flex-shrink: 0;
+  background: var(--border-color);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.image-job-bar-fill {
+  height: 100%;
+  background: var(--mustard);
+  transition: width 0.6s ease;
+}
+
+.image-job-row.failed .image-job-status { color: #c0392b; }
+.image-job-row.done .image-job-status { color: #27ae60; }
 
 .pending-spinner {
   width: 18px;

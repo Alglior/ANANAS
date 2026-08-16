@@ -39,7 +39,7 @@
       });
     }
 
-    document.querySelectorAll('.role-select').forEach(function (sel) {
+    document.querySelectorAll('.org-role-select').forEach(function (sel) {
       sel.addEventListener('change', function () {
         var userId = sel.getAttribute('data-user-id');
         var val = sel.value;
@@ -66,7 +66,7 @@
       });
     });
 
-    document.querySelectorAll('.btn-remove-member').forEach(function (rmBtn) {
+    document.querySelectorAll('.org-remove-btn').forEach(function (rmBtn) {
       rmBtn.addEventListener('click', function () {
         if (!confirm('Retirer ce membre de l\'organisation ?')) return;
         var userId = rmBtn.getAttribute('data-user-id');

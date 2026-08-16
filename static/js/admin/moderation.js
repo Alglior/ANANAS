@@ -67,8 +67,8 @@
           <td data-label="ID">${c.id}</td>
           <td data-label="Auteur">${escapeHtml(c.author_name || '(anonyme)')}</td>
           <td data-label="Contenu">${escapeHtml(c.content).substring(0, 80)}${c.content && c.content.length > 80 ? '...' : ''}</td>
-          <td data-label="Article"><a href="/catalogue/item/${c.item_id}">${c.item_title || '#'}</a></td>
-          <td data-label="Type">${c.item_type || '-'}</td>
+          <td data-label="Article"><a href="/catalogue/item/${c.item_id}">${escapeHtml(c.item_title || '#')}</a></td>
+          <td data-label="Type">${escapeHtml(c.item_type || '-')}</td>
           <td data-label="Date">${c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '-'}</td>
           <td data-label="Action">
             <form class="admin-form-inline" data-delete-comment="${c.id}" method="post">

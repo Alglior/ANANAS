@@ -106,6 +106,8 @@ def _establish_session(user):
 
 @bp.route("/inscription")
 def inscription_page():
+    if not _registration_enabled():
+        return redirect(url_for("auth.connexion_page", error="Les inscriptions sont actuellement fermées."))
     return render_template(
         "inscription.html",
         title="A.N.A.N.A.S | Inscription",
@@ -113,9 +115,20 @@ def inscription_page():
     )
 
 
+def _registration_enabled():
+    try:
+        from src.admin.settings import get_setting
+        return get_setting("enable_registration", "true").strip().lower() in ("1", "true", "yes", "on")
+    except Exception:
+        return True
+
+
 @bp.route("/inscription", methods=["POST"])
 @limiter.limit("30 per hour")
 def inscription_post():
+    if not _registration_enabled():
+        return render_template("inscription.html", form_errors=["Les inscriptions sont actuellement fermées"]), 403
+
     prenom = sanitize_html(request.form.get("prenom", "").strip())
     nom = sanitize_html(request.form.get("nom", "").strip())
     password = request.form.get("password", "")

@@ -102,6 +102,19 @@ def create_app(app_name="ANANAS"):
             endpoint = request.endpoint or ""
             csrf._exempt_views.add(endpoint)
 
+    @app.before_request
+    def _maintenance_mode_gate():
+        if request.path == "/health" or request.path.startswith("/static") or request.path == "/logout":
+            return
+        from src.admin.settings import get_setting as _get_maintenance_setting
+        maintenance = _get_maintenance_setting("maintenance_mode", "false").strip().lower()
+        if maintenance not in ("1", "true", "yes", "on"):
+            return None
+        cu = get_current_user()
+        if cu and cu.is_admin:
+            return None
+        return render_template("maintenance.html"), 503
+
     # Rate limiting pour prévenir le brute-force sur les routes d'authentification
     limiter.init_app(app)
 

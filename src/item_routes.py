@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, Response, request, g, abort, jsonify
 from app import db
-from models import Comment, DataChunk, Item, User, VisualizationLink, load_imod_config
+from models import Comment, DataChunk, Item, ItemImageJob, User, VisualizationLink, load_imod_config
 from src.shared import get_current_user, user_owns_item_or_admin, ITEMS_PER_PAGE, _build_page_numbers
 
 
@@ -168,10 +168,22 @@ def item_details_json(item_id):
 def item_image_status(item_id):
 
     item = Item.query.get_or_404(item_id)
+    jobs = [
+        {
+            "idx": j.idx,
+            "label": j.label or "",
+            "magnet": j.magnet_link,
+            "status": j.status,
+            "progress": round(j.progress or 0, 2),
+            "details": j.details or "",
+        }
+        for j in ItemImageJob.query.filter_by(item_id=item_id).order_by(ItemImageJob.idx).all()
+    ]
     return jsonify({
         "pending": item.image_magnets_pending,
         "total": item.image_magnets_total,
         "current": len(item.gallery_items),
+        "jobs": jobs,
     })
 
 
