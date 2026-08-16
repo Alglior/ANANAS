@@ -61,6 +61,7 @@ class Item(db.Model, TimestampMixin):
     organization_id: Mapped[int | None] = mapped_column(ForeignKey("organizations.id"))
     verification_status: Mapped[str] = mapped_column(default="unofficial")
     data_format_level: Mapped[str] = mapped_column(default="individual")
+    imod_score: Mapped[float | None] = mapped_column(index=True)
     pdf_magnet_link: Mapped[str | None] = mapped_column(default=None)
     status: Mapped[str] = mapped_column(default="published")
     deleted_at: Mapped[datetime.datetime | None]
@@ -168,6 +169,11 @@ class Item(db.Model, TimestampMixin):
             "tech": round(tech_pct, 1),
             "rich": round(rich_pct, 1),
         }
+
+    def refresh_imod_cache(self):
+        """Persiste le score IMOD calculé pour permettre un tri SQL efficace."""
+        self.imod_score = self._compute_imod_score()["score"]
+        return self.imod_score
 
     def to_dict(self, include_details=False):
         imod = self._compute_imod_score()

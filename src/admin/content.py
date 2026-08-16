@@ -101,6 +101,7 @@ def verify_item(item_id):
     item.verification_status = 'verified'
     item.verifier_user_id = current_user.id
     item.verified_at = db.func.now()
+    item.refresh_imod_cache()
     db.session.commit()
     _log_audit("item_verified", "item", item_id, {"title": item.title})
     return jsonify({"status": "updated", "item_id": item_id, "verification_status": "verified"})
@@ -115,6 +116,7 @@ def unverify_item(item_id):
     item.verification_status = 'unofficial'
     item.verifier_user_id = None
     item.verified_at = None
+    item.refresh_imod_cache()
     db.session.commit()
     _log_audit("item_unverified", "item", item_id, {"title": item.title})
     return jsonify({"status": "updated", "item_id": item_id, "verification_status": "unofficial"})

@@ -235,7 +235,7 @@ def list_roles(slug):
 @bp.route("/api/organizations/<slug>/roles", methods=["POST"])
 @login_required
 def create_role(slug):
-    from models import OrganizationRole
+    from models import OrganizationRole, OrganizationMember
 
     org, member, error, code = _require_permission(slug, "manage_roles")
     if error:
@@ -272,7 +272,7 @@ def create_role(slug):
 @bp.route("/api/organizations/<slug>/roles/<int:role_id>", methods=["PUT"])
 @login_required
 def update_role(slug, role_id):
-    from models import OrganizationRole
+    from models import OrganizationRole, OrganizationMember
 
     org, member, error, code = _require_permission(slug, "manage_roles")
     if error:
@@ -299,7 +299,7 @@ def update_role(slug, role_id):
 @bp.route("/api/organizations/<slug>/roles/<int:role_id>", methods=["DELETE"])
 @login_required
 def delete_role(slug, role_id):
-    from models import OrganizationRole
+    from models import OrganizationRole, OrganizationMember
 
     org, member, error, code = _require_permission(slug, "manage_roles")
     if error:

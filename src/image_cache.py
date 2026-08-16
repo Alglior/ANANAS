@@ -177,7 +177,7 @@ def download_image_from_magnet(magnet_link, timeout=300):
     relative_path = torrent.get("content_path", "")
 
     if not relative_path:
-        name = torrent.get("name", info_hash)
+        name = torrent.get("name", info_hashes[0] if info_hashes else "")
         relative_path = str(Path(QBITTORRENT_SAVE_PATH) / name / image_file["name"])
     else:
         relative_path = str(Path(torrent["save_path"]) / image_file["name"])
@@ -247,4 +247,5 @@ def process_image_magnets(item_id, image_magnets):
         if item:
             item.image_magnets_pending = False
             item.image_magnets_total = 0
+            item.refresh_imod_cache()
         db.session.commit()

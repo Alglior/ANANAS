@@ -1,4 +1,5 @@
 from flask import Blueprint, request, render_template, redirect, url_for
+from sqlalchemy import func
 from sqlalchemy.orm import joinedload, subqueryload
 from werkzeug.routing import BaseConverter
 from app import db
@@ -144,16 +145,16 @@ def _do_catalogue(catalogue_type, page, per_page=None):
     search_query = request.args.get("q", "").strip()
 
     query = _build_filtered_query(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod, filter_tag, filter_category, search_query)
-    all_items = query.all()
 
-    # Le tri par score IMOD est un calcul Python (non exprimable en SQL) :
-    # on charge tous les résultats puis on trie. Par défaut, tri descendant.
+    # Le score IMOD est persisté (colonne imod_score) : le tri et la pagination
+    # sont réalisés en SQL, évitant de charger et trier toute la collection en mémoire.
+    score_col = func.coalesce(Item.imod_score, 0)
     if filter_imod == "low":
-        all_items.sort(key=lambda it: it._compute_imod_score()["score"])
+        query = query.order_by(score_col.asc())
     else:
-        all_items.sort(key=lambda it: it._compute_imod_score()["score"], reverse=True)
+        query = query.order_by(score_col.desc())
 
-    total_items = len(all_items)
+    total_items = query.count()
     total_pages = max((total_items + per_page - 1) // per_page, 1)
 
     if page < 1:
@@ -165,9 +166,7 @@ def _do_catalogue(catalogue_type, page, per_page=None):
             return redirect(f"/catalogue/{catalogue}?page={total_pages}")
         page = total_pages
 
-    start = (page - 1) * per_page
-    end = start + per_page
-    items_page = all_items[start:end]
+    items_page = query.offset((page - 1) * per_page).limit(per_page).all()
     result_items = [item.to_dict(include_details=True) for item in items_page]
 
     page_numbers = _build_page_numbers(page, total_pages)

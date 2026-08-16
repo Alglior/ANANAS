@@ -33,6 +33,7 @@ def rate_item(item_id):
     else:
         db.session.add(Rating(item_id=item_id, user_id=current_user.id, rating=rating))
 
+    item.refresh_imod_cache()
     db.session.commit()
     return redirect(url_for("items.item_detail_view", item_id=item_id))
 
@@ -61,6 +62,7 @@ def add_comment(item_id):
         item_id=item_id, user_id=current_user.id if current_user else None,
         author_name=author_name, content=content, parent_id=parent_id,
     ))
+    item.refresh_imod_cache()
     db.session.commit()
 
     page = request.args.get("page", 1, type=int)
@@ -99,6 +101,7 @@ def reply_comment_json(item_id):
         author_name=author_name, content=content, parent_id=parent_id,
     )
     db.session.add(comment)
+    item.refresh_imod_cache()
     db.session.commit()
 
     return jsonify({
@@ -131,5 +134,6 @@ def verify_item(item_id):
     item.verified_at = dt.datetime.now() if status == "verified" else None
     item.verification_notes = sanitize_html(data.get("notes", "")).strip() if data.get("notes") else None
 
+    item.refresh_imod_cache()
     db.session.commit()
     return jsonify({"status": "updated", "item_id": item_id, "new_status": status})

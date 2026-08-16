@@ -13,7 +13,7 @@ from sqlalchemy import func
 from app import db, limiter
 from src.shared import login_required, get_current_user, user_owns_item_or_admin, ITEMS_PER_PAGE, validate_password_strength, _paginate, ALLOWED_ITEM_TYPES, ITEM_TYPE_LABELS, user_belongs_to_org, ITEM_STATUS_DRAFT, ITEM_STATUS_PUBLISHED, ITEM_STATUS_TRASHED
 from src.admin import is_catalogue_enabled
-from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, ItemGallery, ItemTag, PredefinedTagCategory
+from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, ItemGallery, ItemTag, PredefinedTagCategory, Report
 from utils.security import sanitize_html, validate_magnet_link, validate_external_url
 
 logger = logging.getLogger(__name__)
@@ -644,6 +644,7 @@ def create_upload_item():
         db.session.rollback()
         return err
 
+    item.refresh_imod_cache()
     db.session.commit()
     return jsonify({"status": "created", "id": item.id})
 
@@ -663,6 +664,7 @@ def update_draft_item(item_id):
         db.session.rollback()
         return err
 
+    item.refresh_imod_cache()
     db.session.commit()
     return jsonify({"status": "updated", "id": item.id})
 
