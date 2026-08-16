@@ -9,7 +9,7 @@ from models import AdminAudit
 def admin_audit_log():
 
     page = request.args.get("page", 1, type=int)
-    paginated, page, total_pages, total_items, _ = _paginate(
+    paginated, page, total_items, total_pages, _ = _paginate(
         AdminAudit.query.order_by(AdminAudit.created_at.desc()), page, 50
     )
     entries = _get_audit_entries(paginated)

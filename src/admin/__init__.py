@@ -93,8 +93,7 @@ def _log_audit(action_type, target_type=None, target_id=None, details=None):
 
 def _paginate(query, page=1, per_page=30):
     from src.shared import _paginate as _shared_paginate
-    items, page, total_items, total_pages, page_numbers = _shared_paginate(query, page, per_page)
-    return items, page, total_pages, total_items, page_numbers
+    return _shared_paginate(query, page, per_page)
 
 
 def _get_json_data():

@@ -70,7 +70,7 @@ def list_reports():
     if report_type != "all":
         query = query.filter_by(report_type=report_type)
 
-    paginated, page, total_pages, total_items, page_numbers = _paginate(
+    paginated, page, total_items, total_pages, page_numbers = _paginate(
         query.order_by(Report.created_at.desc()), page
     )
     return jsonify({

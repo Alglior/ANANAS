@@ -137,7 +137,7 @@ def admin_users(page=None):
     p = request.args.get("page", 1, type=int) if page is None else page
     p = min(max(p, 1), 9999)
     query = User.query.order_by(User.id)
-    paginated, p, total_pages, total_items, page_numbers = _paginate(query, p, ITEMS_PER_PAGE)
+    paginated, p, total_items, total_pages, page_numbers = _paginate(query, p, ITEMS_PER_PAGE)
     return render_template(
         "admin/users.html",
         title="Administration — Utilisateurs", meta_description="Liste des utilisateurs",

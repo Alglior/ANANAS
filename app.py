@@ -232,7 +232,7 @@ def create_app(app_name="ANANAS"):
     app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
     # Enregistrer tous les blueprints
-    from src import _register_view, _legacy_catalogue, register_all_blueprints
+    from src import _legacy_catalogue, register_all_blueprints
 
     register_all_blueprints(app)
 

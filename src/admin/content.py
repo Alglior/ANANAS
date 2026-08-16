@@ -30,7 +30,7 @@ def list_comments():
         except (ValueError, TypeError):
             pass
 
-    paginated, page, total_pages, total_items, page_numbers = _paginate(
+    paginated, page, total_items, total_pages, page_numbers = _paginate(
         query.order_by(Comment.created_at.desc()), page, per_page
     )
     return jsonify({
@@ -67,7 +67,7 @@ def list_items():
     if item_type != "all":
         query = query.filter_by(type=item_type)
 
-    paginated, page, total_pages, total_items, page_numbers = _paginate(
+    paginated, page, total_items, total_pages, page_numbers = _paginate(
         query.order_by(Item.created_at.desc()), page
     )
     return jsonify({

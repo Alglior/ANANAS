@@ -19,7 +19,7 @@ def list_contact_messages():
     elif status_filter == "read":
         query = query.filter_by(is_read=True)
 
-    paginated, page, total_pages, total_items, page_numbers = _paginate(
+    paginated, page, total_items, total_pages, page_numbers = _paginate(
         query.order_by(ContactMessage.created_at.desc()), page
     )
     return jsonify({

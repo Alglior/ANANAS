@@ -1,15 +1,24 @@
 import datetime
+import io
+import logging
 import os
-import threading
+import secrets
+from base64 import b64encode
+from concurrent.futures import ThreadPoolExecutor
 
-from flask import Blueprint, request, render_template, redirect, url_for, session, flash, jsonify, current_app
+from flask import Blueprint, request, render_template, session, jsonify, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from sqlalchemy import func
 from app import db, limiter
-from src.shared import login_required, get_current_user, user_owns_item_or_admin, ITEMS_PER_PAGE, validate_password_strength, _paginate, ALLOWED_ITEM_TYPES, ITEM_TYPE_LABELS
+from src.shared import login_required, get_current_user, user_owns_item_or_admin, ITEMS_PER_PAGE, validate_password_strength, _paginate, ALLOWED_ITEM_TYPES, ITEM_TYPE_LABELS, user_belongs_to_org, ITEM_STATUS_DRAFT, ITEM_STATUS_PUBLISHED, ITEM_STATUS_TRASHED
 from src.admin import is_catalogue_enabled
-from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, OrganizationMember, ItemGallery, ItemTag, PredefinedTagCategory, PredefinedTag
-from utils.security import sanitize_html, validate_magnet_link
+from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, ItemGallery, ItemTag, PredefinedTagCategory
+from utils.security import sanitize_html, validate_magnet_link, validate_external_url
+
+logger = logging.getLogger(__name__)
+
+_image_processing_executor = ThreadPoolExecutor(max_workers=8)
 
 bp = Blueprint("users", __name__)
 
@@ -18,7 +27,7 @@ bp = Blueprint("users", __name__)
 def public_profile(user_id):
     user = User.query.get_or_404(user_id)
     comment_count = db.session.query(func.count(Comment.id)).filter(Comment.user_id == user_id).scalar()
-    publication_count = Item.query.filter_by(owner_user_id=user_id, status="published").count()
+    publication_count = Item.query.filter_by(owner_user_id=user_id, status=ITEM_STATUS_PUBLISHED).count()
     return render_template(
         "users/public_profile.html",
         title=f"A.N.A.N.A.S | {user.prenom} {user.nom}",
@@ -63,7 +72,7 @@ def change_password():
     if not valid:
         return jsonify({"error": "Mot de passe invalide", "details": errors}), 400
 
-    current_user.password_hash = generate_password_hash(new_password)
+    current_user.password_hash = generate_password_hash(new_password, method="scrypt")
     current_user.session_version += 1
     db.session.commit()
     session.clear()
@@ -74,7 +83,6 @@ def change_password():
 @login_required
 @limiter.limit("30 per hour")
 def generate_recovery_codes():
-    import secrets
     current_user = get_current_user()
 
     codes = []
@@ -83,7 +91,7 @@ def generate_recovery_codes():
         code = "-".join([code[i:i+4] for i in range(0, len(code), 4)])
         codes.append(code)
 
-    hashed_codes = [generate_password_hash(c) for c in codes]
+    hashed_codes = [generate_password_hash(c, method="scrypt") for c in codes]
     current_user.recovery_codes_hash = hashed_codes
     db.session.commit()
 
@@ -93,10 +101,8 @@ def generate_recovery_codes():
 @bp.route("/api/users/2fa/setup", methods=["POST"])
 @login_required
 def setup_2fa():
-    import io
     import pyotp
     import qrcode
-    from base64 import b64encode
 
     current_user = get_current_user()
 
@@ -181,7 +187,6 @@ def upload_avatar():
     if not file.filename:
         return jsonify({"error": "Fichier invalide"}), 400
 
-    import secrets
     ext = os.path.splitext(file.filename)[1].lower()
     if ext not in (".png", ".jpg", ".jpeg", ".webp"):
         return jsonify({"error": "Format d'image non supporté (png, jpg, webp)"}), 400
@@ -224,7 +229,7 @@ def compte_page():
 
     rating_count = db.session.query(func.count(Rating.id)).filter(Rating.user_id == current_user.id).scalar()
     comment_count = db.session.query(func.count(Comment.id)).filter(Comment.user_id == current_user.id).scalar()
-    publication_count = Item.query.filter_by(owner_user_id=current_user.id, status="published").count()
+    publication_count = Item.query.filter_by(owner_user_id=current_user.id, status=ITEM_STATUS_PUBLISHED).count()
     org_memberships = [m for m in current_user.organizations if m.is_active]
     org_count = len(org_memberships)
 
@@ -240,7 +245,7 @@ def compte_page():
     comments_query = db.session.query(Comment, Item.title.label("item_title"), Item.type.label("item_type")).join(Item, Comment.item_id == Item.id).filter(Comment.user_id == current_user.id).order_by(Comment.created_at.desc())
     comments, comments_page, total_comments, comments_max_page, comments_page_numbers = _paginate(comments_query, page, per_page)
 
-    publications_query = Item.query.filter(Item.owner_user_id == current_user.id, Item.status == "published").order_by(Item.created_at.desc())
+    publications_query = Item.query.filter(Item.owner_user_id == current_user.id, Item.status == ITEM_STATUS_PUBLISHED).order_by(Item.created_at.desc())
     publications, publications_page, total_publications, publications_max_page, publications_page_numbers = _paginate(publications_query, page, per_page)
 
     data_chunks = db.session.query(DataChunk, Item.title.label("parent_title"), Item.type.label("parent_type")).outerjoin(Item, DataChunk.parent_item_id == Item.id).filter(DataChunk.owner_user_id == current_user.id).order_by(DataChunk.created_at.desc()).limit(10).all()
@@ -280,18 +285,18 @@ def upload_page():
     publications_page = request.args.get("publications_page", 1, type=int)
 
     drafts_query = Item.query.filter_by(
-        owner_user_id=current_user.id, status="draft",
+        owner_user_id=current_user.id, status=ITEM_STATUS_DRAFT,
     ).order_by(Item.created_at.desc())
 
     trashed_query = Item.query.filter_by(
-        owner_user_id=current_user.id, status="trashed",
+        owner_user_id=current_user.id, status=ITEM_STATUS_TRASHED,
     ).order_by(Item.deleted_at.desc())
 
     drafts, draft_page, total_drafts, max_draft_page, draft_page_numbers = _paginate(drafts_query, draft_page, ITEMS_PER_PAGE)
     trashed, trash_page, total_trash, max_trash_page, trash_page_numbers = _paginate(trashed_query, trash_page, ITEMS_PER_PAGE)
 
     publications_query = Item.query.filter_by(
-        owner_user_id=current_user.id, status="published",
+        owner_user_id=current_user.id, status=ITEM_STATUS_PUBLISHED,
     ).order_by(Item.created_at.desc())
 
     publications, publications_page, total_publications, max_publications_page, publications_page_numbers = _paginate(publications_query, publications_page, ITEMS_PER_PAGE)
@@ -301,7 +306,7 @@ def upload_page():
     if edit_id and edit_id.isdigit():
         draft = Item.query.filter_by(
             id=int(edit_id), owner_user_id=current_user.id,
-        ).filter(Item.status.in_(["draft", "published"])).first()
+        ).filter(Item.status.in_([ITEM_STATUS_DRAFT, ITEM_STATUS_PUBLISHED])).first()
         if draft:
             edit_data = draft.to_dict()
 
@@ -352,9 +357,9 @@ def _parse_item_data(data):
     elif license_type == "other":
         license_type = None
     pdf_magnet_link = data.get("pdf_magnet_link", "").strip() or None
-    status = data.get("status", "published").strip()
-    if status not in ("published", "draft"):
-        status = "published"
+    status = data.get("status", ITEM_STATUS_PUBLISHED).strip()
+    if status not in (ITEM_STATUS_PUBLISHED, ITEM_STATUS_DRAFT):
+        status = ITEM_STATUS_PUBLISHED
     return title, item_type, format_type, description, data_format_level, organization_id, license_type, pdf_magnet_link, status
 
 
@@ -375,12 +380,8 @@ def _process_tags(item, tags):
 
 def _check_org_membership(current_user, organization_id):
     org_id = int(organization_id) if organization_id and str(organization_id).isdigit() else None
-    if org_id:
-        membership = OrganizationMember.query.filter_by(
-            user_id=current_user.id, organization_id=org_id, is_active=True,
-        ).first()
-        if not membership:
-            return None, jsonify({"error": "Organisation non autorisée"}), 403
+    if org_id and not user_belongs_to_org(current_user.id, org_id):
+        return None, jsonify({"error": "Organisation non autorisée"}), 403
     return org_id, None, None
 
 
@@ -403,7 +404,6 @@ def _create_viz_link(data, item_id):
     viz_link_name = data.get("viz_link_name", "").strip()
     viz_link_url = data.get("viz_link_url", "").strip()
     if viz_link_name and viz_link_url:
-        from app import validate_external_url
         if not validate_external_url(viz_link_url):
             return jsonify({"error": "URL invalide ou non sécurisée"}), 400
         db.session.add(VisualizationLink(
@@ -455,13 +455,9 @@ def _process_image_magnets_async(item_id, image_magnets):
                 from src.image_cache import process_image_magnets
                 process_image_magnets(_item_id, _image_magnets)
         except Exception:
-            import logging
-            logging.getLogger(__name__).exception(
-                "Image processing failed for item %s", _item_id
-            )
+            logger.exception("Image processing failed for item %s", _item_id)
 
-    thread = threading.Thread(target=_process_images, daemon=True)
-    thread.start()
+    _image_processing_executor.submit(_process_images)
 
 
 @bp.route("/api/items/<int:item_id>/viz-links", methods=["POST"])
@@ -480,8 +476,6 @@ def add_viz_link(item_id):
 
     if not name or not url:
         return jsonify({"error": "Nom et URL requis"}), 400
-
-    from app import validate_external_url
 
     if link_type not in ("external", "internal", "embed", "widget"):
         return jsonify({"error": "Type de lien invalide"}), 400
@@ -521,14 +515,8 @@ def upload_file():
         return jsonify({"error": "Type de contenu invalide"}), 400
 
     org_id = int(organization_id) if organization_id and organization_id.isdigit() else None
-    if org_id:
-        membership = OrganizationMember.query.filter_by(
-            user_id=current_user.id,
-            organization_id=org_id,
-            is_active=True,
-        ).first()
-        if not membership:
-            return jsonify({"error": "Organisation non autorisée"}), 403
+    if org_id and not user_belongs_to_org(current_user.id, org_id):
+        return jsonify({"error": "Organisation non autorisée"}), 403
 
     lines = [line.strip() for line in data_text.splitlines() if line.strip()]
     preview_lines = lines[:50]
@@ -624,7 +612,7 @@ def _apply_item_payload(current_user, item, data, is_new=False):
             ItemGallery.query.filter_by(item_id=item.id, media_type="image").delete()
             item.image_magnets_pending = True
             item.image_magnets_total = len(image_magnets)
-        elif status != "draft":
+        elif status != ITEM_STATUS_DRAFT:
             item.image_magnets_pending = True
             item.image_magnets_total = len(image_magnets)
     elif not is_new:
@@ -685,7 +673,7 @@ def brouillons_page():
     current_user = get_current_user()
     drafts = Item.query.filter_by(
         owner_user_id=current_user.id,
-        status="draft",
+        status=ITEM_STATUS_DRAFT,
     ).order_by(Item.created_at.desc()).all()
     return render_template(
         "users/brouillons.html",
@@ -704,10 +692,10 @@ def delete_draft_item(item_id):
     if not user_owns_item_or_admin(current_user, item):
         return jsonify({"error": "Non autorisé"}), 403
 
-    if item.status not in ("draft", "published"):
+    if item.status not in (ITEM_STATUS_DRAFT, ITEM_STATUS_PUBLISHED):
         return jsonify({"error": "Seuls les brouillons et publications peuvent être supprimés"}), 400
 
-    item.status = "trashed"
+    item.status = ITEM_STATUS_TRASHED
     item.deleted_at = datetime.datetime.now()
     db.session.commit()
     return jsonify({"status": "trashed"})
@@ -722,10 +710,10 @@ def restore_draft_item(item_id):
     if not user_owns_item_or_admin(current_user, item):
         return jsonify({"error": "Non autorisé"}), 403
 
-    if item.status != "trashed":
+    if item.status != ITEM_STATUS_TRASHED:
         return jsonify({"error": "Seuls les éléments dans la corbeille peuvent être restaurés"}), 400
 
-    item.status = "draft"
+    item.status = ITEM_STATUS_DRAFT
     item.deleted_at = None
     db.session.commit()
     return jsonify({"status": "restored"})
@@ -740,12 +728,10 @@ def purge_draft_item(item_id):
     if not user_owns_item_or_admin(current_user, item):
         return jsonify({"error": "Non autorisé"}), 403
 
-    if item.status != "trashed":
+    if item.status != ITEM_STATUS_TRASHED:
         return jsonify({"error": "Non autorisé"}), 403
 
     try:
-        from models import DataChunk, UserUpload, Report, VisualizationLink, Rating, Comment, ItemTag, ItemGallery
-
         UserUpload.query.filter_by(parent_item_id=item.id).update({"chunk_id": None, "published_item_id": None})
         DataChunk.query.filter_by(parent_item_id=item.id).delete()
         UserUpload.query.filter_by(parent_item_id=item.id).delete()
@@ -773,7 +759,7 @@ def list_drafts():
 
     query = Item.query.filter_by(
         owner_user_id=current_user.id,
-        status="draft",
+        status=ITEM_STATUS_DRAFT,
     ).order_by(Item.created_at.desc())
 
     items, page, total, total_pages, page_numbers = _paginate(query, page, ITEMS_PER_PAGE)
@@ -803,7 +789,7 @@ def list_trash():
 
     query = Item.query.filter_by(
         owner_user_id=current_user.id,
-        status="trashed",
+        status=ITEM_STATUS_TRASHED,
     ).order_by(Item.deleted_at.desc())
 
     items, page, total, total_pages, page_numbers = _paginate(query, page, ITEMS_PER_PAGE)
@@ -833,7 +819,7 @@ def list_publications():
 
     query = Item.query.filter_by(
         owner_user_id=current_user.id,
-        status="published",
+        status=ITEM_STATUS_PUBLISHED,
     ).order_by(Item.created_at.desc())
 
     items, page, total, total_pages, page_numbers = _paginate(query, page, ITEMS_PER_PAGE)

@@ -14,6 +14,10 @@ ITEM_TYPE_MAP = {"donnees": "geodonnee", "cartes": "carte", "applications": "app
 ALLOWED_ITEM_TYPES = set(ITEM_TYPE_MAP.values())
 ITEM_TYPE_LABELS = {"geodonnee": "Géodonnée", "carte": "Carte", "application": "Application"}
 
+ITEM_STATUS_DRAFT = "draft"
+ITEM_STATUS_PUBLISHED = "published"
+ITEM_STATUS_TRASHED = "trashed"
+
 
 def get_items_per_page():
     try:
@@ -106,6 +110,16 @@ def _build_page_numbers(current, total):
         pages.append("...")
         pages.append(total)
     return pages
+
+
+def user_belongs_to_org(user_id, organization_id):
+    """Vérifie qu'un utilisateur est membre actif d'une organisation."""
+    if not user_id or not organization_id:
+        return False
+    from models import OrganizationMember
+    return OrganizationMember.query.filter_by(
+        user_id=user_id, organization_id=organization_id, is_active=True
+    ).first() is not None
 
 
 def user_owns_item_or_admin(current_user, item):
