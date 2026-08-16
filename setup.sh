@@ -76,15 +76,23 @@ printf "ADMIN_PSEUDO        : %s\n" "${admin_pseudo}"
         echo "=============================================="
 
         # Write PBKDF2 hash to qBittorrent config
-        if [ -f "conf/qbittorrent/qBittorrent.conf" ]; then
-            if grep -q 'Password_PBKDF2' "conf/qbittorrent/qBittorrent.conf"; then
-                sed -i "s|WebUI\\\\Password_PBKDF2=.*|WebUI\\\\Password_PBKDF2=\"${qb_hash}\"|" "conf/qbittorrent/qBittorrent.conf"
+        QB_CONF="conf/qbittorrent/qBittorrent.conf"
+        QB_CONF_EXAMPLE="conf/qbittorrent/qBittorrent.conf.example"
+        if [ -f "$QB_CONF_EXAMPLE" ]; then
+            # Create the per-installation config from the template on first run
+            if [ ! -f "$QB_CONF" ]; then
+                cp "$QB_CONF_EXAMPLE" "$QB_CONF"
+                echo "[OK] qBittorrent config created from template."
+            fi
+            # Inject the freshly generated password hash (keeps other settings intact)
+            if grep -q 'Password_PBKDF2' "$QB_CONF"; then
+                sed -i "s|WebUI\\\\Password_PBKDF2=.*|WebUI\\\\Password_PBKDF2=\"${qb_hash}\"|" "$QB_CONF"
             else
-                sed -i "/^WebUI\\\\ServerDomains=/a WebUI\\\\Password_PBKDF2=\"${qb_hash}\"" "conf/qbittorrent/qBittorrent.conf"
+                sed -i "/^WebUI\\\\ServerDomains=/a WebUI\\\\Password_PBKDF2=\"${qb_hash}\"" "$QB_CONF"
             fi
             echo "[OK] qBittorrent config updated with generated password."
         else
-            echo "[WARN] qBittorrent config not found, skipping password setup."
+            echo "[WARN] qBittorrent template not found (conf/qbittorrent/qBittorrent.conf.example), skipping password setup."
         fi
     else
         echo "[SKIP] .env already exists."

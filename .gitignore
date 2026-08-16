@@ -13,6 +13,10 @@
 *.jwk
 secrets.json
 
+# Per-installation qBittorrent config (contains generated password hash)
+# The .example template IS tracked; the real file is not.
+conf/qbittorrent/qBittorrent.conf
+
 # ────────────────────────────────────────────
 #  Virtual environments & build artifacts
 # ────────────────────────────────────────────

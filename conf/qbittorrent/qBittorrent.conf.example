@@ -26,4 +26,4 @@ Downloads\TempPath=/downloads/incomplete/
 WebUI\Address=*
 WebUI\Port=8081
 WebUI\ServerDomains=*
-WebUI\Password_PBKDF2="@ByteArray(YpP6j9rPe4FifrjM+v6sKw==:B4M3eQJSjp9tVKw7frcflAi8tnqwf1wCRKkF7N0baIimp3K/60Se/VGZeWtxTeEhXbYP7sbdkXnCIzy3eEAbyg==)"
+WebUI\Password_PBKDF2="__QBITTORRENT_PASSWORD_HASH__"
