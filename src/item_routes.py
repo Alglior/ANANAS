@@ -98,6 +98,32 @@ def _paginate_comments(item_id, page=1):
     }
 
 
+def _get_comment_page():
+    try:
+        return int(request.args.get("page", 1))
+    except (TypeError, ValueError):
+        return 1
+
+
+def _prepare_item_page(item, comment_page=1):
+    """Charge les données communes à toutes les vues de la fiche d'un item."""
+    comments, pag_info = _paginate_comments(item.id, comment_page)
+    item_dict = item.to_dict()
+    item_dict["comment_count"] = Comment.query.filter_by(item_id=item.id).count()
+    viz_links = [vl.to_dict() for vl in VisualizationLink.query.filter_by(parent_item_id=item.id).all()]
+    data_chunks = [c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=item.id).all()]
+    return {
+        "item": item_dict,
+        "comment_count": item_dict["comment_count"],
+        "comments": comments,
+        "comment_page": pag_info["page"],
+        "comment_total_pages": pag_info["total_pages"],
+        "comment_page_numbers": pag_info["page_numbers"],
+        "viz_links": viz_links,
+        "data_chunks": data_chunks,
+    }
+
+
 @bp.route("/favicon.ico")
 def favicon_route():
     return Response("", 204)
@@ -169,22 +195,8 @@ def item_detail_view(item_id):
         Item.status != "draft",
     ).limit(3).all()
 
-    img_gallery = get_image_gallery(item)
-
-
-
-
-    comment_page = 1
-    try:
-        comment_page = int(request.args.get("page", 1))
-    except (TypeError, ValueError):
-        comment_page = 1
-
-    comments, pag_info = _paginate_comments(item_id, comment_page)
-    item_dict = item.to_dict()
-    item_dict["comment_count"] = Comment.query.filter_by(item_id=item_id).count()
-    viz_links = [vl.to_dict() for vl in VisualizationLink.query.filter_by(parent_item_id=item_id).all()]
-    data_chunks = [c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=item_id).all()]
+    ctx = _prepare_item_page(item, _get_comment_page())
+    item_dict = ctx["item"]
 
     if item_dict.get("magnet_links"):
         item_dict["magnet_links"].sort(key=lambda ml: ZOOM_ORDER.get(ml.get("zoom_level", ""), 99))
@@ -201,19 +213,12 @@ def item_detail_view(item_id):
         "item_detail.html",
         title=f"A.N.A.N.A.S | {item.title}",
         meta_description=item.description[:160],
-        item=item_dict,
-        comments=comments,
-        comment_count=item_dict["comment_count"],
-        comment_page=pag_info["page"],
-        comment_total_pages=pag_info["total_pages"],
-        comment_page_numbers=pag_info["page_numbers"],
-        related_items=[ri.to_dict() for ri in related_items],
-        image_gallery=img_gallery,
         current_user=current_user,
+        related_items=[ri.to_dict() for ri in related_items],
+        image_gallery=get_image_gallery(item),
         show_data_visualization_tabs=item.type == "geodonnee",
-        viz_links=viz_links,
-        data_chunks=data_chunks,
         imod_config=load_imod_config(),
+        **ctx,
     )
 
 
@@ -260,43 +265,24 @@ def download_item_magnets(item_id):
 def item_data_view(item_id):
 
     item = Item.query.get_or_404(item_id)
-    current_user = get_current_user()
-
-
-    comment_page = 1
-    try:
-        comment_page = int(request.args.get("page", 1))
-    except (TypeError, ValueError):
-        comment_page = 1
-
-    comments, pag_info = _paginate_comments(item_id, comment_page)
-    item_dict = item.to_dict()
-    item_dict["comment_count"] = Comment.query.filter_by(item_id=item_id).count()
-    viz_links = [vl.to_dict() for vl in VisualizationLink.query.filter_by(parent_item_id=item_id).all()]
-    all_chunks = [c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=item_id).all()]
-
     if item.type != "geodonnee":
         return abort(404)
+
+    current_user = get_current_user()
+    ctx = _prepare_item_page(item, _get_comment_page())
 
     return render_template(
         "item_detail.html",
         title=f"A.N.A.N.A.S | Données — {item.title}",
         meta_description=item.description[:160],
-        item=item_dict,
-        comments=comments,
-        comment_count=item_dict["comment_count"],
-        comment_page=pag_info["page"],
-        comment_total_pages=pag_info["total_pages"],
-        comment_page_numbers=pag_info["page_numbers"],
+        current_user=current_user,
         related_items=[ri.to_dict() for ri in Item.query.filter(
             Item.format_type == item.format_type, Item.id != item_id
         ).limit(3).all()],
         image_gallery=get_image_gallery(item),
-        current_user=current_user,
         show_data_visualization_tabs=item.type == "geodonnee",
         active_data_tab=True,
-        viz_links=viz_links,
-        data_chunks=all_chunks,
+        **ctx,
     )
 
 
@@ -308,26 +294,18 @@ def item_gallery_view(item_id):
         return abort(404)
 
     current_user = get_current_user()
-    comments, _ = _paginate_comments(item_id, 1)
-    item_dict = item.to_dict()
-    item_dict["comment_count"] = Comment.query.filter_by(item_id=item_id).count()
-    viz_links = [vl.to_dict() for vl in VisualizationLink.query.filter_by(parent_item_id=item_id).all()]
-    related_items = [ri.to_dict() for ri in Item.query.filter(
-        Item.format_type == item.format_type, Item.id != item_id
-    ).limit(3).all()]
+    ctx = _prepare_item_page(item, 1)
 
     return render_template(
         "item_detail.html",
         title=f"A.N.A.N.A.S | Réutilisation — {item.title}",
         meta_description=item.description[:160],
-        item=item_dict,
-        comments=comments,
-        comment_count=item_dict["comment_count"],
-        related_items=related_items,
-        image_gallery=get_image_gallery(item),
         current_user=current_user,
+        related_items=[ri.to_dict() for ri in Item.query.filter(
+            Item.format_type == item.format_type, Item.id != item_id
+        ).limit(3).all()],
+        image_gallery=get_image_gallery(item),
         show_data_visualization_tabs=True,
         active_reuse_tab=True,
-        viz_links=viz_links,
-        data_chunks=[c.to_dict() for c in DataChunk.query.filter_by(parent_item_id=item_id).all()],
+        **ctx,
     )
