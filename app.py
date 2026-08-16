@@ -168,7 +168,9 @@ def create_app(app_name="ANANAS"):
         file_path = cache_dir / name
         if file_path.exists():
             from flask import send_file
-            return send_file(str(file_path))
+            ext = Path(filename).suffix.lower()
+            mimetypes = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp"}
+            return send_file(str(file_path), mimetype=mimetypes.get(ext, "application/octet-stream"))
         return ("", 404)
 
     # ────────────────────────────────────────────

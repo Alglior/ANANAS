@@ -34,10 +34,12 @@ docker_setup() {
 
         # Generate PBKDF2 hash for qBittorrent config
         local qb_hash=$(python3 -c "
-import hashlib, base64, os
-salt = os.urandom(16)
+import hashlib, base64, secrets
+salt = secrets.token_bytes(16)
 dk = hashlib.pbkdf2_hmac('sha512', '${qb_pass}'.encode(), salt, 100000, dklen=64)
-print('@ByteArray(' + base64.b64encode(salt).decode() + ':' + base64.b64encode(dk).decode() + ')')
+b64_salt = base64.b64encode(salt).decode()
+b64_hash = base64.b64encode(dk).decode()
+print('@ByteArray(' + b64_salt + ':' + b64_hash + ')')
 ")
 
         cat > "$ENV_FILE" <<EOF
@@ -79,6 +81,10 @@ printf "ADMIN_PSEUDO        : %s\n" "${admin_pseudo}"
         QB_CONF="conf/qbittorrent/qBittorrent.conf"
         QB_CONF_EXAMPLE="conf/qbittorrent/qBittorrent.conf.example"
         if [ -f "$QB_CONF_EXAMPLE" ]; then
+            # Remove directory if it exists (can happen if Docker created it as an empty dir)
+            if [ -d "$QB_CONF" ]; then
+                rm -rf "$QB_CONF"
+            fi
             # Create the per-installation config from the template on first run
             if [ ! -f "$QB_CONF" ]; then
                 cp "$QB_CONF_EXAMPLE" "$QB_CONF"
@@ -96,6 +102,31 @@ printf "ADMIN_PSEUDO        : %s\n" "${admin_pseudo}"
         fi
     else
         echo "[SKIP] .env already exists."
+
+        # Even if .env exists, ensure qBittorrent config is valid (fix directory bug)
+        QB_CONF="conf/qbittorrent/qBittorrent.conf"
+        QB_CONF_EXAMPLE="conf/qbittorrent/qBittorrent.conf.example"
+        if [ -f "$QB_CONF_EXAMPLE" ]; then
+            # Remove directory if it exists (can happen from a previous broken run)
+            if [ -d "$QB_CONF" ]; then
+                rm -rf "$QB_CONF"
+                cp "$QB_CONF_EXAMPLE" "$QB_CONF"
+                echo "[FIX] Replaced qBittorrent config directory with file from template."
+
+                # Read current qBittorrent password from .env
+                local qb_pass=$(grep '^QBITTORRENT_PASSWORD=' "$ENV_FILE" | cut -d= -f2)
+                local qb_hash=$(python3 -c "
+import hashlib, base64, secrets
+salt = secrets.token_bytes(16)
+dk = hashlib.pbkdf2_hmac('sha512', '${qb_pass}'.encode(), salt, 100000, dklen=64)
+b64_salt = base64.b64encode(salt).decode()
+b64_hash = base64.b64encode(dk).decode()
+print('@ByteArray(' + b64_salt + ':' + b64_hash + ')')
+")
+                sed -i "s|WebUI\\\\Password_PBKDF2=.*|WebUI\\\\Password_PBKDF2=\"${qb_hash}\"|" "$QB_CONF"
+                echo "[OK] qBittorrent config updated with existing password hash."
+            fi
+        fi
     fi
 
     echo ""
