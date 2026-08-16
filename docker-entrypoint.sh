@@ -118,7 +118,8 @@ qb_user = os.environ.get('QBITTORRENT_USERNAME', 'admin')
 qb_pass_new = '$QB_PASS'
 
 s = requests.Session()
-for attempt in range(30):
+s.headers.update({'Referer': qb_url + '/'})
+for attempt in range(15):
     try:
         r = s.post(f'{qb_url}/api/v2/auth/login', data={'username': qb_user, 'password': qb_pass_new}, timeout=5)
         if r.status_code == 204:
@@ -128,7 +129,7 @@ for attempt in range(30):
         pass
     time.sleep(2)
 else:
-    print('Warning: Could not verify qBittorrent login after 30 attempts')
+    print('Warning: Could not verify qBittorrent login after 15 attempts')
 "
 fi
 

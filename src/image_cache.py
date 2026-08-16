@@ -45,6 +45,7 @@ def cache_image(magnet_link, data, ext=".png"):
 
 def _qb_login():
     session = requests.Session()
+    session.headers.update({"Referer": QBITTORRENT_URL + "/"})
     resp = session.post(
         f"{QBITTORRENT_URL}/api/v2/auth/login",
         data={"username": QBITTORRENT_USERNAME, "password": QBITTORRENT_PASSWORD},

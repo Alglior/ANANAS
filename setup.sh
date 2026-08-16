@@ -36,7 +36,7 @@ docker_setup() {
         local qb_hash=$(python3 -c "
 import hashlib, base64, os
 salt = os.urandom(16)
-dk = hashlib.pbkdf2_hmac('sha1', '${qb_pass}'.encode(), salt, 600000)
+dk = hashlib.pbkdf2_hmac('sha512', '${qb_pass}'.encode(), salt, 100000, dklen=64)
 print('@ByteArray(' + base64.b64encode(salt).decode() + ':' + base64.b64encode(dk).decode() + ')')
 ")
 
@@ -77,7 +77,11 @@ printf "ADMIN_PSEUDO        : %s\n" "${admin_pseudo}"
 
         # Write PBKDF2 hash to qBittorrent config
         if [ -f "conf/qbittorrent/qBittorrent.conf" ]; then
-            sed -i "s|WebUI\\\\Password_PBKDF2=.*|WebUI\\\\Password_PBKDF2=\"${qb_hash}\"|" "conf/qbittorrent/qBittorrent.conf"
+            if grep -q 'Password_PBKDF2' "conf/qbittorrent/qBittorrent.conf"; then
+                sed -i "s|WebUI\\\\Password_PBKDF2=.*|WebUI\\\\Password_PBKDF2=\"${qb_hash}\"|" "conf/qbittorrent/qBittorrent.conf"
+            else
+                sed -i "/^WebUI\\\\ServerDomains=/a WebUI\\\\Password_PBKDF2=\"${qb_hash}\"" "conf/qbittorrent/qBittorrent.conf"
+            fi
             echo "[OK] qBittorrent config updated with generated password."
         else
             echo "[WARN] qBittorrent config not found, skipping password setup."
