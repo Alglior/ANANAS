@@ -1,0 +1,98 @@
+/* ── Video tutorial modal ── */
+.video-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--shadow-black-50);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.video-modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.video-modal-box {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px var(--shadow-black-50);
+  width: 90%;
+  max-width: 720px;
+  overflow: hidden;
+  transform: translateY(20px);
+  transition: transform 0.2s;
+}
+
+.video-modal-overlay.open .video-modal-box {
+  transform: translateY(0);
+}
+
+.video-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.video-modal-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--charcoal);
+}
+
+.video-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0.25rem;
+}
+
+.video-modal-close:hover {
+  color: var(--charcoal);
+}
+
+.video-modal-body {
+  padding: 0;
+}
+
+.video-modal-body video {
+  display: block;
+  width: 100%;
+  max-height: 60vh;
+  background: #000;
+}
+
+/* ── Tutorial trigger in publications tab ── */
+.publications-tuto-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: var(--blue-alpha-15);
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+}
+
+.publications-tuto-section p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--charcoal);
+  flex: 1;
+}
+
+.publications-tuto-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}

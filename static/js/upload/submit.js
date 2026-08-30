@@ -575,6 +575,7 @@ UploadModule.submit = (function () {
     UploadModule.history.init();
     if (UploadModule.tagSelector) UploadModule.tagSelector.init();
     if (UploadModule.copyScript) UploadModule.copyScript.init();
+    if (UploadModule.videoModal) UploadModule.videoModal.init();
     initFormSubmission();
     initDraftBtn();
     initDownloadJson();

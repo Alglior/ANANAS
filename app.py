@@ -173,6 +173,15 @@ def create_app(app_name="ANANAS"):
             return send_file(str(file_path), mimetype=mimetypes.get(ext, "application/octet-stream"))
         return ("", 404)
 
+    @app.route("/videos/<filename>")
+    def serve_video(filename):
+        videos_dir = Path(os.path.dirname(__file__)) / "videos"
+        file_path = videos_dir / filename
+        if file_path.exists() and file_path.is_file():
+            from flask import send_file
+            return send_file(str(file_path), mimetype="video/mp4")
+        return ("", 404)
+
     # ────────────────────────────────────────────
     #  Security Headers & Cookie Settings
     # ────────────────────────────────────────────

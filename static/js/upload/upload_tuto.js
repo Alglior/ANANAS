@@ -22,6 +22,12 @@
   const steps = [
     {
       tab: 'publish',
+      target: '.publications-tuto-section',
+      position: 'bottom',
+      text: '<strong>Tutoriel vidéo</strong> — Besoin d\'aide ? Cliquez sur <strong>▶ Voir le tutoriel</strong> pour apprendre à télécharger ou créer un lien Magnet. Ce bouton est disponible dans chaque onglet.',
+    },
+    {
+      tab: 'publish',
       target: '#jsonDropZone',
       position: 'bottom',
       text: '<strong>Import JSON</strong> — Déposez ici un ou plusieurs fichiers JSON pour pré-remplir automatiquement les métadonnées de la fiche (utile pour réimporter une fiche existante).',

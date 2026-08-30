@@ -27,6 +27,13 @@
 
       <div class="upload-tab-content active" id="tab-publish">
 
+      <div class="publications-tuto-section">
+        <p><strong>Besoin d'aide ?</strong> Regardez le tutoriel pour apprendre à télécharger ou créer un lien Magnet.</p>
+        <button type="button" class="btn btn-primary btn-sm publications-tuto-btn" id="openTutoVideoBtn">
+          ▶ Voir le tutoriel
+        </button>
+      </div>
+
       <div class="json-drop-zone" id="jsonDropZone">
         <div class="json-drop-content">
           <p class="json-drop-text">Déposez vos fichiers JSON ici</p>
@@ -386,6 +393,12 @@ print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
       </div>
 
       <div class="upload-tab-content" id="tab-drafts">
+        <div class="publications-tuto-section">
+          <p><strong>Besoin d'aide ?</strong> Regardez le tutoriel pour apprendre à télécharger ou créer un lien Magnet.</p>
+          <button type="button" class="btn btn-primary btn-sm publications-tuto-btn" id="openTutoVideoBtnDrafts">
+            ▶ Voir le tutoriel
+          </button>
+        </div>
         {% if drafts %}
         <ul class="upload-history-list" id="drafts-list">
           {% for draft in drafts %}
@@ -434,6 +447,12 @@ print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
       </div>
 
       <div class="upload-tab-content" id="tab-publications">
+        <div class="publications-tuto-section">
+          <p><strong>Besoin d'aide ?</strong> Regardez le tutoriel pour apprendre à télécharger ou créer un lien Magnet.</p>
+          <button type="button" class="btn btn-primary btn-sm publications-tuto-btn" id="openTutoVideoBtnPubs">
+            ▶ Voir le tutoriel
+          </button>
+        </div>
         {% if publications %}
         <ul class="upload-history-list" id="publications-list">
           {% for item in publications %}
@@ -482,6 +501,12 @@ print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
       </div>
 
       <div class="upload-tab-content" id="tab-trash">
+        <div class="publications-tuto-section">
+          <p><strong>Besoin d'aide ?</strong> Regardez le tutoriel pour apprendre à télécharger ou créer un lien Magnet.</p>
+          <button type="button" class="btn btn-primary btn-sm publications-tuto-btn" id="openTutoVideoBtnTrash">
+            ▶ Voir le tutoriel
+          </button>
+        </div>
         {% if trashed %}
         <p class="trash-hint">Les éléments supprimés restent ici 7 jours avant suppression définitive.</p>
         <ul class="upload-history-list" id="trash-list">
@@ -557,6 +582,22 @@ print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
 <!-- Tutorial overlay -->
 <div id="tutoOverlay" class="tuto-overlay hidden-section"></div>
 
+<!-- Video tutorial modal -->
+<div id="videoModalOverlay" class="video-modal-overlay">
+  <div class="video-modal-box">
+    <div class="video-modal-header">
+      <h3>Tutoriel — Lien Magnet</h3>
+      <button type="button" class="video-modal-close" id="videoModalClose">&times;</button>
+    </div>
+    <div class="video-modal-body">
+      <video id="tutoVideo" controls preload="metadata">
+        <source src="{{ url_for('serve_video', filename='tuto_torrent.mp4') }}" type="video/mp4">
+        Votre navigateur ne supporte pas la lecture vidéo.
+      </video>
+    </div>
+  </div>
+</div>
+
 <div id="tutoTooltip" class="tuto-tooltip hidden-section">
   <div class="tuto-step-indicator">
     <span id="tutoStepCurrent">1</span>/<span id="tutoStepTotal">8</span>
@@ -592,6 +633,7 @@ print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/history.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/tag-selector.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/copy-script.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/video-modal.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/submit.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/imod-preview.js') }}"></script>
 {% endblock %}
