@@ -98,6 +98,18 @@
   cursor: pointer;
 }
 
+.checkbox-label a {
+  color: var(--forest);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+}
+
+.checkbox-label a:hover {
+  color: var(--hover-forest-dark);
+}
+
 .btn-block {
   display: block;
   width: 100%;

@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
   MainModule.validatePasswordMatch();
   MainModule.initDropdown();
   MainModule.initUserDropdown();
+  MainModule.initNavToggle();
   if (typeof CatalogueModule !== "undefined") CatalogueModule.init();
   if (typeof InlineGalleryModule !== "undefined") InlineGalleryModule.init();
   if (typeof ImageModalModule !== "undefined") ImageModalModule.init();

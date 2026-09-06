@@ -166,6 +166,49 @@ var MainModule = (function () {
   }
 
   /* -------------------------------------------------------------------------- */
+  /* Mobile nav toggle (hamburger)                                             */
+  /* -------------------------------------------------------------------------- */
+
+  function initNavToggle() {
+    const toggle = document.querySelector(".nav-toggle");
+    const nav = document.querySelector(".nav");
+    const inner = document.querySelector(".topbar-inner");
+
+    if (!toggle || !nav || !inner) return;
+
+    function close() {
+      nav.classList.remove("nav-open");
+      toggle.setAttribute("aria-expanded", "false");
+    }
+
+    function open() {
+      nav.classList.add("nav-open");
+      toggle.setAttribute("aria-expanded", "true");
+    }
+
+    toggle.addEventListener("click", () => {
+      nav.classList.contains("nav-open") ? close() : open();
+    });
+
+    nav.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", close);
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!inner.contains(e.target)) close();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && nav.classList.contains("nav-open")) close();
+    });
+
+    const mql = window.matchMedia("(min-width: 769px)");
+    mql.addEventListener("change", (e) => {
+      if (e.matches) close();
+    });
+  }
+
+  /* -------------------------------------------------------------------------- */
   /* Public API                                                               */
   /* -------------------------------------------------------------------------- */
 
@@ -174,6 +217,7 @@ var MainModule = (function () {
     initCopyBtn: initCopyBtn,
     validatePasswordMatch: validatePasswordMatch,
     initDropdown: initDropdown,
-    initUserDropdown: initUserDropdown
+    initUserDropdown: initUserDropdown,
+    initNavToggle: initNavToggle
   };
 })();
