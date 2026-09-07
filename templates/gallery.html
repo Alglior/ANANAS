@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ item.title|e }} — Galerie{% endblock %}
+{% block meta_description %}Galerie {{ item.title|e }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />
+{% endblock %}
+
+{% block content %}
+<main class="detail-page">
+  <div class="container">
+    <section class="gallery-backbar">
+      <a href="/catalogue/item/{{ item.id }}" class="gallery-back-link">
+        &larr; Retour à la fiche
+      </a>
+    </section>
+
+    {% if item.gallery and item.gallery|length > 0 %}
+    <div class="gallery-full-page" id="galleryOverlay">
+      <div class="gallery-modal">
+        <div class="gallery-toolbar">
+          <button class="gallery-close-btn" type="button" aria-label="Fermer">&times;</button>
+          <span class="gallery-counter" id="galleryCounter"></span>
+          <button class="gallery-type-badge" id="galleryTypeBadge"></button>
+        </div>
+        <div class="gallery-main-area">
+          <button class="gallery-nav-btn gallery-prev" type="button">&#8249;</button>
+          <div class="gallery-content" id="galleryContent"></div>
+          <button class="gallery-nav-btn gallery-next" type="button">&#8250;</button>
+        </div>
+        <div class="gallery-thumbnails" id="galleryThumbnails"></div>
+      </div>
+    </div>
+    {% else %}
+    <p class="gallery-empty">Aucune image dans la galerie.</p>
+    {% endif %}
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script nonce="{{ csp_nonce }}" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+<input type="hidden" id="__gallery_items_json" value="{{ item.gallery | default([]) | tojson }}">
+{% endblock %}

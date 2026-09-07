@@ -1,0 +1,139 @@
+.btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: var(--mustard);
+  color: var(--charcoal);
+  box-shadow: var(--shadow-mustard-btn);
+}
+
+.btn-primary:hover {
+  box-shadow: var(--shadow-mustard-btn-hover);
+}
+
+.btn-outline {
+  border-color: var(--forest);
+  color: var(--forest);
+  background: transparent;
+}
+
+.btn-outline:hover {
+  background: var(--forest-alpha-08);
+}
+
+.copy-btn {
+  padding: 0.6rem 1.2rem;
+}
+
+.copy-btn.copied {
+  background: var(--forest);
+  color: var(--white);
+  box-shadow: 0 6px 14px var(--forest-alpha-28);
+}
+
+.copy-btn.error {
+  background: var(--error-red);
+  color: var(--white);
+  box-shadow: 0 6px 14px var(--danger-alpha-25);
+}
+
+.copy-feedback {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  color: var(--forest);
+  font-weight: 600;
+  font-size: 0.95rem;
+  position: absolute;
+  bottom: auto;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: var(--copy-feedback-offset, 0.5rem);
+  background: var(--white);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px var(--shadow-black-10);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.copy-btn .copy-feedback {
+  --copy-feedback-offset: 0.5rem;
+}
+
+.profile-form .copy-feedback {
+  --copy-feedback-offset: -2.5rem;
+}
+
+.copy-feedback-visible {
+  opacity: 1 !important;
+}
+
+/* Small button variant */
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* Danger button variant */
+.btn-danger {
+  background: var(--color-danger);
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btn-danger:hover {
+  opacity: 0.85;
+}
+
+/* Green/forest button variant */
+.btn-green {
+  background: var(--forest);
+  color: var(--white);
+  text-decoration: none;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
+}
+
+.btn-green:hover {
+  opacity: 0.85;
+}
+
+/* Verify / Unverify action buttons */
+.btn-verify {
+  background: var(--color-success);
+  color: var(--white);
+}
+
+.btn-verify:hover {
+  opacity: 0.85;
+}
+
+.btn-unverify {
+  background: var(--color-muted);
+  color: var(--white);
+}
+
+.btn-unverify:hover {
+  opacity: 0.85;
+}

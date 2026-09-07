@@ -1,0 +1,128 @@
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="topbar-toprow">
+      <a class="brand" href="/" aria-label="Accueil {{ get_setting('site_name') }}">
+        <img
+          class="brand-logo"
+          src="{{ get_setting('site_logo') }}"
+          alt="Logo {{ get_setting('site_name') }}"
+        />
+        <span class="brand-label">
+          <span class="brand-text">{{ get_setting('site_name') }}</span>
+          <span class="brand-subtitle">{{ get_setting('site_subtitle') }}</span>
+        </span>
+      </a>
+
+      {% if current_user %}
+      <div class="auth-actions">
+        <a class="btn btn-upload" href="/upload">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          Publier
+        </a>
+        <div class="user-dropdown-wrapper" id="userDropdownWrapper">
+          <button class="user-dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
+            {% if current_user.avatar_path %}
+            <img class="user-avatar-thumb" src="{{ current_user.avatar_path }}" alt="" />
+            {% endif %}
+            {{ current_user.prenom|e }} {{ current_user.nom|e }}
+          </button>
+          <div class="user-dropdown" id="userDropdown">
+            <a href="/compte" class="dropdown-item">Mon compte</a>
+            {% if current_user.is_admin %}
+            <a href="/admin/users" class="dropdown-item">Panneau d'administration</a>
+            {% endif %}
+            <a href="/organizations" class="dropdown-item">Organisations</a>
+            <div class="dropdown-divider"></div>
+            <a href="/logout" class="dropdown-item">Déconnexion</a>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="auth-actions">
+        <a class="btn btn-outline" href="/connexion">Se connecter</a>
+        <a class="btn btn-outline" href="/inscription">S'inscrire</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="topbar-search-row">
+      <div class="search-wrapper search-center">
+        <form class="search-bar" role="search" action="/catalogue/donnees" method="get">
+          <label class="sr-only" for="site-search">Rechercher dans le catalogue</label>
+          <select class="search-catalogue-select" name="catalogue" aria-label="Type de catalogue">
+            {% set search_catalogues = [
+              ('donnees', 'Géodonnées'),
+              ('cartes', 'Cartes'),
+              ('applications', 'Applications')
+            ] %}
+            {% for cat, label in search_catalogues %}
+              {% if is_catalogue_enabled(cat) %}
+            <option value="{{ cat }}">{{ label }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          <input
+            id="site-search"
+            name="q"
+            type="search"
+            placeholder="Rechercher..."
+            autocomplete="off"
+            value="{{ search_query|default('') }}"
+          />
+        </form>
+      </div>
+    </div>
+
+    <button class="nav-toggle" type="button" aria-label="Ouvrir le menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <nav class="nav nav-bottom" aria-label="Navigation principale">
+      <a href="/">Accueil</a>
+
+      <div class="catalogue-dropdown-wrapper">
+        <button class="dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
+          Catalogue &#9662;
+        </button>
+        <div class="catalogue-dropdown" id="catalogueDropdown">
+          {% set header_catalogues = [
+            ('donnees', 'Géodonnées'),
+            ('cartes', 'Cartes'),
+            ('applications', 'Applications')
+          ] %}
+          {% for cat, label in header_catalogues %}
+            {% if is_catalogue_enabled(cat) %}
+          <a href="/catalogue/{{ cat }}" class="dropdown-item">{{ label }}</a>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <a href="/contact">Contact</a>
+
+      <div class="catalogue-dropdown-wrapper">
+        <button class="dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
+          Documentation &#9662;
+        </button>
+        <div class="catalogue-dropdown docs-dropdown" id="docsDropdown">
+          <a href="/docs" class="dropdown-item dropdown-item-bold">Accueil documentation</a>
+          <a href="/api" class="dropdown-item">API REST</a>
+          {% for doc in nav_docs %}
+          <a href="/docs/{{ doc.slug }}" class="dropdown-item">{{ doc.title }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <a href="/organizations">Organisations</a>
+
+      <a href="/apropos">A propos</a>
+
+      <a href="/changelog">Changelog</a>
+
+      {% if current_user %}
+      {% endif %}
+    </nav>
+  </div>
+</header>

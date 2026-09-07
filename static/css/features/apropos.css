@@ -1,0 +1,53 @@
+.apropos-page {
+  padding: 3rem 0;
+}
+
+.apropos-page h1 {
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+  color: var(--text-primary);
+}
+
+.apropos-update {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+.apropos-page section {
+  margin-bottom: 2rem;
+}
+
+.apropos-page section h2 {
+  font-size: 1.3rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 0.4rem;
+}
+
+.apropos-page p {
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.apropos-page ul {
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.apropos-page ul li {
+  line-height: 1.7;
+  margin-bottom: 0.3rem;
+  color: var(--text-secondary);
+}
+
+.apropos-page a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.apropos-page a:hover {
+  color: var(--color-primary-hover);
+}

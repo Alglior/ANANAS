@@ -1,0 +1,316 @@
+/* ────────────────────────────────────────────
+   Admin moderation — tables, cards, badges, actions
+   ──────────────────────────────────────────── */
+
+/* Admin table actions cell */
+.admin-actions-cell {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Small buttons for table actions */
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.btn-danger {
+  background: var(--color-danger);
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btn-danger:hover {
+  opacity: 0.85;
+}
+
+.btn-soft-unban {
+  background: var(--color-info);
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btn-soft-unban:hover {
+  opacity: 0.85;
+}
+
+/* ── Card layout (table → cards) — applies at all sizes ── */
+
+.admin-page .mod-panel h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: var(--forest);
+}
+
+/* Hide header rows in mod panels */
+.admin-page .mod-panel thead,
+.admin-page .moderation-section .mod-panel-comments thead,
+.admin-page .moderation-section .mod-panel-items thead {
+  display: none;
+}
+
+/* Card container block rendering for both comment and item tables */
+.admin-page #comments-table,
+.admin-page #items-table,
+.admin-page .moderation-section .mod-panel-comments table,
+.admin-page .moderation-section .mod-panel-items table {
+  display: block;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.admin-page #comments-tbody,
+.admin-page #items-tbody {
+  display: block;
+}
+
+/* Card rows — comment panel */
+.admin-page .moderation-section .mod-panel-comments tr,
+.admin-page .moderation-section .mod-panel-items tr {
+  display: block;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+}
+
+/* Card cells — comment panel */
+.admin-page .moderation-section .mod-panel-comments td,
+.admin-page .moderation-section .mod-panel-items td {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-light);
+  text-align: right;
+  font-size: 0.925rem;
+  white-space: normal;
+}
+
+/* Card cell labels via data-label */
+.admin-page .moderation-section .mod-panel-comments td::before,
+.admin-page .moderation-section .mod-panel-items td::before {
+  content: attr(data-label);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: left;
+  flex: 0 0 auto;
+  margin-right: 1rem;
+}
+
+/* Card cell last-child (footer with action buttons) */
+.admin-page .moderation-section .mod-panel-comments td:last-child,
+.admin-page .moderation-section .mod-panel-items td:last-child {
+  border-bottom: none;
+  justify-content: flex-end;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Action buttons in card footer */
+.admin-page .admin-actions-cell {
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+/* Card rows — main comment/item tables (same styling as panel cards) */
+.admin-page #comments-table tr,
+.admin-page #items-table tr {
+  display: block;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  box-shadow: 0 1px 3px var(--shadow-black-06);
+}
+
+.admin-page #comments-table tr:last-child,
+.admin-page #items-table tr:last-child {
+  margin-bottom: 0;
+  box-shadow: none;
+}
+
+/* Card cells — main comment/item tables */
+.admin-page #comments-table td,
+.admin-page #items-table td {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-light);
+  text-align: right;
+  font-size: 0.925rem;
+  white-space: normal;
+}
+
+/* Card cell labels via data-label (main tables) */
+.admin-page #comments-table td::before,
+.admin-page #items-table td::before {
+  content: attr(data-label);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: left;
+  flex: 0 0 auto;
+  margin-right: 1rem;
+}
+
+.admin-page #comments-table td:last-child,
+.admin-page #items-table td:last-child {
+  border-bottom: none;
+  justify-content: flex-end;
+}
+
+/* Type badge sizing */
+.type-badge {
+  font-size: 0.78rem;
+  padding: 0.15rem 0.5rem;
+}
+
+/* Badge inside card cells */
+.moderation-section .mod-panel-comments .badge,
+.moderation-section .mod-panel-items .badge {
+  font-size: 0.72rem;
+  padding: 0.15rem 0.4rem;
+}
+
+/* Audit badges — site charte */
+.audit-badge-ban,
+.audit-badge-unban,
+.audit-badge-comment_deleted,
+.audit-badge-item_deleted,
+.audit-badge-item_published,
+.audit-badge-item_unpublished,
+.audit-badge-item_verified,
+.audit-badge-item_unverified,
+.audit-badge-report_resolved,
+.audit-badge-report_dismissed {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.audit-badge-ban,
+.audit-badge-comment_deleted,
+.audit-badge-item_deleted {
+  color: var(--color-danger);
+  background: var(--danger-alpha-11);
+  border: 1px solid var(--danger-alpha-35);
+}
+
+.audit-badge-unban {
+  color: var(--color-blue);
+  background: var(--blue-alpha-11);
+  border: 1px solid var(--blue-alpha-35);
+}
+
+.audit-badge-item_published,
+.audit-badge-item_verified,
+.audit-badge-report_resolved {
+  color: var(--forest);
+  background: var(--forest-alpha-11);
+  border: 1px solid var(--forest-alpha-35);
+}
+
+.audit-badge-item_unpublished,
+.audit-badge-report_dismissed {
+  color: var(--color-muted);
+  background: var(--gray-alpha-11);
+  border: 1px solid var(--gray-alpha-35);
+}
+
+.audit-badge-item_unverified {
+  color: var(--mustard);
+  background: var(--mustard-alpha-11);
+  border: 1px solid var(--mustard-alpha-35);
+}
+
+/* Loading/empty cells */
+.loading-cell,
+.empty-cell {
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+.admin-page .moderation-section .mod-panel-comments td:nth-child(3)::before,
+.admin-page .moderation-section .mod-panel-items td:nth-child(3)::before {
+  min-width: 60px;
+}
+
+.type-geodonnee {
+  background: var(--surface-success-light);
+  color: var(--color-success-dark);
+}
+
+.type-carte {
+  background: var(--surface-info-light);
+  color: var(--color-info-dark);
+}
+
+.type-application {
+  background: var(--surface-warning-light);
+  color: var(--color-warning-dark);
+}
+
+.btn-danger-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Clickable item link in moderation tables */
+.admin-item-link {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.15s ease;
+}
+
+.admin-item-link:hover {
+  color: var(--forest);
+  text-decoration: underline;
+}
+
+/* View button as link in action cell */
+.moderation-section .mod-panel-comments a.btn-green,
+.moderation-section .mod-panel-items a.btn-green,
+.admin-page table a.btn-green {
+  background: var(--forest);
+  color: var(--white);
+  text-decoration: none;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
+}
+
+.btn-green:hover {
+  opacity: 0.85;
+}
+
+/* Verification button */
+.btn-verify {
+  background: var(--color-success);
+  color: var(--white);
+}
+
+.btn-verify:hover {
+  opacity: 0.85;
+}
+
+/* Unverify button */
+.btn-unverify {
+  background: var(--color-muted);
+  color: var(--white);
+}
+
+.btn-unverify:hover {
+  opacity: 0.85;
+}

@@ -1,0 +1,137 @@
+/* ────────────────────────────────────────────
+   Individual Data section
+   ──────────────────────────────────────────── */
+.di-section {
+  padding: var(--section-padding) 0;
+  background: var(--white);
+}
+
+.di-header {
+  text-align: center;
+  margin-bottom: var(--section-gap-header);
+}
+
+.di-header h2 {
+  color: var(--forest);
+  font-size: clamp(1.6rem, 2.8vw, 2.1rem);
+  margin-bottom: 1rem;
+}
+
+.di-lead {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  max-width: var(--lead-max-width);
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* ── Benefits row (centered, flexible count) ── */
+.di-benefits-row {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 4rem;
+  flex-wrap: wrap;
+}
+
+.di-benefit-card {
+  text-align: center;
+  flex: 0 1 300px;
+}
+
+.di-benefit-title {
+  color: var(--charcoal);
+  font-size: 1.2rem;
+  margin: 0 0 1rem;
+}
+
+.di-benefit-text {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 30ch;
+  margin: 0 auto;
+}
+
+/* ── Examples section ── */
+.di-examples {
+  margin-bottom: 3rem;
+}
+
+.di-examples-title {
+  color: var(--charcoal);
+  font-size: clamp(1.4rem, 2vw, 1.75rem);
+  text-align: center;
+  margin: 0 0 2rem;
+}
+
+.di-example-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.di-example-card {
+  background: var(--light-gray);
+  border-radius: 8px;
+  padding: 1.25rem;
+  transition: background-color 0.2s ease;
+}
+
+.di-example-card:hover {
+  background: var(--shadow-black-04);
+}
+
+.di-example-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.di-example-name {
+  color: var(--charcoal);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.di-example-desc {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0 0 0.5rem;
+}
+
+.di-format-tag {
+  display: inline-block;
+  color: var(--forest);
+  font-size: 0.825rem;
+  font-weight: 600;
+}
+
+/* ── CTA button ── */
+.di-cta-wrap {
+  text-align: center;
+}
+
+.di-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--charcoal);
+  color: var(--white);
+  padding: 1rem 1.75rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.di-cta-btn:hover {
+  background: var(--hover-charcoal);
+  box-shadow: 0 6px 18px var(--shadow-black-15);
+}
+
+.di-cta-arrow {
+  width: 1rem;
+  height: 1rem;
+}

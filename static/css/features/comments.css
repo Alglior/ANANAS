@@ -1,0 +1,348 @@
+/* ── Commentaires section ── */
+.comments-section {
+  margin-top: 3rem;
+}
+
+.comments-section h2 {
+  color: var(--charcoal);
+  font-size: 1.35rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.comment-count-badge {
+  background: var(--mustard);
+  color: var(--white);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+}
+
+.comments-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+}
+
+.comment-item {
+  list-style: none;
+}
+
+.comment-body {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.comment-replies {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0 1.5rem;
+}
+
+.comment-replies .comment-body {
+  border-bottom: none;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.comment-author-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--charcoal);
+}
+
+a.comment-author-wrap:hover .comment-author-name {
+  text-decoration: underline;
+}
+
+.comment-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.comment-avatar-initials {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--light-gray);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--forest);
+  flex-shrink: 0;
+}
+
+.comment-author-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--forest);
+}
+
+.comment-date {
+  font-size: 0.8rem;
+  color: var(--specs-gray);
+}
+
+.comment-text {
+  color: var(--charcoal);
+  line-height: 1.5;
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.comment-reply-btn {
+  background: none;
+  border: none;
+  color: var(--forest);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.comment-reply-btn:hover {
+  text-decoration: underline;
+}
+
+/* Inline reply form */
+.reply-form {
+  margin: 0.5rem 0 0.5rem 1.5rem;
+  padding: 0.5rem 0;
+}
+
+.reply-form textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 0.5rem;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 0.9rem;
+  color: var(--charcoal);
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.reply-form textarea:focus {
+  outline: none;
+  border-color: var(--mustard);
+}
+
+.reply-form-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.reply-form-actions .btn {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  font-weight: 500;
+}
+
+.reply-form-actions .btn-primary {
+  background: var(--forest);
+  color: var(--white);
+  border-color: var(--forest);
+}
+
+.reply-form-actions .btn-cancel {
+  background: var(--white);
+  color: var(--charcoal);
+}
+
+.comments-empty {
+  color: var(--specs-gray);
+  margin-bottom: 2rem;
+}
+
+.comment-form {
+  background: var(--light-gray);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+}
+
+.comment-form-textarea-wrap textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 0.75rem;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 0.95rem;
+  color: var(--charcoal);
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.comment-form-textarea-wrap textarea:focus {
+  outline: none;
+  border-color: var(--mustard);
+}
+
+.comment-form-fields {
+  margin-bottom: 1rem;
+}
+
+.comment-input {
+  width: 100%;
+  padding: 0.75rem;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 0.95rem;
+  color: var(--charcoal);
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.comment-input:focus {
+  outline: none;
+  border-color: var(--mustard);
+}
+
+.comment-form-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.comment-notice {
+  color: var(--specs-gray);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1rem;
+  background: var(--light-gray);
+  border: 1px solid var(--border-color);
+}
+
+.comment-notice a {
+  color: var(--forest);
+  font-weight: 600;
+}
+
+/* ── Public profile (Google-style) ── */
+.profile-page {
+  max-width: 600px;
+  margin: 3rem auto;
+  padding: 0 1rem;
+}
+
+.profile-card {
+  text-align: center;
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--light-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar-initials {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--forest);
+}
+
+.profile-name {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin: 0 0 0.25rem;
+}
+
+.profile-email {
+  font-size: 0.95rem;
+  color: var(--specs-gray);
+  margin: 0 0 0.25rem;
+}
+
+.profile-pseudo {
+  font-size: 1rem;
+  color: var(--primary);
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.profile-member {
+  font-size: 0.85rem;
+  color: var(--specs-gray);
+  margin: 0 0 1.5rem;
+}
+
+.profile-stats {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.profile-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.profile-stat-label {
+  font-size: 0.8rem;
+  color: var(--specs-gray);
+}
+
+.profile-edit-btn {
+  display: inline-block;
+  padding: 0.5rem 1.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  color: var(--charcoal);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.profile-edit-btn:hover {
+  background: var(--light-gray);
+}

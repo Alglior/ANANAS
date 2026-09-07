@@ -1,0 +1,244 @@
+.tag {
+  width: fit-content;
+  margin: 0 0 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--forest-alpha-35);
+  padding: 0.22rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--forest);
+  background: var(--forest-alpha-11);
+  text-decoration: none;
+  display: inline-block;
+}
+
+a.tag:hover {
+  background: var(--forest-alpha-25);
+  border-color: var(--forest);
+  cursor: pointer;
+}
+
+.tag-warn {
+  color: var(--mustard);
+  border-color: var(--mustard-alpha-50);
+  background: var(--mustard-alpha-16);
+}
+
+.item-tags {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.tags-label {
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--charcoal);
+}
+
+.item-categories {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.categories-label {
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--charcoal);
+}
+
+.category-tag {
+  width: fit-content;
+  margin: 0;
+  border-radius: 999px;
+  border: 1px solid var(--mustard-alpha-35);
+  padding: 0.22rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--mustard);
+  background: var(--mustard-alpha-11);
+  text-decoration: none;
+  display: inline-block;
+}
+
+a.category-tag:hover {
+  background: var(--mustard-alpha-25);
+  border-color: var(--mustard);
+  cursor: pointer;
+}
+
+.card-link {
+  display: inline-block;
+  margin-top: 0.4rem;
+  color: var(--charcoal);
+  border-bottom: 1px dashed var(--shadow-black-60);
+}
+
+.card-link:hover {
+  color: var(--forest);
+  border-bottom-color: var(--forest);
+}
+
+/* Data format badges */
+.badge-pack,
+.badge-individual,
+.badge-simple {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.badge-pack {
+  color: var(--forest);
+  background: var(--forest-alpha-11);
+  border: 1px solid var(--forest-alpha-35);
+}
+
+.badge-simple {
+  color: var(--forest);
+  background: var(--forest-alpha-06);
+  border: 1px solid var(--forest-alpha-20);
+}
+
+.badge-individual {
+  color: var(--forest);
+  background: transparent;
+  border: 1px solid var(--border-color);
+}
+
+/* Item type badges */
+.badge-geodonnee {
+  color: var(--forest);
+  background: var(--forest-alpha-11);
+  border: 1px solid var(--forest-alpha-35);
+}
+
+.badge-carte {
+  color: var(--color-blue);
+  background: var(--blue-alpha-11);
+  border: 1px solid var(--blue-alpha-35);
+}
+
+.badge-application {
+  color: var(--mustard);
+  background: var(--mustard-alpha-11);
+  border: 1px solid var(--mustard-alpha-35);
+}
+
+.badge-service {
+  color: var(--color-purple);
+  background: var(--purple-alpha-11);
+  border: 1px solid var(--purple-alpha-35);
+}
+
+/* Status badges — filled variant */
+.badge-verified {
+  background: var(--color-success);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  display: inline-block;
+}
+
+.badge-pending {
+  background: var(--color-warning);
+  color: var(--charcoal);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  display: inline-block;
+}
+
+.badge-unofficial {
+  background: var(--color-muted);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  display: inline-block;
+}
+
+.badge-rejected {
+  background: var(--color-danger);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  display: inline-block;
+  opacity: 0.7;
+}
+
+/* Status badges — outline variant */
+.badge-outline-success {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: var(--forest);
+  background: var(--forest-alpha-11);
+  border: 1px solid var(--forest-alpha-35);
+}
+
+.badge-outline-danger {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: var(--color-danger);
+  background: var(--danger-alpha-11);
+  border: 1px solid var(--danger-alpha-35);
+}
+
+.badge-outline-warning {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: var(--mustard);
+  background: var(--mustard-alpha-11);
+  border: 1px solid var(--mustard-alpha-35);
+}
+
+.badge-outline-info {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: var(--color-blue);
+  background: var(--blue-alpha-11);
+  border: 1px solid var(--blue-alpha-35);
+}
+
+.status-processing {
+  color: var(--color-blue);
+}
+
+.status-queued {
+  color: var(--mustard);
+}
+
+.status-pending {
+  color: var(--mustard);
+}
+
+.status-completed {
+  color: var(--forest);
+}
+
+.status-failed {
+  color: var(--error-red);
+}

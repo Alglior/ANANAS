@@ -1,0 +1,236 @@
+/* ── Custom file upload ── */
+.file-upload-group {
+  margin-bottom: 1rem;
+}
+
+.file-drop-zone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 2rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--forest);
+  background: var(--white);
+  border: 2px solid var(--forest);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.file-drop-zone:hover {
+  background: var(--forest);
+  color: var(--white);
+  border-color: var(--forest);
+}
+
+.file-drop-zone.drag-over {
+  background: var(--forest-alpha-10);
+  border-color: var(--mustard);
+  color: var(--charcoal);
+}
+
+.file-drop-text {
+  margin: 0;
+}
+
+/* ── JSON multi-upload drop zone ── */
+.json-drop-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  margin-bottom: 1rem;
+  border: 2px dashed var(--border-color);
+  border-radius: 12px;
+  background: var(--white);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.json-drop-zone:hover {
+  border-color: var(--forest);
+  background: var(--forest-alpha-04);
+}
+
+.json-drop-zone.drag-over {
+  border-color: var(--mustard);
+  background: var(--mustard-alpha-06);
+  border-style: solid;
+}
+
+.json-drop-content {
+  pointer-events: none;
+}
+
+.json-drop-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  margin: 0 0 0.25rem;
+}
+
+.json-drop-subtext {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ── JSON upload results ── */
+.json-upload-results {
+  margin-bottom: 1.5rem;
+}
+
+.json-upload-result {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+}
+
+.json-upload-result.success {
+  background: var(--forest-alpha-06);
+  color: var(--forest);
+}
+
+.json-upload-result.error {
+  background: var(--danger-alpha-06);
+  color: var(--error);
+}
+
+.json-upload-result .status-icon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.json-upload-result.success .status-icon {
+  background: var(--forest);
+}
+
+.json-upload-result.error .status-icon {
+  background: var(--error);
+}
+
+.json-upload-result .file-name {
+  font-weight: 500;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.json-upload-result .file-status {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+}
+
+/* ── Zoom pills ── */
+.zoom-pills {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 0.35rem;
+}
+
+.zoom-pill {
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--white);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.zoom-pill:hover {
+  border-color: var(--mustard);
+  background: var(--mustard-alpha-11);
+}
+
+.zoom-pill.active {
+  background: var(--mustard);
+  border-color: var(--mustard);
+  color: var(--charcoal);
+  font-weight: 600;
+}
+
+.zoom-pill.multi-select.active {
+  background: var(--mustard);
+  border-color: var(--mustard);
+  color: var(--charcoal);
+  font-weight: 600;
+}
+
+.zoom-pill.multi-select.active:hover {
+  background: var(--mustard);
+  border-color: var(--mustard);
+}
+
+/* ── Magnet entry ── */
+.magnet-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.magnet-entry-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.magnet-entry .form-control {
+  flex: 1;
+}
+
+.magnet-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* ── Bulk magnet ── */
+.bulk-magnet-group {
+  background: var(--white);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 0.75rem;
+}
+
+.bulk-magnet-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
+.bulk-magnet-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+/* ── Image magnet entry ── */
+.image-magnet-entry {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.image-magnet-entry .form-control.flex-3 {
+  flex: 3;
+}
+
+.image-magnet-entry .form-control.flex-2 {
+  flex: 2;
+}

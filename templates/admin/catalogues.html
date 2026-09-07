@@ -1,0 +1,47 @@
+{% extends 'base_admin.html' %}
+
+{% block admin_content %}
+<div class="admin-catalogues">
+  <p class="admin-section-desc">Activer ou désactiver les catalogues de la plateforme. Un catalogue désactivé n'est plus accessible et n'apparaît plus dans la navigation.</p>
+
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Catalogue</th>
+        <th>Statut</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for catalogue in catalogues %}
+      <tr>
+        <td>
+          <strong>{{ catalogue.label }}</strong>
+          <br>
+          <span class="admin-table-sub">Slug : {{ catalogue.type }}</span>
+        </td>
+        <td>
+          {% if catalogue.active %}
+          <span class="badge badge-success">Actif</span>
+          {% else %}
+          <span class="badge badge-danger">Inactif</span>
+          {% endif %}
+        </td>
+        <td>
+          <button class="btn btn-sm btn-outline toggle-catalogue-btn"
+                  data-type="{{ catalogue.type }}"
+                  data-active="{{ catalogue.active|lower }}">
+            {% if catalogue.active %}Désactiver{% else %}Activer{% endif %}
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/catalogues.js') }}"></script>
+{% endblock %}

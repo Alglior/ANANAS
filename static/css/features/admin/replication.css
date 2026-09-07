@@ -1,0 +1,224 @@
+/* Replication page */
+.replication-page {
+  max-width: 800px;
+}
+
+.replication-form-section {
+  background: var(--bg-card, var(--white));
+  border: 1px solid var(--border-color, var(--border-color));
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.replication-form-section .form-group {
+  margin-bottom: 1.25rem;
+}
+
+.replication-form-section .form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--text-primary, var(--charcoal));
+}
+
+.replication-form-section .form-input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border-color, var(--border-color));
+  border-radius: 6px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+.form-help {
+  font-size: 0.8rem;
+  color: var(--text-muted, var(--text-secondary));
+  margin-top: 0.3rem;
+}
+
+.replication-types {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.replication-types .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.replication-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.replication-preview-section,
+.replication-results-section {
+  background: var(--bg-card, var(--white));
+  border: 1px solid var(--border-color, var(--border-color));
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.replication-preview-section h3,
+.replication-results-section h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.preview-catalogue {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border-color, var(--border-light));
+}
+
+.preview-catalogue:last-child {
+  border-bottom: none;
+}
+
+.preview-catalogue .cat-name {
+  font-weight: 600;
+}
+
+.preview-catalogue .cat-count {
+  font-size: 0.9rem;
+  color: var(--text-muted, var(--text-secondary));
+}
+
+.preview-catalogue .cat-status {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.preview-catalogue .cat-status.reachable {
+  background: var(--rep-success-bg);
+  color: var(--rep-success-text);
+}
+
+.preview-catalogue .cat-status.unreachable {
+  background: var(--rep-error-bg);
+  color: var(--rep-error-text);
+}
+
+.replication-progress {
+  margin-bottom: 1.5rem;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: var(--border-color, var(--border-color));
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--accent-color, var(--color-success));
+  transition: width 0.3s ease;
+}
+
+#progress-text {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted, var(--text-secondary));
+}
+
+/* Results */
+.results-summary {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.results-summary .stat {
+  background: var(--bg-subtle, var(--light-gray));
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.results-summary .stat strong {
+  font-size: 1.2rem;
+}
+
+.results-details {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color, var(--border-light));
+  border-radius: 6px;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.results-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-subtle, var(--light-gray));
+  border-bottom: 2px solid var(--border-color, var(--border-color));
+  position: sticky;
+  top: 0;
+}
+
+.results-table td {
+  padding: 0.4rem 0.75rem;
+  border-bottom: 1px solid var(--border-color, var(--border-light));
+}
+
+.results-table .result-created td {
+  background: var(--rep-success-bg);
+}
+
+.results-table .result-skipped td {
+  background: var(--rep-warning-bg);
+}
+
+.results-table .result-error td {
+  background: var(--rep-error-bg);
+}
+
+.badge-created {
+  display: inline-block;
+  background: var(--rep-success-bg);
+  color: var(--rep-success-text);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-skipped {
+  display: inline-block;
+  background: var(--rep-warning-bg);
+  color: var(--rep-warning-text);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-error {
+  display: inline-block;
+  background: var(--rep-error-bg);
+  color: var(--rep-error-text);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}

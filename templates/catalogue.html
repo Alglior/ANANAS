@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% set catalogue_titles = {
+  "donnees": get_setting("catalogue_donnees_title", "Catalogue des géodonnées"),
+  "cartes": get_setting("catalogue_cartes_title", "Catalogue des cartes"),
+  "applications": get_setting("catalogue_applications_title", "Catalogue d'applications")
+} %}
+{% set catalogue_name = catalogue_titles.get(catalogue_type, "Catalogue des géodonnées") %}
+
+{% block content %}
+<main class="catalogue-page">
+
+<section class="catalogue-header">
+    <div class="container">
+      <h1>{{ catalogue_name }}</h1>
+      <p class="catalogue-meta">{{ total_items }}&nbsp;résultats — page {{ page }}/{{ total_pages }}{% if filter_tag %} — Filtre par étiquette : <strong>{{ filter_tag }}</strong> <a href="?{% if filter_category %}category={{ filter_category|urlencode }}{% endif %}{% if filter_verified %}&verified=1{% endif %}{% if filter_unofficial %}&unofficial=1{% endif %}{% if filter_format %}&format_level={{ filter_format }}{% endif %}{% if filter_imod %}&imod={{ filter_imod }}{% endif %}" class="filter-clear">&times; effacer</a>{% endif %}{% if filter_category %} — Filtre par catégorie : <strong>{{ filter_category }}</strong> <a href="?{% if filter_tag %}tag={{ filter_tag|urlencode }}{% endif %}{% if filter_verified %}&verified=1{% endif %}{% if filter_unofficial %}&unofficial=1{% endif %}{% if filter_format %}&format_level={{ filter_format }}{% endif %}{% if filter_imod %}&imod={{ filter_imod }}{% endif %}" class="filter-clear">&times; effacer</a>{% endif %}</p>
+    </div>
+  </section>
+
+<section class="catalogue-body">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Fil d'ariane">
+        <a href="/">Accueil</a>
+        <span class="sep">&rsaquo;</span>
+        <span>{{ catalogue_name }}</span>
+      </nav>
+
+<nav class="filters" aria-label="Filtres de vérification">
+          <div class="filter-left">
+            <a href="{{ url_all }}"{% if not filter_verified and not filter_unofficial %} class="active"{% endif %}>Toutes les données</a>
+            <span class="separator">|</span>
+            <a href="{{ url_verified }}"{% if filter_verified %} class="active"{% endif %}>Données vérifiées</a>
+            <span class="separator">|</span>
+            <a href="{{ url_unofficial }}"{% if filter_unofficial %} class="active"{% endif %}>Données non officielles</a>
+          </div>
+          <div class="filter-category-dropdown">
+            <button class="filter-category-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+              <span class="filter-category-label">{% if filter_category %}{{ filter_category }}{% else %}Catégorie{% endif %}</span>
+              <span class="filter-category-arrow">&#9662;</span>
+            </button>
+            <div class="filter-category-menu" role="listbox" hidden>
+              <div class="filter-category-search-wrap">
+                <input class="filter-category-search" type="text" placeholder="Rechercher une catégorie..." autocomplete="off">
+              </div>
+              <ul class="filter-category-list">
+                {% if filter_category %}
+                <li role="option" class="filter-category-option filter-category-clear" data-value="">— Effacer le filtre —</li>
+                {% endif %}
+                {% for cat in all_categories %}
+                <li role="option" class="filter-category-option{% if filter_category == cat %} active{% endif %}" data-value="{{ cat|e }}">{{ cat }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+          {% if catalogue_type == "donnees" %}
+          <div class="filter-right">
+            <a{% if filter_format == 'simple' %} class="active"{% endif %} href="{{ url_simple }}">Simples</a>
+            <span class="separator">|</span>
+            <a{% if filter_format == 'pack' %} class="active"{% endif %} href="{{ url_pack }}">Packs</a>
+            <span class="separator">|</span>
+            <a{% if filter_format == 'individual' %} class="active"{% endif %} href="{{ url_ind }}">Individuelles</a>
+            <span class="separator">|</span>
+            <a{% if filter_imod == 'high' %} class="active"{% endif %} href="{{ url_imod_high }}">IMOD +</a>
+            <span class="separator">|</span>
+            <a{% if filter_imod == 'low' %} class="active"{% endif %} href="{{ url_imod_low }}">IMOD -</a>
+          </div>
+          {% endif %}
+       </nav>
+
+
+      <ul class="catalogue-list">
+        {% for item in items %}
+        {% include 'partials/catalogue_item.html' %}
+        {% endfor %}
+      </ul>
+
+      {% if total_pages > 1 %}
+      {% set page_numbers = page_numbers %}
+      {% set base_url = '/catalogue/' + (catalogue_type or 'donnees') %}
+      {% include 'partials/pagination.html' %}
+      {% endif %}
+
+    </div>
+  </section>
+
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/catalogue/catalogue.js') }}"></script>
+{% endblock %}

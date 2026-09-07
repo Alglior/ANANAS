@@ -1,0 +1,407 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<main>
+
+<section class="hero" id="hero">
+  <div class="hero-overlay"></div>
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow">{{ get_setting("home_eyebrow", "Partage de données géospatiales") }}</p>
+      <h1>{{ get_setting("home_hero_title", "Partagez vos géodonnées avec des torrents vérifiés") }}</h1>
+      <p class="hero-lead">
+        {{ get_setting("home_hero_subtitle", "A.N.A.N.A.S permet de partager et télécharger des données géographiques. Vérification d'intégrité et accès rapide.") }}
+      </p>
+      <div class="action-row">
+        <a class="btn btn-primary transition-hover" href="/catalogue/donnees">Ouvrir le catalogue</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Section Packs de Données GeoPackage -->
+{% if get_setting("home_show_geopackages", "true") == "true" %}
+<section class="gp-section" id="packs-geopackage">
+  <div class="container">
+    <div class="gp-header">
+      <h2>Packs de Données GeoPackage</h2>
+      <p class="gp-lead">
+        Découvrez nos collections thématiques de données géographiques pré-organisées au format GeoPackage, 
+        prêtes à être utilisées dans vos projets SIG.
+      </p>
+    </div>
+    
+    <div class="gp-grid{% if not geo_packages %} gp-grid--empty{% endif %}">
+      <!-- Description des avantages -->
+      <div class="gp-info-card">
+          <h3 class="gp-info-title">Pourquoi les GeoPackages ?</h3>
+          <ul class="gp-benefits-list">
+            <li class="gp-benefit-item">
+              <span class="gp-check">✓</span>
+              <span><strong>Format standardisé OGC</strong> - Compatible avec tous les logiciels SIG modernes</span>
+            </li>
+            <li class="gp-benefit-item">
+              <span class="gp-check">✓</span>
+              <span><strong>Fichier unique</strong> - Toutes vos couches dans un seul fichier portable</span>
+            </li>
+            <li class="gp-benefit-item">
+              <span class="gp-check">✓</span>
+              <span><strong>Métadonnées intégrées</strong> - Descriptions, sources et historique inclus</span>
+            </li>
+            <li class="gp-benefit-item">
+              <span class="gp-check">✓</span>
+              <span><strong>Prêt à l'emploi</strong> - Styles et symbologies pré-configurés</span>
+            </li>
+            <li class="gp-benefit-item">
+              <span class="gp-check">✓</span>
+              <span><strong>Styles QML inclus</strong> - Fichiers .qml avec alias de variables lisibles (ex: temp_sup_35 = "Température supérieure à 35 °C")</span>
+            </li>
+          </ul>
+      </div>
+      
+      {% if geo_packages %}
+      <!-- Collections disponibles -->
+      <div class="gp-collections">
+        {% for pkg in geo_packages %}
+        <div class="gp-collection-card">
+          <div class="gp-card-header">
+            <h4>{{ pkg.title }}</h4>
+          </div>
+          <p class="gp-card-desc">{{ pkg.description }}</p>
+          <div class="gp-card-footer">
+            <span class="gp-meta">{{ pkg.format_info }}</span>
+            <a href="{{ pkg.link_url }}" class="gp-explore-link">Explorer →</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      
+      <div class="gp-cta-wrap">
+       <a href="{{ url_for('catalogue') }}" class="gp-cta-btn">
+          Voir tous les packs
+          <svg class="gp-cta-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- Section Fichiers Simples -->
+{% if get_setting("home_show_simple_files", "true") == "true" %}
+<section class="di-section" id="fichiers-simples">
+  <div class="container">
+    <div class="di-header">
+      <h2>Fichiers Simples</h2>
+      <p class="di-lead">
+        Besoin d'un fichier unique, une seule couche, prêt à l'emploi ? 
+        Nos fichiers simples sont disponibles en téléchargement direct via magnet.
+      </p>
+    </div>
+    
+    <div class="di-benefits-row">
+      <div class="di-benefit-card">
+        <h3 class="di-benefit-title">Léger & Rapide</h3>
+        <p class="di-benefit-text">
+          Téléchargez exactement ce dont vous avez besoin sans surplus. 
+          Un fichier, une couche, des métadonnées complètes.
+        </p>
+      </div>
+      
+      <div class="di-benefit-card">
+        <h3 class="di-benefit-title">Prêt à l'Emploi</h3>
+        <p class="di-benefit-text">
+          Pas de multi-couches complexes à gérer. 
+          Ouvrez votre fichier directement dans QGIS, ArcGIS ou tout autre logiciel SIG.
+        </p>
+      </div>
+    </div>
+    
+    {% if simple_files %}
+    <!-- Exemples de fichiers simples -->
+    <div class="di-examples">
+      <h3 class="di-examples-title">Exemples de Fichiers Simples</h3>
+      
+      <div class="di-example-grid">
+        {% for sf in simple_files %}
+        <a href="{{ url_for('items.item_detail_view', item_id=sf.item.id) }}" class="di-example-card">
+          <div class="di-example-header">
+            <span class="di-example-name">{{ sf.item.title }}</span>
+          </div>
+          <p class="di-example-desc">{{ sf.item.description[:80] }}{% if sf.item.description|length > 80 %}...{% endif %}</p>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    
+    <div class="di-cta-wrap">
+      <a href="{{ url_for('catalogue') }}" class="di-cta-btn">
+         Découvrir les fichiers simples
+         <svg class="di-cta-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- Section Données Individuelles -->
+{% if get_setting("home_show_featured", "true") == "true" %}
+<section class="di-section" id="donnees-individuelles">
+  <div class="container">
+    <div class="di-header">
+      <h2>Données Individuelles</h2>
+      <p class="di-lead">
+        Vous cherchez des données spécifiques ? Explorez notre catalogue de fichiers individuels 
+        organisés par thématique et téléchargeables séparément.
+      </p>
+    </div>
+    
+    <div class="di-benefits-row">
+      <div class="di-benefit-card">
+        <h3 class="di-benefit-title">Choix Précis</h3>
+        <p class="di-benefit-text">
+          Téléchargez uniquement les données dont vous avez besoin. 
+          Chaque fichier est disponible individuellement avec ses métadonnées complètes.
+        </p>
+      </div>
+      
+      <div class="di-benefit-card">
+        <h3 class="di-benefit-title">Toujours à Jour</h3>
+        <p class="di-benefit-text">
+          Nos données individuelles sont régulièrement mises à jour. 
+          Accédez aux versions les plus récentes dès leur publication.
+        </p>
+      </div>
+    </div>
+    
+    {% if featured_items %}
+    <!-- Exemples de données -->
+    <div class="di-examples">
+      <h3 class="di-examples-title">Exemples de Données Disponibles</h3>
+      
+      <div class="di-example-grid">
+        {% for fi in featured_items %}
+        <a href="{{ url_for('items.item_detail_view', item_id=fi.item.id) }}" class="di-example-card">
+          <div class="di-example-header">
+            <span class="di-example-name">{{ fi.item.title }}</span>
+          </div>
+          <p class="di-example-desc">{{ fi.item.description[:80] }}{% if fi.item.description|length > 80 %}...{% endif %}</p>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    
+    <div class="di-cta-wrap">
+      <a href="{{ url_for('catalogue') }}" class="di-cta-btn">
+         Parcourir toutes les données
+         <svg class="di-cta-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- Section Peer-to-Peer & Résilience -->
+<section class="p2p-section" id="peer-to-peer">
+  <div class="container">
+    <div class="p2p-header">
+      <h2>Réseau Peer-to-Peer Décentralisé</h2>
+      <p class="p2p-lead">
+        Grâce au protocole BitTorrent, vos données restent accessibles même si notre serveur principal 
+        rencontre des difficultés. Une approche révolutionnaire pour la continuité de service.
+      </p>
+    </div>
+    
+    <div class="p2p-advantages">
+      <div class="p2p-timeline-item p2p-left">
+        <div class="p2p-timeline-dot"></div>
+        <div class="p2p-adv-card">
+          <div class="p2p-adv-content">
+            <h4>Haute Disponibilité</h4>
+            <p>Même si le serveur A.N.A.N.A.S France est temporairement indisponible, les données restent accessibles via le réseau peer-to-peer.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="p2p-timeline-item p2p-right">
+        <div class="p2p-timeline-dot"></div>
+        <div class="p2p-adv-card">
+          <div class="p2p-adv-content">
+            <h4>Téléchargements Rapides</h4>
+            <p>Plus il y a d'utilisateurs, plus les téléchargements sont rapides. Chaque peer contribue à la vitesse globale du réseau.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="p2p-timeline-item p2p-left">
+        <div class="p2p-timeline-dot"></div>
+        <div class="p2p-adv-card">
+          <div class="p2p-adv-content">
+            <h4>Décentralisation</h4>
+            <p>Aucun point de défaillance unique. Les données sont distribuées sur l'ensemble du réseau d'utilisateurs actifs.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="p2p-timeline-item p2p-right">
+        <div class="p2p-timeline-dot"></div>
+        <div class="p2p-adv-card">
+          <div class="p2p-adv-content">
+            <h4>Économique</h4>
+            <p>Réduction des coûts de bande passante pour le serveur, permettant un service gratuit et durable.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="p2p-timeline-item p2p-left">
+        <div class="p2p-timeline-dot"></div>
+        <div class="p2p-adv-card">
+          <div class="p2p-adv-content">
+            <h4>Sites Miroirs &amp; Liens Magnet</h4>
+            <p>Sites miroirs de sauvegarde et banques de liens magnet pour un accès garanti aux données, même en cas de censure.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="p2p-fact-box">
+       <h4 class="p2p-fact-title">Le saviez-vous ?</h4>
+      <p class="p2p-fact-text">
+        Une fois qu'un fichier est téléchargé par plusieurs utilisateurs, il devient pratiquement 
+        <strong>indestructible</strong>. Même si tous nos serveurs tombaient en panne, 
+        la communauté d'utilisateurs pourrait continuer à partager les données entre eux !
+      </p>
+      <div class="p2p-fact-highlight">
+        <p>
+          <strong>Résilience maximale :</strong> Sites miroirs automatiques + banques de liens magnet 
+          + réseau peer-to-peer = <span class="p2p-highlight-text">Accès garanti aux données</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Section Comment télécharger avec Magnet Torrent -->
+<section class="magnet-section" id="magnet-torrent">
+  <div class="container">
+    <div class="magnet-header">
+      <h2>Télécharger avec Magnet Torrent</h2>
+      <p class="magnet-lead">
+        Pour télécharger un fichier depuis un lien magnet, vous avez besoin d'un client BitTorrent. 
+        Voici comment procéder, étape par étape.
+      </p>
+    </div>
+    
+    <div class="magnet-grid">
+      <!-- Étapes -->
+      <div class="magnet-steps">
+        <h3 class="magnet-steps-title">Étapes pour télécharger</h3>
+        
+        <div class="magnet-step-card">
+          <span class="magnet-step-number">1</span>
+          <div class="magnet-step-content">
+            <h4 class="magnet-step-heading">Installez un client BitTorrent</h4>
+            <p class="magnet-step-desc">
+              Téléchargez et installez un lecteur torrent gratuit comme 
+              <a href="https://www.qbittorrent.org/" target="_blank" rel="noopener">qBittorrent</a>, 
+              <a href="https://www.libtorrent.org/" target="_blank" rel="noopener">LibreTorrent</a> 
+              (mobile), ou Transmission. Ces clients sont open-source et sans publicité.
+            </p>
+          </div>
+        </div>
+        
+        <div class="magnet-step-card">
+          <span class="magnet-step-number">2</span>
+          <div class="magnet-step-content">
+            <h4 class="magnet-step-heading">Copiez le lien magnet</h4>
+            <p class="magnet-step-desc">
+              Sur notre plateforme, chaque fichier possède un lien magnet unique qui commence par 
+              <code>magnet:?xt=urn:btih:</code>. Cliquez sur le bouton "Copier" à côté du lien pour 
+              le copier dans votre presse-papier.
+            </p>
+          </div>
+        </div>
+        
+        <div class="magnet-step-card">
+          <span class="magnet-step-number">3</span>
+          <div class="magnet-step-content">
+            <h4 class="magnet-step-heading">Ajoutez le lien dans votre client</h4>
+            <p class="magnet-step-desc">
+              Ouvrez votre client BitTorrent, puis collez le lien magnet via 
+              <strong>Fichier → Ajouter un torrent magnétique</strong> ou glissez le lien directement 
+              dans la fenêtre de l'application. Le téléchargement démarre automatiquement.
+            </p>
+          </div>
+        </div>
+        
+        <div class="magnet-step-card">
+          <span class="magnet-step-number">4</span>
+          <div class="magnet-step-content">
+            <h4 class="magnet-step-heading">Choisissez le dossier de sauvegarde</h4>
+            <p class="magnet-step-desc">
+              Sélectionnez l'emplacement où vous souhaitez stocker les données sur votre disque. 
+              Une fois le téléchargement terminé, vérifiez l'intégrité du fichier pour garantir 
+              son authenticité.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Exemple + Info -->
+      <div class="magnet-side">
+        <div class="magnet-example-card">
+          <h3 class="magnet-example-title">Exemple de lien magnet</h3>
+          <p class="magnet-example-desc">
+            Un lien magnet ressemble à ceci (exemplaire raccourci) :
+          </p>
+          <code class="magnet-code">
+            magnet:?xt=urn:btih:a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2&dn=Donnees_Cartes_GeoPackage&tr=https://tracker.ananas.org/announce
+          </code>
+          <div class="magnet-example-note">
+            <p>
+              <strong>Note :</strong> Le lien complet est toujours plus long. 
+              Seule la partie <code>xt</code> (identifiant unique du fichier) est indispensable pour le partage.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if get_setting("home_show_mirrors", "true") == "true" %}
+<section class="mirror-section" id="mirrors">
+  <div class="container">
+    <h2>Sites miroirs</h2>
+    <p class="mirror-lead">
+      Retrouvez A.N.A.N.A.S sur ces instances partenaires pour accéder aux données depuis n'importe où.
+    </p>
+
+    <ul class="mirror-list">
+      {% for mirror in mirrors %}
+      <li>
+        <a class="mirror-link transition-hover" href="{{ mirror.url }}">
+          <span class="mirror-name">{{ mirror.name }}</span>
+          <span class="mirror-desc">{{ mirror.description }}</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endif %}
+
+</main>
+{% endblock %}

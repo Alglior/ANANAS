@@ -1,0 +1,51 @@
+/* ────────────────────────────────────────────
+   Info Section
+   ──────────────────────────────────────────── */
+.info-section {
+  padding: 5rem 0;
+}
+
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+}
+
+.info-card {
+  border-bottom: 1px solid var(--shadow-black-08);
+  padding: 0 0 3.5rem;
+}
+
+.info-card:last-child {
+  border-bottom: none;
+}
+
+.info-card h3 {
+  color: var(--forest);
+  font-size: 1.4rem;
+  margin: 0 0 1.5rem;
+}
+
+.info-card p {
+  color: var(--charcoal);
+  line-height: 1.75;
+  max-width: 65ch;
+  margin: 0 0 1rem;
+}
+
+.info-card ul,
+.info-card ol {
+  margin: 0 0 1rem;
+  padding-left: calc(var(--section-gap-header) - 1rem);
+}
+
+.info-card li {
+  color: var(--charcoal);
+  line-height: 1.75;
+  margin-bottom: 0.6rem;
+  max-width: var(--lead-max-width);
+}
+
+.info-card strong {
+  color: var(--forest);
+}

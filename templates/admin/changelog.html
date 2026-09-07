@@ -1,0 +1,69 @@
+{% extends 'base_admin.html' %}
+
+{% set title = "Administration — Changelog" %}
+
+{% block admin_content %}
+<div class="mirrors-header">
+  <h2>Changelog</h2>
+  <button type="button" class="btn btn-primary" id="add-version-btn">+ Ajouter une version</button>
+</div>
+
+<div class="table-wrapper">
+  <table id="changelog-table">
+    <thead>
+      <tr>
+        <th>Ordre</th>
+        <th>Version</th>
+        <th>Date</th>
+        <th>Sections</th>
+        <th>Statut</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="changelog-tbody">
+      <tr><td colspan="6" class="loading-cell">Chargement...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div id="version-modal" class="modal-overlay hidden-section">
+  <div class="modal-content mirror-modal-content">
+    <span class="modal-close" id="version-modal-close">&times;</span>
+    <h3 id="version-modal-title">Ajouter une version</h3>
+    <form id="version-form" novalidate>
+      <input type="hidden" id="version-id" value="" />
+      <div class="form-group">
+        <label for="version-number">Version</label>
+        <input type="text" id="version-number" maxlength="20" required placeholder="Ex: 1.1.0" />
+      </div>
+      <div class="form-group">
+        <label for="version-order">Ordre d'affichage</label>
+        <input type="number" id="version-order" min="0" value="0" />
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="version-active" checked />
+          Actif
+        </label>
+      </div>
+
+      <div id="sections-container">
+        <h4>Sections</h4>
+        <div id="sections-list"></div>
+        <button type="button" class="btn btn-outline" id="add-section-btn">+ Ajouter une section</button>
+      </div>
+
+      <div id="version-error" class="form-error hidden-section"></div>
+      <div class="mirror-modal-actions">
+        <button type="submit" class="btn btn-primary" id="version-submit">Enregistrer</button>
+        <button type="button" class="btn btn-outline" id="version-cancel">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/changelog.js') }}?v=1"></script>
+{% endblock %}

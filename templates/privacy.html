@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<main class="legal-page">
+  <div class="container">
+    <h1>Politique de confidentialité</h1>
+    <p class="legal-update">Dernière mise à jour : juillet 2026</p>
+
+    <section>
+      <h2>1. Données collectées</h2>
+      <p>Nous collectons les données suivantes lors de votre navigation et de votre inscription :</p>
+      <ul>
+        <li><strong>Données de compte</strong> : nom d'utilisateur, adresse email, mot de passe (haché).</li>
+        <li><strong>Données de profil</strong> : avatar, biographie, organisation, site web.</li>
+        <li><strong>Données de navigation</strong> : pages consultées, téléchargements effectués, interactions avec le catalogue.</li>
+        <li><strong>Données de contact</strong> : messages envoyés via le formulaire de contact.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>2. Finalités du traitement</h2>
+      <p>Vos données sont traitées pour les finalités suivantes :</p>
+      <ul>
+        <li>Fourniture et gestion de votre compte utilisateur.</li>
+        <li>Publication et consultation de contenus géospatiaux.</li>
+        <li>Modération des contenus et signalements.</li>
+        <li>Communication avec vous (support, réponses aux messages).</li>
+        <li>Amélioration de la plateforme et analyse statistique.</li>
+        <li>Respect de nos obligations légales et réglementaires.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. Base légale</h2>
+      <p>Le traitement de vos données repose sur les bases légales suivantes :</p>
+      <ul>
+        <li><strong>Exécution du contrat</strong> : création et gestion de votre compte.</li>
+        <li><strong>Intérêt légitime</strong> : modération, sécurité, amélioration du service.</li>
+        <li><strong>Consentement</strong> : dépôt de cookies non essentiels.</li>
+        <li><strong>Obligation légale</strong> : conservation des données pour les besoins judiciaires.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>4. Partage des données</h2>
+      <p>Vos données ne sont pas vendues à des tiers. Elles peuvent être partagées avec :</p>
+      <ul>
+        <li>Les autorités judiciaires en cas d'obligation légale.</li>
+        <li>Nos hébergeurs (infrastructure technique).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>5. Durée de conservation</h2>
+      <ul>
+        <li><strong>Données de compte</strong> : jusqu'à la suppression du compte.</li>
+        <li><strong>Messages de contact</strong> : 1 an après l'envoi.</li>
+        <li><strong>Données de navigation</strong> : 13 mois maximum.</li>
+        <li><strong>Journaux de connexion</strong> : 6 mois.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>6. Vos droits</h2>
+      <p>Conformément au RGPD, vous disposez des droits suivants :</p>
+      <ul>
+        <li>Droit d'accès à vos données.</li>
+        <li>Droit de rectification des données inexactes.</li>
+        <li>Droit à l'effacement (droit à l'oubli).</li>
+        <li>Droit à la limitation du traitement.</li>
+        <li>Droit à la portabilité de vos données.</li>
+        <li>Droit d'opposition au traitement.</li>
+      </ul>
+      <p>Pour exercer ces droits, contactez-nous via le <a href="/contact">formulaire de contact</a>.</p>
+      <p>Vous pouvez également nous contacter par email à <a href="mailto:support@souverain-sig.fr">support@souverain-sig.fr</a>.</p>
+    </section>
+
+    <section>
+      <h2>7. Sécurité</h2>
+      <p>Nous mettons en œuvre des mesures techniques et organisationnelles appropriées pour protéger vos données :</p>
+      <ul>
+        <li>Chiffrement des connexions (HTTPS).</li>
+        <li>Hachage des mots de passe (bcrypt).</li>
+        <li>Protection contre les attaques CSRF et XSS.</li>
+        <li>Limitation des tentatives de connexion.</li>
+        <li>Journalisation des accès sensibles.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>8. Cookies</h2>
+      <p>Notre plateforme utilise uniquement des cookies strictement nécessaires au fonctionnement :</p>
+      <ul>
+        <li>Cookie de session (authentification).</li>
+        <li>Cookie CSRF (protection contre les attaques).</li>
+      </ul>
+      <p>Aucun cookie publicitaire ou de traçage tiers n'est déposé.</p>
+    </section>
+
+    <section>
+      <h2>9. Contact</h2>
+      <p>Pour toute question relative à la protection des données, contactez-nous via le <a href="/contact">formulaire de contact</a>.</p>
+    </section>
+  </div>
+</main>
+{% endblock %}

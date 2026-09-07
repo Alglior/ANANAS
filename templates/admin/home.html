@@ -1,0 +1,249 @@
+{% extends 'base_admin.html' %}
+
+{% block admin_content %}
+<div class="admin-home-tabs">
+  <div class="mod-tabs">
+    <button class="mod-tab active" data-tab="mirrors">Sites miroirs</button>
+    <button class="mod-tab" data-tab="featured">Données en avant</button>
+    <button class="mod-tab" data-tab="simple-files">Fichiers simples</button>
+    <button class="mod-tab" data-tab="geopackages">Packs GeoPackage</button>
+  </div>
+
+  <div class="tab-content active" id="tab-mirrors">
+    <div class="mirrors-header">
+      <h2>Sites miroirs</h2>
+      <button type="button" class="btn btn-primary" id="add-mirror-btn">+ Ajouter un miroir</button>
+    </div>
+    <div class="table-wrapper">
+      <table id="mirrors-table">
+        <thead>
+          <tr>
+            <th>Ordre</th>
+            <th>Nom</th>
+            <th>URL</th>
+            <th>Description</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="mirrors-tbody">
+          <tr><td colspan="6" class="loading-cell">Chargement...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="mirror-modal" class="modal-overlay hidden-section">
+      <div class="modal-content mirror-modal-content">
+        <span class="modal-close" id="mirror-modal-close">&times;</span>
+        <h3 id="mirror-modal-title">Ajouter un site miroir</h3>
+        <form id="mirror-form" novalidate>
+          <input type="hidden" id="mirror-id" value="" />
+          <div class="form-group">
+            <label for="mirror-name">Nom</label>
+            <input type="text" id="mirror-name" maxlength="200" required placeholder="Ex: Mirror 1 — GitHub.io" />
+          </div>
+          <div class="form-group">
+            <label for="mirror-url">URL</label>
+            <input type="url" id="mirror-url" maxlength="500" required placeholder="https://..." />
+          </div>
+          <div class="form-group">
+            <label for="mirror-desc">Description</label>
+            <input type="text" id="mirror-desc" maxlength="500" required placeholder="Hébergement statique, CDN mondial..." />
+          </div>
+          <div class="form-group">
+            <label for="mirror-order">Ordre d'affichage</label>
+            <input type="number" id="mirror-order" min="0" value="0" />
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="mirror-active" checked />
+              Actif
+            </label>
+          </div>
+          <div id="mirror-error" class="form-error hidden-section"></div>
+          <div class="mirror-modal-actions">
+            <button type="submit" class="btn btn-primary" id="mirror-submit">Enregistrer</button>
+            <button type="button" class="btn btn-outline" id="mirror-cancel">Annuler</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-featured">
+    <div class="mirrors-header">
+      <h2>Données en avant</h2>
+      <button type="button" class="btn btn-primary" id="add-featured-btn">+ Ajouter une donnée</button>
+    </div>
+    <p class="admin-hint">Ces données apparaissent dans la section « Exemples de Données Disponibles » sur la page d'accueil.</p>
+    <div class="table-wrapper">
+      <table id="featured-table">
+        <thead>
+          <tr>
+            <th>Ordre</th>
+            <th>ID</th>
+            <th>Titre</th>
+            <th>Type</th>
+            <th>Format</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="featured-tbody">
+          <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="featured-modal" class="modal-overlay hidden-section">
+      <div class="modal-content mirror-modal-content">
+        <span class="modal-close" id="featured-modal-close">&times;</span>
+        <h3>Ajouter une donnée en avant</h3>
+        <form id="featured-form" novalidate>
+          <div class="form-group search-group">
+            <label for="featured-search">Rechercher un item</label>
+            <input type="text" id="featured-search" placeholder="Tapez le titre de l'item..." autocomplete="off" />
+            <div id="featured-search-results" class="search-results-dropdown hidden-section"></div>
+          </div>
+          <input type="hidden" id="featured-item-id" value="" />
+          <div id="featured-selected" class="hidden-section">
+            <div class="featured-selected-item">
+              <span id="featured-selected-title"></span>
+              <span id="featured-selected-info"></span>
+            </div>
+          </div>
+          <div id="featured-error" class="form-error hidden-section"></div>
+          <div class="mirror-modal-actions">
+            <button type="submit" class="btn btn-primary" id="featured-submit">Ajouter</button>
+            <button type="button" class="btn btn-outline" id="featured-cancel">Annuler</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-geopackages">
+    <div class="mirrors-header">
+      <h2>Packs GeoPackage</h2>
+      <button type="button" class="btn btn-primary" id="add-gp-btn">+ Ajouter un pack</button>
+    </div>
+    <p class="admin-hint">Ces packs apparaissent dans la section « Packs de Données GeoPackage » sur la page d'accueil.</p>
+    <div class="table-wrapper">
+      <table id="geopackages-table">
+        <thead>
+          <tr>
+            <th>Ordre</th>
+            <th>Titre</th>
+            <th>Description</th>
+            <th>Format</th>
+            <th>Lien</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="geopackages-tbody">
+          <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="gp-modal" class="modal-overlay hidden-section">
+      <div class="modal-content mirror-modal-content">
+        <span class="modal-close" id="gp-modal-close">&times;</span>
+        <h3 id="gp-modal-title">Ajouter un pack</h3>
+        <form id="gp-form" novalidate>
+          <input type="hidden" id="gp-id" value="" />
+          <div class="form-group">
+            <label for="gp-title">Titre</label>
+            <input type="text" id="gp-title" maxlength="200" required placeholder="Ex: Pack Cartographie Historique" />
+          </div>
+          <div class="form-group">
+            <label for="gp-desc">Description</label>
+            <input type="text" id="gp-desc" maxlength="500" required placeholder="Cartes historiques, plans anciens..." />
+          </div>
+          <div class="form-group">
+            <label for="gp-format">Infos format</label>
+            <input type="text" id="gp-format" maxlength="200" required placeholder="Format: GPKG • Taille: ~250 MB" />
+          </div>
+          <div class="form-group">
+            <label for="gp-link">URL du lien</label>
+            <input type="text" id="gp-link" maxlength="500" required placeholder="/catalogue?collection=Historique" />
+          </div>
+          <div class="form-group">
+            <label for="gp-order">Ordre d'affichage</label>
+            <input type="number" id="gp-order" min="0" value="0" />
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="gp-active" checked />
+              Actif
+            </label>
+          </div>
+          <div id="gp-error" class="form-error hidden-section"></div>
+          <div class="mirror-modal-actions">
+            <button type="submit" class="btn btn-primary" id="gp-submit">Enregistrer</button>
+            <button type="button" class="btn btn-outline" id="gp-cancel">Annuler</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-simple-files">
+    <div class="mirrors-header">
+      <h2>Fichiers simples</h2>
+      <button type="button" class="btn btn-primary" id="add-sf-btn">+ Ajouter un fichier simple</button>
+    </div>
+    <p class="admin-hint">Ces items apparaissent dans la section « Fichiers Simples » sur la page d'accueil.</p>
+    <div class="table-wrapper">
+      <table id="sf-table">
+        <thead>
+          <tr>
+            <th>Ordre</th>
+            <th>ID</th>
+            <th>Titre</th>
+            <th>Type</th>
+            <th>Format</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="sf-tbody">
+          <tr><td colspan="7" class="loading-cell">Chargement...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="sf-modal" class="modal-overlay hidden-section">
+      <div class="modal-content mirror-modal-content">
+        <span class="modal-close" id="sf-modal-close">&times;</span>
+        <h3>Ajouter un fichier simple</h3>
+        <form id="sf-form" novalidate>
+          <div class="form-group search-group">
+            <label for="sf-search">Rechercher un item</label>
+            <input type="text" id="sf-search" placeholder="Tapez le titre de l'item..." autocomplete="off" />
+            <div id="sf-search-results" class="search-results-dropdown hidden-section"></div>
+          </div>
+          <input type="hidden" id="sf-item-id" value="" />
+          <div id="sf-selected" class="hidden-section">
+            <div class="featured-selected-item">
+              <span id="sf-selected-title"></span>
+              <span id="sf-selected-info"></span>
+            </div>
+          </div>
+          <div id="sf-error" class="form-error hidden-section"></div>
+          <div class="mirror-modal-actions">
+            <button type="submit" class="btn btn-primary" id="sf-submit">Ajouter</button>
+            <button type="button" class="btn btn-outline" id="sf-cancel">Annuler</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/home.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/mirrors.js') }}?v=1"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/featured.js') }}?v=1"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/simple_files.js') }}?v=1"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/geopackages.js') }}?v=1"></script>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends 'base_admin.html' %}
+
+{% set title = 'Administration — Utilisateurs' %}
+
+{% block admin_content %}
+<div class="moderation-section">
+  <div class="mod-panel">
+    <h2>Liste des utilisateurs</h2>
+    <div class="table-wrapper">
+      <table id="users-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Pseudo</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr>
+            <td data-label="ID">{{ user.id }}</td>
+            <td data-label="Nom">{{ user.prenom|e }} {{ user.nom|e }}</td>
+            <td data-label="Pseudo">{{ user.pseudo|e }}</td>
+            <td data-label="Statut">
+              {% if user.banned %}
+                <span class="badge badge-rejected">Banni</span>
+              {% elif user.muted_until and user.muted_until > now %}
+                <span class="badge badge-pending">Muet jusqu'au {{ user.muted_until.strftime('%d/%m/%Y %H:%M') }}</span>
+              {% elif user.warned %}
+                <span class="badge badge-warning">Averti</span>
+              {% elif not user.is_active %}
+                <span class="badge badge-pending">Inactif</span>
+              {% else %}
+                <span class="badge badge-verified">Actif</span>
+              {% endif %}
+            </td>
+            <td data-label="Action">
+              <div class="admin-actions-cell">
+                <button class="btn btn-sm btn-danger admin-user-action" data-user-id="{{ user.id }}" data-action="ban">Bannir</button>
+                <button class="btn btn-sm btn-outline admin-user-action" data-user-id="{{ user.id }}" data-action="tempban">Ban temp.</button>
+                <button class="btn btn-sm btn-outline admin-user-action" data-user-id="{{ user.id }}" data-action="mute">Mute</button>
+                <button class="btn btn-sm btn-outline admin-user-action" data-user-id="{{ user.id }}" data-action="warn">Avertir</button>
+                <button class="btn btn-sm btn-outline admin-user-action" data-user-id="{{ user.id }}" data-action="kick">Kick</button>
+                {% if user.banned %}
+                <button class="btn btn-sm btn-soft-unban admin-user-action" data-user-id="{{ user.id }}" data-action="unban">Débannir</button>
+                {% endif %}
+                {% if user.muted_until %}
+                <button class="btn btn-sm btn-outline admin-user-action" data-user-id="{{ user.id }}" data-action="unmute">Démute</button>
+                {% endif %}
+                {% if user.warned %}
+                <button class="btn btn-sm btn-outline admin-user-action" data-user-id="{{ user.id }}" data-action="unwarn">Effacer avert.</button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if total_pages > 1 %}
+  {% set page_numbers = page_numbers %}
+  {% set base_url = '/admin/users' %}
+  {% include 'partials/pagination.html' %}
+  {% endif %}
+</div>
+
+<div id="user-action-modal" class="modal-overlay hidden-section">
+  <div class="modal-content mirror-modal-content">
+    <span class="modal-close" id="user-action-modal-close">&times;</span>
+    <h3 id="user-action-modal-title">Action</h3>
+    <form id="user-action-form" novalidate>
+      <input type="hidden" id="user-action-id" value="" />
+      <input type="hidden" id="user-action-type" value="" />
+      <div class="form-group" id="user-action-duration-group">
+        <label for="user-action-duration">Durée (en heures)</label>
+        <input type="number" id="user-action-duration" min="1" value="24" />
+      </div>
+      <div class="form-group hidden-section" id="user-action-reason-group">
+        <label for="user-action-reason">Raison de l'avertissement</label>
+        <textarea id="user-action-reason" rows="3" placeholder="Motif de l'avertissement..."></textarea>
+      </div>
+      <div id="user-action-error" class="form-error hidden-section"></div>
+      <div class="mirror-modal-actions">
+        <button type="submit" class="btn btn-primary" id="user-action-submit">Confirmer</button>
+        <button type="button" class="btn btn-outline" id="user-action-cancel">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/users.js') }}"></script>
+{% endblock %}

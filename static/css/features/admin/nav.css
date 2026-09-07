@@ -1,0 +1,236 @@
+/* ────────────────────────────────────────────
+   Admin dashboard styles — navigation & layout
+   ──────────────────────────────────────────── */
+
+.admin-page {
+  padding: var(--space-xl) 0;
+}
+
+.admin-section {
+  min-height: calc(100vh - 200px);
+}
+
+/* Admin navigation bar */
+.admin-nav {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border-light);
+  padding-bottom: 0.5rem;
+}
+
+.admin-nav a {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.admin-nav a:hover {
+  background: var(--surface-gray);
+  color: var(--forest);
+}
+
+.admin-nav a.active {
+  color: var(--forest);
+  border-bottom: 2px solid var(--forest);
+  font-weight: 700;
+}
+
+/* Admin form elements */
+.admin-form-inline {
+  display: inline;
+}
+
+.admin-btn-action {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.75rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--white);
+  margin: 2px;
+  transition: opacity 0.15s ease;
+}
+
+.admin-btn-action:hover {
+  opacity: 0.85;
+}
+
+.admin-btn-resolve {
+  background: var(--color-success);
+}
+
+.admin-btn-resolve:hover {
+  opacity: 0.85;
+}
+
+.admin-btn-dismiss {
+  background: var(--color-muted);
+}
+
+.admin-btn-dismiss:hover {
+  opacity: 0.85;
+}
+
+/* Filter navigation bar (status/type selectors) */
+.admin-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border-light);
+  padding-bottom: 0.5rem;
+}
+
+.admin-filters a,
+.admin-filters button {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.admin-filters a:hover,
+.admin-filters button:hover {
+  background: var(--surface-gray);
+  color: var(--forest);
+}
+
+.admin-filters a.active,
+.admin-filters button.active {
+  color: var(--forest);
+  border-bottom: 2px solid var(--forest);
+  font-weight: 700;
+}
+
+/* ── Moderation tab styles ── */
+
+.mod-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.mod-tab {
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.mod-tab:hover {
+  background: var(--surface-gray);
+  color: var(--forest);
+}
+
+.mod-tab.active {
+  color: var(--forest);
+  border-bottom: 2px solid var(--forest);
+  font-weight: 700;
+}
+
+/* ── Moderation panel styles ── */
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.moderation-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.mod-panel {
+  width: 100%;
+  align-self: center;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.mod-panel table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.925rem;
+}
+
+/* ── Admin table styles (consistent across all sections) ── */
+
+.admin-page table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 0.925rem;
+}
+
+.admin-page table thead tr {
+  background: var(--surface-gray);
+}
+
+.admin-page table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  color: var(--forest);
+  border-bottom: 2px solid var(--border-light);
+}
+
+.admin-page table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+
+.admin-page table tbody tr:hover {
+  background: var(--forest-alpha-04);
+}
+
+.admin-page table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Admin title headings */
+.admin-page h1 {
+  font-size: 1.5rem;
+  color: var(--forest);
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Moderation pagination ── */
+
+.mod-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.mod-pagination-nav .pagination-numbers {
+  gap: 0.25rem;
+}

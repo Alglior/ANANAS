@@ -1,0 +1,58 @@
+{% macro author_avatar(author_name, user_id, avatar_path) %}
+{% if user_id and avatar_path %}
+<img src="{{ avatar_path }}" alt="" class="comment-avatar">
+{% elif user_id %}
+<span class="comment-avatar-initials">{{ author_name[:1] }}</span>
+{% endif %}
+{% endmacro %}
+
+{% macro author_link(author_name, user_id, avatar_path) %}
+{% if user_id %}
+<a href="/profile/{{ user_id }}" class="comment-author-wrap">
+  {{ author_avatar(author_name, user_id, avatar_path) }}
+  <span class="comment-author-name">{{ author_name|e }}</span>
+</a>
+{% else %}
+<span class="comment-author-wrap">
+  <span class="comment-avatar-initials">{{ author_name[:1] }}</span>
+  <span class="comment-author-name">{{ author_name|e }}</span>
+</span>
+{% endif %}
+{% endmacro %}
+
+<li class="comment-item" data-comment-id="{{ comment.id }}">
+  <div class="comment-body">
+    <div class="comment-header">
+      {{ author_link(comment.author_name, comment.user_id, comment.user_avatar) }}
+      <span class="comment-date">{{ comment.created_at.strftime('%d/%m/%Y') if comment.created_at else '' }}</span>
+    </div>
+    <div class="comment-text">{{ comment.content|e }}</div>
+    <div class="comment-actions">
+      {% if current_user %}
+      <button class="comment-reply-btn" data-parent-id="{{ comment.id }}">Répondre</button>
+      {% endif %}
+    </div>
+    {% if comment.replies %}
+    <ul class="comment-replies">
+      {% for reply in comment.replies %}
+      {% with comment=reply %}
+      <li class="comment-item" data-comment-id="{{ comment.id }}">
+        <div class="comment-body">
+          <div class="comment-header">
+            {{ author_link(comment.author_name, comment.user_id, comment.user_avatar) }}
+            <span class="comment-date">{{ comment.created_at.strftime('%d/%m/%Y') if comment.created_at else '' }}</span>
+          </div>
+          <div class="comment-text">{{ comment.content|e }}</div>
+          <div class="comment-actions">
+            {% if current_user %}
+            <button class="comment-reply-btn" data-parent-id="{{ comment.id }}">Répondre</button>
+            {% endif %}
+          </div>
+        </div>
+      </li>
+      {% endwith %}
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+</li>

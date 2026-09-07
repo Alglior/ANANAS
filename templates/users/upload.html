@@ -1,0 +1,639 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/features/upload-page.css') }}" />
+{% endblock %}
+
+{% block content %}
+<main>
+  <section class="upload-page">
+    <div class="container upload-container">
+      <div class="upload-header">
+        <h1>Publier des données</h1>
+        <p>Téléversez vos fichiers géospatiaux sur A.N.A.N.A.S 
+           <a href="#" id="relaunchTuto" class="tuto-relaunch">Guide</a>
+        </p>
+      </div>
+
+      <div class="upload-tabs">
+        <button class="upload-tab active" data-tab="publish">Publier</button>
+        <button class="upload-tab" data-tab="drafts">Mes brouillons {% if draft_total %}({{ draft_total }}){% endif %}</button>
+        <button class="upload-tab" data-tab="publications">Mes publications ({{ publications | length }})</button>
+        <button class="upload-tab" data-tab="trash">Corbeille {% if trash_total %}({{ trash_total }}){% endif %}</button>
+      </div>
+
+      <div class="upload-tab-content active" id="tab-publish">
+
+      <div class="publications-tuto-section">
+        <p><strong>Besoin d'aide ?</strong> Regardez le tutoriel pour apprendre à télécharger ou créer un lien Magnet.</p>
+        <button type="button" class="btn btn-primary btn-sm publications-tuto-btn" id="openTutoVideoBtn">
+          ▶ Voir le tutoriel
+        </button>
+      </div>
+
+      <div class="json-drop-zone" id="jsonDropZone">
+        <div class="json-drop-content">
+          <p class="json-drop-text">Déposez vos fichiers JSON ici</p>
+          <p class="json-drop-subtext">ou cliquez pour sélectionner un ou plusieurs fichiers</p>
+          <input type="file" id="multiJsonInput" accept=".json,application/json" multiple hidden>
+        </div>
+      </div>
+      <div class="json-upload-results" id="jsonUploadResults"></div>
+
+      <details class="bulk-script-section">
+        <summary>Script Python pour publier en masse</summary>
+        <p class="script-help">Copiez ce script, modifiez les identifiants et le chemin du dossier, puis lancez-le.</p>
+        <div class="script-code-wrapper">
+          <button class="copy-script-btn">Copier</button>
+          <pre id="bulkUploadScript" class="bulk-script-code">import requests, json, os, sys
+
+# ─── Configuration ───
+SITE_URL = "https://votre-site-ananas.fr"
+USERNAME = "votre-pseudo"
+PASSWORD = "votre-mot-de-passe"
+JSON_DIR = "/chemin/vers/vos/json"  # dossier contenant les fichiers .json
+
+session = requests.Session()
+
+# 1. Récupérer le token CSRF
+resp = session.get(f"{SITE_URL}/connexion")
+csrf_token = session.cookies.get("csrf_token", "")
+
+# 2. Se connecter
+resp = session.post(
+    f"{SITE_URL}/connexion",
+    data={"pseudo": USERNAME, "password": PASSWORD, "_csrf_token": csrf_token},
+    allow_redirects=False,
+)
+if resp.status_code not in (302, 200):
+    print(f"Erreur de connexion: {resp.status_code}")
+    sys.exit(1)
+print(f"Connecté en tant que {USERNAME}")
+
+# 3. Récupérer le token CSRF pour les API
+resp = session.get(f"{SITE_URL}/upload")
+csrf_token = session.cookies.get("csrf_token", "")
+
+# 4. Parcourir les JSON du dossier
+json_files = sorted([f for f in os.listdir(JSON_DIR) if f.endswith(".json")])
+print(f"{len(json_files)} fichiers JSON trouvés")
+
+created = 0
+for fname in json_files:
+    fpath = os.path.join(JSON_DIR, fname)
+    with open(fpath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    payload = {
+        "title": data.get("title", fname.replace(".json", "")),
+        "type": data.get("type", "geodonnee"),
+        "format_type": data.get("format_type", ""),
+        "description": data.get("description", ""),
+        "organization_id": data.get("organization_id", ""),
+        "license_type": data.get("license_type", ""),
+        "custom_license_text": data.get("custom_license_text", ""),
+        "status": "draft",
+        "tags": data.get("tags", []),
+    }
+
+    resp = session.post(
+        f"{SITE_URL}/api/upload/item",
+        json=payload,
+        headers={"X-CSRF-Token": csrf_token, "Content-Type": "application/json"},
+    )
+    if resp.status_code == 200:
+        print(f"  ✓ {fname}")
+        created += 1
+    else:
+        print(f"  ✗ {fname}: {resp.status_code} {resp.text[:100]}")
+
+print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
+        </div>
+      </details>
+
+      <form class="upload-form" id="uploadForm">
+        <div class="upload-section" id="tutoSectionInfo">
+          <h2>Informations de l'item</h2>
+          <div class="form-group">
+            <label for="title" class="label-with-help">Titre <span class="help-icon" data-tooltip="Nom affiché publiquement dans le catalogue des données. C'est le titre qui sera visible par les utilisateurs finaux.">?</span></label>
+            <input type="text" id="title" name="title" placeholder="Ex: Les données IRIS France" required />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="type" class="label-with-help">Type <span class="help-icon" data-tooltip="Catégorie principale du contenu : un jeu de données brutes, une carte numérisée, une application">?</span></label>
+              <select id="type" name="type">
+                {% set catalogues_upload = [
+                  ('geodonnee', 'donnees', 'Géodonnées'),
+                  ('carte', 'cartes', 'Carte'),
+                  ('application', 'applications', 'Application')
+                ] %}
+                {% for value, cat, label in catalogues_upload %}
+                  {% if is_catalogue_enabled(cat) %}
+                <option value="{{ value }}">{{ label }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="format_type" class="label-with-help">Format du fichier <span class="help-icon" data-tooltip="Le format technique du fichier principal que vous téléversez. Cela permet d'adapter l'indexation dans le catalogue.">?</span></label>
+              <select id="format_type" name="format_type">
+                <option value="geopackage">Geopackage (.gpkg)</option>
+                <option value="csv">CSV</option>
+                <option value="shp">Shapefile (.shp)</option>
+                <option value="geojson">GeoJSON</option>
+                <option value="kml">KML</option>
+                <option value="gml">GML</option>
+                <option value="gpx">GPX</option>
+                <option value="topojson">TopoJSON</option>
+                <option value="geoparquet">GeoParquet</option>
+                <option value="tab">MapInfo TAB</option>
+                <option value="xml">XML</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="description" class="label-with-help">Description <span class="help-icon" data-tooltip="Décrivez le contenu, la méthode de collecte, les conditions d'utilisation. Cette description sera visible publiquement dans la fiche catalogue de l'item.">?</span></label>
+            <textarea id="description" name="description" rows="3" placeholder="Décrivez brièvement vos données..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="tags" class="label-with-help">Tags <span class="help-icon" data-tooltip="Sélectionnez des tags dans la liste ou saisissez vos propres mots-clés. Les tags aident à retrouver vos données dans le catalogue.">?</span></label>
+            <div class="tag-selector" id="tagSelector">
+              <div class="tag-selector-header">
+                <div class="tag-search-wrap">
+                  <input type="text" class="tag-search" id="tagSearch" placeholder="Rechercher un tag..." />
+                </div>
+              </div>
+              <div class="tag-categories" id="tagCategories">
+                {% for cat in predefined_tags.categories %}
+                <div class="tag-category" data-category="{{ cat.name }}">
+                  <button type="button" class="tag-category-toggle" aria-expanded="false">
+                    <span class="tag-category-name">{{ cat.name }}</span>
+                    <span class="tag-category-count">{{ cat.tags|length }}</span>
+                    <span class="tag-category-arrow">▶</span>
+                  </button>
+                  <div class="tag-category-body" hidden>
+                    {% for tag in cat.tags %}
+                    <button type="button" class="tag-chip" data-tag="{{ tag }}">{{ tag }}</button>
+                    {% endfor %}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="tag-no-results" id="tagNoResults" hidden>Aucun tag trouvé</div>
+              <input type="hidden" id="tags" name="tags" value="" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="organization_id" class="label-with-help">Organisation <span class="help-icon" data-tooltip="Groupe auquel appartient cette publication. Les métadonnées seront associées à l'organisation sélectionnée. Laissez vide pour une publication personnelle.">?</span></label>
+            <select id="organization_id" name="organization_id">
+              <option value="">-- Aucun --</option>
+              {% set user_orgs = current_user.organizations | selectattr('is_active', 'equalto', True) | list %}
+              {% for m in user_orgs %}
+              <option value="{{ m.organization.id }}">{{ m.organization.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="license_type" class="label-with-help">Licence <span class="help-icon" data-tooltip="Conditions d'utilisation et de réutilisation de vos données. Cela indique aux utilisateurs ce qu'ils peuvent faire avec votre contenu.">?</span></label>
+            <select id="license_type" name="license_type">
+              <option value="">-- Aucune --</option>
+              <option value="cc-by">CC-BY 4.0 (Attribution)</option>
+              <option value="odc-odbl">ODC-ODbL (Base de données)</option>
+              <option value="licence-ouverte">Licence Ouverte (Réutilisation libre)</option>
+              <option value="public-domain">Domaine Public</option>
+              <option value="other">Autre (préciser)</option>
+            </select>
+          </div>
+
+          <div class="form-group hidden-section" id="licenseOtherGroup">
+            <label for="custom_license_text" class="label-with-help">Titre de la licence <span class="help-icon" data-tooltip="Nom court pour identifier votre licence personnalisée. Ce nom sera affiché publiquement dans la fiche catalogue de l'item.">?</span></label>
+            <input type="text" id="custom_license_text" name="custom_license_text" placeholder="Ex: Licence A.N.A.N.A.S 2025" />
+          </div>
+        </div>
+
+          <div class="form-group">
+            <label class="label-with-help">Format des données <span class="help-icon" data-tooltip="Choisissez 'Simple' pour un fichier unique avec une seule couche, 'Pack' pour un fichier unique multi-couches, ou 'Individuelles' pour plusieurs fichiers distincts.">?</span></label>
+            <div class="radio-group" id="dataFormatLevelGroup">
+              <label class="radio-label">
+                <input type="radio" name="data_format_level" value="simple" checked>
+                <span class="radio-text">Simple <small>Un seul fichier, une seule couche</small></span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="data_format_level" value="pack">
+                <span class="radio-text">Pack <small>Un seul fichier contenant plusieurs couches</small></span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="data_format_level" value="individual">
+                <span class="radio-text">Individuelles <small>Plusieurs fichiers distincts</small></span>
+              </label>
+            </div>
+          </div>
+
+        <div class="upload-section" id="tutoSectionData">
+          <h2>Données (optionnel)</h2>
+
+          <div id="dataTextInputGroup" class="form-group data-input-group">
+            <label for="data_input" class="label-with-help">Coller vos données <span class="help-icon" data-tooltip="Copiez-collez votre tableau ici (format CSV : virgules ou tabs). Seules les 50 premières lignes seront conservées pour l'aperçu dans le catalogue.">?</span></label>
+            <div class="form-hint">Les 50 premières lignes seront utilisées uniquement pour prévisualiser la table dans le catalogue</div>
+            <textarea id="data_input" name="data_input" rows="10" placeholder="Collez votre tableau ici (format CSV) :&#10;colonne1,colonne2,colonne3&#10;valeur1,valeur2,valeur3&#10;valeur4,valeur5,valeur6"></textarea>
+            <div class="data-input-footer">
+              <span class="data-line-count" id="dataLineCount">0 ligne(s) / 50 max</span>
+              <span class="data-truncate-note">Seules les 50 premières lignes seront conservées</span>
+            </div>
+          </div>
+
+          <div id="magnetSection" class="form-group">
+            <label class="label-with-help">Liens Magnet <span class="help-icon" data-tooltip="Liens torrent qui pointent vers vos fichiers complets. Un lien sera téléversé, décodé et distribué par nos nœuds de stockage géo-distribués.">?</span></label>
+            <div id="magnetEntries"></div>
+            <div class="magnet-actions">
+              <button type="button" class="btn btn-outline mt-10" id="addMagnetBtn">+ Ajouter un lien</button>
+              <button type="button" class="btn btn-outline mt-10" id="bulkMagnetBtn">Ajouter en lot</button>
+            </div>
+            <div id="bulkMagnetGroup" class="hidden-section bulk-magnet-group">
+              <div class="form-group">
+                <label>Collez vos liens Magnet (1 par ligne)</label>
+                <textarea id="bulkMagnetTextarea" rows="5" placeholder="magnet:?xt=urn:btih:abc123...&#10;magnet:?xt=urn:btih:def456...&#10;magnet:?xt=urn:btih:ghi789..."></textarea>
+                <div class="bulk-magnet-footer">
+                  <span id="bulkMagnetCount" class="data-line-count">0 liens détectés</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Zoom pour tous ces liens</label>
+                <div class="zoom-pills" id="bulkZoomPills">
+                  <button type="button" class="zoom-pill" data-zoom="iris">IRIS</button>
+                  <button type="button" class="zoom-pill" data-zoom="communes">Communes</button>
+                  <button type="button" class="zoom-pill" data-zoom="departements">Départements</button>
+                  <button type="button" class="zoom-pill active" data-zoom="regions">Régions</button>
+                  <button type="button" class="zoom-pill" data-zoom="pays">Pays</button>
+                </div>
+              </div>
+              <div class="bulk-magnet-actions">
+                <button type="button" class="btn btn-primary" id="bulkMagnetConfirm">Ajouter ces X liens</button>
+                <button type="button" class="btn btn-outline" id="bulkMagnetCancel">Annuler</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="upload-section" id="tutoSectionImages">
+          <h2>Images (optionnel)</h2>
+          <div class="form-group">
+            <label class="label-with-help">Liens Magnet vers des images <span class="help-icon" data-tooltip="Collez un ou plusieurs liens Magnet pointant vers des images (PNG, JPG, WebP...). Les images seront téléchargées une fois et mises en cache sur le serveur. Les liens Magnet restent visibles sur la fiche.">?</span></label>
+          </div>
+          <p class="upload-info">Taille recommandée : au moins <strong>800×800 px</strong>, idéalement <strong>1200×1200 px</strong> (carré). Les images sont affichées en 160×160 px dans la liste et remplissent une colonne de 420 px sur la page détail.</p>
+          <div id="imageMagnetEntries"></div>
+          <div class="magnet-actions">
+            <button type="button" class="btn btn-outline" id="addImageMagnetBtn">+ Ajouter une image</button>
+            <button type="button" class="btn btn-outline" id="bulkImageMagnetBtn">Ajouter en lot</button>
+          </div>
+          <div id="bulkImageMagnetGroup" class="hidden-section bulk-magnet-group">
+            <div class="form-group">
+              <label>Collez vos liens Magnet d'images (1 par ligne)</label>
+              <textarea id="bulkImageTextarea" rows="5" placeholder="magnet:?xt=urn:btih:abc123...&#10;magnet:?xt=urn:btih:def456..."></textarea>
+              <div class="bulk-magnet-footer">
+                <span id="bulkImageCount" class="data-line-count">0 liens détectés</span>
+              </div>
+            </div>
+            <div class="bulk-magnet-actions">
+              <button type="button" class="btn btn-primary" id="bulkImageConfirm">Ajouter ces X liens</button>
+              <button type="button" class="btn btn-outline" id="bulkImageCancel">Annuler</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="upload-section">
+          <h2>Documentation PDF (optionnel)</h2>
+          <div class="form-group">
+            <label for="pdf_magnet_link" class="label-with-help">Lien Magnet du document PDF <span class="help-icon" data-tooltip="Ajoutez un lien Magnet vers un document PDF de documentation ou de notice technique. Cela améliore votre score IMOD (Meta : +2 points).">?</span></label>
+            <input type="text" id="pdf_magnet_link" name="pdf_magnet_link" class="form-control" placeholder="magnet:?xt=urn:btih:...">
+            <div class="form-hint">Ajoutez une documentation PDF (notice, rapport technique) pour gagner +2 points dans le score IMOD.</div>
+          </div>
+        </div>
+
+        <div class="upload-section">
+          <h2>Lien de visualisation (optionnel)</h2>
+          <div class="form-row viz-links-row">
+            <div class="form-group">
+              <label for="viz_name" class="label-with-help">Nom <span class="help-icon" data-tooltip="Nom court pour identifier ce lien de visualisation (ex : 'MapView', 'Dashboard QGIS').">?</span></label>
+              <input type="text" id="viz_name" name="viz_name" placeholder="Ex: MapView Interactive" />
+            </div>
+            <div class="form-group">
+              <label for="viz_url" class="label-with-help">URL <span class="help-icon" data-tooltip="L'adresse web du service de visualisation (WMS, WFS, Mapbox, Leaflet, etc.). L'URL doit être publiquement accessible.">?</span></label>
+              <input type="url" id="viz_url" name="viz_url" placeholder="https://..." />
+            </div>
+          </div>
+        </div>
+
+        <!-- IMOD Preview -->
+        <div class="upload-section" id="imodPreviewPanel">
+          <h2>Indice de qualité des métadonnées
+            <span class="help-icon" data-tooltip="Aperçu en temps réel du score IMOD de votre fiche. Remplissez les champs pour voir le score évoluer. Un score &ge;70 est considéré Élevé, [40,70[ Moyen, &lt;40 Faible. Certains critères (avis, commentaires, vérification) ne sont évaluables qu'après publication.">?</span>
+          </h2>
+          <div class="imod-container">
+            <div class="imod-global imod-faible">
+              <span class="imod-score imod-faible">0</span>
+              <span class="imod-label">/100</span>
+              <span class="imod-level imod-faible">Niveau Faible</span>
+            </div>
+            <div class="imod-details">
+              <div class="imod-dimension imod-meta">
+                <span class="imod-dim-label">Meta</span>
+                <span class="imod-dim-bar"><span class="imod-dim-fill" style="width:0%"></span></span>
+                <span class="imod-dim-value">0/45</span>
+              </div>
+              <div class="imod-dimension imod-tech">
+                <span class="imod-dim-label">Tech</span>
+                <span class="imod-dim-bar"><span class="imod-dim-fill" style="width:0%"></span></span>
+                <span class="imod-dim-value">0/36</span>
+              </div>
+              <div class="imod-dimension imod-rich">
+                <span class="imod-dim-label">Rich</span>
+                <span class="imod-dim-bar"><span class="imod-dim-fill" style="width:0%"></span></span>
+                <span class="imod-dim-value">0/19</span>
+              </div>
+            </div>
+          </div>
+          <div class="imod-checklist"></div>
+        </div>
+
+        <div class="form-actions upload-actions" id="tutoSectionActions">
+          <button type="submit" class="btn btn-primary" id="uploadBtn">
+            Publier les données
+          </button>
+          <button type="button" class="btn btn-outline" id="draftBtn">
+            Enregistrer comme brouillon
+          </button>
+          <button type="button" class="btn btn-outline" id="downloadJsonBtn" title="Télécharger la fiche info au format JSON">
+            Télécharger la fiche (JSON)
+          </button>
+          <span class="form-status" id="uploadStatus"></span>
+        </div>
+
+        <div id="uploadSpinnerOverlay" class="spinner-overlay hidden-section">
+          <div class="spinner-card">
+            <div class="spinner-circle"></div>
+            <p class="spinner-text" id="spinnerText">Téléversement en cours...</p>
+            <p class="spinner-subtext" id="spinnerSubtext"></p>
+            <div id="spinnerImagesPending" class="hidden-section">
+              <p class="spinner-images-note">Images en cours de téléchargement depuis Magnet...</p>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      </div>
+
+      <div class="upload-tab-content" id="tab-drafts">
+        <div class="publications-tuto-section">
+          <p><strong>Besoin d'aide ?</strong> Regardez le tutoriel pour apprendre à télécharger ou créer un lien Magnet.</p>
+          <button type="button" class="btn btn-primary btn-sm publications-tuto-btn" id="openTutoVideoBtnDrafts">
+            ▶ Voir le tutoriel
+          </button>
+        </div>
+        {% if drafts %}
+        <ul class="upload-history-list" id="drafts-list">
+          {% for draft in drafts %}
+          <li class="upload-history-item" data-draft-id="{{ draft.id }}">
+            <a href="/catalogue/item/{{ draft.id }}" class="upload-history-link">{{ draft.title }}</a>
+            <span class="upload-history-meta">
+              <span class="badge badge-draft">Brouillon</span>
+              {{ draft.created_at.strftime('%d/%m/%Y %H:%M') }}
+              <a href="/upload?edit={{ draft.id }}" class="btn btn-sm">Modifier</a>
+              <button type="button" class="btn btn-sm btn-outline draft-delete-btn" data-id="{{ draft.id }}">Supprimer</button>
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% if draft_total_pages > 1 %}
+        <nav class="pagination draft-pagination" id="draft-pagination" aria-label="Pagination des brouillons">
+          {% if draft_page > 1 %}
+            <a class="btn btn-outline transition-hover pagination-prev" href="#" data-page="{{ draft_page - 1 }}">&#9664;&nbsp;Précédent</a>
+          {% else %}
+            <span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>
+          {% endif %}
+          <div class="pagination-numbers">
+            {% for p in draft_page_numbers %}
+              {% if p == "..." %}
+                <span class="pagination-ellipsis">&hellip;</span>
+              {% elif p == draft_page %}
+                <span class="pagination-link active">{{ p }}</span>
+              {% else %}
+                <a class="pagination-link" href="#" data-page="{{ p }}">{{ p }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% if draft_page < draft_total_pages %}
+            <a class="btn btn-outline transition-hover pagination-next" href="#" data-page="{{ draft_page + 1 }}">Suivant&nbsp;&#9658;</a>
+          {% else %}
+            <span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>
+          {% endif %}
+        </nav>
+        {% else %}
+        <div class="draft-pagination" id="draft-pagination"></div>
+        {% endif %}
+        {% else %}
+        <p class="no-data-message" id="drafts-empty">Aucun brouillon pour le moment.</p>
+        <div class="draft-pagination" id="draft-pagination"></div>
+        {% endif %}
+      </div>
+
+      <div class="upload-tab-content" id="tab-publications">
+        <div class="publications-tuto-section">
+          <p><strong>Besoin d'aide ?</strong> Regardez le tutoriel pour apprendre à télécharger ou créer un lien Magnet.</p>
+          <button type="button" class="btn btn-primary btn-sm publications-tuto-btn" id="openTutoVideoBtnPubs">
+            ▶ Voir le tutoriel
+          </button>
+        </div>
+        {% if publications %}
+        <ul class="upload-history-list" id="publications-list">
+          {% for item in publications %}
+          <li class="upload-history-item">
+            <a href="/catalogue/item/{{ item.id }}" class="upload-history-link">{{ item.title }}</a>
+            <span class="upload-history-meta">
+              <span class="badge badge-published">{{ item.type | replace('geodonnee', 'Géodonnée') | replace('carte', 'Carte') | replace('application', 'Application') }}</span>
+              {{ item.created_at.strftime('%d/%m/%Y') }}
+              <a href="/upload?edit={{ item.id }}" class="btn btn-sm">Modifier</a>
+              <button type="button" class="btn btn-sm btn-outline publication-delete-btn" data-id="{{ item.id }}">Supprimer</button>
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% if publications_total_pages > 1 %}
+        <nav class="pagination publications-pagination" id="publications-pagination" aria-label="Pagination des publications">
+          {% if publications_page > 1 %}
+            <a class="btn btn-outline transition-hover pagination-prev" href="#" data-page="{{ publications_page - 1 }}">&#9664;&nbsp;Précédent</a>
+          {% else %}
+            <span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>
+          {% endif %}
+          <div class="pagination-numbers">
+            {% for p in publications_page_numbers %}
+              {% if p == "..." %}
+                <span class="pagination-ellipsis">&hellip;</span>
+              {% elif p == publications_page %}
+                <span class="pagination-link active">{{ p }}</span>
+              {% else %}
+                <a class="pagination-link" href="#" data-page="{{ p }}">{{ p }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% if publications_page < publications_total_pages %}
+            <a class="btn btn-outline transition-hover pagination-next" href="#" data-page="{{ publications_page + 1 }}">Suivant&nbsp;&#9658;</a>
+          {% else %}
+            <span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>
+          {% endif %}
+        </nav>
+        {% else %}
+        <div class="publications-pagination" id="publications-pagination"></div>
+        {% endif %}
+        {% else %}
+        <p class="no-data-message">Vous n'avez pas encore publié de données.</p>
+        <div class="publications-pagination" id="publications-pagination"></div>
+        {% endif %}
+      </div>
+
+      <div class="upload-tab-content" id="tab-trash">
+        <div class="publications-tuto-section">
+          <p><strong>Besoin d'aide ?</strong> Regardez le tutoriel pour apprendre à télécharger ou créer un lien Magnet.</p>
+          <button type="button" class="btn btn-primary btn-sm publications-tuto-btn" id="openTutoVideoBtnTrash">
+            ▶ Voir le tutoriel
+          </button>
+        </div>
+        {% if trashed %}
+        <p class="trash-hint">Les éléments supprimés restent ici 7 jours avant suppression définitive.</p>
+        <ul class="upload-history-list" id="trash-list">
+          {% for item in trashed %}
+          <li class="upload-history-item" data-draft-id="{{ item.id }}">
+            <span class="upload-history-link trashed-title">{{ item.title }}</span>
+            <span class="upload-history-meta">
+              <span class="badge badge-trashed">Corbeille</span>
+              {{ item.deleted_at.strftime('%d/%m/%Y %H:%M') if item.deleted_at else '' }}
+              <button type="button" class="btn btn-sm btn-outline trash-restore-btn" data-id="{{ item.id }}">Restaurer</button>
+              <button type="button" class="btn btn-sm btn-outline trash-purge-btn" data-id="{{ item.id }}">Supprimer</button>
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% if trash_total_pages > 1 %}
+        <nav class="pagination trash-pagination" id="trash-pagination" aria-label="Pagination de la corbeille">
+          {% if trash_page > 1 %}
+            <a class="btn btn-outline transition-hover pagination-prev" href="#" data-page="{{ trash_page - 1 }}">&#9664;&nbsp;Précédent</a>
+          {% else %}
+            <span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>
+          {% endif %}
+          <div class="pagination-numbers">
+            {% for p in trash_page_numbers %}
+              {% if p == "..." %}
+                <span class="pagination-ellipsis">&hellip;</span>
+              {% elif p == trash_page %}
+                <span class="pagination-link active">{{ p }}</span>
+              {% else %}
+                <a class="pagination-link" href="#" data-page="{{ p }}">{{ p }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% if trash_page < trash_total_pages %}
+            <a class="btn btn-outline transition-hover pagination-next" href="#" data-page="{{ trash_page + 1 }}">Suivant&nbsp;&#9658;</a>
+          {% else %}
+            <span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>
+          {% endif %}
+        </nav>
+        {% else %}
+        <div class="trash-pagination" id="trash-pagination"></div>
+        {% endif %}
+        {% else %}
+        <p class="no-data-message" id="trash-empty">La corbeille est vide.</p>
+        <div class="trash-pagination" id="trash-pagination"></div>
+        {% endif %}
+      </div>
+
+      {% if current_user.uploads %}
+      <div class="upload-history-section">
+        <h2>Mes téléversements récents</h2>
+        <ul class="upload-history-list">
+          {% for upload in current_user.uploads | sort(attribute='created_at', reverse=True) %}
+          <li class="upload-history-item">
+            {% if upload.parent_item_id %}
+            <a href="/catalogue/item/{{ upload.parent_item_id }}" class="upload-history-link">
+            {% else %}
+            <a class="upload-history-link disabled-link">
+            {% endif %}{{ upload.file_name }}</a>
+            <span class="upload-history-meta">
+              <span class="badge status-{{ upload.processing_status }}">{{ upload.processing_status }}</span>
+              {{ upload.created_at.strftime('%d/%m/%Y %H:%M') }}
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+</main>
+
+<!-- Tutorial overlay -->
+<div id="tutoOverlay" class="tuto-overlay hidden-section"></div>
+
+<!-- Video tutorial modal -->
+<div id="videoModalOverlay" class="video-modal-overlay">
+  <div class="video-modal-box">
+    <div class="video-modal-header">
+      <h3>Tutoriel — Lien Magnet</h3>
+      <button type="button" class="video-modal-close" id="videoModalClose">&times;</button>
+    </div>
+    <div class="video-modal-body">
+      <video id="tutoVideo" controls preload="metadata">
+        <source src="{{ url_for('serve_video', filename='tuto_torrent.mp4') }}" type="video/mp4">
+        Votre navigateur ne supporte pas la lecture vidéo.
+      </video>
+    </div>
+  </div>
+</div>
+
+<div id="tutoTooltip" class="tuto-tooltip hidden-section">
+  <div class="tuto-step-indicator">
+    <span id="tutoStepCurrent">1</span>/<span id="tutoStepTotal">8</span>
+  </div>
+  <p id="tutoStepText"></p>
+  <div class="tuto-actions">
+    <button type="button" class="btn btn-sm btn-outline" id="tutoPrev">&larr; Précédent</button>
+    <button type="button" class="btn btn-sm btn-primary" id="tutoNext">Suivant &rarr;</button>
+    <button type="button" class="btn btn-sm btn-outline" id="tutoSkip">Passer</button>
+  </div>
+  <label class="tuto-dont-show">
+    <input type="checkbox" id="tutoDontShow" />
+    Ne plus afficher ce guide
+  </label>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+{% if edit_data %}
+<script id="edit-data-json" type="application/json" nonce="{{ csp_nonce }}">
+{{ edit_data | tojson | safe }}
+</script>
+{% endif %}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/upload_tuto.js') }}?v=7"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/upload.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/tabs.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/data-input.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/form-controls.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/magnets.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/image-magnets.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/payload.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/history.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/tag-selector.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/copy-script.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/video-modal.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/submit.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/imod-preview.js') }}"></script>
+{% endblock %}

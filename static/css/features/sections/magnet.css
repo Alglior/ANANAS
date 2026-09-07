@@ -1,0 +1,171 @@
+/* ────────────────────────────────────────────
+   Magnet Torrent section
+   ──────────────────────────────────────────── */
+.magnet-section {
+  padding: var(--section-padding) 0;
+  background: var(--mustard-alpha-06);
+}
+
+.magnet-header {
+  text-align: center;
+  margin-bottom: var(--section-gap-header);
+}
+
+.magnet-header h2 {
+  color: var(--forest);
+  font-size: clamp(1.6rem, 2.8vw, 2.1rem);
+  margin-bottom: 1rem;
+}
+
+.magnet-lead {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  max-width: var(--lead-max-width);
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.magnet-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+/* ── Steps column ── */
+.magnet-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.magnet-steps-title {
+  color: var(--charcoal);
+  font-size: 1.35rem;
+  margin-bottom: 1.75rem;
+}
+
+.magnet-step-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 1.25rem 0;
+}
+
+.magnet-step-number {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--forest);
+  color: var(--white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.magnet-step-heading {
+  color: var(--charcoal);
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem;
+}
+
+.magnet-step-desc {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ── Side column ── */
+.magnet-side {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.magnet-example-card {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 14px 32px var(--shadow-black-06);
+  padding: 2rem 2.5rem;
+}
+
+.magnet-example-title {
+  color: var(--charcoal);
+  font-size: 1.35rem;
+  margin: 0 0 1rem;
+}
+
+.magnet-example-desc {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin: 0 0 1rem;
+}
+
+.magnet-code {
+  display: block;
+  background: var(--forest-alpha-06);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--text-green-accent);
+  word-break: break-all;
+  margin: 0 0 1rem;
+}
+
+.magnet-code code {
+  font-family: inherit;
+  background: none;
+  padding: 0;
+}
+
+.magnet-example-note {
+  color: var(--text-secondary);
+  font-size: 0.925rem;
+  line-height: 1.7;
+}
+
+/* ── Quick facts ── */
+.magnet-quick-facts {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 14px 32px var(--shadow-black-06);
+  padding: 2rem 2.5rem;
+}
+
+.magnet-facts-title {
+  color: var(--charcoal);
+  font-size: 1.15rem;
+  margin: 0 0 1.5rem;
+}
+
+.magnet-facts-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.magnet-fact-item {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.magnet-fact-item:last-child {
+  margin-bottom: 0;
+}
+
+.magnet-fact-icon {
+  flex-shrink: 0;
+  font-size: 1.15rem;
+  margin-top: 0.1rem;
+}

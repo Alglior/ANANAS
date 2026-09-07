@@ -1,0 +1,632 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+
+{% block content %}
+<main class="detail-page"
+  data-item-id="{{ item.id }}"
+  data-comment-page="{{ comment_page }}"
+  data-comment-total-pages="{{ comment_total_pages or 1 }}"
+  data-comment-page-numbers="{{ comment_page_numbers | join(',') }}"
+  data-image-pending="{{ 'true' if item.image_magnets_pending else 'false' }}">
+
+  <section class="detail-header">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Fil d'ariane">
+        <a href="/">Accueil</a>
+        <span class="sep">&rsaquo;</span>
+        <a href="{{ item.catalogue_link }}">Catalogue</a>
+        <span class="sep">&rsaquo;</span>
+        <span>{{ item.title|e }}</span>
+      </nav>
+
+      <nav class="detail-tabs" aria-label="Actions sur la donnée">
+        {% if show_data_visualization_tabs and show_data_visualization_tabs != False %}
+          {% if active_data_tab %}
+            <a href="/catalogue/item/{{ item.id }}" class="tab-btn">Aperçu</a>
+            <a{% if data_chunks and data_chunks|length > 0 %} href="/catalogue/item/{{ item.id }}/data" class="tab-btn active"{% else %} href="#" class="tab-btn tab-btn-disabled"{% endif %}>Données</a>
+            {% if viz_links and viz_links|length > 0 %}
+            <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Réutilisation</a>
+            {% else %}
+            <a href="#" class="tab-btn tab-btn-disabled">Réutilisation</a>
+            {% endif %}
+          {% elif active_reuse_tab %}
+            <a href="/catalogue/item/{{ item.id }}" class="tab-btn">Aperçu</a>
+            {% if data_chunks and data_chunks|length > 0 %}
+            <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn">Données</a>
+            {% else %}
+            <a href="#" class="tab-btn tab-btn-disabled">Données</a>
+            {% endif %}
+            <a{% if viz_links and viz_links|length > 0 %} href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn active"{% else %} href="#" class="tab-btn tab-btn-disabled"{% endif %}>Réutilisation</a>
+          {% else %}
+            <a href="#" class="tab-btn active">Aperçu</a>
+            {% if data_chunks and data_chunks|length > 0 %}
+            <a href="/catalogue/item/{{ item.id }}/data" class="tab-btn">Données</a>
+            {% else %}
+            <a href="#" class="tab-btn tab-btn-disabled">Données</a>
+            {% endif %}
+            {% if viz_links and viz_links|length > 0 %}
+            <a href="/catalogue/item/{{ item.id }}/gallery" class="tab-btn">Réutilisation</a>
+            {% else %}
+            <a href="#" class="tab-btn tab-btn-disabled">Réutilisation</a>
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      </nav>
+    </div>
+  </section>
+
+{% if active_data_tab or active_reuse_tab %}
+  <section class="detail-body">
+    <div class="container">
+      <div class="viz-section">
+        <!-- Visualization Links (only on Reutilisation tab) -->
+        {% if active_reuse_tab %}
+        {% include 'partials/viz_links.html' %}
+        {% endif %}
+
+        <!-- Data Extractions (only on Données tab) -->
+        {% if active_data_tab and data_chunks and data_chunks|length > 0 %}
+        <section class="data-extractions-section">
+          <div class="extractions-grid">
+            {% for chunk in data_chunks %}
+            <div class="extraction-card{% if chunk.metadata_json and chunk.metadata_json.get('preview_rows') %} has-preview{% endif %}">
+              {% if chunk.metadata_json and chunk.metadata_json.get('preview_rows') %}
+              <div class="extraction-header">
+              </div>
+              {% if chunk.metadata_json.get('column_count', 0) > 0 %}
+              <div class="data-table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      {% for col in range(chunk.metadata_json.column_count) %}
+                      <th>{{ col + 1 }}</th>
+                      {% endfor %}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for row in chunk.metadata_json.preview_rows[:50] %}
+                    <tr>
+                      {% if row is string %}
+                        {% set cells = row.split(chunk.metadata_json.get('delimiter', ',')) %}
+                      {% else %}
+                        {% set cells = row %}
+                      {% endif %}
+                      {% for cell in cells[:chunk.metadata_json.column_count] %}
+                      <td>{{ cell.strip()|e }}</td>
+                      {% endfor %}
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% if chunk.metadata_json.preview_rows|length > 50 %}
+              <p class="data-more">… {{ chunk.metadata_json.preview_rows|length - 50 }} lignes supplémentaires</p>
+              {% endif %}
+              {% else %}
+              <p class="no-columns">Aucune colonne détectée dans cet extrait.</p>
+              {% endif %}
+              {% else %}
+              <div class="extraction-header">
+              </div>
+              <dl class="chunk-details">
+                {% if chunk.format_type %}
+                <div class="detail-row">
+                  <dt>Format</dt>
+                  <dd>{{ chunk.format_type|e }}</dd>
+                </div>
+                {% endif %}
+                {% if chunk.description %}
+                <div class="detail-row">
+                  <dt>Description</dt>
+                  <dd>{{ chunk.description|e }}</dd>
+                </div>
+                {% endif %}
+                {% if chunk.magnet_link %}
+                <div class="detail-row">
+                  <dt>Lien</dt>
+                  <dd><a href="{{ chunk.magnet_link }}">{{ chunk.magnet_link[:80]|e }}{% if chunk.magnet_link|length > 80 %}...{% endif %}</a></dd>
+                </div>
+                {% endif %}
+              </dl>
+              {% if chunk.data_url %}
+              <a href="{{ chunk.data_url|e }}" class="btn btn-download" target="_blank" rel="noopener noreferrer">Accéder aux données</a>
+              {% elif chunk.magnet_link %}
+              <a href="{{ chunk.magnet_link|e }}" class="btn btn-download">Télécharger via Magnet</a>
+              {% endif %}
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </section>
+        {% endif %}
+
+        <!-- Fallback -->
+        {% if active_data_tab and not (viz_links and viz_links|length > 0) and not (data_chunks and data_chunks|length > 0) %}
+        <p class="no-data-message">Aucune visualisation ou extrait de données disponible pour cet élément.</p>
+        {% elif active_reuse_tab and not (viz_links and viz_links|length > 0) %}
+        <p class="no-data-message">Aucune réutilisation disponible pour cet élément.</p>
+        {% endif %}
+
+      </div>
+    </div>
+  </section>
+{% else %}
+
+  <section class="detail-body">
+    <div class="container">
+
+      {% if item.status == "draft" %}
+      <div class="draft-banner">
+        Ce contenu est un brouillon. <a href="/upload?edit={{ item.id }}">Reprendre l'édition</a>
+      </div>
+      {% endif %}
+
+      <div class="product-card">
+
+<!-- Main product image (left column) -->
+        <div class="product-gallery">
+          {% if item.image_magnets_pending %}
+          <div class="inline-gallery-pending" id="imagePendingMessage">
+            <div class="pending-spinner"></div>
+            <div class="image-pending-body">
+              <p id="imageProgressSummary">Téléchargement des images en cours...</p>
+              <div class="image-jobs" id="imageProgress"></div>
+            </div>
+          </div>
+          {% else %}
+          <div class="product-img-wrap">
+            <img class="product-img" id="mainProductImg" src="{{ item.image|e }}" alt="{{ item.title|e }}">
+            {% if item.is_official_verified %}
+            <div class="verified-img-band">
+              <img class="band-logo" src="{{ get_setting('site_logo') }}" alt="">
+              <span>A.N.A.N.A.S</span>
+              <span class="band-name">Vérifié</span>
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+
+          <!-- Inline image gallery strip -->
+          {% if image_gallery and image_gallery|length > 0 %}
+          <div class="inline-gallery" id="inlineGallery">
+            {% for img in image_gallery %}
+              <div class="gallery-thumb-wrap">
+                <img src="{{ img.src|e }}" alt="{{ img.label|e }}" class="gallery-thumb-img{% if loop.first %} active{% endif %}" data-src="{{ img.src|e }}">
+                <span class="gallery-thumb-label">{{ img.label|e }}</span>
+                {% if img.magnet_link %}
+                <details class="magnet-source">
+                  <summary>Lien Magnet source</summary>
+                  <code>{{ img.magnet_link[:80] }}{% if img.magnet_link|length > 80 %}...{% endif %}</code>
+                </details>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          {% if not (image_gallery and image_gallery|length > 0) and item.image_magnets_pending %}
+          {% endif %}
+        </div>
+
+        <!-- Product details (right column) -->
+        <div class="product-details">
+
+          <h1 class="product-title">{{ item.title|e }}</h1>
+
+          <!-- Rating -->
+          <div class="rating-inline">
+            <span class="rating-number-inline">{{ item.rating|default(0) }}</span>
+            {% if current_user %}
+            <form class="rate-form" method="POST" action="/catalogue/item/{{ item.id }}/rate">
+<input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"/>
+              {% for i in range(1, 6) %}
+                {% set rating = item.rating|default(0) %}
+                <input type="radio" name="rating" value="{{ i }}" id="star-{{ item.id }}-{{ i }}">
+                <label for="star-{{ item.id }}-{{ i }}" class="{% if i <= (rating|round(0, 'floor')) %}filled{% elif i == (rating|round(0, 'floor') + 1) and rating - (rating|round(0, 'floor')) >= 0.5 %}half{% endif %}" title="{{ i }}/5">&#9733;</label>
+              {% endfor %}
+            </form>
+            {% endif %}
+            <span class="rating-count">{{ item.review_count|default('128') }} avis</span>
+          </div>
+
+          <div class="product-format-badge">
+            Format : <strong>{{ item.format }}</strong>
+          </div>
+
+          {% if item.type == "application" and item.data_format_level == "simple" %}
+          <div class="badge badge-simple">
+            Fichier simple
+          </div>
+          {% elif item.type == "application" and item.data_format_level == "pack" %}
+          <div class="badge badge-pack">
+            Pack complet — fichier unique
+          </div>
+          {% elif item.type == "application" and item.data_format_level == "individual" and item.download_levels and item.download_levels|length > 0 %}
+          <div class="badge badge-individual">
+            <span>Fichiers individuels</span>
+            <ul class="download-levels-list">
+              {% for level in item.download_levels %}
+              <li>
+                <a href="{{ level.magnet|e }}" class="level-link">
+                  {{ level.name }}
+                </a>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% elif item.type == "application" and item.data_format_level == "individual" %}
+          <div class="badge badge-individual">
+            Fichiers individuels
+          </div>
+          {% endif %}
+
+          <div class="product-divider"></div>
+
+          <!-- Download box -->
+          <div class="buy-box">
+            <div class="price-row">
+              <span class="price-label">Taille du fichier</span>
+              <span class="price-value">{{ item.size }}</span>
+            </div>
+            <div class="price-row">
+              <span class="price-label">ID</span>
+              <span class="price-value mono">#{{ item.id }}</span>
+            </div>
+
+            <hr class="buy-divider">
+
+            <a href="{{ item.catalogue_link }}" class="back-link">&larr; Retour au catalogue</a>
+
+            {% if item.magnet %}
+            <div class="download-actions">
+              <button class="btn btn-download scroll-btn" type="button">Accès au téléchargement de la donnée</button>
+            </div>
+            {% else %}
+            <p class="no-download">Lien de téléchargement non disponible</p>
+            {% endif %}
+
+          </div>
+
+          {% if current_user and current_user.is_admin %}
+          <div class="admin-item-actions">
+            <hr class="buy-divider">
+            <h3>Administration</h3>
+            <div class="admin-verify-controls">
+              <span class="admin-verify-label">Vérification :</span>
+              <span class="admin-verify-status" id="verifyStatus">{{ item.verification_status }}</span>
+              <button class="btn btn-verify" id="btnVerifyItem" type="button" data-item-id="{{ item.id }}">✓ Vérifier</button>
+              <button class="btn btn-unverify" id="btnUnverifyItem" type="button" data-item-id="{{ item.id }}">✗ Dé-vérifier</button>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if item.tags and item.tags|length > 0 %}
+          <div class="item-tags">
+            <span class="tags-label">Étiquette :</span>
+            {% for tag in item.tags %}
+              <a href="{{ item.catalogue_link }}?tag={{ tag|urlencode }}" class="tag">{{ tag }}</a>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          {% if item.unique_categories %}
+          <div class="item-categories">
+            <span class="categories-label">Catégorie :</span>
+            {% for cat in item.unique_categories %}
+              <a href="{{ item.catalogue_link }}?category={{ cat|urlencode }}" class="category-tag">{{ cat }}</a>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- Description -->
+          <div class="product-desc-section">
+            <h3>Description</h3>
+            <p>{{ item.description|e }}</p>
+          </div>
+
+          {% if item.pdf_doc %}
+          <div class="tech-code-block pdf-doc-section">
+            <h3>Documentation PDF</h3>
+            <code>{{ item.pdf_doc|e }}</code>
+            <button class="btn btn-copy-tech" type="button" data-magnet="{{ item.pdf_doc|e }}">Copier le lien magnet</button>
+          </div>
+          {% endif %}
+
+        </div>
+
+      </div>
+
+      <!-- Technical / Documentation -->
+      <section class="tech-section">
+        <h2>Spécifications techniques</h2>
+        <dl class="tech-grid">
+          <div class="tech-item">
+            <dt>Format</dt>
+            <dd>{{ item.format }}</dd>
+          </div>
+          <div class="tech-item">
+            <dt>Taille</dt>
+            <dd>{{ item.size }}</dd>
+          </div>
+          <div class="tech-item">
+            <dt>ID</dt>
+            <dd>#{{ item.id }}</dd>
+          </div>
+          <div class="tech-item">
+            <dt>Auteur / Publieur</dt>
+            <dd>{% if item.owner_user_id %}<a href="/profile/{{ item.owner_user_id }}">{{ item.author|e }}</a>{% else %}{{ item.author|e }}{% endif %}{% if item.organization_name|e %} — <a href="/organizations/{{ item.organization_slug|e }}">{{ item.organization_name|e }}</a>{% endif %}</dd>
+          </div>
+        </dl>
+
+        {% if item.data_format_level == "individual" and item.magnet_links_grouped and item.magnet_links_grouped|length > 0 %}
+        <div class="tech-code-block" id="techCodeBlock">
+          <h3>{{ item.magnet_links_grouped|sum(attribute='links', start=[]) | length }} liens magnet — {{ item.magnet_links_grouped|length }} échelles
+            <a href="/catalogue/item/{{ item.id }}/magnets/download" class="btn btn-copy-tech btn-download-magnets" download>Télécharger tout</a>
+          </h3>
+          {% set zoom_labels = {"iris": "IRIS", "communes": "Communes", "cantons": "Cantons", "departements": "Départements", "regions": "Régions", "pays": "Pays"} %}
+          <div class="zoom-tabs" id="zoomTabs">
+            {% for group in item.magnet_links_grouped %}
+            <button type="button" class="zoom-tab{% if loop.first %} active{% endif %}" data-zoom="{{ group.zoom_level }}">
+              {{ zoom_labels.get(group.zoom_level, group.zoom_level) }}
+              <span class="zoom-tab-count">{{ group.links|length }}</span>
+            </button>
+            {% endfor %}
+          </div>
+          {% for group in item.magnet_links_grouped %}
+          <div class="zoom-panel{% if loop.first %} active{% endif %}" id="zoomPanel-{{ group.zoom_level }}" data-zoom="{{ group.zoom_level }}" data-per-page="15">
+            <div class="zoom-panel-header">
+              <span class="zoom-panel-title">{{ zoom_labels.get(group.zoom_level, group.zoom_level) }}</span>
+              <button type="button" class="btn btn-copy-tech btn-copy-all" data-zoom="{{ group.zoom_level }}">Tout copier ({{ group.links|length }})</button>
+            </div>
+            {% for link in group.links %}
+            <div class="magnet-level-link-row{% if loop.index > 15 %} hidden{% endif %}">
+              <code class="magnet-level-code">{{ link|e }}</code>
+              <button class="btn btn-copy-tech btn-copy-magnet" type="button" data-magnet="{{ link|e }}">Copier</button>
+            </div>
+            {% endfor %}
+            {% if group.links|length > 15 %}
+            <nav class="pagination zoom-pagination" data-zoom="{{ group.zoom_level }}">
+              <span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>
+              <div class="pagination-numbers">
+                {% set total_pages = ((group.links|length - 1) // 15) + 1 %}
+                {% for p in range(1, total_pages + 1) %}
+                <span class="pagination-link{% if p == 1 %} active{% endif %}" data-page="{{ p }}">{{ p }}</span>
+                {% endfor %}
+              </div>
+              <span class="btn btn-outline pagination-next{% if total_pages <= 1 %} disabled{% endif %}">Suivant&nbsp;&#9658;</span>
+            </nav>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% elif item.data_format_level in ("pack", "simple") and item.pack_zoom_levels %}
+        <div class="tech-code-block" id="techCodeBlock">
+          <h3>Lien magnet <a href="/catalogue/item/{{ item.id }}/magnets/download" class="btn btn-copy-tech btn-download-magnets" download>Télécharger</a></h3>
+          <div class="pack-zoom-levels">
+            {% for zl in item.pack_zoom_levels %}
+            <span class="pack-zoom-badge">{{ zl.label }}</span>
+            {% endfor %}
+          </div>
+          <code>{{ item.magnet|e }}</code>
+          <button class="btn btn-copy-tech" type="button" data-magnet="{{ item.magnet|e }}">Copier le lien</button>
+        </div>
+        {% elif item.magnet %}
+        <div class="tech-code-block" id="techCodeBlock">
+          <h3>Lien magnet</h3>
+          <code>{{ item.magnet|e }}</code>
+          <button class="btn btn-copy-tech" type="button" data-magnet="{{ item.magnet|e }}">
+            Copier le lien
+          </button>
+        </div>
+        {% endif %}
+
+      </section>
+
+      <!-- IMOD Score -->
+      {% if item.imod %}
+      {% set imod_meta_pct = (item.imod.meta / imod_config.weights.meta * 100)|round(1) %}
+      {% set imod_tech_pct = (item.imod.tech / imod_config.weights.tech * 100)|round(1) %}
+      {% set imod_rich_pct = (item.imod.rich / imod_config.weights.rich * 100)|round(1) %}
+      <section class="imod-section">
+        <h2>Indice de qualité des métadonnées
+          <span class="help-icon" data-tooltip="L'indice IMOD évalue la qualité des métadonnées selon trois dimensions : Meta (qualité documentaire), Tech (précision technique), Rich (diversité). Score sur 100 classé en niveau Élevé (&ge;70), Moyen ([40,70[) ou Faible (&lt;40).">?</span>
+        </h2>
+        <div class="imod-container">
+          <div class="imod-global imod-{{ item.imod.level|lower }}">
+            <span class="imod-score">{{ item.imod.score }}</span>
+            <span class="imod-label">/100</span>
+            <span class="imod-level">Niveau {{ item.imod.level }}</span>
+          </div>
+          <div class="imod-details">
+            <div class="imod-dimension imod-meta">
+              <span class="imod-dim-label">Meta</span>
+              <span class="imod-dim-bar"><span class="imod-dim-fill" style="width:{{ imod_meta_pct }}%"></span></span>
+              <span class="imod-dim-value">{{ item.imod.meta }}</span>
+            </div>
+            <div class="imod-dimension imod-tech">
+              <span class="imod-dim-label">Tech</span>
+              <span class="imod-dim-bar"><span class="imod-dim-fill" style="width:{{ imod_tech_pct }}%"></span></span>
+              <span class="imod-dim-value">{{ item.imod.tech }}</span>
+            </div>
+            <div class="imod-dimension imod-rich">
+              <span class="imod-dim-label">Rich</span>
+              <span class="imod-dim-bar"><span class="imod-dim-fill" style="width:{{ imod_rich_pct }}%"></span></span>
+              <span class="imod-dim-value">{{ item.imod.rich }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      {% endif %}
+
+      <!-- Attribution -->
+      <section class="attribution-section">
+        <h2>Attribution</h2>
+        {% set license_map = {
+          'cc-by': 'CC-BY 4.0',
+          'odc-odbl': 'ODC-ODbL',
+          'licence-ouverte': 'Licence Ouverte',
+          'public-domain': 'Domaine public'
+        } %}
+        <div class="attribution-card">
+          <dl class="attribution-grid">
+            <div class="attribution-item">
+              <dt>Catégorie</dt>
+              <dd>{{ item.format }}</dd>
+            </div>
+            <div class="attribution-item">
+              <dt>Licence</dt>
+              <dd>{% if item.license_type in license_map %}{{ license_map[item.license_type] }}{% else %}{{ item.license_type or 'Non spécifiée' }}{% endif %}</dd>
+            </div>
+            <div class="attribution-item">
+              <dt>Auteur</dt>
+<dd>{% if item.owner_user_id %}<a href="/profile/{{ item.owner_user_id }}">{{ item.author|e }}</a>{% else %}{{ item.author|e }}{% endif %}{% if item.organization_name|e %} — <a href="/organizations/{{ item.organization_slug|e }}">{{ item.organization_name|e }}</a>{% endif %}</dd>
+            </div>
+            <div class="attribution-item">
+              <dt>Date de publication</dt>
+              <dd>{{ item.created_at }}</dd>
+            </div>
+          </dl>
+          <p class="attribution-note">Cette donnée publiée par {% if item.owner_user_id %}<a href="/profile/{{ item.owner_user_id }}">{{ item.author|e }}</a>{% else %}{{ item.author|e }}{% endif %}{% if item.organization_name|e %} — <a href="/organizations/{{ item.organization_slug|e }}">{{ item.organization_name|e }}</a>{% endif %} peut être réutilisée librement dans vos propres projets SIG, analyses ou visualisations cartographiques. La mention « Source : A.N.A.N.A.S » est recommandée.</p>
+        </div>
+      </section>
+
+      <!-- Image Magnet Links -->
+      {% if item.image_magnet_links and item.image_magnet_links|length > 0 %}
+      <section class="tech-code-block image-magnets-block">
+        <h3>{{ item.image_magnet_links|length }} lien{{ 's' if item.image_magnet_links|length > 1 }} magnet image{{ 's' if item.image_magnet_links|length > 1 }}</h3>
+        {% for img in item.image_magnet_links %}
+        <div class="magnet-level-link-row">
+          <span class="image-magnet-label">{{ img.label or ('Image ' ~ loop.index) }}</span>
+          <code class="magnet-level-code">{{ img.magnet_link|e }}</code>
+          <button class="btn btn-copy-tech btn-copy-magnet" type="button" data-magnet="{{ img.magnet_link|e }}">Copier</button>
+        </div>
+        {% endfor %}
+      </section>
+      {% endif %}
+
+      <!-- Comments -->
+      <section class="comments-section">
+        <h2>Commentaires {% if comment_count %}<span class="comment-count-badge">{{ comment_count }}</span>{% endif %}</h2>
+
+        {% if comment_count and comment_count > 0 %}
+        <ul class="comments-list" id="comments-list">
+          {% for comment in comments %}
+          {% include "partials/comment_thread.html" %}
+          {% endfor %}
+        </ul>
+        {% elif comment_count == 0 %}
+        <p class="comments-empty">Aucun commentaire pour ce géodonnées. Soyez le premier à donner votre avis !</p>
+        {% endif %}
+
+        {% if comment_total_pages and comment_total_pages > 1 %}
+        <nav id="comment-pagination" class="pagination" aria-label="Pagination des commentaires"></nav>
+        {% endif %}
+
+        {% if current_user %}
+        <form class="comment-form" method="POST" action="/catalogue/item/{{ item.id }}/comment">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"/>
+          <div class="comment-form-textarea-wrap">
+            <textarea name="text" placeholder="Ajouter un commentaire..." required></textarea>
+          </div>
+          <div class="comment-form-actions">
+            <button class="btn btn-primary" type="submit">Publier</button>
+          </div>
+        </form>
+        {% else %}
+        <p class="comment-notice"><a href="/connexion">Connectez-vous</a> pour ajouter un commentaire.</p>
+        {% endif %}
+
+      </section>
+
+      <!-- Report section -->
+      {% if current_user %}
+      <section class="report-section">
+        <button id="open-report-modal">Signaler ce contenu</button>
+
+        <div id="reportModal" class="modal modal-backdrop" data-target-type="{{ item.report_type or 'geodonnee' }}" data-target-id="{{ item.id }}">
+          <div class="modal-box">
+            <h3>Signaler ce contenu</h3>
+            <form id="reportForm">
+              <select name="reason" required>
+                <option value="">-- Raison --</option>
+                <option value="spam">Spam</option>
+                <option value="fake_data">Fake data / Données frauduleuses</option>
+                <option value="other">Autre</option>
+              </select>
+              <textarea name="description" placeholder="Détails (optionnel)"></textarea>
+              <div class="modal-actions">
+                <button type="submit">Envoyer le signalement</button>
+                <button type="button" class="modal-cancel">Annuler</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+      {% endif %}
+
+      {% if related_items %}
+      <aside class="detail-related">
+        <h2>Données similaires</h2>
+        <ul class="related-list">
+          {% for rel in related_items %}
+          <li>
+            <a href="/catalogue/item/{{ rel.id }}" class="related-card">
+              <div class="related-img-wrap">
+                <img src="{{ rel.image|e }}" alt="{{ rel.title|e }}">
+              </div>
+              <span class="related-title">{{ rel.title|e }}</span>
+              <span class="related-info">{{ rel.format }} &middot; {{ rel.size }}</span>
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </aside>
+      {% endif %}
+
+    </div>
+  </section>
+
+{% endif %}
+
+</main>
+<div class="image-modal" id="imageModal">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <button class="modal-close" aria-label="Fermer">&#10005;</button>
+    <div class="modal-image-area">
+      <button class="modal-nav modal-prev" aria-label="Précédent">&#8249;</button>
+      <img class="modal-img" src="" alt="">
+      <div class="modal-pending-msg hidden-section">
+        <div class="pending-spinner"></div>
+        <p>Téléchargement des images en cours...</p>
+      </div>
+      <button class="modal-nav modal-next" aria-label="Suivant">&#8250;</button>
+    </div>
+    <div class="modal-thumbnails">
+      {% if image_gallery and image_gallery|length > 0 %}
+        {% for img in image_gallery %}
+          <img class="modal-thumb" src="{{ img.src }}" data-index="{{ loop.index0 }}">
+        {% endfor %}
+      {% else %}
+        {% if not item.image_magnets_pending %}
+        <img class="modal-thumb modal-thumb-only" id="modalThumbOnly" src="{{ item.image|e }}">
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/gallery/inlineGallery.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/gallery/imageModal.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/gallery/copyMagnet.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/gallery/starRating.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/gallery/reportModal.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/item/detail.js') }}"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/item/zoom-magnets.js') }}"></script>
+{% endblock %}

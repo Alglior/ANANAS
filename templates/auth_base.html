@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<main>
+  <section class="auth-section" id="{{ section_id | default('auth') }}">
+    <div class="auth-container">
+      <div class="auth-header">
+        <h1>{{ title }}</h1>
+        <p>{{ subtitle }}</p>
+      </div>
+
+      {% block auth_error %}{% endblock %}
+
+      <form class="auth-form" id="{{ form_id }}" action="{{ form_action }}" method="POST">
+        {% block auth_fields %}{% endblock %}
+        <button type="submit" class="btn btn-primary btn-block transition-hover">{{ submit_text }}</button>
+        {% block auth_footer %}{% endblock %}
+      </form>
+    </div>
+  </section>
+</main>
+{% endblock %}

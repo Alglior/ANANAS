@@ -1,0 +1,79 @@
+{% extends 'auth_base.html' %}
+
+{% set section_id = 'inscription' %}
+{% set title = 'Créer un compte' %}
+{% set subtitle = "Rejoignez A.N.A.N.A.S pour publier et télécharger des géodonnées vérifiées." %}
+{% set form_id = 'inscriptionForm' %}
+{% set form_action = '/inscription' %}
+{% set submit_text = "S'inscrire" %}
+
+{% block auth_error %}
+{% if error or form_errors %}
+<div class="error-box">
+  {% if error %}
+    <p class="error-message">{{ error }}</p>
+  {% endif %}
+  {% if form_errors %}
+    <ul class="error-list">
+      {% for err in form_errors %}
+        <li>{{ err }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block auth_fields %}
+<input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"/>
+<div class="form-row">
+  <div class="form-group">
+    <label for="nom">Nom</label>
+    <input type="text" id="nom" name="nom" placeholder="Votre nom" value="{{ nom or '' }}" required autocomplete="name" />
+  </div>
+
+  <div class="form-group">
+    <label for="prenom">Prénom</label>
+    <input type="text" id="prenom" name="prenom" placeholder="Votre prénom" value="{{ prenom or '' }}" required autocomplete="given-name" />
+  </div>
+</div>
+
+<div class="form-group">
+  <label for="password">Mot de passe</label>
+  <input
+    type="password"
+    id="password"
+    name="password"
+    placeholder="Minimum 8 caractères"
+    required
+    minlength="8"
+    autocomplete="new-password"
+  />
+</div>
+
+<div class="form-group">
+  <label for="password_confirm">Confirmer le mot de passe</label>
+  <input
+    type="password"
+    id="password_confirm"
+    name="password_confirm"
+    placeholder="Retapez votre mot de passe"
+    required
+    minlength="8"
+    autocomplete="new-password"
+  />
+</div>
+
+<div class="form-group checkbox-group">
+  <label>
+    <input type="checkbox" name="cgu" required />
+    <span class="checkbox-label">J'accepte les <a href="/conditions-utilisation" target="_blank">conditions d'utilisation</a> et la <a href="/confidentialite" target="_blank">politique de confidentialité</a></span>
+  </label>
+</div>
+{% endblock %}
+
+{% block auth_footer %}
+<p class="auth-footer">
+  Déjà inscrit ? <a href="/connexion">Se connecter</a>
+</p>
+{% endblock %}

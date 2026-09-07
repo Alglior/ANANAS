@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/features/admin/tags.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/features/admin/backup.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/features/admin/settings-form.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/features/admin/settings.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/features/admin/changelog.css') }}" />
+{% endblock %}
+
+{% block content %}
+<main class="admin-page">
+  <section class="admin-section">
+    <div class="container">
+      {% include 'partials/admin_nav.html' %}
+      <h1>{{ title }} <a href="#" id="adminTutoRelaunch" class="admin-tuto-relaunch">Guide</a></h1>
+      {% block admin_content %}{% endblock %}
+    </div>
+  </section>
+</main>
+
+<div id="adminTutoOverlay" class="admin-tuto-overlay hidden-section"></div>
+
+<div id="adminTutoTooltip" class="admin-tuto-tooltip hidden-section">
+  <div class="admin-tuto-step-indicator">
+    <span id="adminTutoStepCurrent">1</span>/<span id="adminTutoStepTotal">9</span>
+  </div>
+  <p id="adminTutoStepText"></p>
+  <div class="admin-tuto-actions">
+    <button type="button" class="btn btn-sm btn-outline" id="adminTutoPrev">&larr; Précédent</button>
+    <button type="button" class="btn btn-sm btn-primary" id="adminTutoNext">Suivant &rarr;</button>
+    <button type="button" class="btn btn-sm btn-outline" id="adminTutoSkip">Passer</button>
+  </div>
+  <label class="admin-tuto-dont-show">
+    <input type="checkbox" id="adminTutoDontShow" />
+    Ne plus afficher ce guide
+  </label>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/admin_tuto.js') }}?v=3"></script>
+{% endblock %}

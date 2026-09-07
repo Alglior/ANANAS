@@ -1,0 +1,57 @@
+{% extends 'base_admin.html' %}
+
+{% set title = "Administration — Messages de contact" %}
+
+{% block admin_content %}
+<div class="admin-filters" id="contact-msg-filters">
+  <button type="button" data-filter="all" class="active active-filter filter-btn">Tous</button>
+  <button type="button" data-filter="unread" class="filter-btn">Non lus</button>
+  <button type="button" data-filter="read" class="filter-btn">Lus</button>
+</div>
+
+<div class="table-wrapper">
+  <table id="contact-msgs-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nom</th>
+        <th>Email</th>
+        <th>Sujet</th>
+        <th>Message</th>
+        <th>Statut</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="contact-msgs-tbody">
+      <tr><td colspan="8" class="loading-cell">Chargement...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div id="contact-msgs-pagination" class="mod-pagination"></div>
+
+<div id="contact-msg-modal" class="modal-overlay hidden-section">
+  <div class="modal-content contact-msg-modal-content">
+    <span class="modal-close" id="contact-msg-modal-close">&times;</span>
+    <div class="modal-header">
+      <h2 id="modal-subject"></h2>
+    </div>
+    <div class="modal-meta">
+      <span class="meta-name" id="modal-name"></span>
+      <span class="meta-separator">&middot;</span>
+      <span class="meta-email" id="modal-email"></span>
+    </div>
+    <hr class="modal-divider" />
+    <p id="modal-message" class="modal-body"></p>
+    <div class="modal-footer">
+      <span id="modal-date" class="modal-footer-date"></span>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/contact_messages.js') }}?v=1"></script>
+{% endblock %}

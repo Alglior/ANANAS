@@ -1,0 +1,31 @@
+{% extends 'base_admin.html' %}
+
+{% set title = "Administration — Journal d'audits" %}
+
+{% block admin_content %}
+<div class="mod-panel">
+  <h2>Journal d'audits</h2>
+  <div class="table-wrapper">
+    <table id="audit-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Admin</th>
+          <th>Action</th>
+          <th>Cible</th>
+        </tr>
+      </thead>
+      <tbody id="audit-tbody">
+        <tr><td colspan="4" class="loading-cell">Chargement...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="pagination-audit"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/audit.js') }}"></script>
+{% endblock %}

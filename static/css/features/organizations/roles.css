@@ -1,0 +1,220 @@
+.org-roles-panel {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+}
+
+.org-roles-panel h3 {
+  font-size: 1rem;
+  color: var(--charcoal);
+  margin: 0 0 1rem;
+}
+
+.org-roles-panel h4 {
+  font-size: 0.95rem;
+  color: var(--charcoal);
+  margin: 1.5rem 0 0.75rem;
+}
+
+.org-roles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.org-role-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--light-gray);
+  border-radius: 6px;
+}
+
+.org-role-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 120px;
+}
+
+.org-role-perms {
+  font-size: 0.8rem;
+  color: var(--specs-gray);
+  flex: 1;
+}
+
+.org-role-form .org-form-group {
+  margin-bottom: 0.75rem;
+}
+
+.org-role-form label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--specs-gray);
+  margin-bottom: 0.25rem;
+}
+
+.org-role-form .org-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.org-perms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.5rem;
+}
+
+.org-perm-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--charcoal);
+  cursor: pointer;
+}
+
+.org-perm-checkbox input {
+  accent-color: var(--forest);
+}
+
+.roles-panel {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.roles-panel h3 {
+  color: var(--forest);
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.roles-panel h4 {
+  color: var(--forest);
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.custom-roles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.custom-role-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-gray);
+  border-radius: var(--radius-md);
+}
+
+.custom-role-name {
+  font-weight: 600;
+  min-width: 120px;
+}
+
+.custom-role-perms {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.5rem;
+}
+
+.perm-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.3rem 0;
+}
+
+.perm-checkbox input[type="checkbox"] {
+  accent-color: var(--forest);
+  width: 16px;
+  height: 16px;
+}
+
+.create-role-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.create-role-form label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.create-role-form .form-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--charcoal);
+  transition: border-color 0.15s ease;
+}
+
+.create-role-form .form-input:focus {
+  outline: none;
+  border-color: var(--forest);
+  box-shadow: 0 0 0 3px var(--forest-alpha-12);
+}
+
+.create-role-form .form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.role-select optgroup {
+  font-weight: 700;
+  font-style: normal;
+  color: var(--forest);
+}
+
+.badge-info {
+  background: var(--color-info);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  display: inline-block;
+}
+
+.badge-moderator {
+  background: var(--color-purple);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  display: inline-block;
+}
+
+.badge-editor {
+  background: var(--color-blue);
+  color: var(--white);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  display: inline-block;
+}

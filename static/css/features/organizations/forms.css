@@ -1,0 +1,116 @@
+.form-hidden {
+  display: none !important;
+}
+
+.org-invite-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.org-input {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--charcoal);
+}
+
+.org-input:focus {
+  outline: none;
+  border-color: var(--forest);
+}
+
+.create-org-form {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.create-org-form h3 {
+  color: var(--forest);
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.create-org-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.create-org-form label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.create-org-form .required {
+  color: var(--color-danger);
+}
+
+.create-org-form .form-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--charcoal);
+  transition: border-color 0.15s ease;
+}
+
+.create-org-form .form-input:focus {
+  outline: none;
+  border-color: var(--forest);
+  box-shadow: 0 0 0 3px var(--forest-alpha-12);
+}
+
+.create-org-form textarea.form-input {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.create-org-form .form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.create-org-form .form-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 1rem 0 0;
+}
+
+.invite-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.invite-form .form-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--charcoal);
+  flex: 1;
+  min-width: 200px;
+  transition: border-color 0.15s ease;
+}
+
+.invite-form .form-input:focus {
+  outline: none;
+  border-color: var(--forest);
+  box-shadow: 0 0 0 3px var(--forest-alpha-12);
+}

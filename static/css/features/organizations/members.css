@@ -1,0 +1,151 @@
+.org-member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.org-member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.org-member-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.org-member-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--light-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.org-member-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.org-member-initials {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--forest);
+}
+
+.org-member-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--charcoal);
+}
+
+.org-member-role {
+  font-size: 0.75rem;
+  color: var(--specs-gray);
+}
+
+.org-member-role.role-owner {
+  color: var(--mustard);
+  font-weight: 600;
+}
+
+.org-member-role.role-admin {
+  color: var(--forest);
+  font-weight: 600;
+}
+
+.org-member-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.org-role-select {
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: var(--charcoal);
+  background: var(--white);
+  cursor: pointer;
+}
+
+.org-remove-btn {
+  background: none;
+  border: none;
+  color: var(--specs-gray);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+}
+
+.org-remove-btn:hover {
+  color: var(--color-danger);
+}
+
+.org-members {
+  margin-top: 2rem;
+}
+
+.org-members h2 {
+  color: var(--forest);
+  margin-bottom: 1rem;
+}
+
+.member-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--surface-gray);
+  border-radius: var(--radius-md);
+  margin-bottom: 0.5rem;
+}
+
+.member-card span:first-child {
+  font-weight: 600;
+  flex: 1;
+}
+
+.role-select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  color: var(--charcoal);
+  background: var(--white);
+  cursor: pointer;
+}
+
+.org-items {
+  margin-top: 2rem;
+}
+
+.org-items h2 {
+  color: var(--forest);
+  margin-bottom: 0.5rem;
+}
+
+.org-items a {
+  color: var(--forest);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.org-items a:hover {
+  color: var(--mustard);
+}
+
+.org-items-list {
+  margin-top: 2rem;
+}

@@ -1,0 +1,127 @@
+.tags-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.tags-header h2 {
+  font-size: 1.1rem;
+  color: var(--charcoal);
+  margin: 0;
+}
+
+.tags-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.78rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--charcoal);
+}
+
+.tag-badge-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 0;
+  line-height: 1;
+}
+
+.tag-badge-remove:hover {
+  color: var(--danger-color, var(--error-red));
+}
+
+.btn-tag-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border: 1px dashed var(--border-color);
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  padding: 0;
+  line-height: 1;
+}
+
+.btn-tag-add:hover {
+  border-color: var(--forest);
+  color: var(--forest);
+  background: var(--forest-alpha-06);
+}
+
+.text-muted {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.modal-content.tag-modal-content {
+  display: block;
+  background: var(--white);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 480px;
+  width: 92%;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 24px 80px var(--shadow-black-20);
+}
+
+.modal-content.tag-modal-content h3 {
+  margin: 0 0 1.25rem;
+  font-size: 1.1rem;
+  color: var(--charcoal);
+  padding-right: 2rem;
+}
+
+.modal-content.tag-modal-content .form-group {
+  margin-bottom: 1rem;
+}
+
+.modal-content.tag-modal-content .form-group label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.modal-content.tag-modal-content .form-group input[type="text"],
+.modal-content.tag-modal-content .form-group input[type="number"] {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.modal-content.tag-modal-content .form-group input:focus {
+  outline: none;
+  border-color: var(--color-blue);
+  box-shadow: 0 0 0 3px var(--blue-alpha-10);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}

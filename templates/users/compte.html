@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/features/compte.css') }}" />
+{% endblock %}
+
+{% block content %}
+<main>
+  <section class="compte-page">
+    <div class="container compte-container">
+      <aside class="compte-sidebar">
+        <div class="compte-avatar-section">
+          <div class="compte-avatar-wrapper">
+            <img id="avatarPreview" class="compte-avatar" src="{{ user.avatar_path or get_setting('site_logo') }}" alt="Avatar" />
+            <label class="compte-avatar-edit" for="avatarInput" title="Changer la photo">
+            <input type="file" id="avatarInput" accept="image/png,image/jpeg,image/gif,image/webp" hidden />
+          </div>
+          <h2 class="compte-avatar-name">{{ user.prenom|e }} {{ user.nom|e }}</h2>
+          <p class="compte-avatar-pseudo">@{{ user.pseudo|e }}</p>
+        </div>
+
+        <nav class="compte-nav">
+          <a href="/compte?tab=infos" class="compte-nav-link {% if active_tab == 'infos' %}active{% endif %}" data-tab="infos">Informations</a>
+          <a href="/compte?tab=securite" class="compte-nav-link {% if active_tab == 'securite' %}active{% endif %}" data-tab="securite">Sécurité</a>
+          <a href="/compte?tab=activite" class="compte-nav-link {% if active_tab == 'activite' %}active{% endif %}" data-tab="activite">Activité</a>
+          <a href="/compte?tab=organisations" class="compte-nav-link {% if active_tab == 'organisations' %}active{% endif %}" data-tab="organisations">Organisations{% if org_count %} ({{ org_count }}){% endif %}</a>
+        </nav>
+
+        <div class="compte-stats">
+          <div class="compte-stat">
+            <span class="compte-stat-value">{{ publication_count }}</span>
+            <span class="compte-stat-label">Publications</span>
+          </div>
+          <div class="compte-stat">
+            <span class="compte-stat-value">{{ rating_count }}</span>
+            <span class="compte-stat-label">Notes</span>
+          </div>
+          <div class="compte-stat">
+            <span class="compte-stat-value">{{ comment_count }}</span>
+            <span class="compte-stat-label">Commentaires</span>
+          </div>
+        </div>
+
+        {% if current_user.is_admin %}
+        <a href="/admin/users" class="btn btn-primary compte-admin-btn">Panneau d'administration</a>
+        {% endif %}
+      </aside>
+
+      <div class="compte-main">
+        {% if active_tab == 'infos' %}
+        <section class="compte-section">
+          <h2>Informations personnelles</h2>
+          <form class="compte-form" id="profileForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="prenom">Prénom</label>
+                <input type="text" id="prenom" name="prenom" value="{{ user.prenom|e }}" required />
+              </div>
+              <div class="form-group">
+                <label for="nom">Nom</label>
+                <input type="text" id="nom" name="nom" value="{{ user.nom|e }}" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="pseudo">Pseudo</label>
+              <input type="text" id="pseudo" name="pseudo" value="{{ user.pseudo|e }}" readonly class="input-readonly" />
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Sauvegarder</button>
+              <span class="form-status" id="profileStatus"></span>
+            </div>
+          </form>
+        </section>
+
+        {% elif active_tab == 'securite' %}
+        <section class="compte-section">
+          <h2>Mot de passe</h2>
+          <form class="compte-form" id="passwordForm">
+            <div class="form-group">
+              <label for="current_password">Mot de passe actuel</label>
+              <input type="password" id="current_password" name="current_password" placeholder="Entrez votre mot de passe actuel" required />
+            </div>
+            <div class="form-group">
+              <label for="new_password">Nouveau mot de passe</label>
+              <input type="password" id="new_password" name="new_password" placeholder="Nouveau mot de passe" required />
+              <ul class="password-requirements">
+                <li id="req-length" class="req-item">8+ caractères</li>
+                <li id="req-upper" class="req-item">Une majuscule</li>
+                <li id="req-lower" class="req-item">Une minuscule</li>
+                <li id="req-digit" class="req-item">Un chiffre</li>
+                <li id="req-special" class="req-item">Un caractère spécial</li>
+              </ul>
+            </div>
+            <div class="form-group">
+              <label for="confirm_password">Confirmer le nouveau mot de passe</label>
+              <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirmez le nouveau mot de passe" required />
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Modifier le mot de passe</button>
+              <span class="form-status" id="passwordStatus"></span>
+            </div>
+          </form>
+        </section>
+
+        <section class="compte-section section-margin-top">
+          <h2>Codes de récupération</h2>
+          <p class="recovery-info">Générez 10 codes de récupération à utiliser en cas de perte de mot de passe. Chaque code est à usage unique : une fois utilisé, il ne pourra plus être réemployé. Ces codes ne sont affichés qu'une seule fois. Téléchargez-les et conservez-les en lieu sûr.</p>
+          <div id="recoveryCodesContainer">
+            <button type="button" class="btn btn-primary" id="generateRecoveryCodesBtn">Générer mes codes de récupération</button>
+            <span class="form-status" id="recoveryStatus"></span>
+          </div>
+          <div id="recoveryCodesList" class="recovery-codes-list is-hidden">
+            <ol id="recoveryCodesOl"></ol>
+            <div class="form-actions">
+              <button type="button" class="btn btn-primary" id="downloadRecoveryCodesBtn">Télécharger en .txt</button>
+              <button type="button" class="btn btn-outline" id="closeRecoveryCodesBtn">Fermer</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="compte-section section-margin-top">
+          <h2>Double authentification (2FA)</h2>
+          <p class="recovery-info">Ajoutez une couche de sécurité supplémentaire à votre compte en utilisant une application d'authentification comme Google Authenticator, Authy ou FreeOTP.</p>
+
+          <div id="tfaEnabledSection" class="{% if not user.totp_enabled %}is-hidden{% endif %}">
+            <div class="alert alert-success">
+              <strong>✓ La double authentification est activée.</strong>
+            </div>
+            <div class="form-group tfa-margin-top">
+              <label for="tfa_disable_password">Mot de passe actuel</label>
+              <input type="password" id="tfa_disable_password" placeholder="Entrez votre mot de passe" />
+            </div>
+            <div class="form-group">
+              <label for="tfa_disable_code">Code 2FA</label>
+              <input type="text" id="tfa_disable_code" placeholder="000000" inputmode="numeric" maxlength="6" />
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline" id="disableTfaBtn">Désactiver la 2FA</button>
+              <span class="form-status" id="tfaDisableStatus"></span>
+            </div>
+          </div>
+
+          <div id="tfaSetupSection" class="{% if user.totp_enabled %}is-hidden{% endif %}">
+            <button type="button" class="btn btn-primary" id="setupTfaBtn">Configurer la double authentification</button>
+            <span class="form-status" id="tfaSetupStatus"></span>
+          </div>
+
+          <div id="tfaVerifySection" class="is-hidden">
+            <div class="tfa-qr-wrapper">
+              <img id="tfaQrCode" src="" alt="QR Code 2FA" class="tfa-qr-code" />
+            </div>
+            <p class="recovery-info tfa-text-center">
+              Scannez ce QR code avec votre application d'authentification.<br>
+              Ou saisissez manuellement la clé : <code id="tfaSecretKey" class="tfa-secret-key"></code>
+            </p>
+            <div class="form-group">
+              <label for="tfa_verify_code">Code de vérification</label>
+              <input type="text" id="tfa_verify_code" placeholder="000000" inputmode="numeric" maxlength="6" />
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-primary" id="verifyTfaBtn">Activer la 2FA</button>
+              <button type="button" class="btn btn-outline" id="cancelTfaBtn">Annuler</button>
+              <span class="form-status" id="tfaVerifyStatus"></span>
+            </div>
+          </div>
+        </section>
+
+        {% elif active_tab == 'activite' %}
+        <section class="compte-section">
+          <div class="compte-activite-tabs">
+            <a href="/compte?tab=activite&section=ratings" class="compte-subtab {% if request.args.get('section','ratings') == 'ratings' %}active{% endif %}">Notes ({{ ratings_total }})</a>
+            <a href="/compte?tab=activite&section=comments" class="compte-subtab {% if request.args.get('section','ratings') == 'comments' %}active{% endif %}">Commentaires ({{ comments_total }})</a>
+            <a href="/compte?tab=activite&section=publications" class="compte-subtab {% if request.args.get('section','ratings') == 'publications' %}active{% endif %}">Publications ({{ publications_total }})</a>
+          </div>
+
+          {% set section = request.args.get('section', 'ratings') %}
+
+          {% if section == 'ratings' %}
+            {% if ratings %}
+            <div class="activity-list">
+              {% for r in ratings %}
+              <a href="/catalogue/item/{{ r[0].item_id }}" class="activity-card">
+                <div class="activity-card-icon activity-card-user-icon">
+                  {% if current_user.avatar_path %}
+                    <img src="{{ current_user.avatar_path }}" alt="">
+                  {% else %}
+                    <span>{{ current_user.prenom[:1] }}{{ current_user.nom[:1] }}</span>
+                  {% endif %}
+                </div>
+                <div class="activity-card-content">
+                  <div class="activity-card-title">{{ r[1] }}</div>
+                  <div class="activity-card-meta">
+                    <span>{% for i in range(5) %}{% if i < r[0].rating | int %}<span class="star filled">&#9733;</span>{% else %}<span class="star empty">&#9734;</span>{% endif %}{% endfor %}</span>
+                  </div>
+                </div>
+              </a>
+              {% endfor %}
+            </div>
+            {% if ratings_total_pages > 1 %}
+            <nav class="pagination" aria-label="Pagination notes">
+              {% if ratings_page > 1 %}<a class="btn btn-outline pagination-prev" href="/compte?tab=activite&section=ratings&page={{ ratings_page - 1 }}">&#9664;&nbsp;Précédent</a>{% else %}<span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>{% endif %}
+              <div class="pagination-numbers">{% for p in ratings_page_numbers %}{% if p == "..." %}<span class="pagination-ellipsis">&hellip;</span>{% elif p == ratings_page %}<span class="pagination-link active">{{ p }}</span>{% else %}<a class="pagination-link" href="/compte?tab=activite&section=ratings&page={{ p }}">{{ p }}</a>{% endif %}{% endfor %}</div>
+              {% if ratings_page < ratings_total_pages %}<a class="btn btn-outline pagination-next" href="/compte?tab=activite&section=ratings&page={{ ratings_page + 1 }}">Suivant&nbsp;&#9658;</a>{% else %}<span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>{% endif %}
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="activity-empty"><p>Vous n'avez pas encore noté de données.</p><a href="/catalogue/donnees" class="btn btn-primary">Parcourir le catalogue</a></div>
+            {% endif %}
+
+          {% elif section == 'comments' %}
+            {% if comments %}
+            <div class="activity-list">
+              {% for c in comments %}
+              <a href="/catalogue/item/{{ c[0].item_id }}" class="activity-card">
+                <div class="activity-card-icon activity-card-user-icon">
+                  {% if current_user.avatar_path %}
+                    <img src="{{ current_user.avatar_path }}" alt="">
+                  {% else %}
+                    <span>{{ current_user.prenom[:1] }}{{ current_user.nom[:1] }}</span>
+                  {% endif %}
+                </div>
+                <div class="activity-card-content">
+                  <div class="activity-card-title">{{ c[1] }}</div>
+                  <div class="activity-card-text">{{ c[0].content[:200]|e }}{% if c[0].content | length > 200 %}...{% endif %}</div>
+                  <div class="activity-card-meta"><span>{{ c[0].created_at.strftime('%d/%m/%Y') }}</span></div>
+                </div>
+              </a>
+              {% endfor %}
+            </div>
+            {% if comments_total_pages > 1 %}
+            <nav class="pagination" aria-label="Pagination commentaires">
+              {% if comments_page > 1 %}<a class="btn btn-outline pagination-prev" href="/compte?tab=activite&section=comments&page={{ comments_page - 1 }}">&#9664;&nbsp;Précédent</a>{% else %}<span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>{% endif %}
+              <div class="pagination-numbers">{% for p in comments_page_numbers %}{% if p == "..." %}<span class="pagination-ellipsis">&hellip;</span>{% elif p == comments_page %}<span class="pagination-link active">{{ p }}</span>{% else %}<a class="pagination-link" href="/compte?tab=activite&section=comments&page={{ p }}">{{ p }}</a>{% endif %}{% endfor %}</div>
+              {% if comments_page < comments_total_pages %}<a class="btn btn-outline pagination-next" href="/compte?tab=activite&section=comments&page={{ comments_page + 1 }}">Suivant&nbsp;&#9658;</a>{% else %}<span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>{% endif %}
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="activity-empty"><p>Vous n'avez pas encore publié de commentaire.</p><a href="/catalogue/donnees" class="btn btn-primary">Parcourir le catalogue</a></div>
+            {% endif %}
+
+          {% elif section == 'publications' %}
+            {% if publications %}
+            <div class="activity-list">
+              {% for item in publications %}
+              <div class="activity-card">
+                <div class="activity-card-icon activity-card-user-icon">
+                  {% if current_user.avatar_path %}
+                    <img src="{{ current_user.avatar_path }}" alt="">
+                  {% else %}
+                    <span>{{ current_user.prenom[:1] }}{{ current_user.nom[:1] }}</span>
+                  {% endif %}
+                </div>
+                <div class="activity-card-content">
+                  <a href="/catalogue/item/{{ item.id }}" class="activity-card-title">{{ item.title }}</a>
+                  <div class="activity-card-meta">
+                    <span>{{ item.created_at.strftime('%d/%m/%Y') }}</span>
+                    {% if item.verification_status == 'verified' %}<span class="badge badge-verified">Vérifié</span>{% elif item.verification_status == 'rejected' %}<span class="badge badge-rejected">Rejeté</span>{% else %}<span class="badge badge-unofficial">Non officiel</span>{% endif %}
+                  </div>
+                  <div class="activity-card-actions">
+                    <a href="/upload?edit={{ item.id }}" class="btn btn-sm">Modifier</a>
+                    <button type="button" class="btn btn-sm btn-outline publication-delete-btn" data-id="{{ item.id }}">Supprimer</button>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+            {% if publications_total_pages > 1 %}
+            <nav class="pagination" aria-label="Pagination publications">
+              {% if publications_page > 1 %}<a class="btn btn-outline pagination-prev" href="/compte?tab=activite&section=publications&page={{ publications_page - 1 }}">&#9664;&nbsp;Précédent</a>{% else %}<span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>{% endif %}
+              <div class="pagination-numbers">{% for p in publications_page_numbers %}{% if p == "..." %}<span class="pagination-ellipsis">&hellip;</span>{% elif p == publications_page %}<span class="pagination-link active">{{ p }}</span>{% else %}<a class="pagination-link" href="/compte?tab=activite&section=publications&page={{ p }}">{{ p }}</a>{% endif %}{% endfor %}</div>
+              {% if publications_page < publications_total_pages %}<a class="btn btn-outline pagination-next" href="/compte?tab=activite&section=publications&page={{ publications_page + 1 }}">Suivant&nbsp;&#9658;</a>{% else %}<span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>{% endif %}
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="activity-empty"><p>Vous n'avez pas encore publié de données.</p><a href="/upload" class="btn btn-primary">Publier des données</a></div>
+            {% endif %}
+          {% endif %}
+        </section>
+
+        {% elif active_tab == 'organisations' %}
+        <section class="compte-section">
+          <h2>Mes organisations</h2>
+          {% if org_memberships %}
+          <div class="activity-list">
+            {% for m in org_memberships %}
+            <a href="/organizations/{{ m.organization.slug }}" class="activity-card">
+              <div class="activity-card-icon activity-card-org-icon">
+                {% if m.organization.logo_url %}
+                  <img src="{{ m.organization.logo_url }}" alt="">
+                {% else %}
+                  <span>{{ m.organization.name[:2]|e }}</span>
+                {% endif %}
+              </div>
+              <div class="activity-card-content">
+                <div class="activity-card-title">{{ m.organization.name|e }}</div>
+                <div class="activity-card-meta">
+                  {% set display_role = m.custom_role.name if (m.custom_role_id and m.custom_role) else m.role %}
+                  <span class="org-role-badge role-{{ m.role }}">{{ display_role }}</span>
+                  <span>Membre depuis {{ m.joined_at.strftime('%d/%m/%Y') if m.joined_at else '' }}</span>
+                </div>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="activity-empty">
+            <p>Vous n'êtes membre d'aucune organisation.</p>
+            <a href="/organizations" class="btn btn-primary">Voir les organisations</a>
+          </div>
+          {% endif %}
+        </section>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/users/compte.js') }}"></script>
+{% endblock %}

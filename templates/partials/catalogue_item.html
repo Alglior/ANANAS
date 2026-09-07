@@ -1,0 +1,85 @@
+<li>
+  {% if not simple %}<hr class="catalogue-divider">{% endif %}
+  <a href="/catalogue/item/{{ item.id }}" class="catalogue-item transition-hover catalogue-link">
+    <div class="catalogue-img-wrap">
+      <img class="catalogue-image" src="{{ item.image|e }}" alt="{{ item.title|e }}" loading="lazy">
+      {% if item.is_official_verified %}
+      <div class="catalogue-img-band">
+        <img class="band-logo" src="{{ get_setting('site_logo') }}" alt="">
+        <span>A.N.A.N.A.S</span>
+        <span class="band-name">Vérifié</span>
+      </div>
+      {% endif %}
+    </div>
+    <div class="catalogue-content">
+      {% if not simple %}
+      <div class="catalogue-top">
+        <span class="catalogue-title">{{ item.title|e }}</span>
+        {% if item.imod %}
+        <span class="imod-badge imod-{{ item.imod.level|lower }}" title="Score IMOD : {{ item.imod.score }}/100 — Niveau {{ item.imod.level }}">IMOD {{ item.imod.score }}</span>
+        {% endif %}
+        {% if item.type == "application" and item.data_format_level == "simple" %}
+        <span class="badge badge-simple">Fichier simple</span>
+        {% elif item.type == "application" and item.data_format_level == "pack" %}
+        <span class="badge badge-pack">Pack complet — fichier unique</span>
+        {% elif item.type == "application" and item.data_format_level == "individual" %}
+        <span class="badge badge-individual">Fichiers individuels</span>
+        {% endif %}
+        {% if item.is_official_verified %}
+          <span class="badge badge-verified" title="Données vérifiées et approuvées par A.N.A.N.A.S">Données vérifiées</span>
+        {% else %}
+          <span class="badge badge-unofficial" title="Données non officielles - Accès accessible mais non vérifié par A.N.A.N.A.S">Données non officielles</span>
+        {% endif %}
+      </div>
+      <p class="catalogue-author"><strong>Publié par :</strong> {{ item.author|e }}</p>
+      <p class="catalogue-desc-preview" id="preview-{{ item.id }}">{{ item.description|truncate(140, True, '...')|e }}</p>
+      <p class="catalogue-desc-full" id="full-{{ item.id }}" hidden>{{ item.description|e }}</p>
+      {% if item.description and item.description|length > 140 %}
+      <button
+        class="btn-expand"
+        type="button"
+        aria-expanded="false"
+        aria-controls="preview-{{ item.id }} full-{{ item.id }}"
+      >
+        Plus
+      </button>
+      {% endif %}
+      {% else %}
+      <span class="catalogue-title">{{ item.title|e }}</span>
+      <p class="catalogue-desc-preview">{{ item.description|truncate(120)|e }}</p>
+      {% endif %}
+    </div>
+  </a>
+  {% if item.organization_name %}
+  <p class="catalogue-org">
+    <a href="/organizations/{{ item.organization_slug|e }}">{{ item.organization_name|e }}</a>
+  </p>
+  {% endif %}
+  {% if not simple %}
+  {% if item.tags and item.tags|length > 0 %}
+  <div class="catalogue-tags">
+    <span class="tags-label">Étiquette :</span>
+    {% for tag in item.tags[:5] %}
+    <a href="/catalogue/{{ catalogue_type }}?tag={{ tag|urlencode }}" class="tag">{{ tag }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% if item.unique_categories %}
+  <div class="catalogue-categories">
+    <span class="categories-label">Catégorie :</span>
+    {% for cat in item.unique_categories %}
+    <a href="/catalogue/{{ catalogue_type }}?category={{ cat|urlencode }}" class="category-tag">{{ cat }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% if item.zoom_levels and item.zoom_levels|length > 0 %}
+  <div class="catalogue-scales">
+    <span class="scales-label">Échelles :</span>
+    {% set zoom_labels = {"iris": "IRIS", "communes": "Communes", "cantons": "Cantons", "departements": "Départements", "regions": "Régions", "pays": "Pays"} %}
+    {% for zl in item.zoom_levels %}
+    <span class="scale-badge">{{ zoom_labels.get(zl, zl) }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endif %}
+</li>

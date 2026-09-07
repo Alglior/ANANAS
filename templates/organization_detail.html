@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+{% if current_user %}
+<input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+{% endif %}
+
+<main class="org-page">
+  <div class="container">
+
+    {% if current_user %}
+    <a href="/compte" class="org-back-link">&larr; Retour au compte</a>
+    {% endif %}
+
+    <div class="org-profile-card">
+      <div class="org-profile-avatar">
+        {% if org.logo_url %}
+          <img src="{{ org.logo_url|e }}" alt="{{ org.name|e }}">
+        {% else %}
+          <div class="org-profile-initials">{{ org.name[:2]|e }}</div>
+        {% endif %}
+      </div>
+      <h1 class="org-profile-name">{{ org.name|e }}</h1>
+      <p class="org-profile-id">ID : {{ org.id }}</p>
+      {% if org.website_url %}
+      <a href="{{ org.website_url|e }}" class="org-profile-url" target="_blank" rel="noopener">{{ org.website_url|e }}</a>
+      {% endif %}
+      <p class="org-profile-desc">{{ org.description|e or "Aucune description." }}</p>
+    </div>
+
+    {% set user_membership = (org.organization_members | selectattr("is_active", "equalto", True) | list | selectattr("user_id", "equalto", current_user.id) | list | first) if current_user else None %}
+
+    <div class="org-section">
+      <div class="org-section-header">
+        <h2>Membres ({{ org.organization_members | selectattr("is_active", "equalto", True) | list | length }})</h2>
+      </div>
+
+      <div class="org-member-list">
+        {% for m in org.organization_members | selectattr("is_active", "equalto", True) %}
+        <div class="org-member-row">
+          <div class="org-member-info">
+            <div class="org-member-avatar">
+              {% if m.user.avatar_path %}
+                <img src="{{ m.user.avatar_path }}" alt="">
+              {% else %}
+                <span class="org-member-initials">{{ m.user.prenom[:1] }}{{ m.user.nom[:1] }}</span>
+              {% endif %}
+            </div>
+            <div>
+              <div class="org-member-name">{{ m.user.prenom|e }} {{ m.user.nom|e }}</div>
+              {% set display_role = m.custom_role.name if (m.custom_role_id and m.custom_role) else m.role %}
+              <span class="org-member-role role-{{ m.role }}">{{ display_role }}</span>
+            </div>
+          </div>
+          {% if user_membership and user_membership.user_id != m.user_id and m.role != 'owner' %}
+          <div class="org-member-actions">
+            {% if user_membership.has_permission("manage_roles") %}
+            <select class="org-role-select" data-user-id="{{ m.user_id }}" data-slug="{{ org.slug }}">
+              <optgroup label="Rôles">
+                <option value="member" {% if m.role == 'member' and not m.custom_role_id %}selected{% endif %}>Membre</option>
+                <option value="moderator" {% if m.role == 'moderator' %}selected{% endif %}>Modérateur</option>
+                <option value="editor" {% if m.role == 'editor' %}selected{% endif %}>Éditeur</option>
+                <option value="admin" {% if m.role == 'admin' %}selected{% endif %}>Admin</option>
+              </optgroup>
+              {% set custom_roles = org.organization_roles | list %}
+              {% if custom_roles %}
+              <optgroup label="Rôles personnalisés">
+                {% for cr in custom_roles %}
+                <option value="custom:{{ cr.id }}" {% if m.custom_role_id == cr.id %}selected{% endif %}>{{ cr.name }}</option>
+                {% endfor %}
+              </optgroup>
+              {% endif %}
+            </select>
+            {% endif %}
+            {% if user_membership.has_permission("remove_members") %}
+            <button class="org-remove-btn" data-user-id="{{ m.user_id }}" data-slug="{{ org.slug }}" title="Retirer">&times;</button>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      {% if current_user %}
+      <div class="org-action-bar">
+        <button class="org-btn org-btn-outline" id="orgActionBtn" data-slug="{{ org.slug }}" {% if user_membership %}data-joined="1"{% else %}data-joined="0"{% endif %}>
+          {% if user_membership %}Quitter l'organisation{% else %}Rejoindre l'organisation{% endif %}
+        </button>
+        {% if user_membership and user_membership.has_permission("invite_members") %}
+        <button class="org-btn org-btn-outline" id="inviteToggleBtn">Inviter un membre</button>
+        <form class="org-invite-form form-hidden" id="inviteForm">
+          <input type="text" id="invitePseudo" class="org-input" placeholder="pseudo de l'utilisateur" required>
+          <button type="submit" class="org-btn org-btn-primary">Inviter</button>
+          <button type="button" class="org-btn org-btn-outline" id="cancelInviteBtn">Annuler</button>
+        </form>
+        {% endif %}
+        {% if user_membership and user_membership.has_permission("manage_roles") %}
+        <button class="org-btn org-btn-outline" id="rolesToggleBtn">Gérer les rôles</button>
+        {% endif %}
+        {% if user_membership and user_membership.has_permission("delete_org") %}
+        <button class="org-btn org-btn-danger" id="orgDeleteBtn" data-slug="{{ org.slug }}">Supprimer</button>
+        {% endif %}
+      </div>
+
+      {% if user_membership and user_membership.has_permission("manage_roles") %}
+      <div class="org-roles-panel form-hidden" id="rolesPanel">
+        <h3>Rôles personnalisés</h3>
+        <div class="org-roles-list" id="customRolesList">
+          {% for cr in org.organization_roles %}
+          <div class="org-role-item" data-role-id="{{ cr.id }}">
+            <span class="org-role-name">{{ cr.name|e }}</span>
+            <span class="org-role-perms">{{ cr.permissions | length }} permission(s)</span>
+            <button class="org-btn org-btn-sm org-btn-outline edit-role-btn" data-role-id="{{ cr.id }}">Modifier</button>
+            <button class="org-btn org-btn-sm org-btn-danger delete-role-btn" data-role-id="{{ cr.id }}">Supprimer</button>
+          </div>
+          {% endfor %}
+          {% if not org.organization_roles %}
+          <p class="org-empty">Aucun rôle personnalisé.</p>
+          {% endif %}
+        </div>
+        <form class="org-role-form" id="createRoleForm">
+          <h4>Nouveau rôle</h4>
+          <div class="org-form-group">
+            <label for="roleName">Nom</label>
+            <input type="text" id="roleName" class="org-input" placeholder="Ex: Contributeur" maxlength="50" required>
+          </div>
+          <div class="org-form-group">
+            <label>Permissions</label>
+            <div class="org-perms-grid">
+              {% for perm_key, perm_label in [
+                ("invite_members", "Inviter des membres"),
+                ("remove_members", "Retirer des membres"),
+                ("edit_org", "Modifier l'organisation"),
+                ("manage_items", "Gérer les données"),
+                ("moderate_content", "Modérer le contenu"),
+                ("manage_roles", "Gérer les rôles"),
+                ("delete_org", "Supprimer l'organisation"),
+              ] %}
+              <label class="org-perm-checkbox">
+                <input type="checkbox" name="permissions" value="{{ perm_key }}">
+                {{ perm_label }}
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+          <button type="submit" class="org-btn org-btn-primary">Créer le rôle</button>
+        </form>
+      </div>
+      {% endif %}
+      {% endif %}
+    </div>
+
+    <div class="org-section">
+      <div class="org-section-header">
+        <h2>Données ({{ items | length }})</h2>
+        <a href="/catalogue/donnees?org={{ org.slug }}" class="org-view-all">Voir tout</a>
+      </div>
+      {% if items %}
+      <ul class="org-items-list">
+        {% for item in items %}
+        <li>
+          <a href="/catalogue/item/{{ item.id }}" class="org-item-card">
+            <img class="org-item-img" src="{{ item.image }}" alt="{{ item.title|e }}" loading="lazy">
+            <div class="org-item-info">
+              <span class="org-item-title">{{ item.title|e }}</span>
+              <p class="org-item-desc">{{ item.description|truncate(120)|e }}</p>
+            </div>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="org-empty">Aucune donnée publiée.</p>
+      {% endif %}
+    </div>
+
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/organizations/detail.js') }}"></script>
+{% endblock %}

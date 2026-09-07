@@ -1,0 +1,180 @@
+/* ────────────────────────────────────────────
+   GeoPackage Packs section
+   ──────────────────────────────────────────── */
+.gp-section {
+  padding: var(--section-padding) 0;
+  background: var(--blue-alpha-11);
+}
+
+.gp-header {
+  text-align: center;
+  margin-bottom: var(--section-gap-header);
+}
+
+.gp-header h2 {
+  color: var(--forest);
+  font-size: clamp(1.6rem, 2.8vw, 2.1rem);
+  margin-bottom: 1rem;
+}
+
+.gp-lead {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  max-width: var(--lead-max-width);
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.gp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+.gp-grid--empty {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
+.gp-grid--empty .gp-info-card {
+  max-width: 600px;
+}
+
+/* ── Info card (left side) ── */
+.gp-info-card {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 14px 32px var(--shadow-black-06);
+  padding: 2.5rem;
+}
+
+.gp-info-title {
+  color: var(--charcoal);
+  font-size: 1.5rem;
+  text-align: center;
+  margin: 0 0 2rem;
+}
+
+.gp-benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.gp-benefit-item {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.7;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.gp-benefit-item:last-child {
+  margin-bottom: 0;
+}
+
+.gp-check {
+  flex-shrink: 0;
+  color: var(--forest);
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin-top: 0.1rem;
+}
+
+.gp-benefit-item strong {
+  color: var(--text-green-accent);
+}
+
+/* ── Collections (right side) ── */
+.gp-collections {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.gp-collection-card {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 14px 32px var(--shadow-black-06);
+  padding: 1.5rem 1.75rem;
+  transition: box-shadow 0.2s ease;
+}
+
+.gp-collection-card:hover {
+  box-shadow: 0 18px 40px var(--shadow-black-10);
+}
+
+.gp-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.gp-card-header h4 {
+  color: var(--charcoal);
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.gp-card-desc {
+  color: var(--text-secondary);
+  font-size: 0.925rem;
+  line-height: 1.6;
+  margin: 0 0 0.85rem;
+}
+
+.gp-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gp-meta {
+  color: var(--text-muted);
+  font-size: 0.825rem;
+}
+
+.gp-explore-link {
+  color: var(--forest);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+}
+
+.gp-explore-link:hover {
+  color: var(--hover-forest-dark);
+}
+
+/* ── CTA button ── */
+.gp-cta-wrap {
+  grid-column: 1 / -1;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.gp-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--forest);
+  color: var(--white);
+  padding: 1rem 1.75rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  box-shadow: 0 6px 18px var(--forest-alpha-28);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gp-cta-btn:hover {
+  background: var(--hover-forest-dark);
+  box-shadow: 0 9px 22px var(--forest-alpha-35);
+}
+
+.gp-cta-arrow {
+  width: 1rem;
+  height: 1rem;
+}

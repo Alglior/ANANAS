@@ -1,0 +1,38 @@
+/* ────────────────────────────────────────────
+   Admin — Featured items, catalogue sections
+   ──────────────────────────────────────────── */
+
+.featured-selected-item {
+  background: var(--surface-success-light);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.featured-selected-item span:first-child {
+  font-weight: 600;
+  color: var(--color-success-dark);
+  font-size: 0.9rem;
+}
+
+.featured-selected-item span:last-child {
+  color: var(--forest);
+  font-size: 0.8rem;
+}
+
+/* ── Admin catalogues ── */
+
+.admin-section-desc {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.admin-table-sub {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 0.2rem;
+}

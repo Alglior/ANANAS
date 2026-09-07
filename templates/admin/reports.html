@@ -1,0 +1,39 @@
+{% extends 'base_admin.html' %}
+
+{% set title = "Administration — Signalements" %}
+
+{% block admin_content %}
+<div class="admin-filters" id="report-status-filters">
+  <button type="button" data-filter="all" class="active active-filter filter-btn">Tous</button>
+  <button type="button" data-filter="pending" class="filter-btn">En attente</button>
+  <button type="button" data-filter="resolved" class="filter-btn">Résolu</button>
+  <button type="button" data-filter="dismissed" class="filter-btn">Non fondé</button>
+</div>
+
+<div class="table-wrapper">
+  <table id="reports-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Signaleur</th>
+        <th>Cible</th>
+        <th>Type</th>
+        <th>Raison</th>
+        <th>Statut</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="reports-tbody">
+      <tr><td colspan="8" class="loading-cell">Chargement...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div id="report-pagination" class="mod-pagination"></div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/reports.js') }}?v=2"></script>
+{% endblock %}

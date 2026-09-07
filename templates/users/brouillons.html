@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<main>
+  <section class="upload-page">
+    <div class="container upload-container">
+      <div class="upload-header">
+        <h1>Mes brouillons</h1>
+        <p>Reprenez vos publications en cours.</p>
+      </div>
+
+      {% if drafts %}
+      <ul class="upload-history-list">
+        {% for draft in drafts %}
+        <li class="upload-history-item" data-draft-id="{{ draft.id }}">
+          <a href="/catalogue/item/{{ draft.id }}" class="upload-history-link">{{ draft.title }}</a>
+          <span class="upload-history-meta">
+            <span class="badge badge-draft">Brouillon</span>
+            {{ draft.created_at.strftime('%d/%m/%Y %H:%M') }}
+            <a href="/upload?edit={{ draft.id }}" class="btn btn-sm">Modifier</a>
+            <button type="button" class="btn btn-sm btn-outline draft-delete-btn" data-id="{{ draft.id }}">Supprimer</button>
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="no-data-message">Aucun brouillon pour le moment.</p>
+      {% endif %}
+    </div>
+  </section>
+</main>
+{% endblock %}

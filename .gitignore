@@ -1,0 +1,50 @@
+# ────────────────────────────────────────────
+#  Secrets & sensitive files — NEVER commit
+# ────────────────────────────────────────────
+.env
+/.env.*
+/.secret
+/.secret.*
+
+# Private keys / tokens
+*.key
+*.pem
+*.p12
+*.jwk
+secrets.json
+
+# Per-installation qBittorrent config (contains generated password hash)
+# The .example template IS tracked; the real file is not.
+conf/qbittorrent/qBittorrent.conf
+
+# ────────────────────────────────────────────
+#  Virtual environments & build artifacts
+# ────────────────────────────────────────────
+.venv/
+__pycache__/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ────────────────────────────────────────────
+#  IDE & editor files
+# ────────────────────────────────────────────
+.idea/
+.vscode/settings.json
+.vscode/*.json
+*.swp
+*~
+.svn/
+
+# ────────────────────────────────────────────
+#  User-generated uploads (avatars)
+# ────────────────────────────────────────────
+static/uploads/avatars/
+
+# ────────────────────────────────────────────
+#  OS junk
+# ────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini

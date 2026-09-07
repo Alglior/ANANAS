@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<main class="changelog-page">
+  <div class="container">
+    <h1>Changelog</h1>
+    <p class="changelog-intro">Historique des mises à jour et évolutions de la plateforme A.N.A.N.A.S.</p>
+
+    {% for v in versions %}
+    <section class="changelog-entry">
+      <div class="changelog-header">
+        <h2>v{{ v.version }}</h2>
+        <span class="changelog-date">{{ v.date }}</span>
+      </div>
+      {% for section in v.sections %}
+      <h3>{{ section.title }}</h3>
+      <ul>
+        {% for entry in section.entries %}
+        <li>{{ entry }}</li>
+        {% endfor %}
+      </ul>
+      {% endfor %}
+    </section>
+    {% endfor %}
+
+  </div>
+</main>
+{% endblock %}

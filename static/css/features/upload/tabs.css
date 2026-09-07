@@ -1,0 +1,94 @@
+/* ── Draft badge ── */
+.draft-banner {
+  background: var(--mustard);
+  color: var(--charcoal);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.draft-banner a {
+  color: var(--charcoal);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* ── Upload tabs ── */
+.upload-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.upload-tab {
+  padding: 0.6rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  font-family: "Ubuntu", sans-serif;
+}
+
+.upload-tab:hover {
+  color: var(--charcoal);
+}
+
+.upload-tab.active {
+  color: var(--forest);
+  border-bottom-color: var(--forest);
+  font-weight: 600;
+}
+
+.upload-tab-content {
+  display: none;
+}
+
+.upload-tab-content.active {
+  display: block;
+}
+
+.no-data-message {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 2rem 0;
+  font-size: 0.95rem;
+}
+
+.badge-draft {
+  background: var(--mustard);
+  color: var(--charcoal);
+}
+
+.badge-trashed {
+  background: var(--border-color);
+  color: var(--text-muted);
+}
+
+.badge-published {
+  background: var(--blue-alpha-15);
+  color: var(--color-blue);
+}
+
+.trash-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.trashed-title {
+  opacity: 0.6;
+}
+
+.trash-purge-btn {
+  color: var(--error-red);
+  border-color: var(--error-red);
+}

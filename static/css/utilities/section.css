@@ -1,0 +1,23 @@
+/* ────────────────────────────────────────────
+   Shared section layout utilities
+   Used by all feature sections
+   ──────────────────────────────────────────── */
+
+.section-header {
+  text-align: center;
+  margin-bottom: var(--section-gap-header);
+}
+
+.section-header h2 {
+  color: var(--forest);
+  font-size: clamp(1.6rem, 2.8vw, 2.1rem);
+  margin-bottom: 1rem;
+}
+
+.section-lead {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  max-width: var(--lead-max-width);
+  margin: 0 auto;
+  line-height: 1.7;
+}

@@ -1,0 +1,65 @@
+/* ── Attribution section ── */
+.attribution-section {
+  margin-top: 3rem;
+}
+
+.attribution-section h2 {
+  color: var(--charcoal);
+  font-size: 1.35rem;
+  margin-bottom: 1.5rem;
+}
+
+.attribution-card {
+  background: var(--mustard-alpha-06);
+  border-radius: 12px;
+  border: 1px solid var(--mustard-alpha-25);
+  padding: 1.75rem 2rem;
+}
+
+.attribution-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1px;
+  background: var(--mustard-alpha-15);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.attribution-item {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem;
+  background: var(--white);
+}
+
+.attribution-item dt {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mustard);
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+}
+
+.attribution-item dd {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin: 0;
+}
+
+.attribution-item dd a:hover {
+  color: var(--forest);
+}
+
+.attribution-note {
+  color: var(--charcoal);
+  line-height: 1.7;
+  font-size: 0.95rem;
+  margin: 1.25rem 0 0;
+}
+
+.attribution-note a:hover {
+  color: var(--forest);
+}

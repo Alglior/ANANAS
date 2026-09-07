@@ -1,0 +1,127 @@
+/* ── Tutorial overlay ── */
+.tuto-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--shadow-black-35);
+  z-index: 9999;
+}
+
+.tuto-overlay.hidden-section,
+.tuto-tooltip.hidden-section {
+  display: none !important;
+}
+
+.tuto-tooltip {
+  position: fixed;
+  z-index: 10001;
+  background: var(--charcoal);
+  color: var(--white);
+  border-radius: 10px;
+  padding: 1.25rem;
+  max-width: 340px;
+  box-shadow: 0 6px 24px var(--shadow-black-30);
+  animation: tutoFadeIn 0.2s ease;
+}
+
+@keyframes tutoFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tuto-tooltip::after {
+  content: '';
+  position: absolute;
+  border: 8px solid transparent;
+}
+
+.tuto-tooltip.pos-bottom::after {
+  top: -16px;
+  left: 24px;
+  border-bottom-color: var(--charcoal);
+}
+.tuto-tooltip.pos-top::after {
+  bottom: -16px;
+  left: 24px;
+  border-top-color: var(--charcoal);
+}
+.tuto-tooltip.pos-right::after {
+  left: -16px;
+  top: 24px;
+  border-right-color: var(--charcoal);
+}
+.tuto-tooltip.pos-left::after {
+  right: -16px;
+  top: 24px;
+  border-left-color: var(--charcoal);
+}
+
+.tuto-step-indicator {
+  font-size: 0.75rem;
+  color: var(--white-alpha-50);
+  margin-bottom: 0.5rem;
+}
+
+.tuto-step-indicator span {
+  color: var(--mustard);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.tuto-tooltip p {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 1rem;
+}
+
+.tuto-tooltip strong {
+  color: var(--mustard);
+}
+
+.tuto-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.tuto-actions .btn {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.75rem;
+}
+
+.tuto-actions .btn-outline {
+  border-color: var(--white-alpha-30);
+  color: var(--white);
+}
+
+.tuto-actions .btn-outline:hover {
+  border-color: var(--white);
+  background: var(--white-alpha-10);
+}
+
+.tuto-dont-show {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--white-alpha-50);
+  cursor: pointer;
+}
+
+.tuto-dont-show input {
+  accent-color: var(--mustard);
+}
+
+.tuto-highlight {
+  position: relative;
+  z-index: 10000 !important;
+  box-shadow: 0 0 0 4px var(--mustard), 0 0 24px rgba(212, 175, 55, 0.4);
+  border-radius: 8px;
+  transition: box-shadow 0.2s ease;
+}
+
+.tuto-relaunch {
+  font-size: 0.85rem;
+  color: var(--forest);
+  text-decoration: underline;
+  cursor: pointer;
+}

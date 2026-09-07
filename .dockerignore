@@ -1,0 +1,42 @@
+# ──────────────────────────────────────────────
+#  A.N.A.N.A.S. — Docker ignore file
+#  Controls what gets COPY'd into the container
+# ──────────────────────────────────────────────
+
+# Secrets (mounted via volume, not baked in)
+.env
+/.env.*
+/.secret
+/.secret.*
+*.key
+*.pem
+*.p12
+*.jwk
+secrets.json
+
+# Not needed inside container
+.venv/
+__pycache__/
+**/__pycache__/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Dev/analysis files
+.sonar/
+.git/
+.github/
+
+# IDE & editor
+.idea/
+.vscode/settings.json
+.vscode/*.json
+*.swp
+*~
+.svn/
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini

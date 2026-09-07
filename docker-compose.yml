@@ -1,0 +1,105 @@
+# ──────────────────────────────────────────────
+#  A.N.A.N.A.S. — Docker Compose
+#
+#  docker compose up -d      → start all services
+#  docker compose down       → stop + remove containers
+#  docker compose logs -f    → follow logs
+# ──────────────────────────────────────────────
+
+services:
+  # ─── Nginx reverse proxy (entry point) ───
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: ananas_nginx
+    ports:
+      - "80:80"           # HTTP (replace with 443 for HTTPS)
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/proxy_params:/etc/nginx/proxy_params:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ─── Flask app (built from Dockerfile) ───
+  app:
+    build: .
+    container_name: ananas_app
+    restart: unless-stopped
+    env_file: .env          # reads POSTGRES_*, FLASK_SECRET_KEY from .env
+    environment:
+      - FLASK_ENV=production
+      - QBITTORRENT_URL=http://qbittorrent:8081
+      - QBITTORRENT_USERNAME=${QBITTORRENT_USERNAME}
+      - QBITTORRENT_PASSWORD=${QBITTORRENT_PASSWORD}
+      - REDIS_URL=redis://redis:6379/0
+    expose:
+      - "5000"              # internal only, behind nginx
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - qbittorrent_downloads:/qbittorrent_downloads:ro  # read qBittorrent completed downloads
+      - image_cache:/app/instance/image_cache  # persist downloaded image cache
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:5000/health')\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+
+  # ─── PostgreSQL (official image, no custom build) ───
+  postgres:
+    image: postgres:18-alpine
+    container_name: ananas_postgres
+    restart: unless-stopped
+    env_file: .env          # reads POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD from .env
+   
+    command: >
+      postgres
+      -c max_connections=50
+      -c log_min_duration_statement=1000
+      -c log_connections=on
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - pg_data:/var/lib/postgresql
+
+  # ─── Redis (rate limiting storage) ───
+  redis:
+    image: redis:7-alpine
+    container_name: ananas_redis
+    command: ["redis-server", "--appendonly", "no", "--maxmemory", "64mb", "--maxmemory-policy", "allkeys-lru"]
+    restart: unless-stopped
+
+  # ─── qBittorrent (torrent downloader/seeder for image magnets) ───
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: ananas_qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Paris
+      - WEBUI_PORT=8081
+      - TORRENTING_PORT=6881
+    expose:
+      - "8081"              # Web UI, internal only
+    ports:
+      - "6881:6881"
+      - "6881:6881/udp"
+    volumes:
+      - ./conf/qbittorrent/qBittorrent.conf:/config/qBittorrent/qBittorrent.conf
+      - qbittorrent_downloads:/downloads
+    restart: unless-stopped
+
+  # ─── Named volumes (survive container deletion) ───
+volumes:
+  pg_data:       # Postgres data directory
+  qbittorrent_downloads:  # qBittorrent downloads
+  image_cache:  # Downloaded image cache
