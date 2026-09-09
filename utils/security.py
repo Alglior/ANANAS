@@ -123,7 +123,7 @@ def validate_filename(filename: str) -> str | None:
     if not filename or not isinstance(filename, str):
         return None
 
-    allowed_extensions = {"csv", "shp", "geojson", "gpkg", "json", "xml", "png", "jpg", "jpeg", "gif", "svg", "pdf"}
+    allowed_extensions = {"csv", "shp", "geojson", "gpkg", "json", "xml", "png", "jpg", "jpeg", "svg", "pdf"}
 
     if "." not in filename:
         return None

@@ -72,7 +72,7 @@ Les **organisations** sont des entités collaboratives qui publient et gèrent d
 | Propriétaire | Toutes les permissions, y compris gérer les rôles et supprimer l'org |
 
 - Des **rôles personnalisés** avec permissions sur mesure peuvent être créés via `OrganizationRole`
-- Les organisations peuvent être **publiques** (visibles dans le catalogue) ou **actives/inactives**
+- Les organisations peuvent être **actives ou inactives**
 
 ---
 
@@ -111,11 +111,13 @@ L'interface d'upload permet uniquement de créer des **prévisualisations** (CSV
 
 ### Vérification des magnet links (obligatoire)
 
-Tous les magnet links sont validés par `validate_magnet_link()` avant d'être stockés. Un item sans magnet link valide ne peut pas être publié. Le format attendu est :
+Tous les magnet links sont validés par `validate_magnet_link()` avant d'être stockés. Un item sans magnet link valide ne peut pas être publié. Le format minimal attendu est :
 
 ```
-magnet:?xt=urn:btih:<INFO_HASH>&dn=<NAME>&tr=<TRACKER_URL>
+magnet:?xt=urn:btih:<INFO_HASH>
 ```
+
+Les paramètres `dn=` (nom) et `tr=` (tracker) sont optionnels mais recommandés.
 
 ### Statut de vérification
 
