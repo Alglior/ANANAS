@@ -2,7 +2,7 @@
 
 La documentation complète de l'API REST est désormais disponible sur une page dédiée :
 
-➡️ **[Documentation API](/api)**
+**[Documentation API](/api)**
 
 Vous y trouverez la liste complète des endpoints avec leurs méthodes, descriptions, prérequis d'authentification et limites de débit.
 
