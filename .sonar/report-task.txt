@@ -1,6 +1,0 @@
-projectKey=ananas_website
-serverUrl=http://192.168.1.143:9000
-serverVersion=26.2.0.119303
-dashboardUrl=http://192.168.1.143:9000/dashboard?id=ananas_website
-ceTaskId=07d04819-42d7-4f7a-9ef4-b21caf6f5eed
-ceTaskUrl=http://192.168.1.143:9000/api/ce/task?id=07d04819-42d7-4f7a-9ef4-b21caf6f5eed
