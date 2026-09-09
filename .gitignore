@@ -48,3 +48,8 @@ static/uploads/avatars/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# ────────────────────────────────────────────
+#  SonarQube analysis cache
+# ────────────────────────────────────────────
+.sonar/
