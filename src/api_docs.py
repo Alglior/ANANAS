@@ -1,4 +1,5 @@
 import os
+import urllib.parse
 
 from flask import Blueprint, render_template
 
@@ -7,8 +8,7 @@ bp = Blueprint("api_docs", __name__)
 BASE = os.environ.get("SITE_URL", "https://ananas.example.com")
 
 
-def _examples(method, path, body=None, auth=False):
-    """Generate code examples for a given method/path."""
+def _examples(method, path, body=None, auth=False, form=False, multipart=False):
     url = BASE + path
     curl_headers = []
     py_headers = {}
@@ -20,23 +20,52 @@ def _examples(method, path, body=None, auth=False):
         js_headers["X-CSRF-Token"] = "<token>"
 
     has_body = body or method in ("POST", "PUT")
-    content_type = '-H "Content-Type: application/json"'
-    if has_body:
-        curl_headers.append(content_type)
-        py_headers["Content-Type"] = "application/json"
-        js_headers["Content-Type"] = "application/json"
 
-    h = " \\\n  ".join(curl_headers)
-    curl_body = f" \\\n  -d '{body}'" if body else (" \\\n  -d '{}'" if has_body and method != "POST" else "")
-    curl = f"curl -X {method} \\\n  '{url}'" + (f" \\\n  {h}" if h else "") + curl_body
+    if multipart:
+        h = " \\\n  ".join(curl_headers)
+        curl_body = f" \\\n  -F '{body}'" if body else ""
+        curl = f"curl -X {method} \\\n  '{url}'" + (f" \\\n  {h}" if h else "") + curl_body
 
-    py_data = f", json={body}" if body else (", json={}" if has_body and method not in ("POST",) else "")
-    py_h = f", headers={py_headers}" if py_headers else ""
-    py = f"import requests\n\nresponse = requests.{method.lower()}('{url}'{py_data}{py_h})"
+        files = "{" + body + "}" if body else "{}"
+        py_h = f", headers={py_headers}" if py_headers else ""
+        py = f"import requests\n\nresponse = requests.{method.lower()}('{url}', files={files}{py_h})"
 
-    js_h = f", {js_headers}".replace("'", '"') if js_headers else ""
-    js_body = f", body: JSON.stringify({body})" if body else (", body: '{}'" if has_body and method != "POST" else "")
-    js = f"fetch('{url}', {{\n  method: '{method}'{js_h}{js_body}\n}})"
+        js_h = f", {js_headers}".replace("'", '"') if js_headers else ""
+        js_body = ", body: new FormData()" if body else ""
+        js = f"fetch('{url}', {{\n  method: '{method}'{js_h}{js_body}\n}})"
+
+    elif form:
+        h = " \\\n  ".join(curl_headers)
+        curl_body = f" \\\n  -d '{body}'" if body else ""
+        curl = f"curl -X {method} \\\n  '{url}'" + (f" \\\n  {h}" if h else "") + curl_body
+
+        d = {k: v[0] for k, v in urllib.parse.parse_qs(body).items()} if body else {}
+        py_data = f"data={d}"
+        py_h = f", headers={py_headers}" if py_headers else ""
+        py = f"import requests\n\nresponse = requests.{method.lower()}('{url}', {py_data}{py_h})"
+
+        js_h = f", {js_headers}".replace("'", '"') if js_headers else ""
+        js_body = f", body: '{body}'" if body else ""
+        js = f"fetch('{url}', {{\n  method: '{method}'{js_h}{js_body}\n}})"
+
+    else:
+        content_type = '-H "Content-Type: application/json"'
+        if has_body:
+            curl_headers.append(content_type)
+            py_headers["Content-Type"] = "application/json"
+            js_headers["Content-Type"] = "application/json"
+
+        h = " \\\n  ".join(curl_headers)
+        curl_body = f" \\\n  -d '{body}'" if body else (" \\\n  -d '{}'" if has_body and method != "POST" else "")
+        curl = f"curl -X {method} \\\n  '{url}'" + (f" \\\n  {h}" if h else "") + curl_body
+
+        py_data = f", json={body}" if body else (", json={}" if has_body and method not in ("POST",) else "")
+        py_h = f", headers={py_headers}" if py_headers else ""
+        py = f"import requests\n\nresponse = requests.{method.lower()}('{url}'{py_data}{py_h})"
+
+        js_h = f", {js_headers}".replace("'", '"') if js_headers else ""
+        js_body = f", body: JSON.stringify({body})" if body else (", body: '{}'" if has_body and method != "POST" else "")
+        js = f"fetch('{url}', {{\n  method: '{method}'{js_h}{js_body}\n}})"
 
     return [
         {"lang": "curl", "code": curl},
@@ -47,9 +76,11 @@ def _examples(method, path, body=None, auth=False):
 
 _ENDPOINTS = [
     {"method": "POST", "path": "/connexion", "desc": "Connecter un utilisateur (pseudo + mot de passe)", "auth": False, "rate": "5/h",
-     "body": '{"pseudo": "john-doe#ab7f3c", "password": "********"}'},
+     "form": True,
+     "body": "pseudo=john-doe%23ab7f3c&password=********"},
     {"method": "POST", "path": "/inscription", "desc": "Creer un compte (prenom, nom, mot de passe)", "auth": False, "rate": "3/h",
-     "body": '{"prenom": "John", "nom": "Doe", "password": "Str0ng!Pass"}'},
+     "form": True,
+     "body": "prenom=John&nom=Doe&password=Str0ng%21Pass"},
     {"method": "GET",  "path": "/logout", "desc": "Deconnecter et detruire la session", "auth": True, "rate": None},
     {"method": "GET", "path": "/catalogue/<type>", "desc": "Catalogue pagine (types: donnees, cartes, applications)", "auth": False, "rate": None},
     {"method": "GET", "path": "/catalogue/<type>/<page>", "desc": "Page specifique du catalogue", "auth": False, "rate": None},
@@ -62,9 +93,11 @@ _ENDPOINTS = [
     {"method": "GET", "path": "/catalogue/item/<id>/details/json", "desc": "Details complets (liens de visualisation, chunks)", "auth": False, "rate": None},
     {"method": "GET", "path": "/api/items/<id>/image-status", "desc": "Statut de téléchargement des images (suivi par aimant: statut, progression)", "auth": False, "rate": None},
     {"method": "POST", "path": "/catalogue/item/<id>/rate", "desc": "Noter un element (1-5 etoiles)", "auth": True, "rate": None,
-     "body": '{"rating": 4}'},
+     "form": True,
+     "body": "rating=4"},
     {"method": "POST", "path": "/catalogue/item/<id>/comment", "desc": "Ajouter un commentaire", "auth": True, "rate": None,
-     "body": '{"content": "Tres utile, merci !"}'},
+     "form": True,
+     "body": "text=Tres+utile%2C+merci+%21"},
     {"method": "POST", "path": "/api/catalogue/item/<id>/reply", "desc": "Repondre a un commentaire", "auth": True, "rate": None,
      "body": '{"content": "Je confirme !", "parent_id": 42}'},
     {"method": "POST", "path": "/api/items/<id>/viz-links", "desc": "Ajouter un lien de visualisation", "auth": True, "rate": None,
@@ -76,9 +109,11 @@ _ENDPOINTS = [
     {"method": "POST", "path": "/api/users/change-password", "desc": "Changer son mot de passe", "auth": True, "rate": "5/h",
      "body": '{"current_password": "OldPass1!", "new_password": "NewStr0ng!"}'},
     {"method": "POST", "path": "/api/users/avatar", "desc": "Uploader un avatar (png/jpg/webp)", "auth": True, "rate": None,
-     "body": '<fichier> (multipart/form-data)'},
+     "multipart": True,
+     "body": "avatar=@mon_avatar.png"},
     {"method": "POST", "path": "/api/upload/file", "desc": "Uploader un fichier", "auth": True, "rate": None,
-     "body": '<fichier> (multipart/form-data)'},
+     "form": True,
+     "body": "title=Ma+donnee&type=geodonnee&format_type=csv&description=Description&data_format_level=simple"},
     {"method": "POST", "path": "/api/upload/item", "desc": "Creer un element", "auth": True, "rate": None,
      "body": '{"title": "Ma donnee", "type": "geodonnee", "description": "...", "magnet_link": "magnet:?...", "format_type": "GeoJSON"}'},
     {"method": "PUT",  "path": "/api/upload/item/<id>", "desc": "Modifier un brouillon", "auth": True, "rate": None,
@@ -98,8 +133,8 @@ _ENDPOINTS = [
     {"method": "POST",   "path": "/api/organizations/<slug>/members/<user_id>/role", "desc": "Modifier le role d'un membre", "auth": True, "rate": None,
      "body": '{"role": "editor"}'},
     {"method": "DELETE", "path": "/api/organizations/<slug>/members/<user_id>", "desc": "Retirer un membre", "auth": True, "rate": None},
-    {"method": "POST",   "path": "/api/organizations/<slug>/invite", "desc": "Inviter un membre par email", "auth": True, "rate": None,
-     "body": '{"email": "user@example.com"}'},
+    {"method": "POST",   "path": "/api/organizations/<slug>/invite", "desc": "Inviter un membre par pseudo", "auth": True, "rate": None,
+     "body": '{"pseudo": "username"}'},
     {"method": "GET",    "path": "/api/organizations/<slug>/roles", "desc": "Lister les roles personnalises", "auth": True, "rate": None},
     {"method": "POST",   "path": "/api/organizations/<slug>/roles", "desc": "Creer un role personnalise", "auth": True, "rate": None,
      "body": '{"name": "Editeur", "permissions": ["manage_items"]}'},
@@ -108,8 +143,8 @@ _ENDPOINTS = [
     {"method": "DELETE", "path": "/api/organizations/<slug>/roles/<role_id>", "desc": "Supprimer un role", "auth": True, "rate": None},
     {"method": "DELETE", "path": "/api/organizations/<slug>", "desc": "Supprimer l'organisation", "auth": True, "rate": None},
     {"method": "POST", "path": "/api/reports", "desc": "Signaler un contenu (spam, fausses donnees, autre)", "auth": True, "rate": None,
-     "body": '{"report_type": "item_geodonnee", "target_item_id": 42, "reason": "fake_data", "description": "..."}'},
-    {"method": "POST", "path": "/api/contact", "desc": "Envoyer un message de contact", "auth": False, "rate": "5/h",
+     "body": '{"target_type": "geodonnee", "target_id": 42, "reason": "fake_data", "description": "..."}'},
+    {"method": "POST", "path": "/api/contact", "desc": "Envoyer un message de contact", "auth": True, "rate": "5/h",
      "body": '{"name": "Jean", "email": "jean@example.com", "subject": "Question", "message": "Bonjour, ..."}'},
     {"method": "GET",    "path": "/admin/accueil", "desc": "Tableau de bord administrateur", "auth": True, "rate": None, "admin": True},
     {"method": "GET",    "path": "/admin/users", "desc": "Gestion des utilisateurs", "auth": True, "rate": None, "admin": True},
@@ -178,7 +213,6 @@ METHOD_COLORS = {
 
 ALLOWED_EXTENSIONS = "csv, shp, geojson, gpkg, json, xml, png, jpg, jpeg, svg, pdf"
 
-#la variable ep = EndPoint, c'est un dictionnaire qui contient les informations sur un endpoint spécifique de l'API. Chaque endpoint est défini par sa méthode HTTP (GET, POST, PUT, DELETE), son chemin (path), sa description (desc), si l'authentification est requise (auth), le taux de requêtes autorisé (rate) et éventuellement le corps de la requête (body) pour les méthodes qui en nécessitent un.
 def _build_endpoints():
     lookup = {ep["path"]: ep for ep in _ENDPOINTS}
     result = []
@@ -193,7 +227,13 @@ def _build_endpoints():
                 "desc": ep["desc"],
                 "auth": ep["auth"],
                 "rate": ep.get("rate"),
-                "examples": _examples(ep["method"], ep["path"], body=body, auth=ep["auth"]),
+                "examples": _examples(
+                    ep["method"], ep["path"],
+                    body=body,
+                    auth=ep["auth"],
+                    form=ep.get("form", False),
+                    multipart=ep.get("multipart", False),
+                ),
             }
             endpoints.append(ep_out)
         entry = {"category": cat["name"], "endpoints": endpoints}
