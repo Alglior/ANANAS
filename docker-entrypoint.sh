@@ -107,7 +107,7 @@ python3 -c "
 import os, sys
 sys.path.insert(0, '/app')
 from app import create_app, db
-from models import Organization, User
+from models import Organization, OrganizationMember, User
 app = create_app()
 with app.app_context():
     existing = Organization.query.filter_by(slug='ananas-geographique').first()
@@ -124,8 +124,33 @@ with app.app_context():
             is_active=True,
         )
         db.session.add(org)
+        db.session.flush()
+        if admin:
+            member = OrganizationMember(
+                user_id=admin.id,
+                organization_id=org.id,
+                role='owner',
+            )
+            db.session.add(member)
         db.session.commit()
         print(f'Default organization created: ANANAS Géographique (id={org.id})')
+
+    admin = User.query.filter_by(prenom='Système', nom='ANANAS').first()
+    if admin:
+        org = Organization.query.filter_by(slug='ananas-geographique').first()
+        if org:
+            existing_member = OrganizationMember.query.filter_by(
+                user_id=admin.id, organization_id=org.id
+            ).first()
+            if not existing_member:
+                member = OrganizationMember(
+                    user_id=admin.id,
+                    organization_id=org.id,
+                    role='owner',
+                )
+                db.session.add(member)
+                db.session.commit()
+                print(f'Admin added as owner of ANANAS Géographique')
 "
 
 echo "[entrypoint] Ensuring image cache directory..."

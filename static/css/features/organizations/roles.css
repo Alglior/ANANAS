@@ -192,6 +192,48 @@
   color: var(--forest);
 }
 
+.org-requests-section {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+}
+
+.org-requests-section h3 {
+  font-size: 1rem;
+  color: var(--charcoal);
+  margin: 0 0 1rem;
+}
+
+.org-request-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--light-gray);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.org-request-user {
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 140px;
+}
+
+.org-request-date {
+  font-size: 0.8rem;
+  color: var(--specs-gray);
+  flex: 1;
+}
+
+.org-btn-disabled {
+  background: var(--light-gray);
+  color: var(--specs-gray);
+  cursor: default;
+  opacity: 0.7;
+}
+
 .badge-info {
   background: var(--color-info);
   color: var(--white);

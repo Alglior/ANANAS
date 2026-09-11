@@ -150,6 +150,15 @@
         </form>
       </div>
       {% endif %}
+
+      {% if user_membership and user_membership.has_permission("manage_roles") %}
+      <div class="org-requests-section">
+        <h3>Demandes d'accès</h3>
+        <div id="joinRequestsList">
+          <p class="org-empty">Aucune demande en attente.</p>
+        </div>
+      </div>
+      {% endif %}
       {% endif %}
     </div>
 

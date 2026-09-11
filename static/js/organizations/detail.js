@@ -16,6 +16,14 @@
           .then(function (res) { return res.json(); })
           .then(function (data) {
             if (data.error) { alert(data.error); return; }
+            if (data.status === 'requested') {
+              alert(data.message);
+              btn.textContent = 'Demande envoy\u00e9e';
+              btn.disabled = true;
+              btn.classList.remove('org-btn-outline');
+              btn.classList.add('org-btn-disabled');
+              return;
+            }
             location.reload();
           })
           .catch(function () { alert('Erreur r\u00e9seau'); });
@@ -178,6 +186,64 @@
           })
           .catch(function () { alert('Erreur r\u00e9seau'); });
       });
+    });
+
+    var requestsList = document.getElementById('joinRequestsList');
+    if (requestsList) {
+      fetch('/api/organizations/' + slug + '/requests', {
+        headers: { 'X-CSRF-TOKEN': CsrfModule.getCsrfToken() }
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (!data.length) return;
+          requestsList.innerHTML = '';
+          data.forEach(function (req) {
+            var div = document.createElement('div');
+            div.className = 'org-request-row';
+            div.innerHTML =
+              '<span class="org-request-user">' + req.user_name + ' (@' + req.user_pseudo + ')</span>' +
+              '<span class="org-request-date">' + req.created_at + '</span>' +
+              '<button class="org-btn org-btn-sm org-btn-primary approve-request-btn" data-request-id="' + req.id + '">Accepter</button>' +
+              '<button class="org-btn org-btn-sm org-btn-outline reject-request-btn" data-request-id="' + req.id + '">Refuser</button>';
+            requestsList.appendChild(div);
+          });
+        })
+        .catch(function () {});
+    }
+
+    document.addEventListener('click', function (e) {
+      var approveBtn = e.target.closest('.approve-request-btn');
+      if (approveBtn) {
+        var reqId = approveBtn.getAttribute('data-request-id');
+        fetch('/api/organizations/' + slug + '/requests/' + reqId + '/approve', {
+          method: 'POST',
+          headers: { 'X-CSRF-TOKEN': CsrfModule.getCsrfToken() }
+        })
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (data.error) { alert(data.error); return; }
+            location.reload();
+          })
+          .catch(function () { alert('Erreur r\u00e9seau'); });
+        return;
+      }
+
+      var rejectBtn = e.target.closest('.reject-request-btn');
+      if (rejectBtn) {
+        var reqId = rejectBtn.getAttribute('data-request-id');
+        if (!confirm('Refuser cette demande d\'acc\u00e8s ?')) return;
+        fetch('/api/organizations/' + slug + '/requests/' + reqId + '/reject', {
+          method: 'POST',
+          headers: { 'X-CSRF-TOKEN': CsrfModule.getCsrfToken() }
+        })
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (data.error) { alert(data.error); return; }
+            location.reload();
+          })
+          .catch(function () { alert('Erreur r\u00e9seau'); });
+        return;
+      }
     });
   });
 })();

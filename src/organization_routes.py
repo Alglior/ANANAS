@@ -79,7 +79,7 @@ def create_organization():
 @bp.route("/api/organizations/<slug>/join", methods=["POST"])
 @login_required
 def join_organization(slug):
-    from models import OrganizationMember
+    from models import OrganizationMember, OrganizationJoinRequest
 
     current_user = get_current_user()
     org = _get_org(slug)
@@ -88,15 +88,96 @@ def join_organization(slug):
     if existing:
         return jsonify({"error": "Déjà membre"}), 409
 
-    member = OrganizationMember(
+    pending = OrganizationJoinRequest.query.filter_by(
+        user_id=current_user.id, organization_id=org.id
+    ).first()
+    if pending:
+        return jsonify({"error": "Demande déjà envoyée"}), 409
+
+    req = OrganizationJoinRequest(
         user_id=current_user.id,
+        organization_id=org.id,
+    )
+    db.session.add(req)
+    db.session.commit()
+    return jsonify({"status": "requested", "message": "Demande d'accès envoyée. En attente d'approbation."})
+
+
+@bp.route("/api/organizations/<slug>/requests", methods=["GET"])
+@login_required
+def list_join_requests(slug):
+    from models import OrganizationJoinRequest
+
+    org, member, error, code = _require_permission(slug, "manage_roles")
+    if error:
+        return error, code
+
+    requests = OrganizationJoinRequest.query.filter_by(organization_id=org.id).order_by(
+        OrganizationJoinRequest.created_at.desc()
+    ).all()
+
+    return jsonify([
+        {
+            "id": r.id,
+            "user_id": r.user_id,
+            "user_name": f"{r.user.prenom} {r.user.nom}",
+            "user_pseudo": r.user.pseudo,
+            "created_at": r.created_at.strftime("%d/%m/%Y %H:%M") if r.created_at else "",
+        }
+        for r in requests
+    ])
+
+
+@bp.route("/api/organizations/<slug>/requests/<int:request_id>/approve", methods=["POST"])
+@login_required
+def approve_join_request(slug, request_id):
+    from models import OrganizationJoinRequest, OrganizationMember
+
+    org, member, error, code = _require_permission(slug, "manage_roles")
+    if error:
+        return error, code
+
+    req = OrganizationJoinRequest.query.filter_by(
+        id=request_id, organization_id=org.id
+    ).first_or_404()
+
+    existing = OrganizationMember.query.filter_by(
+        user_id=req.user_id, organization_id=org.id
+    ).first()
+    if existing:
+        db.session.delete(req)
+        db.session.commit()
+        return jsonify({"error": "Cet utilisateur est déjà membre"}), 409
+
+    new_member = OrganizationMember(
+        user_id=req.user_id,
         organization_id=org.id,
         role="member",
     )
-    db.session.add(member)
+    db.session.add(new_member)
+    db.session.delete(req)
     db.session.commit()
 
-    return jsonify({"status": "joined"})
+    return jsonify({"status": "approved"})
+
+
+@bp.route("/api/organizations/<slug>/requests/<int:request_id>/reject", methods=["POST"])
+@login_required
+def reject_join_request(slug, request_id):
+    from models import OrganizationJoinRequest
+
+    org, member, error, code = _require_permission(slug, "manage_roles")
+    if error:
+        return error, code
+
+    req = OrganizationJoinRequest.query.filter_by(
+        id=request_id, organization_id=org.id
+    ).first_or_404()
+
+    db.session.delete(req)
+    db.session.commit()
+
+    return jsonify({"status": "rejected"})
 
 
 @bp.route("/api/organizations/<slug>/leave", methods=["POST"])

@@ -469,6 +469,17 @@ class OrganizationRole(db.Model, TimestampMixin):
     organization = relationship("Organization")
 
 
+class OrganizationJoinRequest(db.Model, TimestampMixin):
+    __tablename__ = "organization_join_requests"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    organization_id: Mapped[int] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"))
+
+    user = relationship("User")
+    organization = relationship("Organization")
+
+
 class Rating(db.Model):
     __tablename__ = "ratings"
     __table_args__ = (
