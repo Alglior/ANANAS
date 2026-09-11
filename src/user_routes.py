@@ -324,6 +324,16 @@ def upload_page():
         ).filter(Item.status.in_([ITEM_STATUS_DRAFT, ITEM_STATUS_PUBLISHED])).first()
         if draft:
             edit_data = draft.to_dict()
+            chunks = DataChunk.query.filter_by(parent_item_id=draft.id).all()
+            if chunks:
+                rows = []
+                for c in chunks:
+                    meta = c.metadata_json or {}
+                    preview_rows = meta.get("preview_rows", [])
+                    delimiter = meta.get("delimiter", ",")
+                    for row in preview_rows:
+                        rows.append(delimiter.join(row))
+                edit_data["data_text"] = "\n".join(rows) if rows else None
 
     return render_template(
         "users/upload.html",

@@ -205,6 +205,7 @@ class Item(db.Model, TimestampMixin):
             "magnet": self.magnet_link if validate_magnet_link(self.magnet_link) else "",
             "magnet_link": self.magnet_link if validate_magnet_link(self.magnet_link) else "",
             "magnet_links": self.metadata_json if isinstance(self.metadata_json, list) else [],
+            "metadata_json": self.metadata_json if isinstance(self.metadata_json, dict) else None,
             "image": self.image_path,
             "author": self.author_name,
             "owner_user_id": self.owner_user_id,
