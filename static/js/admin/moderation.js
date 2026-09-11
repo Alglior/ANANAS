@@ -215,7 +215,8 @@ function renderItemPagination(data) {
     const msg = 'Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible et supprimera aussi les commentaires, notes et galeries associés.';
     if (!confirm(msg)) return;
     fetch('/api/admin/items/' + itemId, { method: 'DELETE', headers: {'X-CSRF-Token': CsrfModule.getCsrfToken()}})
-      .then(r => { if (r.ok) reloadWithTab('items'); });
+      .then(r => { if (r.ok) reloadWithTab('items'); else { r.json().then(d => alert(d.error || 'Erreur ' + r.status)).catch(function() { alert('Erreur ' + r.status); }); } })
+      .catch(function() { alert('Erreur réseau'); });
   });
 
   // Filter buttons for comments

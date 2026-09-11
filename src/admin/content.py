@@ -5,7 +5,7 @@ from app import db
 from src.admin import bp, api_admin_required, login_required, get_current_user
 from src.admin import _serialize_comment, _serialize_item, _log_audit, _paginate
 from src.shared import ITEMS_PER_PAGE
-from models import Comment, Item
+from models import Comment, Item, UserUpload, DataChunk, Report, VisualizationLink, ItemTag, ItemGallery, Rating
 
 
 # --- Comments ---
@@ -86,8 +86,22 @@ def delete_item(item_id):
     item = Item.query.get_or_404(item_id)
     title = item.title
     type_name = item.type
-    db.session.delete(item)
-    db.session.commit()
+
+    try:
+        UserUpload.query.filter_by(parent_item_id=item.id).update({"chunk_id": None, "published_item_id": None})
+        DataChunk.query.filter_by(parent_item_id=item.id).delete()
+        UserUpload.query.filter_by(parent_item_id=item.id).delete()
+        Report.query.filter_by(target_item_id=item.id).delete()
+        VisualizationLink.query.filter_by(parent_item_id=item.id).delete()
+
+        db.session.delete(item)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        from flask import current_app
+        current_app.logger.exception("Admin delete failed for item %s", item_id)
+        return jsonify({"error": "Erreur lors de la suppression"}), 500
+
     _log_audit("item_deleted", "item", item_id, {"title": title, "type": type_name})
     return jsonify({"status": "deleted", "item_id": item_id, "title": title})
 
