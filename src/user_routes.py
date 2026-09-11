@@ -235,6 +235,9 @@ def compte_page():
 
     per_page = ITEMS_PER_PAGE
     page = request.args.get("page", 1, type=int)
+    pub_page = request.args.get("pub_page", 1, type=int)
+    draft_page = request.args.get("draft_page", 1, type=int)
+    trash_page = request.args.get("trash_page", 1, type=int)
     active_tab = request.args.get("tab", "infos")
     if active_tab not in ("infos", "securite", "activite", "organisations"):
         active_tab = "infos"
@@ -246,7 +249,13 @@ def compte_page():
     comments, comments_page, total_comments, comments_max_page, comments_page_numbers = _paginate(comments_query, page, per_page)
 
     publications_query = Item.query.filter(Item.owner_user_id == current_user.id, Item.status == ITEM_STATUS_PUBLISHED).order_by(Item.created_at.desc())
-    publications, publications_page, total_publications, publications_max_page, publications_page_numbers = _paginate(publications_query, page, per_page)
+    publications, publications_page, total_publications, publications_max_page, publications_page_numbers = _paginate(publications_query, pub_page, per_page)
+
+    drafts_query = Item.query.filter(Item.owner_user_id == current_user.id, Item.status == ITEM_STATUS_DRAFT).order_by(Item.created_at.desc())
+    drafts, drafts_page, total_drafts, drafts_max_page, drafts_page_numbers = _paginate(drafts_query, draft_page, per_page)
+
+    trashed_query = Item.query.filter(Item.owner_user_id == current_user.id, Item.status == ITEM_STATUS_TRASHED).order_by(Item.deleted_at.desc())
+    trashed, trash_page_num, total_trash, trash_max_page, trash_page_numbers = _paginate(trashed_query, trash_page, per_page)
 
     data_chunks = db.session.query(DataChunk, Item.title.label("parent_title"), Item.type.label("parent_type")).outerjoin(Item, DataChunk.parent_item_id == Item.id).filter(DataChunk.owner_user_id == current_user.id).order_by(DataChunk.created_at.desc()).limit(10).all()
 
@@ -269,6 +278,12 @@ def compte_page():
         publications=publications, publications_page=publications_page,
         publications_total_pages=publications_max_page, publications_total=total_publications,
         publications_page_numbers=publications_page_numbers,
+        drafts=drafts, drafts_page=drafts_page,
+        drafts_total_pages=drafts_max_page, drafts_total=total_drafts,
+        drafts_page_numbers=drafts_page_numbers,
+        trashed=trashed, trash_page=trash_page_num,
+        trash_total_pages=trash_max_page, trash_total=total_trash,
+        trash_page_numbers=trash_page_numbers,
         org_memberships=org_memberships,
         org_count=org_count,
         data_chunks=data_chunks,

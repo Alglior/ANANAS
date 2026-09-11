@@ -139,20 +139,71 @@
 
   document.addEventListener('click', function (e) {
     var delBtn = e.target.closest('.publication-delete-btn');
-    if (!delBtn) return;
-    e.preventDefault();
-    var id = delBtn.getAttribute('data-id');
-    showConfirm(
-      'Mettre cette publication \u00e0 la corbeille ?<br><small>Elle ne sera plus visible dans le catalogue et restera r\u00e9cup\u00e9rable pendant 7 jours.</small>',
-      function () {
-        fetch('/api/upload/item/' + id, {
-          method: 'DELETE',
-          headers: { 'X-CSRF-Token': csrfToken },
-        }).then(function (resp) {
-          if (resp.ok) window.location.reload();
-        });
-      }
-    );
+    if (delBtn) {
+      e.preventDefault();
+      var id = delBtn.getAttribute('data-id');
+      showConfirm(
+        'Mettre cette publication \u00e0 la corbeille ?<br><small>Elle ne sera plus visible dans le catalogue et restera r\u00e9cup\u00e9rable pendant 7 jours.</small>',
+        function () {
+          fetch('/api/upload/item/' + id, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-Token': csrfToken },
+          }).then(function (resp) {
+            if (resp.ok) window.location.reload();
+          });
+        }
+      );
+      return;
+    }
+
+    var draftDelBtn = e.target.closest('.draft-delete-btn');
+    if (draftDelBtn) {
+      e.preventDefault();
+      var draftId = draftDelBtn.getAttribute('data-id');
+      showConfirm(
+        'Mettre ce brouillon \u00e0 la corbeille ?<br><small>Il restera r\u00e9cup\u00e9rable pendant 7 jours.</small>',
+        function () {
+          fetch('/api/upload/item/' + draftId, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-Token': csrfToken },
+          }).then(function (resp) {
+            if (resp.ok) window.location.reload();
+          });
+        }
+      );
+      return;
+    }
+
+    var restoreBtn = e.target.closest('.trash-restore-btn');
+    if (restoreBtn) {
+      e.preventDefault();
+      var restoreId = restoreBtn.getAttribute('data-id');
+      fetch('/api/upload/item/' + restoreId + '/restore', {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': csrfToken },
+      }).then(function (resp) {
+        if (resp.ok) window.location.reload();
+      });
+      return;
+    }
+
+    var purgeBtn = e.target.closest('.trash-purge-btn');
+    if (purgeBtn) {
+      e.preventDefault();
+      var purgeId = purgeBtn.getAttribute('data-id');
+      showConfirm(
+        'Supprimer d\u00e9finitivement ce brouillon ?<br><small>Cette action est irr\u00e9versible.</small>',
+        function () {
+          fetch('/api/upload/item/' + purgeId + '/purge', {
+            method: 'DELETE',
+            headers: { 'X-CSRF-Token': csrfToken },
+          }).then(function (resp) {
+            if (resp.ok) window.location.reload();
+          });
+        }
+      );
+      return;
+    }
   });
 
   /* ── Recovery codes ── */

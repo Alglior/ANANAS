@@ -173,7 +173,9 @@
           <div class="compte-activite-tabs">
             <a href="/compte?tab=activite&section=ratings" class="compte-subtab {% if request.args.get('section','ratings') == 'ratings' %}active{% endif %}">Notes ({{ ratings_total }})</a>
             <a href="/compte?tab=activite&section=comments" class="compte-subtab {% if request.args.get('section','ratings') == 'comments' %}active{% endif %}">Commentaires ({{ comments_total }})</a>
-            <a href="/compte?tab=activite&section=publications" class="compte-subtab {% if request.args.get('section','ratings') == 'publications' %}active{% endif %}">Publications ({{ publications_total }})</a>
+            <a href="/compte?tab=activite&section=publications" class="compte-subtab {% if request.args.get('section','ratings') == 'publications' %}active{% endif %}">Publiés ({{ publications_total }})</a>
+            <a href="/compte?tab=activite&section=drafts" class="compte-subtab {% if request.args.get('section','ratings') == 'drafts' %}active{% endif %}">Brouillons ({{ drafts_total }})</a>
+            <a href="/compte?tab=activite&section=trash" class="compte-subtab {% if request.args.get('section','ratings') == 'trash' %}active{% endif %}">Corbeille ({{ trash_total }})</a>
           </div>
 
           {% set section = request.args.get('section', 'ratings') %}
@@ -269,13 +271,87 @@
             </div>
             {% if publications_total_pages > 1 %}
             <nav class="pagination" aria-label="Pagination publications">
-              {% if publications_page > 1 %}<a class="btn btn-outline pagination-prev" href="/compte?tab=activite&section=publications&page={{ publications_page - 1 }}">&#9664;&nbsp;Précédent</a>{% else %}<span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>{% endif %}
-              <div class="pagination-numbers">{% for p in publications_page_numbers %}{% if p == "..." %}<span class="pagination-ellipsis">&hellip;</span>{% elif p == publications_page %}<span class="pagination-link active">{{ p }}</span>{% else %}<a class="pagination-link" href="/compte?tab=activite&section=publications&page={{ p }}">{{ p }}</a>{% endif %}{% endfor %}</div>
-              {% if publications_page < publications_total_pages %}<a class="btn btn-outline pagination-next" href="/compte?tab=activite&section=publications&page={{ publications_page + 1 }}">Suivant&nbsp;&#9658;</a>{% else %}<span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>{% endif %}
+              {% if publications_page > 1 %}<a class="btn btn-outline pagination-prev" href="/compte?tab=activite&section=publications&pub_page={{ publications_page - 1 }}">&#9664;&nbsp;Précédent</a>{% else %}<span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>{% endif %}
+              <div class="pagination-numbers">{% for p in publications_page_numbers %}{% if p == "..." %}<span class="pagination-ellipsis">&hellip;</span>{% elif p == publications_page %}<span class="pagination-link active">{{ p }}</span>{% else %}<a class="pagination-link" href="/compte?tab=activite&section=publications&pub_page={{ p }}">{{ p }}</a>{% endif %}{% endfor %}</div>
+              {% if publications_page < publications_total_pages %}<a class="btn btn-outline pagination-next" href="/compte?tab=activite&section=publications&pub_page={{ publications_page + 1 }}">Suivant&nbsp;&#9658;</a>{% else %}<span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>{% endif %}
             </nav>
             {% endif %}
             {% else %}
             <div class="activity-empty"><p>Vous n'avez pas encore publié de données.</p><a href="/upload" class="btn btn-primary">Publier des données</a></div>
+            {% endif %}
+
+          {% elif section == 'drafts' %}
+            {% if drafts %}
+            <div class="activity-list">
+              {% for item in drafts %}
+              <div class="activity-card">
+                <div class="activity-card-icon activity-card-user-icon">
+                  {% if current_user.avatar_path %}
+                    <img src="{{ current_user.avatar_path }}" alt="">
+                  {% else %}
+                    <span>{{ current_user.prenom[:1] }}{{ current_user.nom[:1] }}</span>
+                  {% endif %}
+                </div>
+                <div class="activity-card-content">
+                  <a href="/catalogue/item/{{ item.id }}" class="activity-card-title">{{ item.title }}</a>
+                  <div class="activity-card-meta">
+                    <span>{{ item.created_at.strftime('%d/%m/%Y') }}</span>
+                    <span class="badge badge-pending">Brouillon</span>
+                  </div>
+                  <div class="activity-card-actions">
+                    <a href="/upload?edit={{ item.id }}" class="btn btn-sm">Modifier</a>
+                    <button type="button" class="btn btn-sm btn-outline draft-delete-btn" data-id="{{ item.id }}">Supprimer</button>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+            {% if drafts_total_pages > 1 %}
+            <nav class="pagination" aria-label="Pagination brouillons">
+              {% if drafts_page > 1 %}<a class="btn btn-outline pagination-prev" href="/compte?tab=activite&section=drafts&draft_page={{ drafts_page - 1 }}">&#9664;&nbsp;Précédent</a>{% else %}<span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>{% endif %}
+              <div class="pagination-numbers">{% for p in drafts_page_numbers %}{% if p == "..." %}<span class="pagination-ellipsis">&hellip;</span>{% elif p == drafts_page %}<span class="pagination-link active">{{ p }}</span>{% else %}<a class="pagination-link" href="/compte?tab=activite&section=drafts&draft_page={{ p }}">{{ p }}</a>{% endif %}{% endfor %}</div>
+              {% if drafts_page < drafts_total_pages %}<a class="btn btn-outline pagination-next" href="/compte?tab=activite&section=drafts&draft_page={{ drafts_page + 1 }}">Suivant&nbsp;&#9658;</a>{% else %}<span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>{% endif %}
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="activity-empty"><p>Vous n'avez aucun brouillon.</p><a href="/upload" class="btn btn-primary">Créer un brouillon</a></div>
+            {% endif %}
+
+          {% elif section == 'trash' %}
+            {% if trashed %}
+            <div class="activity-list">
+              {% for item in trashed %}
+              <div class="activity-card">
+                <div class="activity-card-icon activity-card-user-icon">
+                  {% if current_user.avatar_path %}
+                    <img src="{{ current_user.avatar_path }}" alt="">
+                  {% else %}
+                    <span>{{ current_user.prenom[:1] }}{{ current_user.nom[:1] }}</span>
+                  {% endif %}
+                </div>
+                <div class="activity-card-content">
+                  <span class="activity-card-title trashed-title">{{ item.title }}</span>
+                  <div class="activity-card-meta">
+                    <span>{{ item.deleted_at.strftime('%d/%m/%Y') if item.deleted_at else '' }}</span>
+                    <span class="badge badge-trashed">Corbeille</span>
+                  </div>
+                  <div class="activity-card-actions">
+                    <button type="button" class="btn btn-sm btn-outline trash-restore-btn" data-id="{{ item.id }}">Restaurer</button>
+                    <button type="button" class="btn btn-sm btn-outline trash-purge-btn" data-id="{{ item.id }}">Supprimer</button>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+            {% if trash_total_pages > 1 %}
+            <nav class="pagination" aria-label="Pagination corbeille">
+              {% if trash_page > 1 %}<a class="btn btn-outline pagination-prev" href="/compte?tab=activite&section=trash&trash_page={{ trash_page - 1 }}">&#9664;&nbsp;Précédent</a>{% else %}<span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>{% endif %}
+              <div class="pagination-numbers">{% for p in trash_page_numbers %}{% if p == "..." %}<span class="pagination-ellipsis">&hellip;</span>{% elif p == trash_page %}<span class="pagination-link active">{{ p }}</span>{% else %}<a class="pagination-link" href="/compte?tab=activite&section=trash&trash_page={{ p }}">{{ p }}</a>{% endif %}{% endfor %}</div>
+              {% if trash_page < trash_total_pages %}<a class="btn btn-outline pagination-next" href="/compte?tab=activite&section=trash&trash_page={{ trash_page + 1 }}">Suivant&nbsp;&#9658;</a>{% else %}<span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>{% endif %}
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="activity-empty"><p>La corbeille est vide.</p></div>
             {% endif %}
           {% endif %}
         </section>
