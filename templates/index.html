@@ -22,6 +22,28 @@
   </div>
 </section>
 
+{% if get_setting("home_show_mirrors", "true") == "true" %}
+<section class="mirror-section" id="mirrors">
+  <div class="container">
+    <h2>Sites miroirs</h2>
+    <p class="mirror-lead">
+      Retrouvez A.N.A.N.A.S sur ces instances partenaires pour accéder aux données depuis n'importe où.
+    </p>
+
+    <ul class="mirror-list">
+      {% for mirror in mirrors %}
+      <li>
+        <a class="mirror-link transition-hover" href="{{ mirror.url }}">
+          <span class="mirror-name">{{ mirror.name }}</span>
+          <span class="mirror-desc">{{ mirror.description }}</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endif %}
+
 <!-- Section Packs de Données GeoPackage -->
 {% if get_setting("home_show_geopackages", "true") == "true" %}
 <section class="gp-section" id="packs-geopackage">
@@ -380,28 +402,6 @@
     </div>
   </div>
 </section>
-
-{% if get_setting("home_show_mirrors", "true") == "true" %}
-<section class="mirror-section" id="mirrors">
-  <div class="container">
-    <h2>Sites miroirs</h2>
-    <p class="mirror-lead">
-      Retrouvez A.N.A.N.A.S sur ces instances partenaires pour accéder aux données depuis n'importe où.
-    </p>
-
-    <ul class="mirror-list">
-      {% for mirror in mirrors %}
-      <li>
-        <a class="mirror-link transition-hover" href="{{ mirror.url }}">
-          <span class="mirror-name">{{ mirror.name }}</span>
-          <span class="mirror-desc">{{ mirror.description }}</span>
-        </a>
-      </li>
-      {% endfor %}
-    </ul>
-  </div>
-</section>
-{% endif %}
 
 </main>
 {% endblock %}

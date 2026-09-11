@@ -103,13 +103,22 @@ var MainModule = (function () {
   function initDropdown() {
     const wrappers = document.querySelectorAll(".catalogue-dropdown-wrapper");
     
+    function closeAll() {
+      wrappers.forEach(w => {
+        const m = w.querySelector(".catalogue-dropdown");
+        const t = w.querySelector(".dropdown-toggle");
+        if (m) m.classList.remove("open");
+        if (t) t.setAttribute("aria-expanded", "false");
+      });
+    }
+
     wrappers.forEach(wrapper => {
       const toggle = wrapper.querySelector(".dropdown-toggle");
       const menu = wrapper.querySelector(".catalogue-dropdown");
 
       if (!toggle || !menu) return;
 
-      function open() { menu.classList.add("open"); toggle.setAttribute("aria-expanded", "true"); }
+      function open() { closeAll(); menu.classList.add("open"); toggle.setAttribute("aria-expanded", "true"); }
       function close() { menu.classList.remove("open"); toggle.setAttribute("aria-expanded", "false"); }
 
       toggle.addEventListener("click", (e) => {
