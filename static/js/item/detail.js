@@ -349,7 +349,7 @@
       .then(function (r) { return r.json(); })
       .then(function (data) {
         if (data.error) return;
-        if (verifyStatus) verifyStatus.textContent = data.new_status;
+        location.reload();
       });
   }
 

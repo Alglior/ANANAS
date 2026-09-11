@@ -297,8 +297,11 @@
             <div class="admin-verify-controls">
               <span class="admin-verify-label">Vérification :</span>
               <span class="admin-verify-status" id="verifyStatus">{{ item.verification_status }}</span>
-              <button class="btn btn-verify" id="btnVerifyItem" type="button" data-item-id="{{ item.id }}">✓ Vérifier</button>
+              {% if item.verification_status == 'verified' %}
               <button class="btn btn-unverify" id="btnUnverifyItem" type="button" data-item-id="{{ item.id }}">✗ Dé-vérifier</button>
+              {% else %}
+              <button class="btn btn-verify" id="btnVerifyItem" type="button" data-item-id="{{ item.id }}">✓ Vérifier</button>
+              {% endif %}
             </div>
           </div>
           {% endif %}
