@@ -3,7 +3,7 @@ import datetime as dt
 from flask import Blueprint, request, redirect, url_for, jsonify
 from app import db
 from models import Comment, Item, Rating
-from src.shared import login_required, get_current_user
+from src.shared import login_required, get_current_user, ITEM_STATUS_DRAFT
 from utils.security import sanitize_html
 
 bp = Blueprint("interactions", __name__)
@@ -137,3 +137,21 @@ def verify_item(item_id):
     item.refresh_imod_cache()
     db.session.commit()
     return jsonify({"status": "updated", "item_id": item_id, "new_status": status})
+
+
+@bp.route("/api/items/<int:item_id>/unpublish", methods=["POST"])
+@login_required
+def unpublish_item(item_id):
+
+    current_user = get_current_user()
+    item = Item.query.get_or_404(item_id)
+
+    if not current_user.is_admin and item.owner_user_id != current_user.id:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    if item.status != ITEM_STATUS_DRAFT:
+        item.status = ITEM_STATUS_DRAFT
+        item.deleted_at = None
+        db.session.commit()
+
+    return jsonify({"status": "unpublished", "item_id": item_id})

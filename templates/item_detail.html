@@ -306,6 +306,18 @@
           </div>
           {% endif %}
 
+          {% if current_user and (current_user.is_admin or current_user.id == item.owner_user_id) %}
+          <div class="owner-item-actions">
+            <hr class="buy-divider">
+            <div class="owner-item-buttons">
+              <a href="/upload?edit={{ item.id }}" class="btn">Modifier</a>
+              {% if item.status == 'published' %}
+              <button class="btn btn-outline" id="btnUnpublishItem" type="button" data-item-id="{{ item.id }}">Mettre en brouillon</button>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+
           {% if item.tags and item.tags|length > 0 %}
           <div class="item-tags">
             <span class="tags-label">Étiquette :</span>

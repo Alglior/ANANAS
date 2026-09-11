@@ -359,4 +359,19 @@
   if (btnUnverify) {
     btnUnverify.addEventListener('click', function () { handleVerify('unofficial'); });
   }
+
+  var btnUnpublish = document.getElementById('btnUnpublishItem');
+  if (btnUnpublish) {
+    btnUnpublish.addEventListener('click', function () {
+      fetch('/api/items/' + itemId + '/unpublish', {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.error) { alert(data.error); return; }
+          location.reload();
+        });
+    });
+  }
 })();
