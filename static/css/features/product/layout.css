@@ -157,6 +157,7 @@
 .product-desc-section p {
   color: var(--charcoal);
   line-height: 1.7;
+  white-space: pre-line;
 }
 
 /* PDF documentation section */
