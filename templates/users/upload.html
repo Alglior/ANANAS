@@ -512,6 +512,9 @@ print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
         </div>
         {% if trashed %}
         <p class="trash-hint">Les éléments supprimés restent ici 7 jours avant suppression définitive.</p>
+        <div class="drafts-toolbar">
+          <button type="button" class="btn btn-sm btn-outline purge-all-trash-btn">Vider la corbeille</button>
+        </div>
         <ul class="upload-history-list" id="trash-list">
           {% for item in trashed %}
           <li class="upload-history-item" data-draft-id="{{ item.id }}">

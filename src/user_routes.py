@@ -739,6 +739,40 @@ def restore_draft_item(item_id):
     return jsonify({"status": "restored"})
 
 
+@bp.route("/api/upload/trash/all", methods=["DELETE"])
+@login_required
+def purge_all_trash():
+    current_user = get_current_user()
+    trashed_items = Item.query.filter_by(
+        owner_user_id=current_user.id,
+        status=ITEM_STATUS_TRASHED,
+    ).all()
+
+    if not trashed_items:
+        return jsonify({"error": "Aucun élément dans la corbeille"}), 400
+
+    try:
+        ids = [item.id for item in trashed_items]
+        UserUpload.query.filter(UserUpload.parent_item_id.in_(ids)).update({"chunk_id": None, "published_item_id": None})
+        DataChunk.query.filter(DataChunk.parent_item_id.in_(ids)).delete()
+        UserUpload.query.filter(UserUpload.parent_item_id.in_(ids)).delete()
+        Report.query.filter(Report.target_item_id.in_(ids)).delete()
+        VisualizationLink.query.filter(VisualizationLink.parent_item_id.in_(ids)).delete()
+        Rating.query.filter(Rating.item_id.in_(ids)).delete()
+        Comment.query.filter(Comment.item_id.in_(ids)).delete()
+        ItemTag.query.filter(ItemTag.item_id.in_(ids)).delete()
+        ItemGallery.query.filter(ItemGallery.item_id.in_(ids)).delete()
+
+        for item in trashed_items:
+            db.session.delete(item)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.exception("Failed to bulk-purge trash")
+        return jsonify({"error": "Erreur lors de la suppression"}), 500
+    return jsonify({"status": "deleted", "count": len(trashed_items)})
+
+
 @bp.route("/api/upload/item/<int:item_id>/purge", methods=["DELETE"])
 @login_required
 def purge_draft_item(item_id):

@@ -275,6 +275,16 @@ UploadModule.history = (function () {
         );
         return;
       }
+
+      var purgeAllBtn = e.target.closest('.purge-all-trash-btn');
+      if (purgeAllBtn) {
+        e.preventDefault();
+        showConfirm(
+          'Vider la corbeille ?<br><small>Tous les \u00e9l\u00e9ments seront supprim\u00e9s d\u00e9finitivement. Cette action est irr\u00e9versible.</small>',
+          function() { sendDelete('/api/upload/trash/all'); }
+        );
+        return;
+      }
     });
 
     var draftPagination = document.getElementById('draft-pagination');
