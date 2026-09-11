@@ -3,6 +3,10 @@
 {% block title %}{{ title }}{% endblock %}
 {% block meta_description %}{{ meta_description }}{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/features/upload/video-modal.css') }}" />
+{% endblock %}
+
 
 {% block content %}
 <main class="detail-page"
@@ -376,6 +380,13 @@
           </div>
         </dl>
 
+        <div class="publications-tuto-section">
+          <p><strong>Besoin d'aide ?</strong> Regardez le tutoriel pour apprendre à télécharger ou créer un lien Magnet.</p>
+          <button type="button" class="btn btn-primary btn-sm publications-tuto-btn" id="openTutoVideoBtnDetail">
+            ▶ Voir le tutoriel
+          </button>
+        </div>
+
         {% if item.data_format_level == "individual" and item.magnet_links_grouped and item.magnet_links_grouped|length > 0 %}
         <div class="tech-code-block" id="techCodeBlock">
           <h3>{{ item.magnet_links_grouped|sum(attribute='links', start=[]) | length }} liens magnet — {{ item.magnet_links_grouped|length }} échelles
@@ -634,6 +645,22 @@
   </div>
 </div>
 
+<!-- Video tutorial modal -->
+<div id="videoModalOverlay" class="video-modal-overlay">
+  <div class="video-modal-box">
+    <div class="video-modal-header">
+      <h3>Tutoriel — Lien Magnet</h3>
+      <button type="button" class="video-modal-close" id="videoModalClose">&times;</button>
+    </div>
+    <div class="video-modal-body">
+      <video id="tutoVideo" controls preload="metadata">
+        <source src="{{ url_for('serve_video', filename='tuto_torrent.mp4') }}" type="video/mp4">
+        Votre navigateur ne supporte pas la lecture vidéo.
+      </video>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_scripts %}
@@ -644,4 +671,7 @@
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/gallery/reportModal.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/item/detail.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/item/zoom-magnets.js') }}"></script>
+<script nonce="{{ csp_nonce }}">var UploadModule = window.UploadModule || {};</script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/video-modal.js') }}"></script>
+<script nonce="{{ csp_nonce }}">if (UploadModule.videoModal) UploadModule.videoModal.init();</script>
 {% endblock %}
