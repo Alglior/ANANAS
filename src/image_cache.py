@@ -22,9 +22,6 @@ QBITTORRENT_PASSWORD = os.environ.get("QBITTORRENT_PASSWORD") or ""
 QBITTORRENT_DOWNLOADS = Path("/qbittorrent_downloads")
 QBITTORRENT_SAVE_PATH = "/downloads/ananas"
 
-# Temps maximum global accordé au traitement des aimants d'un même item.
-ITEM_PROCESS_BUDGET = float(os.environ.get("ITEM_IMAGE_PROCESS_BUDGET", "900"))
-
 # Registre de verrous par item : empêche que deux tâches de fond traitent le même
 # item simultanément (édition rapide / double soumission -> doublons de galerie).
 _item_locks = {}
@@ -88,12 +85,10 @@ def _extract_info_hashes(magnet_link):
     return hashes
 
 
-def _qb_await_complete(session, info_hash, timeout=300, on_progress=None):
+def _qb_await_complete(session, info_hash, on_progress=None):
     start = time.time()
     last_reported = -1.0
     while True:
-        if time.time() - start > timeout:
-            return None
 
         resp = session.get(
             f"{QBITTORRENT_URL}/api/v2/torrents/info",
@@ -143,7 +138,7 @@ def _qb_get_torrent(session, info_hash):
     return torrents[0] if torrents else None
 
 
-def download_image_from_magnet(magnet_link, timeout=300, on_progress=None):
+def download_image_from_magnet(magnet_link, on_progress=None):
     info_hashes = _extract_info_hashes(magnet_link)
     if not info_hashes:
         return None, None
@@ -170,7 +165,7 @@ def download_image_from_magnet(magnet_link, timeout=300, on_progress=None):
                     torrent = existing
                     break
                 elif existing:
-                    torrent = _qb_await_complete(session, h, timeout, on_progress)
+                    torrent = _qb_await_complete(session, h, on_progress)
                     if torrent:
                         break
             if torrent is None:
@@ -182,7 +177,7 @@ def download_image_from_magnet(magnet_link, timeout=300, on_progress=None):
     else:
         torrent = None
         for h in info_hashes:
-            torrent = _qb_await_complete(session, h, timeout, on_progress)
+            torrent = _qb_await_complete(session, h, on_progress)
             if torrent:
                 break
         if torrent is None:
@@ -238,8 +233,6 @@ def process_image_magnets(item_id, image_magnets):
     first_image = True
     processed = 0
     failed = 0
-    skipped_timeout = 0
-    deadline = time.time() + ITEM_PROCESS_BUDGET
 
     try:
         ItemImageJob.query.filter_by(item_id=item_id).delete()
@@ -264,14 +257,6 @@ def process_image_magnets(item_id, image_magnets):
         db.session.commit()
 
         for job in jobs:
-            if time.time() > deadline:
-                skipped_timeout += 1
-                job.status = "skipped"
-                job.progress = 0.0
-                job.details = "Budget de temps dépassé"
-                db.session.commit()
-                continue
-
             magnet = job.magnet_link
             label = job.label or "Image"
 
@@ -347,6 +332,6 @@ def process_image_magnets(item_id, image_magnets):
         db.session.commit()
         _release_item_processing_lock(item_id, lock)
         logger.info(
-            "Item %s: image processing done (processed=%s, failed=%s, skipped_timeout=%s)",
-            item_id, processed, failed, skipped_timeout,
+            "Item %s: image processing done (processed=%s, failed=%s)",
+            item_id, processed, failed,
         )
