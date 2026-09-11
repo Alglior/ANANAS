@@ -2,6 +2,32 @@
    Admin moderation — tables, cards, badges, actions
    ──────────────────────────────────────────── */
 
+/* Filter label */
+.filter-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* Search input in admin filters */
+.admin-search-input {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--charcoal);
+  min-width: 220px;
+  background: var(--white);
+}
+.admin-search-input:focus {
+  outline: none;
+  border-color: var(--forest);
+  box-shadow: 0 0 0 3px var(--forest-alpha-12);
+}
+
 /* Admin table actions cell */
 .admin-actions-cell {
   display: flex;

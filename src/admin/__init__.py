@@ -142,6 +142,8 @@ def _serialize_item(it):
         "id": it.id, "type": it.type, "title": it.title,
         "description": it.description[:100], "author_name": it.author_name,
         "verification_status": it.verification_status,
+        "status": it.status,
+        "deleted_at": it.deleted_at.isoformat() if hasattr(it, "deleted_at") and it.deleted_at else None,
         "created_at": it.created_at.isoformat() if hasattr(it, "created_at") and it.created_at else None,
         "comment_count": len(it.comments),
     }

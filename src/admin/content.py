@@ -63,10 +63,28 @@ def list_items():
 
     item_type = request.args.get("type", "all")
     page = request.args.get("page", 1, type=int)
+    status_filter = request.args.get("status", "all")
+    verification_filter = request.args.get("verification", "all")
+    format_filter = request.args.get("format_level", "all")
+    search_query = request.args.get("q", "").strip()
 
     query = Item.query
     if item_type != "all":
         query = query.filter_by(type=item_type)
+    if status_filter != "all":
+        query = query.filter_by(status=status_filter)
+    if verification_filter == "verified":
+        query = query.filter_by(verification_status="verified")
+    elif verification_filter == "unofficial":
+        query = query.filter(Item.verification_status != "verified")
+    if format_filter != "all":
+        query = query.filter_by(data_format_level=format_filter)
+    if search_query:
+        search = f"%{search_query}%"
+        from sqlalchemy import or_
+        query = query.filter(
+            or_(Item.title.ilike(search), Item.description.ilike(search))
+        )
 
     paginated, page, total_items, total_pages, page_numbers = _paginate(
         query.order_by(Item.created_at.desc()), page

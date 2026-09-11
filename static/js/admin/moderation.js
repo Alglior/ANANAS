@@ -10,7 +10,11 @@
   let commentPage = 1;
   let activeCommentFilter = 'all';
   let itemPage = 1;
-  let activeItemFilter = 'all';
+  let activeItemType = 'all';
+  let activeItemStatus = 'all';
+  let activeItemVerification = 'all';
+  let activeItemFormat = 'all';
+  let itemSearchQuery = '';
 
   function renderCommentPagination(data) {
     const container = document.getElementById('comment-pagination');
@@ -81,11 +85,23 @@
     renderCommentPagination(data);
   }
 
-  function renderItemsRows(items) {
+function renderItemsRows(items) {
     const allowedTypes = {
       geodonnee: "Géodonnée",
       carte: "Carte",
       application: "Application"
+    };
+
+    const statusLabels = {
+      draft: "Brouillon",
+      published: "Publié",
+      trashed: "Corbeille"
+    };
+
+    const statusClasses = {
+      draft: "badge badge-pending",
+      published: "badge badge-verified",
+      trashed: "badge badge-rejected"
     };
 
     return items.map(it => {
@@ -94,6 +110,9 @@
         : it.verification_status === 'rejected'
         ? '<span class="badge badge-rejected">Rejeté</span>'
         : '<span class="badge badge-pending">Non vérifié</span>';
+
+      const statusLabel = statusLabels[it.status] || it.status || 'Inconnu';
+      const statusClass = statusClasses[it.status] || 'badge';
 
       const rawType = (typeof it.type === 'string') ? it.type : '';
       const safeType = Object.prototype.hasOwnProperty.call(allowedTypes, rawType) ? rawType : 'unknown';
@@ -113,6 +132,7 @@
             <td data-label="Type"><span class="type-badge type-${safeType}">${escapeHtml(typeLabel)}</span></td>
             <td data-label="Titre"><a href="/catalogue/item/${it.id}" class="admin-item-link">${escapeHtml(it.title).substring(0, 40)}${it.title.length > 40 ? '...' : ''}</a></td>
             <td data-label="Auteur">${escapeHtml(it.author_name || '-')}</td>
+            <td data-label="Statut"><span class="${statusClass}">${escapeHtml(statusLabel)}</span></td>
             <td data-label="Vérification">${verBadge}</td>
             <td data-label="Commentaires">${it.comment_count || 0}</td>
             <td data-label="Date">${it.created_at ? new Date(it.created_at).toLocaleDateString('fr-FR') : '-'}</td>
@@ -135,7 +155,7 @@ function renderItemPagination(data) {
   }
 
   async function loadItemsPage(page = 1) {
-    let url = '/api/admin/items?type=' + activeItemFilter + '&status=all&page=' + page;
+    let url = '/api/admin/items?type=' + activeItemType + '&status=' + activeItemStatus + '&verification=' + activeItemVerification + '&format_level=' + activeItemFormat + '&q=' + encodeURIComponent(itemSearchQuery) + '&page=' + page;
     const resp = await fetch(url, { headers: { 'X-CSRF-Token': CsrfModule.getCsrfToken() } });
     const data = await resp.json();
     document.getElementById('items-tbody').innerHTML = renderItemsTable(data.items);
@@ -152,10 +172,13 @@ function renderItemPagination(data) {
     await loadComments(commentPage);
   }
 
-  async function filterItems(type) {
-    activeItemFilter = type;
+  function setFilter(group, value) {
+    if (group === 'type') activeItemType = value;
+    else if (group === 'status') activeItemStatus = value;
+    else if (group === 'verification') activeItemVerification = value;
+    else if (group === 'format') activeItemFormat = value;
     itemPage = 1;
-    await loadItemsPage(itemPage);
+    loadItemsPage(itemPage);
   }
 
   function reloadWithTab(tabName) {
@@ -250,13 +273,31 @@ function renderItemPagination(data) {
   }
 
   // Filter buttons for items
-  document.querySelectorAll('#item-filters button').forEach(btn => {
-    btn.addEventListener('click', function () {
-      document.querySelectorAll('#item-filters button').forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-      const type = this.dataset.type;
-      filterItems(type);
+  function initFilterGroup(containerId, dataAttr, groupName) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.addEventListener('click', function (e) {
+      const btn = e.target.closest('button[' + dataAttr + ']');
+      if (!btn) return;
+      container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      setFilter(groupName, btn.getAttribute(dataAttr));
     });
+  }
+  initFilterGroup('item-type-filters', 'data-type', 'type');
+  initFilterGroup('item-status-filters', 'data-status', 'status');
+  initFilterGroup('item-verif-filters', 'data-verification', 'verification');
+  initFilterGroup('item-format-filters', 'data-format', 'format');
+
+  // Search
+  function doSearch() {
+    const input = document.getElementById('item-search-input');
+    itemSearchQuery = input ? input.value.trim() : '';
+    setFilter('type', activeItemType);
+  }
+  document.getElementById('item-search-btn').addEventListener('click', doSearch);
+  document.getElementById('item-search-input').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') doSearch();
   });
 
   // Pagination for items

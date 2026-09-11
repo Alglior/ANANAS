@@ -44,11 +44,35 @@
   <!-- Items Moderation -->
   <div class="mod-panel mod-panel-items tab-content" id="tab-items">
     <h2>Cartes, Applications &amp; Données</h2>
-    <div class="admin-filters" id="item-filters">
-      <button type="button" data-type="all" class="active active-filter" data-target="items-tbody">Tous</button>
-      <button type="button" data-type="geodonnee" class="filter-btn" data-target="items-tbody">Données</button>
-      <button type="button" data-type="carte" class="filter-btn" data-target="items-tbody">Cartes</button>
-      <button type="button" data-type="application" class="filter-btn" data-target="items-tbody">Applications</button>
+    <div class="admin-filters" id="item-type-filters">
+      <button type="button" data-type="all" class="active active-filter">Tous</button>
+      <button type="button" data-type="geodonnee" class="filter-btn">Données</button>
+      <button type="button" data-type="carte" class="filter-btn">Cartes</button>
+      <button type="button" data-type="application" class="filter-btn">Applications</button>
+    </div>
+    <div class="admin-filters" id="item-status-filters">
+      <span class="filter-label">Statut :</span>
+      <button type="button" data-status="all" class="active active-filter">Tous</button>
+      <button type="button" data-status="published" class="filter-btn">Publiés</button>
+      <button type="button" data-status="draft" class="filter-btn">Brouillons</button>
+      <button type="button" data-status="trashed" class="filter-btn">Corbeille</button>
+    </div>
+    <div class="admin-filters" id="item-verif-filters">
+      <span class="filter-label">Vérification :</span>
+      <button type="button" data-verification="all" class="active active-filter">Toutes</button>
+      <button type="button" data-verification="verified" class="filter-btn">Vérifiées</button>
+      <button type="button" data-verification="unofficial" class="filter-btn">Non vérifiées</button>
+    </div>
+    <div class="admin-filters" id="item-format-filters">
+      <span class="filter-label">Format :</span>
+      <button type="button" data-format="all" class="active active-filter">Tous</button>
+      <button type="button" data-format="simple" class="filter-btn">Simples</button>
+      <button type="button" data-format="pack" class="filter-btn">Packs</button>
+      <button type="button" data-format="individual" class="filter-btn">Individuelles</button>
+    </div>
+    <div class="admin-filters" id="item-search">
+      <input type="text" id="item-search-input" class="admin-search-input" placeholder="Rechercher par titre ou description..." autocomplete="off">
+      <button type="button" id="item-search-btn" class="filter-btn">Rechercher</button>
     </div>
     <div class="table-wrapper">
       <table id="items-table">
@@ -58,6 +82,7 @@
             <th>Type</th>
             <th>Titre</th>
             <th>Auteur</th>
+            <th>Statut</th>
             <th>Vérification</th>
             <th>Commentaires</th>
             <th>Date</th>
@@ -65,7 +90,7 @@
           </tr>
         </thead>
         <tbody id="items-tbody">
-          <tr><td colspan="8" class="loading-cell">Chargement...</td></tr>
+          <tr><td colspan="9" class="loading-cell">Chargement...</td></tr>
         </tbody>
       </table>
     </div>
