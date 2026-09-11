@@ -1,0 +1,59 @@
+{% extends 'base_admin.html' %}
+
+{% block extra_head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/features/admin/qbittorrent.css') }}" />
+{% endblock %}
+
+{% block admin_content %}
+<main class="admin-page">
+  <div class="container">
+    <div id="qb-error" class="qb-error"></div>
+
+    <div id="qb-content">
+      <div class="qb-stats">
+        <div class="qb-stat-card">
+          <span class="qb-stat-label">Téléchargement</span>
+          <span class="qb-stat-value" id="dlSpeed">—</span>
+        </div>
+        <div class="qb-stat-card">
+          <span class="qb-stat-label">Envoi</span>
+          <span class="qb-stat-value" id="upSpeed">—</span>
+        </div>
+        <div class="qb-stat-card">
+          <span class="qb-stat-label">Torrents actifs</span>
+          <span class="qb-stat-value" id="activeCount">—</span>
+        </div>
+        <div class="qb-stat-card">
+          <span class="qb-stat-label">Torrents en file</span>
+          <span class="qb-stat-value" id="totalCount">—</span>
+        </div>
+      </div>
+
+      <h2>Torrents</h2>
+      <div class="table-wrapper">
+        <table class="qb-table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Progression</th>
+              <th>État</th>
+              <th>DL</th>
+              <th>UL</th>
+              <th>Taille</th>
+            </tr>
+          </thead>
+          <tbody id="qb-torrents-tbody">
+            <tr><td colspan="6" class="loading-cell">Chargement...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/admin/qbittorrent.js') }}"></script>
+{% endblock %}

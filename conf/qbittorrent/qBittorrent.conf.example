@@ -8,6 +8,10 @@ Session\Port=6881
 Session\QueueingSystemEnabled=true
 Session\SSL\Port=7958
 Session\TempPath=/downloads/incomplete/
+Session\DHTEnabled=true
+Session\PeXEnabled=true
+Session\LSDEnabled=true
+Session\Encryption=0
 
 [LegalNotice]
 Accepted=true
@@ -21,6 +25,9 @@ PortForwardingEnabled=false
 [Preferences]
 Connection\PortRangeMin=6881
 Connection\UPnP=false
+Connection\DHT=true
+Connection\PeX=true
+Connection\LSD=true
 Downloads\SavePath=/downloads/
 Downloads\TempPath=/downloads/incomplete/
 WebUI\Address=*

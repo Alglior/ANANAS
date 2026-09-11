@@ -1,0 +1,59 @@
+/* ── qBittorrent status dashboard ── */
+
+.qb-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.qb-stat-card {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.qb-stat-label {
+  font-size: 0.8rem;
+  color: var(--specs-gray);
+  font-weight: 600;
+}
+
+.qb-stat-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.qb-error {
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #c00;
+  margin: 1rem 0;
+  display: none;
+}
+
+.qb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.qb-table th {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 2px solid var(--border-color);
+  color: var(--specs-gray);
+  font-weight: 600;
+}
+
+.qb-table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border-light);
+}

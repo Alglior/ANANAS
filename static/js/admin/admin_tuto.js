@@ -8,6 +8,7 @@
     if (p.startsWith('/admin/moderation')) return 'moderation';
     if (p.startsWith('/admin/settings')) return 'settings';
     if (p.startsWith('/admin/audit')) return 'audit';
+    if (p.startsWith('/admin/qbittorrent')) return 'qbittorrent';
     return 'users';
   }
 
@@ -31,7 +32,7 @@
       page: 'any',
       target: '.admin-nav',
       position: 'bottom',
-      text: '<strong>Navigation d\'administration</strong> — Cette barre donne accès aux 4 sections du panneau : <strong>Utilisateurs</strong>, <strong>Modération</strong>, <strong>Paramètres</strong> et <strong>Journal d\'audits</strong>. Cliquez sur <strong>Suivant</strong> pour découvrir chaque section.',
+      text: '<strong>Navigation d\'administration</strong> — Cette barre donne accès aux 5 sections du panneau : <strong>Utilisateurs</strong>, <strong>Modération</strong>, <strong>Paramètres</strong>, <strong>Journal d\'audits</strong> et <strong>qBittorrent</strong>. Cliquez sur <strong>Suivant</strong> pour découvrir chaque section.',
     },
     {
       page: 'any',
@@ -131,6 +132,19 @@
     },
     {
       page: 'settings',
+      target: '.admin-nav a:nth-child(5)',
+      position: 'bottom',
+      navigateTo: '/admin/qbittorrent',
+      text: '<strong>qBittorrent</strong> — Surveillez le client BitTorrent utilisé pour le téléchargement des images : vitesse de transfert, liste des torrents et progression.',
+    },
+    {
+      page: 'qbittorrent',
+      target: '.qb-stats',
+      position: 'top',
+      text: '<strong>Statut qBittorrent</strong> — Les cartes affichent les vitesses de téléchargement et d\'envoi, le nombre de torrents actifs et le total. Le tableau liste tous les torrents avec leur progression. La page se rafraîchit automatiquement toutes les 5 secondes.',
+    },
+    {
+      page: 'qbittorrent',
       target: '.admin-nav a:nth-child(4)',
       position: 'bottom',
       navigateTo: '/admin/audit',
