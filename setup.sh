@@ -57,7 +57,7 @@ ADMIN_PASSWORD=${admin_pass}
 FLASK_SECRET_KEY=${flask_key}
 
 # ─── qBittorrent (image magnet downloads) ───
-QBITTORRENT_URL=http://qbittorrent:8081
+QBITTORRENT_URL=http://host.docker.internal:8081
 QBITTORRENT_USERNAME=admin
 QBITTORRENT_PASSWORD=${qb_pass}
 EOF
@@ -72,7 +72,7 @@ EOF
 printf "ADMIN_PSEUDO        : %s\n" "${admin_pseudo}"
         printf "ADMIN_PASSWORD      : %s\n" "${admin_pass}"
         printf "FLASK_SECRET_KEY    : %s\n" "${flask_key}"
-        printf "QBITTORRENT_URL     : %s\n" "http://qbittorrent:8081"
+        printf "QBITTORRENT_URL     : %s\n" "http://host.docker.internal:8081"
         printf "QBITTORRENT_USERNAME: %s\n" "admin"
         printf "QBITTORRENT_PASSWORD: %s\n" "${qb_pass}"
         echo "=============================================="

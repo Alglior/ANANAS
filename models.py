@@ -75,7 +75,7 @@ class Item(db.Model, TimestampMixin):
     verification_notes: Mapped[str | None]
 
     tags = relationship("ItemTag", back_populates="item", cascade="all, delete-orphan")
-    gallery_items = relationship("ItemGallery", back_populates="item", cascade="all, delete-orphan")
+    gallery_items = relationship("ItemGallery", back_populates="item", cascade="all, delete-orphan", order_by="ItemGallery.id")
     image_jobs = relationship("ItemImageJob", back_populates="item", cascade="all, delete-orphan")
     ratings = relationship("Rating", back_populates="item", cascade="all, delete-orphan")
     comments = relationship("Comment", back_populates="item", cascade="all, delete-orphan")

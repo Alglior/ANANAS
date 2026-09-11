@@ -22,6 +22,16 @@ QBITTORRENT_PASSWORD = os.environ.get("QBITTORRENT_PASSWORD") or ""
 QBITTORRENT_DOWNLOADS = Path("/qbittorrent_downloads")
 QBITTORRENT_SAVE_PATH = "/downloads/ananas"
 
+PUBLIC_TRACKERS = "\n".join([
+    "udp://tracker.opentrackr.org:1337/announce",
+    "udp://tracker.openbittorrent.com:6969/announce",
+    "udp://tracker.torrent.eu.org:451/announce",
+    "udp://exodus.desync.com:6969/announce",
+    "udp://tracker.moeking.me:6969/announce",
+    "https://tracker.nanoha.org:443/announce",
+    "https://tracker.lilithraws.org:443/announce",
+])
+
 # Registre de verrous par item : empêche que deux tâches de fond traitent le même
 # item simultanément (édition rapide / double soumission -> doublons de galerie).
 _item_locks = {}
@@ -86,8 +96,6 @@ def _extract_info_hashes(magnet_link):
 
 
 def _qb_await_complete(session, info_hash, on_progress=None):
-    start = time.time()
-    last_reported = -1.0
     while True:
 
         resp = session.get(
@@ -101,12 +109,17 @@ def _qb_await_complete(session, info_hash, on_progress=None):
             return None
 
         torrent = torrents[0]
+        state = torrent.get("state", "")
         progress = torrent.get("progress", 0)
         if on_progress is not None and progress != last_reported:
             on_progress(float(progress))
             last_reported = progress
         if progress >= 1:
             return torrent
+        # Si le torrent est en échec (pas de seeds, stalled, etc.)
+        if state in ("error", "missingFiles", "unknown"):
+            logger.warning("Torrent %s in error state: %s", info_hash, state)
+            return None
         time.sleep(2)
 
 
@@ -152,7 +165,7 @@ def download_image_from_magnet(magnet_link, on_progress=None):
     try:
         resp = session.post(
             f"{QBITTORRENT_URL}/api/v2/torrents/add",
-            data={"urls": magnet_link, "savepath": QBITTORRENT_SAVE_PATH},
+            data={"urls": magnet_link, "savepath": QBITTORRENT_SAVE_PATH, "trackers": PUBLIC_TRACKERS},
             timeout=10,
         )
         resp.raise_for_status()
@@ -196,25 +209,32 @@ def download_image_from_magnet(magnet_link, on_progress=None):
         return None, None
 
     ext = Path(image_file["name"]).suffix.lower()
-    relative_path = torrent.get("content_path", "")
+    content_path = torrent.get("content_path", "")
 
-    if not relative_path:
-        name = torrent.get("name", info_hashes[0] if info_hashes else "")
-        relative_path = str(Path(QBITTORRENT_SAVE_PATH) / name / image_file["name"])
+    candidates = []
+    if content_path:
+        cp = str(content_path)
+        candidates.append(str(Path(cp) / image_file["name"]))
+        candidates.append(cp)
     else:
-        relative_path = str(Path(torrent["save_path"]) / image_file["name"])
+        name = torrent.get("name", info_hashes[0] if info_hashes else "")
+        candidates.append(str(Path(QBITTORRENT_SAVE_PATH) / name / image_file["name"]))
+        candidates.append(str(Path(torrent["save_path"]) / image_file["name"]))
 
-    rel_for_mount = relative_path
-    for prefix in ["/downloads/", "/qbittorrent_downloads/"]:
-        if rel_for_mount.startswith(prefix):
-            rel_for_mount = rel_for_mount[len(prefix):]
+    data = None
+    for candidate in candidates:
+        rel_for_mount = candidate
+        for prefix in ["/downloads/", "/qbittorrent_downloads/"]:
+            if rel_for_mount.startswith(prefix):
+                rel_for_mount = rel_for_mount[len(prefix):]
+                break
+        abs_path = QBITTORRENT_DOWNLOADS / rel_for_mount
+        if abs_path.exists():
+            data = abs_path.read_bytes()
             break
-    abs_path = QBITTORRENT_DOWNLOADS / rel_for_mount
 
-    if not abs_path.exists():
+    if data is None:
         return None, None
-
-    data = abs_path.read_bytes()
 
     try:
         _qb_delete_torrent(session, torrent["hash"])

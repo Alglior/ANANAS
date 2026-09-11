@@ -635,16 +635,17 @@ def _apply_item_payload(current_user, item, data, is_new=False):
         item.image_magnet_links = image_magnets
         if not is_new:
             ItemGallery.query.filter_by(item_id=item.id, media_type="image").delete()
-            item.image_magnets_pending = True
-            item.image_magnets_total = len(image_magnets)
-        elif status != ITEM_STATUS_DRAFT:
-            item.image_magnets_pending = True
-            item.image_magnets_total = len(image_magnets)
+        item.image_magnets_pending = True
+        item.image_magnets_total = len(image_magnets)
     elif not is_new:
         item.image_magnets_pending = False
         item.image_magnets_total = 0
-    _process_image_magnets_async(item.id, image_magnets)
     return None
+
+
+def _commit_and_process_magnets(item_id, image_magnets):
+    db.session.commit()
+    _process_image_magnets_async(item_id, image_magnets)
 
 
 @bp.route("/api/upload/item", methods=["POST"])
@@ -670,7 +671,8 @@ def create_upload_item():
         return err
 
     item.refresh_imod_cache()
-    db.session.commit()
+    image_magnets = data.get("image_magnets", [])
+    _commit_and_process_magnets(item.id, image_magnets)
     return jsonify({"status": "created", "id": item.id})
 
 
@@ -690,7 +692,8 @@ def update_draft_item(item_id):
         return err
 
     item.refresh_imod_cache()
-    db.session.commit()
+    image_magnets = data.get("image_magnets", [])
+    _commit_and_process_magnets(item.id, image_magnets)
     return jsonify({"status": "updated", "id": item.id})
 
 
