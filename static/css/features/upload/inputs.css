@@ -172,6 +172,12 @@
   font-weight: 600;
 }
 
+.drafts-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+}
+
 .upload-history-list {
   list-style: none;
   padding: 0;

@@ -225,6 +225,16 @@ UploadModule.history = (function () {
 
   function init() {
     document.addEventListener('click', function(e) {
+      var delAllBtn = e.target.closest('.delete-all-drafts-btn');
+      if (delAllBtn) {
+        e.preventDefault();
+        showConfirm(
+          'Supprimer tous les brouillons ?<br><small>Ils seront d\u00e9plac\u00e9s dans la corbeille et resteront r\u00e9cup\u00e9rables pendant 7 jours.</small>',
+          function() { sendDelete('/api/upload/drafts/all'); }
+        );
+        return;
+      }
+
       var delBtn = e.target.closest('.draft-delete-btn');
       if (delBtn) {
         e.preventDefault();

@@ -199,10 +199,14 @@ def item_detail_view(item_id):
             from flask import abort
             abort(404)
 
+    if item.status == "trashed":
+        if not current_user or item.owner_user_id != current_user.id:
+            abort(404)
+
     related_items = Item.query.filter(
         Item.format_type == item.format_type,
         Item.id != item_id,
-        Item.status != "draft",
+        Item.status == "published",
     ).limit(3).all()
 
     ctx = _prepare_item_page(item, _get_comment_page())

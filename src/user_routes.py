@@ -685,6 +685,24 @@ def brouillons_page():
     )
 
 
+@bp.route("/api/upload/drafts/all", methods=["DELETE"])
+@login_required
+def delete_all_drafts():
+    current_user = get_current_user()
+    now = datetime.datetime.now()
+    try:
+        Item.query.filter_by(
+            owner_user_id=current_user.id,
+            status=ITEM_STATUS_DRAFT,
+        ).update({"status": ITEM_STATUS_TRASHED, "deleted_at": now})
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.exception("Failed to bulk-delete drafts")
+        return jsonify({"error": "Erreur lors de la suppression"}), 500
+    return jsonify({"status": "trashed"})
+
+
 @bp.route("/api/upload/item/<int:item_id>", methods=["DELETE"])
 @login_required
 def delete_draft_item(item_id):

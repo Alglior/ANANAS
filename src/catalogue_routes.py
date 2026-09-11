@@ -43,7 +43,7 @@ def _build_filtered_query(catalogue_type, filter_verified=False, filter_unoffici
     if not item_type:
         return None
 
-    query = Item.query.filter_by(type=item_type).filter(Item.status != "draft")
+    query = Item.query.filter_by(type=item_type).filter(Item.status == "published")
 
     # Recherche par titre ou description
     if search_query:

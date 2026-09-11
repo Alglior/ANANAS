@@ -400,6 +400,9 @@ print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
           </button>
         </div>
         {% if drafts %}
+        <div class="drafts-toolbar">
+          <button type="button" class="btn btn-sm btn-outline delete-all-drafts-btn">Supprimer tous les brouillons</button>
+        </div>
         <ul class="upload-history-list" id="drafts-list">
           {% for draft in drafts %}
           <li class="upload-history-item" data-draft-id="{{ draft.id }}">
