@@ -96,6 +96,7 @@ def _extract_info_hashes(magnet_link):
 
 
 def _qb_await_complete(session, info_hash, on_progress=None):
+    last_reported = -1
     while True:
 
         resp = session.get(
