@@ -168,6 +168,10 @@ def item_details_json(item_id):
 def item_image_status(item_id):
 
     item = Item.query.get_or_404(item_id)
+    gallery_by_magnet = {
+        (g.data_json or {}).get("magnet_link", ""): g.src
+        for g in item.gallery_items if g.media_type == "image" and g.src
+    }
     jobs = [
         {
             "idx": j.idx,
@@ -176,6 +180,7 @@ def item_image_status(item_id):
             "status": j.status,
             "progress": round(j.progress or 0, 2),
             "details": j.details or "",
+            "src": gallery_by_magnet.get(j.magnet_link, "") if j.status == "done" else "",
         }
         for j in ItemImageJob.query.filter_by(item_id=item_id).order_by(ItemImageJob.idx).all()
     ]

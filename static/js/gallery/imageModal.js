@@ -10,7 +10,6 @@ var ImageModalModule = (function () {
     var isPending = mainEl && mainEl.getAttribute("data-image-pending") === "true";
 
     var mainImg = document.getElementById("mainProductImg");
-    if (!mainImg) return;
 
     var modalImg = modal.querySelector(".modal-img");
     if (!modalImg) return;
@@ -32,8 +31,10 @@ var ImageModalModule = (function () {
       images.push(src);
     }
 
-    var rawSrc = mainImg.getAttribute("src");
-    addImage(rawSrc);
+    if (mainImg) {
+      var rawSrc = mainImg.getAttribute("src");
+      addImage(rawSrc);
+    }
 
     var inlineGallery = document.getElementById("inlineGallery");
     if (inlineGallery) {
@@ -50,11 +51,24 @@ var ImageModalModule = (function () {
       }
     }
 
-    if (images.length === 0) {
-      images.push(rawSrc);
+    if (images.length === 0 && mainImg) {
+      images.push(mainImg.getAttribute("src"));
     }
 
     var pendingMessage = modal.querySelector(".modal-pending-msg");
+
+    function addModalThumb(src, index) {
+      if (!thumbContainer) return;
+      var thumb = document.createElement("img");
+      thumb.className = "modal-thumb";
+      thumb.src = src;
+      thumb.setAttribute("data-index", index);
+      thumb.addEventListener("click", function () {
+        currentIndex = index;
+        showModal();
+      });
+      thumbContainer.appendChild(thumb);
+    }
 
     function updateActiveThumb() {
       if (!thumbContainer) return;
@@ -79,7 +93,7 @@ var ImageModalModule = (function () {
     }
 
     function showModal(index) {
-      if (isPending) {
+      if (isPending && images.length <= 1) {
         if (pendingMessage) pendingMessage.classList.remove("hidden-section");
         modalImg.classList.add("hidden-section");
         modal.classList.add("open");
@@ -97,6 +111,20 @@ var ImageModalModule = (function () {
       updateActiveThumb();
     }
 
+    function addImageToModal(src, label, idx) {
+      if (!src || seenUrls[src]) return;
+      seenUrls[src] = true;
+      images.push(src);
+      addModalThumb(src, images.length - 1);
+      if (idx === 0 || images.length === 1) {
+        currentIndex = 0;
+      }
+      if (images.length > 1 && pendingMessage) {
+        pendingMessage.classList.add("hidden-section");
+        modalImg.classList.remove("hidden-section");
+      }
+    }
+
     function hideModal() {
       modal.classList.remove("open", "modal-active");
       document.body.classList.remove("modal-open");
@@ -109,22 +137,33 @@ var ImageModalModule = (function () {
       updateActiveThumb();
     }
 
-    if (!isPending) {
+    if (!isPending && mainImg) {
       mainImg.addEventListener("click", function () {
         currentIndex = 0;
         showModal();
       });
+    }
 
-      if (thumbContainer) {
-        var allThumbs = thumbContainer.querySelectorAll(".modal-thumb");
-        for (var k = 0; k < allThumbs.length; k++) {
-          (function (idx) {
-            allThumbs[idx].addEventListener("click", function () {
-              currentIndex = Math.min(idx, images.length - 1);
-              showModal();
-            });
-          })(k);
-        }
+    if (!isPending && thumbContainer) {
+      var allThumbs = thumbContainer.querySelectorAll(".modal-thumb");
+      for (var k = 0; k < allThumbs.length; k++) {
+        (function (idx) {
+          allThumbs[idx].addEventListener("click", function () {
+            currentIndex = Math.min(idx, images.length - 1);
+            showModal();
+          });
+        })(k);
+      }
+    }
+
+    if (isPending) {
+      var pendingArea = document.querySelector(".inline-gallery-pending");
+      if (pendingArea) {
+        pendingArea.addEventListener("click", function () {
+          if (images.length > 0) {
+            showModal(0);
+          }
+        });
       }
     }
 
@@ -155,5 +194,5 @@ var ImageModalModule = (function () {
     }, { passive: true });
   }
 
-  return { init: init };
+  return { init: init, pushImage: addImageToModal };
 })();

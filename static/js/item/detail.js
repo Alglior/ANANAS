@@ -312,8 +312,79 @@
           '<span class="image-job-status">' + escapeHtml(getJobText(job)) + '</span>' +
           bar +
           '</div>';
+
+        if (job.status === 'done' && job.src) {
+          addGalleryThumbnail(job);
+        }
       }
       progressEl.innerHTML = html;
+    }
+
+    var galleryThumbnailsAdded = {};
+
+    function addGalleryThumbnail(job) {
+      if (galleryThumbnailsAdded[job.idx]) return;
+      galleryThumbnailsAdded[job.idx] = true;
+
+      var gallery = document.getElementById('inlineGallery');
+      if (!gallery) {
+        gallery = document.createElement('div');
+        gallery.className = 'inline-gallery';
+        gallery.id = 'inlineGallery';
+        var container = document.querySelector('.product-gallery');
+        if (container) container.appendChild(gallery);
+      }
+
+      var wrap = document.createElement('div');
+      wrap.className = 'gallery-thumb-wrap';
+
+      var img = document.createElement('img');
+      img.className = 'gallery-thumb-img' + (Object.keys(galleryThumbnailsAdded).length === 1 ? ' active' : '');
+      img.src = job.src;
+      img.alt = job.label || '';
+      img.setAttribute('data-src', job.src);
+      img.addEventListener('click', function () {
+        if (window.ImageModalModule && ImageModalModule.pushImage) {
+          var modal = document.getElementById('imageModal');
+          if (!modal || !modal.classList.contains('open')) {
+            ImageModalModule.pushImage(job.src, job.label || '', job.idx);
+          }
+        }
+        var thumbs = document.querySelectorAll('.gallery-thumb-img');
+        thumbs.forEach(function (t) { t.classList.remove('active'); });
+        img.classList.add('active');
+        var main = document.getElementById('mainProductImg');
+        if (main) {
+          main.src = job.src + '?t=' + Date.now();
+        } else {
+          var modal = document.getElementById('imageModal');
+          if (modal && window.ImageModalModule) {
+            var modalImg = modal.querySelector('.modal-img');
+            if (modalImg) modalImg.src = job.src;
+          }
+        }
+      });
+
+      var labelSpan = document.createElement('span');
+      labelSpan.className = 'gallery-thumb-label';
+      labelSpan.textContent = job.label || 'Image ' + (job.idx + 1);
+
+      wrap.appendChild(img);
+      wrap.appendChild(labelSpan);
+      gallery.appendChild(wrap);
+
+      var mainImg = document.getElementById('mainProductImg');
+      if (mainImg && Object.keys(galleryThumbnailsAdded).length === 1) {
+        mainImg.src = job.src;
+      }
+
+      if (window.ImageModalModule && ImageModalModule.pushImage) {
+        ImageModalModule.pushImage(job.src, job.label || '', job.idx);
+      }
+
+      if (window.InlineGalleryModule) {
+        InlineGalleryModule.init();
+      }
     }
 
     var pollInterval = setInterval(function () {
