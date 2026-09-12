@@ -294,6 +294,8 @@ UploadModule.submit = (function () {
         magnetEntries.innerHTML = '';
         if (d.data_format_level === 'pack' && d.metadata_json && d.metadata_json.zoom_levels) {
           UploadModule.magnets.createEntry(d.magnet_link, d.metadata_json.zoom_levels.join(','));
+        } else if (d.data_format_level === 'simple' && d.zoom_level) {
+          UploadModule.magnets.createEntry(d.magnet_link, d.zoom_level);
         } else {
           UploadModule.magnets.createEntry(d.magnet_link, 'regions');
         }
@@ -429,6 +431,9 @@ UploadModule.submit = (function () {
             if (data.data_format_level === 'simple' && data.magnet_link) {
               payload.data_format_level = 'simple';
               payload.magnet_link = data.magnet_link;
+              if (data.zoom_level) {
+                payload.zoom_level = data.zoom_level;
+              }
             } else if (data.data_format_level === 'pack' && data.magnet_link) {
               payload.data_format_level = 'pack';
               payload.magnet_link = data.magnet_link;
