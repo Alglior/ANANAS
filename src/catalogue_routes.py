@@ -171,7 +171,19 @@ def _do_catalogue(catalogue_type, page, per_page=None):
 
     page_numbers = _build_page_numbers(page, total_pages)
 
-    all_categories = PredefinedTagCategory.query.order_by(PredefinedTagCategory.display_order).all()
+    item_type = type_map.get(catalogue)
+    all_categories = (
+        PredefinedTagCategory.query
+        .join(PredefinedTag, PredefinedTagCategory.id == PredefinedTag.category_id)
+        .join(ItemTag, ItemTag.tag == PredefinedTag.name)
+        .join(Item, Item.id == ItemTag.item_id)
+        .filter(Item.type == item_type)
+        .filter(Item.status == "published")
+        .filter(PredefinedTagCategory.name != "Types de données")
+        .distinct()
+        .order_by(PredefinedTagCategory.display_order)
+        .all()
+    )
     all_category_names = [c.name for c in all_categories]
 
     urls = _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod)

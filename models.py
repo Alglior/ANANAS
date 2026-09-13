@@ -180,7 +180,7 @@ class Item(db.Model, TimestampMixin):
         imod = self._compute_imod_score()
         tag_names = [t.tag for t in self.tags]
         tag_categories = self._get_tag_categories(tag_names)
-        unique_categories = list(dict.fromkeys(c for c in tag_categories.values() if c))
+        unique_categories = list(dict.fromkeys(c for c in tag_categories.values() if c and c != "Types de données"))
         grouped = {}
         for tag, cat in tag_categories.items():
             if cat:
