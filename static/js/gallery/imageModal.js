@@ -2,6 +2,8 @@
  * A.N.A.N.A.S — Image modal (detail page full-screen gallery)
  */
 var ImageModalModule = (function () {
+  var pushImageFn;
+
   function init() {
     var modal = document.getElementById("imageModal");
     if (!modal) return;
@@ -111,7 +113,7 @@ var ImageModalModule = (function () {
       updateActiveThumb();
     }
 
-    function addImageToModal(src, label, idx) {
+    pushImageFn = function addImageToModal(src, label, idx) {
       if (!src || seenUrls[src]) return;
       seenUrls[src] = true;
       images.push(src);
@@ -194,5 +196,5 @@ var ImageModalModule = (function () {
     }, { passive: true });
   }
 
-  return { init: init, pushImage: addImageToModal };
+  return { init: init, pushImage: pushImageFn };
 })();
