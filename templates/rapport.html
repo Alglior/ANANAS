@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/features/rapport.css') }}" />
+{% endblock %}
+
+{% block content %}
+<main class="rapport-page">
+  <div class="container">
+    <h1>Rapports</h1>
+
+    <div class="rapport-notice">
+      <strong>Avis légal</strong>
+      <p>
+        Ces documents sont la propriété d'<strong>Arthur Thibaudon</strong>.
+        Ils sont mis à disposition <strong>exclusivement pour la recherche</strong>.
+        Toute redistribution, revente ou utilisation commerciale est interdite sans autorisation préalable.
+        En cas de redistribution partielle ou totale, la citation explicite de l'auteur est obligatoire.
+      </p>
+    </div>
+
+    {% if pdfs %}
+      <div class="rapport-grid">
+        {% for pdf in pdfs %}
+        <button class="rapport-card" type="button" data-pdf="{{ pdf.path }}" data-name="{{ pdf.name }}">
+          <span class="rapport-card-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </span>
+          <span class="rapport-card-info">
+            <span class="rapport-card-name">{{ pdf.name }}</span>
+            <span class="rapport-card-meta">
+              {{ (pdf.size / 1024)|round(1) }} Ko
+            </span>
+          </span>
+        </button>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="rapport-empty">
+        <p>Aucun rapport disponible pour le moment.</p>
+      </div>
+    {% endif %}
+  </div>
+</main>
+
+<div class="pdf-modal-overlay" id="pdfModalOverlay">
+  <div class="pdf-modal-box">
+    <div class="pdf-modal-header">
+      <h3 id="pdfModalTitle">Document</h3>
+      <div class="pdf-modal-actions">
+        <a class="btn btn-primary btn-sm" id="pdfDownloadBtn" download>Télécharger</a>
+        <button class="pdf-modal-close" id="pdfModalClose" type="button" aria-label="Fermer">&times;</button>
+      </div>
+    </div>
+    <div class="pdf-modal-body">
+      <iframe id="pdfViewer" src="" title="Visualiseur PDF"></iframe>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/rapport-modal.js') }}"></script>
+{% endblock %}

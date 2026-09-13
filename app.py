@@ -188,11 +188,19 @@ def create_app(app_name="ANANAS"):
     # #20: CSP with nonce-based script/style instead of 'unsafe-inline'
     @app.after_request
     def set_security_headers(response):
-        response.headers["X-Frame-Options"] = "DENY"
+        is_pdf = response.headers.get("X-PDF-Viewer") == "1"
+        if is_pdf:
+            del response.headers["X-PDF-Viewer"]
+
+        if "X-Frame-Options" not in response.headers:
+            response.headers["X-Frame-Options"] = "DENY"
+
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        nonce = getattr(g, "csp_nonce", "")
-        response.headers["Content-Security-Policy"] = (
+
+        if not is_pdf:
+            nonce = getattr(g, "csp_nonce", "")
+            response.headers["Content-Security-Policy"] = (
             f"default-src 'self'; "
             f"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
             f"script-src 'self' 'nonce-{nonce}' https://unpkg.com; "
