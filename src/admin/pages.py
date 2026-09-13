@@ -1,9 +1,11 @@
 import os
+import re
 
 from flask import render_template, redirect, url_for, request, Response, jsonify
 import requests as http_requests
 
 from src.admin import bp, login_required, require_admin
+from models import ItemImageJob, ItemGallery, Item
 
 
 @bp.route("/admin/reports")
@@ -157,4 +159,71 @@ def admin_qbittorrent_status():
             }
             for t in torrents
         ],
+    })
+
+
+@bp.route("/api/admin/qbittorrent/cleanup", methods=["POST"])
+@login_required
+@require_admin
+def admin_qbittorrent_cleanup():
+    qb_url = os.environ.get("QBITTORRENT_URL", "http://qbittorrent:8081")
+    session = _qb_login()
+    if session is None:
+        return jsonify({"error": "Impossible de se connecter à qBittorrent"}), 502
+
+    try:
+        resp = session.get(f"{qb_url}/api/v2/torrents/info", timeout=10)
+        resp.raise_for_status()
+        torrents = resp.json()
+    except Exception as e:
+        return jsonify({"error": f"Erreur lors de la récupération des torrents : {e}"}), 502
+
+    magnets = set()
+    for job in ItemImageJob.query.with_entities(ItemImageJob.magnet_link).all():
+        m = (job.magnet_link or "").strip().lower()
+        if m:
+            magnets.add(m)
+    for row in ItemGallery.query.with_entities(ItemGallery.data_json).all():
+        if row.data_json:
+            m = (row.data_json.get("magnet_link") or "").strip().lower()
+            if m:
+                magnets.add(m)
+    for row in Item.query.with_entities(Item.image_magnet_links).all():
+        links = row.image_magnet_links
+        if isinstance(links, list):
+            for link in links:
+                m = (link or "").strip().lower()
+                if m:
+                    magnets.add(m)
+
+    known_hashes = set()
+    for magnet in magnets:
+        for m in re.findall(r"btih:([a-fA-F0-9]{40})", magnet):
+            known_hashes.add(m.lower())
+        for m in re.findall(r"btmh:1220([a-fA-F0-9]{64})", magnet):
+            known_hashes.add(m[:40].lower())
+
+    cleaned = 0
+    errors = 0
+    for tor in torrents:
+        info_hash = tor.get("hash", "").lower()
+        if not info_hash:
+            continue
+        if info_hash in known_hashes:
+            continue
+        try:
+            session.post(
+                f"{qb_url}/api/v2/torrents/delete",
+                params={"hashes": info_hash, "deleteFiles": True},
+                timeout=10,
+            )
+            cleaned += 1
+        except Exception:
+            errors += 1
+
+    return jsonify({
+        "status": "ok",
+        "cleaned": cleaned,
+        "errors": errors,
+        "message": f"{cleaned} torrent(s) orphelin(s) supprimé(s)" + (f", {errors} erreur(s)" if errors else ""),
     })

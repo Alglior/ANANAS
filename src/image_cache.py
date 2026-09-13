@@ -245,6 +245,40 @@ def download_image_from_magnet(magnet_link, on_progress=None):
     return data, ext
 
 
+def delete_item_cached_images(item):
+    """Supprime les fichiers images en cache pour un item (gallerie + image principale)."""
+    from pathlib import Path
+    deleted = 0
+    magnets = set()
+
+    for gallery in item.gallery_items:
+        if gallery.data_json:
+            magnet = gallery.data_json.get("magnet_link")
+            if magnet:
+                magnets.add(magnet)
+
+    for job in item.image_jobs:
+        if job.magnet_link:
+            magnets.add(job.magnet_link)
+
+    for magnet in magnets:
+        p = _cache_path(magnet)
+        if p.exists():
+            p.unlink()
+            deleted += 1
+
+    if item.image_path and item.image_path.startswith("/static/cache/img/"):
+        stem = Path(item.image_path).stem
+        fp = CACHE_DIR / stem
+        if fp.exists():
+            fp.unlink()
+            deleted += 1
+
+    if deleted:
+        logger.info("delete_item_cached_images: removed %d file(s) for item %s", deleted, item.id)
+    return deleted
+
+
 def process_image_magnets(item_id, image_magnets):
     lock = _acquire_item_processing_lock(item_id)
     if lock is None:

@@ -6,6 +6,7 @@ from src.admin import bp, api_admin_required, login_required, get_current_user
 from src.admin import _serialize_comment, _serialize_item, _log_audit, _paginate
 from src.shared import ITEMS_PER_PAGE
 from models import Comment, Item, UserUpload, DataChunk, Report, VisualizationLink, ItemTag, ItemGallery, Rating
+from src.image_cache import delete_item_cached_images
 
 
 # --- Comments ---
@@ -106,6 +107,7 @@ def delete_item(item_id):
     type_name = item.type
 
     try:
+        delete_item_cached_images(item)
         UserUpload.query.filter_by(parent_item_id=item.id).update({"chunk_id": None, "published_item_id": None})
         DataChunk.query.filter_by(parent_item_id=item.id).delete()
         UserUpload.query.filter_by(parent_item_id=item.id).delete()

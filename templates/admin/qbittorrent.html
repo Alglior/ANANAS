@@ -31,6 +31,12 @@
       </div>
 
       <h2>Torrents</h2>
+      <div class="qb-toolbar">
+        <button id="qb-cleanup-btn" class="btn btn-danger" onclick="cleanupOrphans()">
+          <span class="btn-icon">&#128465;</span> Nettoyer les torrents orphelins
+        </button>
+        <span id="qb-cleanup-msg" class="qb-cleanup-msg"></span>
+      </div>
       <div class="table-wrapper">
         <table class="qb-table">
           <thead>

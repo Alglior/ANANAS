@@ -14,6 +14,7 @@ from app import db, limiter
 from src.shared import login_required, get_current_user, user_owns_item_or_admin, ITEMS_PER_PAGE, validate_password_strength, _paginate, ALLOWED_ITEM_TYPES, ITEM_TYPE_LABELS, user_belongs_to_org, ITEM_STATUS_DRAFT, ITEM_STATUS_PUBLISHED, ITEM_STATUS_TRASHED
 from src.admin import is_catalogue_enabled
 from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, ItemGallery, ItemTag, PredefinedTagCategory, Report
+from src.image_cache import delete_item_cached_images
 from utils.security import sanitize_html, validate_magnet_link, validate_external_url
 
 logger = logging.getLogger(__name__)
@@ -781,6 +782,8 @@ def purge_all_trash():
 
     try:
         ids = [item.id for item in trashed_items]
+        for item in trashed_items:
+            delete_item_cached_images(item)
         UserUpload.query.filter(UserUpload.parent_item_id.in_(ids)).update({"chunk_id": None, "published_item_id": None})
         DataChunk.query.filter(DataChunk.parent_item_id.in_(ids)).delete()
         UserUpload.query.filter(UserUpload.parent_item_id.in_(ids)).delete()
@@ -814,6 +817,7 @@ def purge_draft_item(item_id):
         return jsonify({"error": "Non autorisé"}), 403
 
     try:
+        delete_item_cached_images(item)
         UserUpload.query.filter_by(parent_item_id=item.id).update({"chunk_id": None, "published_item_id": None})
         DataChunk.query.filter_by(parent_item_id=item.id).delete()
         UserUpload.query.filter_by(parent_item_id=item.id).delete()

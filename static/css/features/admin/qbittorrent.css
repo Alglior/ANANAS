@@ -57,3 +57,23 @@
   padding: 0.5rem;
   border-bottom: 1px solid var(--border-light);
 }
+
+.qb-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.qb-cleanup-msg {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.qb-cleanup-success {
+  color: #1a7d36;
+}
+
+.qb-cleanup-error {
+  color: #c00;
+}
