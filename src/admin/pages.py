@@ -1,9 +1,11 @@
+import logging
 import os
 import re
 
 from flask import render_template, redirect, url_for, request, Response, jsonify
 import requests as http_requests
 
+from app import db
 from src.admin import bp, login_required, require_admin
 from models import ItemImageJob, ItemGallery, Item
 
@@ -166,6 +168,7 @@ def admin_qbittorrent_status():
 @login_required
 @require_admin
 def admin_qbittorrent_cleanup():
+    logger = logging.getLogger(__name__)
     qb_url = os.environ.get("QBITTORRENT_URL", "http://qbittorrent:8081")
     session = _qb_login()
     if session is None:
@@ -176,25 +179,37 @@ def admin_qbittorrent_cleanup():
         resp.raise_for_status()
         torrents = resp.json()
     except Exception as e:
+        logger.exception("qb cleanup: failed to fetch torrents")
         return jsonify({"error": f"Erreur lors de la récupération des torrents : {e}"}), 502
 
-    magnets = set()
-    for job in ItemImageJob.query.with_entities(ItemImageJob.magnet_link).all():
-        m = (job.magnet_link or "").strip().lower()
-        if m:
-            magnets.add(m)
-    for row in ItemGallery.query.with_entities(ItemGallery.data_json).all():
-        if row.data_json:
-            m = (row.data_json.get("magnet_link") or "").strip().lower()
+    try:
+        magnets = set()
+        rows = db.session.query(ItemImageJob.magnet_link).all()
+        for (magnet_link,) in rows:
+            m = (magnet_link or "").strip().lower()
             if m:
                 magnets.add(m)
-    for row in Item.query.with_entities(Item.image_magnet_links).all():
-        links = row.image_magnet_links
-        if isinstance(links, list):
-            for link in links:
-                m = (link or "").strip().lower()
+        rows = db.session.query(ItemGallery.data_json).all()
+        for (data_json,) in rows:
+            if data_json and isinstance(data_json, dict):
+                m = (data_json.get("magnet_link") or "").strip().lower()
                 if m:
                     magnets.add(m)
+        rows = db.session.query(Item.image_magnet_links).all()
+        for (links,) in rows:
+            if isinstance(links, list):
+                for link in links:
+                    if isinstance(link, dict):
+                        m = (link.get("magnet_link") or "").strip().lower()
+                    elif isinstance(link, str):
+                        m = link.strip().lower()
+                    else:
+                        continue
+                    if m:
+                        magnets.add(m)
+    except Exception as e:
+        logger.exception("qb cleanup: DB query error")
+        return jsonify({"error": f"Erreur lors de l'interrogation de la base : {e}"}), 500
 
     known_hashes = set()
     for magnet in magnets:
