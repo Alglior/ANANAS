@@ -99,6 +99,53 @@ for fname in json_files:
         "tags": data.get("tags", []),
     }
 
+    # ── data_format_level + Magnet links ──
+    dfl = data.get("data_format_level", "simple")
+    payload["data_format_level"] = dfl
+    if dfl in ("simple", "pack"):
+        magnet = data.get("magnet_link", "").strip()
+        if magnet:
+            payload["magnet_link"] = magnet
+            if dfl == "simple" and data.get("zoom_level"):
+                payload["zoom_level"] = data["zoom_level"]
+    elif dfl == "individual" and data.get("magnet_links"):
+        payload["magnet_links"] = data["magnet_links"]
+
+    # ── PDF magnet ──
+    if data.get("pdf_magnet_link"):
+        payload["pdf_magnet_link"] = data["pdf_magnet_link"]
+
+    # ── Liens de visualisation ──
+    if data.get("viz_link_name") or data.get("viz_link_url"):
+        payload["viz_link_name"] = data.get("viz_link_name", "")
+        payload["viz_link_url"] = data.get("viz_link_url", "")
+
+    # ── Image magnets ──
+    if data.get("image_magnets"):
+        payload["image_magnets"] = data["image_magnets"]
+
+    # ── data_text : à uploader via /api/upload/file avant ──
+    chunk_id = None
+    if data.get("data_text", "").strip():
+        form = {
+            "data_text": data["data_text"],
+            "title": payload["title"],
+            "type": payload["type"],
+            "format_type": payload["format_type"],
+            "description": payload["description"],
+            "organization_id": payload["organization_id"],
+        }
+        file_resp = session.post(
+            f"{SITE_URL}/api/upload/file",
+            data=form,
+            headers={"X-CSRF-Token": csrf_token},
+        )
+        if file_resp.status_code == 200:
+            chunk_id = file_resp.json().get("chunk_id")
+
+    if chunk_id:
+        payload["chunk_id"] = str(chunk_id)
+
     resp = session.post(
         f"{SITE_URL}/api/upload/item",
         json=payload,
@@ -108,7 +155,7 @@ for fname in json_files:
         print(f"  ✓ {fname}")
         created += 1
     else:
-        print(f"  ✗ {fname}: {resp.status_code} {resp.text[:100]}")
+        print(f"  ✗ {fname}: {resp.status_code} {resp.text[:200]}")
 
 print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
         </div>
