@@ -218,23 +218,31 @@ def admin_qbittorrent_cleanup():
         for m in re.findall(r"btmh:1220([a-fA-F0-9]{64})", magnet):
             known_hashes.add(m[:40].lower())
 
-    cleaned = 0
-    errors = 0
+    orphan_hashes = []
     for tor in torrents:
         info_hash = tor.get("hash", "").lower()
         if not info_hash:
             continue
         if info_hash in known_hashes:
             continue
+        orphan_hashes.append(info_hash)
+
+    cleaned = 0
+    errors = 0
+
+    if orphan_hashes:
         try:
-            session.post(
+            joined = "|".join(orphan_hashes)
+            resp = session.post(
                 f"{qb_url}/api/v2/torrents/delete",
-                params={"hashes": info_hash, "deleteFiles": True},
+                params={"hashes": joined, "deleteFiles": "true"},
                 timeout=10,
             )
-            cleaned += 1
+            resp.raise_for_status()
+            cleaned = len(orphan_hashes)
         except Exception:
-            errors += 1
+            errors = len(orphan_hashes)
+            logger.exception("qb cleanup: delete request failed for %d torrent(s)", errors)
 
     return jsonify({
         "status": "ok",
