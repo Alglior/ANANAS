@@ -137,7 +137,7 @@ def _qb_get_file_paths(session, info_hash):
 def _qb_delete_torrent(session, info_hash):
     session.post(
         f"{QBITTORRENT_URL}/api/v2/torrents/delete",
-        params={"hashes": info_hash, "deleteFiles": False},
+        data={"hashes": info_hash, "deleteFiles": "false"},
     )
 
 

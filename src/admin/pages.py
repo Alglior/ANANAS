@@ -236,7 +236,7 @@ def admin_qbittorrent_cleanup():
             joined = "|".join(orphan_hashes)
             resp = session.post(
                 f"{qb_url}/api/v2/torrents/delete",
-                params={"hashes": joined, "deleteFiles": "true"},
+                data={"hashes": joined, "deleteFiles": "true"},
                 timeout=10,
             )
             if resp.status_code != 200:
