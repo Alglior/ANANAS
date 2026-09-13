@@ -229,6 +229,7 @@ def admin_qbittorrent_cleanup():
 
     cleaned = 0
     errors = 0
+    qb_error = None
 
     if orphan_hashes:
         try:
@@ -238,10 +239,15 @@ def admin_qbittorrent_cleanup():
                 params={"hashes": joined, "deleteFiles": "true"},
                 timeout=10,
             )
-            resp.raise_for_status()
-            cleaned = len(orphan_hashes)
-        except Exception:
+            if resp.status_code != 200:
+                errors = len(orphan_hashes)
+                qb_error = f"qBittorrent a répondu {resp.status_code}: {resp.text[:300]}"
+                logger.error("qb cleanup: %s", qb_error)
+            else:
+                cleaned = len(orphan_hashes)
+        except Exception as e:
             errors = len(orphan_hashes)
+            qb_error = str(e)
             logger.exception("qb cleanup: delete request failed for %d torrent(s)", errors)
 
     return jsonify({
@@ -249,4 +255,5 @@ def admin_qbittorrent_cleanup():
         "cleaned": cleaned,
         "errors": errors,
         "message": f"{cleaned} torrent(s) orphelin(s) supprimé(s)" + (f", {errors} erreur(s)" if errors else ""),
+        "qb_error": qb_error,
     })

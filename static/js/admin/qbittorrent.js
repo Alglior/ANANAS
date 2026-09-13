@@ -101,8 +101,10 @@
           msg.textContent = 'Erreur : ' + data.error;
           msg.className = 'qb-cleanup-msg qb-cleanup-error';
         } else {
-          msg.textContent = data.message;
-          msg.className = 'qb-cleanup-msg qb-cleanup-success';
+          var txt = data.message;
+          if (data.qb_error) txt += ' — ' + data.qb_error;
+          msg.textContent = txt;
+          msg.className = data.errors ? 'qb-cleanup-msg qb-cleanup-error' : 'qb-cleanup-msg qb-cleanup-success';
           loadStatus();
         }
       })
