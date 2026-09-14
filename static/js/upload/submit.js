@@ -294,8 +294,9 @@ UploadModule.submit = (function () {
         magnetEntries.innerHTML = '';
         if (d.data_format_level === 'pack' && d.metadata_json && d.metadata_json.zoom_levels) {
           UploadModule.magnets.createEntry(d.magnet_link, d.metadata_json.zoom_levels.join(','));
-        } else if (d.data_format_level === 'simple' && d.zoom_level) {
-          UploadModule.magnets.createEntry(d.magnet_link, d.zoom_level);
+        } else if (d.data_format_level === 'simple') {
+          var simpleZoom = d.zoom_level || (Array.isArray(d.zoom_levels) && d.zoom_levels.length > 0 ? d.zoom_levels.join(',') : '');
+          UploadModule.magnets.createEntry(d.magnet_link, simpleZoom || 'regions');
         } else {
           UploadModule.magnets.createEntry(d.magnet_link, 'regions');
         }
