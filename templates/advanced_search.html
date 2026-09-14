@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% set catalogue_titles = {
+  "donnees": get_setting("catalogue_donnees_title", "Catalogue des géodonnées"),
+  "cartes": get_setting("catalogue_cartes_title", "Catalogue des cartes"),
+  "applications": get_setting("catalogue_applications_title", "Catalogue d'applications")
+} %}
+{% set catalogue_name = catalogue_titles.get(catalogue_type, "Catalogue") %}
+
+{% block content %}
+<main class="catalogue-page">
+  <section class="catalogue-header">
+    <div class="container">
+      <h1>Recherche avancée — {{ catalogue_name }}</h1>
+      <p class="catalogue-meta">Sélectionnez les étiquettes à inclure ou exclure de votre recherche, puis cliquez sur <strong>Appliquer les filtres</strong>.</p>
+    </div>
+  </section>
+
+  <section class="catalogue-body">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Fil d'ariane">
+        <a href="/">Accueil</a>
+        <span class="sep">&rsaquo;</span>
+        <a href="/catalogue/{{ catalogue_type }}">{{ catalogue_name }}</a>
+        <span class="sep">&rsaquo;</span>
+        <span>Recherche avancée</span>
+      </nav>
+
+      <form class="advanced-search-form" action="/catalogue/{{ catalogue_type }}" method="get">
+        {% if search_query %}
+        <input type="hidden" name="q" value="{{ search_query }}">
+        {% endif %}
+
+        <div class="advanced-search-actions-top">
+          <button type="submit" class="btn btn-primary btn-advanced-search-submit">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Appliquer les filtres
+          </button>
+          <button type="button" class="btn btn-outline btn-advanced-search-clear">Effacer tous les filtres</button>
+        </div>
+
+        <div class="advanced-search-tags">
+          {% for group in tag_categories %}
+          {% if group.tags %}
+          <fieldset class="advanced-search-category">
+            <legend class="advanced-search-category-name">{{ group.category.name }}</legend>
+            <div class="advanced-search-tag-grid">
+              {% for tag in group.tags %}
+              <div class="advanced-search-tag-row" data-tag="{{ tag.name }}">
+                <input type="hidden" name="tag_mode_{{ tag.name }}" value="ignore" class="tag-mode-input">
+                <button type="button" class="advanced-search-tag-btn advanced-search-tag-include" data-action="include" title="Inclure cette étiquette">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </button>
+                <span class="advanced-search-tag-label">{{ tag.name }}</span>
+                <button type="button" class="advanced-search-tag-btn advanced-search-tag-exclude" data-action="exclude" title="Exclure cette étiquette">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+              </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+          {% endif %}
+          {% endfor %}
+        </div>
+
+        <div class="advanced-search-actions-bottom">
+          <button type="submit" class="btn btn-primary btn-advanced-search-submit">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Appliquer les filtres
+          </button>
+          <button type="button" class="btn btn-outline btn-advanced-search-clear">Effacer tous les filtres</button>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/catalogue/advanced-search.js') }}"></script>
+<script nonce="{{ csp_nonce }}">AdvancedSearchModule.init();</script>
+{% endblock %}

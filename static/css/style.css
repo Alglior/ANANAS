@@ -41,6 +41,7 @@
 @import url("./features/privacy.css");
 @import url("./features/apropos.css");
 @import url("./features/changelog.css");
+@import url("./features/advanced-search.css");
 @import url("./layouts/auth.css");
 @import url("./layouts/services.css");
 @import url("./layouts/footer.css");

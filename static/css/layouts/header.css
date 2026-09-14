@@ -137,6 +137,30 @@
   color: var(--specs-gray);
 }
 
+.search-advanced-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  flex-shrink: 0;
+  border: none;
+  border-left: 1px solid var(--border-light);
+  background: var(--surface-gray);
+  color: var(--specs-gray);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+  text-decoration: none;
+}
+
+.search-advanced-btn:hover {
+  color: var(--forest);
+  background: var(--lightest-gray);
+}
+
+.search-advanced-btn svg {
+  display: block;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

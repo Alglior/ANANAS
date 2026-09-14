@@ -13,7 +13,7 @@ from sqlalchemy import func
 from app import db, limiter
 from src.shared import login_required, get_current_user, user_owns_item_or_admin, ITEMS_PER_PAGE, validate_password_strength, _paginate, ALLOWED_ITEM_TYPES, ITEM_TYPE_LABELS, user_belongs_to_org, ITEM_STATUS_DRAFT, ITEM_STATUS_PUBLISHED, ITEM_STATUS_TRASHED
 from src.admin import is_catalogue_enabled
-from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, ItemGallery, ItemTag, PredefinedTagCategory, Report
+from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, ItemGallery, ItemTag, PredefinedTag, PredefinedTagCategory, Report
 from src.image_cache import delete_item_cached_images
 from utils.security import sanitize_html, validate_magnet_link, validate_external_url
 
@@ -391,10 +391,11 @@ def _parse_item_data(data):
 
 def _process_tags(item, tags):
     existing = {t.tag for t in item.tags}
+    predefined_names = {pt.name for pt in db.session.query(PredefinedTag.name).distinct().all()}
     new_tags = set()
     for t in (tags or []):
         tag = sanitize_html(t.strip()[:50])
-        if tag:
+        if tag and tag in predefined_names:
             new_tags.add(tag)
     to_add = new_tags - existing
     to_remove = [t for t in item.tags if t.tag not in new_tags]

@@ -37,7 +37,7 @@ class CatalogueTypeConverter(BaseConverter):
         return value
 
 
-def _build_filtered_query(catalogue_type, filter_verified=False, filter_unofficial=False, filter_format="", org_slug=None, filter_imod="", filter_tag=None, filter_category=None, search_query=None):
+def _build_filtered_query(catalogue_type, filter_verified=False, filter_unofficial=False, filter_format="", org_slug=None, filter_imod="", filter_tag=None, filter_category=None, search_query=None, exclude_tags=None):
 
     item_type = type_map.get(catalogue_type)
     if not item_type:
@@ -69,8 +69,18 @@ def _build_filtered_query(catalogue_type, filter_verified=False, filter_unoffici
         query = query.filter_by(data_format_level=filter_format)
 
     if filter_tag:
-        sub = db.session.query(ItemTag.item_id).filter(ItemTag.tag == filter_tag).subquery()
-        query = query.filter(Item.id.in_(sub))
+        if isinstance(filter_tag, list) and len(filter_tag) > 0:
+            for tag in filter_tag:
+                sub = db.session.query(ItemTag.item_id).filter(ItemTag.tag == tag).subquery()
+                query = query.filter(Item.id.in_(sub))
+        elif isinstance(filter_tag, str) and filter_tag:
+            sub = db.session.query(ItemTag.item_id).filter(ItemTag.tag == filter_tag).subquery()
+            query = query.filter(Item.id.in_(sub))
+
+    if exclude_tags:
+        for tag in exclude_tags:
+            sub = db.session.query(ItemTag.item_id).filter(ItemTag.tag == tag).subquery()
+            query = query.filter(~Item.id.in_(sub))
 
     if filter_category:
         sub = db.session.query(ItemTag.item_id).join(
@@ -120,6 +130,34 @@ def _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_
     }
 
 
+def _build_filter_qs(filter_tag="", exclude_tags=None, filter_category="", filter_verified=False, filter_unofficial=False, filter_format="", filter_imod="", org_slug=""):
+    parts = []
+    if filter_tag:
+        for t in filter_tag.split(",") if isinstance(filter_tag, str) else [filter_tag]:
+            if t:
+                from urllib.parse import quote
+                parts.append(f"tag={quote(t)}")
+    if exclude_tags:
+        for t in exclude_tags.split(",") if isinstance(exclude_tags, str) else exclude_tags:
+            if t:
+                from urllib.parse import quote
+                parts.append(f"exclude_tag={quote(t)}")
+    if filter_category:
+        from urllib.parse import quote
+        parts.append(f"category={quote(filter_category)}")
+    if filter_verified:
+        parts.append("verified=1")
+    if filter_unofficial:
+        parts.append("unofficial=1")
+    if filter_format:
+        parts.append(f"format_level={filter_format}")
+    if filter_imod:
+        parts.append(f"imod={filter_imod}")
+    if org_slug:
+        parts.append(f"org={org_slug}")
+    return "&".join(parts)
+
+
 def _do_catalogue(catalogue_type, page, per_page=None):
     if per_page is None:
         try:
@@ -139,12 +177,15 @@ def _do_catalogue(catalogue_type, page, per_page=None):
     filter_format = request.args.get("format_level", "")
     filter_imod = request.args.get("imod", "")
     org_slug = request.args.get("org")
-    filter_tag = request.args.get("tag", "")
+    filter_tags = request.args.getlist("tag")
+    filter_tag = ",".join(filter_tags) if filter_tags else request.args.get("tag", "")
     filter_category = request.args.get("category", "")
     format_param = request.args.get("format", "")
     search_query = request.args.get("q", "").strip()
+    exclude_tags = request.args.getlist("exclude_tag")
+    exclude_tag_display = ",".join(exclude_tags) if exclude_tags else ""
 
-    query = _build_filtered_query(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod, filter_tag, filter_category, search_query)
+    query = _build_filtered_query(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod, filter_tags or filter_tag, filter_category, search_query, exclude_tags)
 
     # Le score IMOD est persisté (colonne imod_score) : le tri et la pagination
     # sont réalisés en SQL, évitant de charger et trier toute la collection en mémoire.
@@ -196,6 +237,31 @@ def _do_catalogue(catalogue_type, page, per_page=None):
         "filter_verified": filter_verified, "filter_unofficial": filter_unofficial,
         "filter_format": filter_format, "filter_imod": filter_imod, "org_slug": org_slug,
         "filter_tag": filter_tag, "filter_category": filter_category,
+        "exclude_tags": exclude_tag_display,
+        "filter_qs_all": _build_filter_qs(
+            filter_tag="", exclude_tags="",
+            filter_category=filter_category,
+            filter_verified=filter_verified, filter_unofficial=filter_unofficial,
+            filter_format=filter_format, filter_imod=filter_imod, org_slug=org_slug
+        ),
+        "filter_qs_no_exclude": _build_filter_qs(
+            filter_tag=filter_tag, exclude_tags="",
+            filter_category=filter_category,
+            filter_verified=filter_verified, filter_unofficial=filter_unofficial,
+            filter_format=filter_format, filter_imod=filter_imod, org_slug=org_slug
+        ),
+        "filter_qs_no_tag": _build_filter_qs(
+            filter_tag="", exclude_tags=exclude_tag_display,
+            filter_category=filter_category,
+            filter_verified=filter_verified, filter_unofficial=filter_unofficial,
+            filter_format=filter_format, filter_imod=filter_imod, org_slug=org_slug
+        ),
+        "filter_qs_no_category": _build_filter_qs(
+            filter_tag=filter_tag, exclude_tags=exclude_tag_display,
+            filter_category="",
+            filter_verified=filter_verified, filter_unofficial=filter_unofficial,
+            filter_format=filter_format, filter_imod=filter_imod, org_slug=org_slug
+        ),
         "search_query": search_query,
         "all_categories": all_category_names,
         **urls,
@@ -229,6 +295,51 @@ def catalogue_view(catalogue_type, page=1):
     return _do_catalogue(catalogue_type, page)
 
 
+@bp.route("/catalogue/<catalogue_type>/recherche-avancee")
+def advanced_search(catalogue_type):
+    if catalogue_type not in type_map:
+        return redirect(url_for("catalogue.catalogue_view", catalogue_type="donnees"))
+
+    if not is_catalogue_enabled(catalogue_type):
+        return redirect(url_for("catalogue.catalogue_view", catalogue_type="donnees"))
+
+    item_type = type_map.get(catalogue_type)
+
+    all_records = (
+        db.session.query(PredefinedTag, PredefinedTagCategory)
+        .join(PredefinedTagCategory, PredefinedTag.category_id == PredefinedTagCategory.id)
+        .join(ItemTag, ItemTag.tag == PredefinedTag.name)
+        .join(Item, Item.id == ItemTag.item_id)
+        .filter(Item.type == item_type)
+        .filter(Item.status == "published")
+        .order_by(PredefinedTagCategory.display_order, PredefinedTag.display_order)
+        .all()
+    )
+
+    seen_names = set()
+    tag_data_dict = {}
+    for tag, cat in all_records:
+        if tag.name not in seen_names:
+            seen_names.add(tag.name)
+            if cat.id not in tag_data_dict:
+                tag_data_dict[cat.id] = {"category": cat, "tags": []}
+            tag_data_dict[cat.id]["tags"].append(tag)
+
+    tag_data = sorted(tag_data_dict.values(), key=lambda x: x["category"].display_order)
+
+    meta = _CATALOGUE_META[catalogue_type]
+    search_query = request.args.get("q", "").strip()
+
+    return render_template(
+        "advanced_search.html",
+        title=f"A.N.A.N.A.S | Recherche avancée — {meta['title_prefix']}",
+        meta_description=f"Affinez votre recherche dans le catalogue avec des filtres par étiquettes — {meta['meta']}",
+        catalogue_type=catalogue_type,
+        tag_categories=tag_data,
+        search_query=search_query,
+    )
+
+
 @bp.route("/catalogue/<catalogue_type>/<int:page>/json")
 def catalogue_json_view(catalogue_type, page):
 
@@ -245,7 +356,7 @@ def catalogue_json_view(catalogue_type, page):
     filter_unofficial = request.args.get("unofficial") == "1"
     filter_format = request.args.get("format_level", "")
     org_slug = request.args.get("org")
-    filter_tag = request.args.get("tag", "")
+    filter_tag = request.args.getlist("tag") or request.args.get("tag", "")
     filter_category = request.args.get("category", "")
 
     query = _build_filtered_query(catalogue_type, filter_verified, filter_unofficial, filter_format, org_slug, filter_tag=filter_tag, filter_category=filter_category)

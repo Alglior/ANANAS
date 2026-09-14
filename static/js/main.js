@@ -32,6 +32,7 @@ var MainModule = (function () {
     const form = document.querySelector(".search-bar");
     const input = document.getElementById("site-search");
     const select = form ? form.querySelector(".search-catalogue-select") : null;
+    const advancedBtn = form ? form.querySelector(".search-advanced-btn") : null;
 
     if (!form || !input) return;
 
@@ -42,6 +43,14 @@ var MainModule = (function () {
       const catalogue = select ? select.value : "donnees";
       window.location.href = "/catalogue/" + catalogue + "?q=" + encodeURIComponent(term);
     });
+
+    if (advancedBtn) {
+      advancedBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const catalogue = select ? select.value : "donnees";
+        window.location.href = "/catalogue/" + catalogue + "/recherche-avancee" + (input.value.trim() ? "?q=" + encodeURIComponent(input.value.trim()) : "");
+      });
+    }
   }
 
   /* -------------------------------------------------------------------------- */

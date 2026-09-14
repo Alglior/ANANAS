@@ -139,8 +139,11 @@ def replication_fetch():
                 db.session.add(new_item)
                 db.session.flush()
 
+                predefined_names = {pt.name for pt in db.session.query(PredefinedTag.name).distinct().all()}
                 for tag_name in item_data.get("tags", []):
-                    db.session.add(ItemTag(item_id=new_item.id, tag=sanitize_html(tag_name)))
+                    cleaned = sanitize_html(tag_name)
+                    if cleaned and cleaned in predefined_names:
+                        db.session.add(ItemTag(item_id=new_item.id, tag=cleaned))
 
                 for group in item_data.get("grouped_categories", []):
                     cat_name = sanitize_html(group.get("category", ""))
