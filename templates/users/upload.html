@@ -92,7 +92,7 @@ for fname in json_files:
         "type": data.get("type", "geodonnee"),
         "format_type": data.get("format_type", ""),
         "description": data.get("description", ""),
-        "organization_id": data.get("organization_id", ""),
+        "organization_id": str(data.get("organization_id", "") or ""),
         "license_type": data.get("license_type", ""),
         "custom_license_text": data.get("custom_license_text", ""),
         "status": "draft",

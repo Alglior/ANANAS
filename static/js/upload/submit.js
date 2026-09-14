@@ -419,7 +419,7 @@ UploadModule.submit = (function () {
               type: data.type || '',
               format_type: data.format_type || '',
               description: data.description || '',
-              organization_id: data.organization_id || '',
+              organization_id: typeof data.organization_id === 'number' ? String(data.organization_id) : (data.organization_id || ''),
               license_type: data.license_type || '',
               custom_license_text: data.custom_license_text || '',
               pdf_magnet_link: data.pdf_magnet_link || '',

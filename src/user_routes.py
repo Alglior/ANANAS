@@ -375,7 +375,7 @@ def _parse_item_data(data):
     format_type = data.get("format_type", "").strip()
     description = data.get("description", "").strip()
     data_format_level = data.get("data_format_level", "individual").strip()
-    organization_id = data.get("organization_id", "").strip()
+    organization_id = str(data.get("organization_id", "") or "").strip()
     license_type = data.get("license_type", "").strip() or None
     custom_license_text = data.get("custom_license_text", "").strip() or None
     if license_type == "other" and custom_license_text:
