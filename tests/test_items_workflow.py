@@ -68,6 +68,47 @@ class TestUploadItem:
         assert item.data_year_start is None
         assert item.data_year_end is None
 
+    def test_create_item_with_size(self, user_client):
+        resp = self._create(user_client, size="850 Mo")
+        assert resp.status_code == 200
+        item = Item.query.get(resp.get_json()["id"])
+        assert item.size == "850 Mo"
+        assert item.to_dict()["size"] == "850 Mo"
+
+    def test_update_item_size(self, user_client):
+        created = self._create(user_client).get_json()
+        item_id = created["id"]
+        resp = user_client.put(
+            f"/api/upload/item/{item_id}",
+            json={"title": "Titre modifié", "size": "2.5 Go"},
+        )
+        assert resp.status_code == 200
+        assert Item.query.get(item_id).size == "2.5 Go"
+        # virgule acceptée et normalisée en point
+        resp = user_client.put(
+            f"/api/upload/item/{item_id}",
+            json={"title": "Titre modifié", "size": "2,5 Go"},
+        )
+        assert resp.status_code == 200
+        assert Item.query.get(item_id).size == "2.5 Go"
+
+    def test_create_item_size_constrained(self, user_client):
+        # unité non supportée => rejetée (stockée à None)
+        resp = self._create(user_client, size="100 Ko")
+        assert resp.status_code == 200
+        item = Item.query.get(resp.get_json()["id"])
+        assert item.size is None
+        # valeur négative => rejetée
+        resp = self._create(user_client, size="-5 Go")
+        assert resp.status_code == 200
+        item = Item.query.get(resp.get_json()["id"])
+        assert item.size is None
+        # texte libre => rejeté
+        resp = self._create(user_client, size="gros fichier")
+        assert resp.status_code == 200
+        item = Item.query.get(resp.get_json()["id"])
+        assert item.size is None
+
     def test_create_item_pack_with_zoom(self, user_client):
         resp = self._create(
             user_client,

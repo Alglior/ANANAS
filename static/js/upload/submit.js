@@ -266,6 +266,19 @@ UploadModule.submit = (function () {
       typeSelect.dispatchEvent(new Event('change'));
       if (formatTypeSelect) formatTypeSelect.value = d.format_type || '';
     }
+    var sizeInput = document.getElementById('size_value');
+    if (sizeInput && d.size) {
+      var sizeMatch = String(d.size).match(/^\s*([0-9]+(?:\.[0-9]+)?)\s*(mo|go|to|Mo|Go|To|MO|GO|TO)?\s*$/);
+      if (sizeMatch) {
+        sizeInput.value = sizeMatch[1];
+        var unit = (sizeMatch[2] || 'Go');
+        unit = unit.charAt(0).toUpperCase() + unit.slice(1).toLowerCase();
+        var unitSelect = document.getElementById('size_unit');
+        if (unitSelect) unitSelect.value = unit;
+      } else {
+        sizeInput.value = d.size;
+      }
+    }
     document.getElementById('description').value = d.description || '';
     var tagsInput = document.getElementById('tags');
     if (tagsInput && d.tags && d.tags.length > 0) {
@@ -439,6 +452,7 @@ UploadModule.submit = (function () {
               title: data.title || '',
               type: data.type || '',
               format_type: data.format_type || '',
+              size: data.size || '',
               description: data.description || '',
               organization_id: typeof data.organization_id === 'number' ? String(data.organization_id) : (data.organization_id || ''),
               license_type: data.license_type || '',

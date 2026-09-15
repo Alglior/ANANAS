@@ -2,6 +2,16 @@
  * A.N.A.N.A.S — Upload : payload builder + safeFetchJson utility
  */
 UploadModule.payload = (function () {
+  function buildSizePayload() {
+    var valueInput = document.getElementById('size_value');
+    var unitSelect = document.getElementById('size_unit');
+    if (!valueInput) return '';
+    var value = valueInput.value.trim();
+    if (!value) return '';
+    var unit = unitSelect ? unitSelect.value : 'Go';
+    return value + ' ' + unit;
+  }
+
   function buildItemPayload(magnetLinks, isDraft) {
     var typeSelect = document.getElementById('type');
     var formatTypeSelect = document.getElementById('format_type');
@@ -11,6 +21,7 @@ UploadModule.payload = (function () {
       title: document.getElementById('title').value.trim(),
       type: typeSelect.value,
       format_type: formatTypeSelect.value,
+      size: buildSizePayload(),
       description: document.getElementById('description').value.trim(),
       organization_id: document.getElementById('organization_id').value || '',
       license_type: document.getElementById('license_type').value || '',

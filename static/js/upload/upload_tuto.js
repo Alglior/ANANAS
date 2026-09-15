@@ -1,5 +1,5 @@
 (function() {
-  const TUTO_KEY = 'upload_tuto_done_v8';
+  const TUTO_KEY = 'upload_tuto_done_v10';
 
   function currentTab() {
     var active = document.querySelector('.upload-tab.active');
@@ -43,6 +43,12 @@
       target: '#type, #format_type',
       position: 'bottom',
       text: '<strong>Type et format</strong> — Choisissez la catégorie de contenu (géodonnées, carte, application) et le format technique du fichier.',
+    },
+    {
+      tab: 'publish',
+      target: '#size',
+      position: 'bottom',
+      text: '<strong>Taille du fichier</strong> — Saisissez un nombre puis choisissez l\'unité (Mo, Go ou To) dans le menu déroulant. Cette information sera affichée sur la fiche détaillée de l\'item.',
     },
     {
       tab: 'publish',

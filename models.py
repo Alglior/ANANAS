@@ -55,6 +55,7 @@ class Item(db.Model, TimestampMixin):
     description: Mapped[str]
     format_type: Mapped[str | None]
     magnet_link: Mapped[str]
+    size: Mapped[str | None] = mapped_column(default=None)
     image_path: Mapped[str] = mapped_column(default="/static/images/logo/ANANAS.png")
     owner_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     author_name: Mapped[str | None]
@@ -204,6 +205,7 @@ class Item(db.Model, TimestampMixin):
             "description": self.description,
             "format_type": self.format_type,
             "format": self.format_type,
+            "size": self.size or "",
             "magnet": self.magnet_link if validate_magnet_link(self.magnet_link) else "",
             "magnet_link": self.magnet_link if validate_magnet_link(self.magnet_link) else "",
             "magnet_links": self.metadata_json if isinstance(self.metadata_json, list) else [],

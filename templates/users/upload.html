@@ -91,6 +91,7 @@ for fname in json_files:
         "title": data.get("title", fname.replace(".json", "")),
         "type": data.get("type", "geodonnee"),
         "format_type": data.get("format_type", ""),
+        "size": data.get("size", ""),
         "description": data.get("description", ""),
         "organization_id": str(data.get("organization_id", "") or ""),
         "license_type": data.get("license_type", ""),
@@ -207,6 +208,18 @@ print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
                 <option value="tab">MapInfo TAB</option>
                 <option value="xml">XML</option>
               </select>
+            </div>
+
+            <div class="form-group" id="size">
+              <label for="size_value" class="label-with-help">Taille du fichier <span class="help-icon" data-tooltip="Poids approximatif du fichier principal. Saisissez un nombre puis choisissez l'unité (Mo, Go, To). Affiché sur la fiche détaillée de l'item.">?</span></label>
+              <div class="size-picker">
+                <input type="number" id="size_value" name="size_value" min="0" step="0.1" inputmode="decimal" placeholder="Ex : 850" />
+                <select id="size_unit" name="size_unit" class="size-unit-select">
+                  <option value="Mo">Mo</option>
+                  <option value="Go" selected>Go</option>
+                  <option value="To">To</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -713,7 +726,7 @@ print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
 {{ edit_data | tojson | safe }}
 </script>
 {% endif %}
-<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/upload_tuto.js') }}?v=8"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/upload_tuto.js') }}?v=10"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/upload.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/tabs.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/data-input.js') }}"></script>

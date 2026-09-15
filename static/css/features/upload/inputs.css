@@ -508,3 +508,47 @@
   font-size: 1.05rem;
   font-weight: 600;
 }
+
+/* Size picker (nombre + unité Mo/Go/To) */
+.size-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.size-picker input[type="number"] {
+  flex: 1;
+  min-width: 140px;
+  max-width: 240px;
+  padding: 0.7rem 1rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  background: var(--white);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  transition: border-color 0.2s ease;
+}
+
+.size-picker input[type="number"]:focus {
+  outline: none;
+  border-color: var(--mustard);
+}
+
+.size-unit-select {
+  width: 100px;
+  padding: 0.7rem 0.8rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  background: var(--white);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  transition: border-color 0.2s ease;
+}
+
+.size-unit-select:focus {
+  outline: none;
+  border-color: var(--mustard);
+}

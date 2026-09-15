@@ -2,6 +2,7 @@ import datetime
 import io
 import logging
 import os
+import re
 import secrets
 from base64 import b64encode
 from concurrent.futures import ThreadPoolExecutor
@@ -383,10 +384,26 @@ def _parse_year(value):
     return None
 
 
+def _parse_size(data):
+    size = data.get("size", "").strip() or None
+    if not size:
+        return None
+    size = re.sub(r"\s+", " ", size)
+    m = re.fullmatch(r"([0-9]+(?:[.,][0-9]+)?)\s*(mo|go|to)", size, re.IGNORECASE)
+    if not m:
+        return None
+    value = float(m.group(1).replace(",", "."))
+    if value <= 0:
+        return None
+    unit = m.group(2).capitalize()
+    return f"{value:g} {unit}"
+
+
 def _parse_item_data(data):
     title = data.get("title", "").strip()
     item_type = data.get("type", "geodonnee").strip()
     format_type = data.get("format_type", "").strip()
+    size = _parse_size(data)
     description = data.get("description", "").strip()
     data_format_level = data.get("data_format_level", "individual").strip()
     organization_id = str(data.get("organization_id", "") or "").strip()
@@ -404,7 +421,7 @@ def _parse_item_data(data):
     status = data.get("status", ITEM_STATUS_PUBLISHED).strip()
     if status not in (ITEM_STATUS_PUBLISHED, ITEM_STATUS_DRAFT):
         status = ITEM_STATUS_PUBLISHED
-    return title, item_type, format_type, description, data_format_level, organization_id, license_type, pdf_magnet_link, data_year_start, data_year_end, status
+    return title, item_type, format_type, size, description, data_format_level, organization_id, license_type, pdf_magnet_link, data_year_start, data_year_end, status
 
 
 def _process_tags(item, tags):
@@ -613,7 +630,7 @@ def upload_file():
 
 def _apply_item_payload(current_user, item, data, is_new=False):
     """Applique un payload item (création ou mise à jour) partagé entre create/update."""
-    title, item_type, format_type, description, data_format_level, organization_id, license_type, pdf_magnet_link, data_year_start, data_year_end, status = _parse_item_data(data)
+    title, item_type, format_type, size, description, data_format_level, organization_id, license_type, pdf_magnet_link, data_year_start, data_year_end, status = _parse_item_data(data)
     chunk_id = data.get("chunk_id")
 
     if not title:
@@ -635,6 +652,7 @@ def _apply_item_payload(current_user, item, data, is_new=False):
     item.title = title
     item.description = description or ""
     item.format_type = format_type or None
+    item.size = size
     item.organization_id = org_id
     item.data_format_level = data_format_level
     item.license_type = license_type or None

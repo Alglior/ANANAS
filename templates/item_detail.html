@@ -273,7 +273,7 @@
           <div class="buy-box">
             <div class="price-row">
               <span class="price-label">Taille du fichier</span>
-              <span class="price-value">{{ item.size }}</span>
+              <span class="price-value">{{ item.size or 'Non précisée' }}</span>
             </div>
             <div class="price-row">
               <span class="price-label">ID</span>
@@ -368,7 +368,7 @@
           </div>
           <div class="tech-item">
             <dt>Taille</dt>
-            <dd>{{ item.size }}</dd>
+            <dd>{{ item.size or 'Non précisée' }}</dd>
           </div>
           <div class="tech-item">
             <dt>ID</dt>
@@ -608,7 +608,7 @@
                 <img src="{{ rel.image|e }}" alt="{{ rel.title|e }}">
               </div>
               <span class="related-title">{{ rel.title|e }}</span>
-              <span class="related-info">{{ rel.format }} &middot; {{ rel.size }}</span>
+              <span class="related-info">{{ rel.format }} &middot; {{ rel.size or 'Taille non précisée' }}</span>
             </a>
           </li>
           {% endfor %}
