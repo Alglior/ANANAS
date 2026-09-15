@@ -369,6 +369,20 @@ def _get_predefined_tags():
     }
 
 
+def _parse_year(value):
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return None
+    try:
+        year = int(value)
+    except (TypeError, ValueError):
+        return None
+    if 1000 <= year <= 2100:
+        return year
+    return None
+
+
 def _parse_item_data(data):
     title = data.get("title", "").strip()
     item_type = data.get("type", "geodonnee").strip()
@@ -383,10 +397,14 @@ def _parse_item_data(data):
     elif license_type == "other":
         license_type = None
     pdf_magnet_link = data.get("pdf_magnet_link", "").strip() or None
+    data_year_start = _parse_year(data.get("data_year_start"))
+    data_year_end = _parse_year(data.get("data_year_end"))
+    if (data_year_start and data_year_end) and data_year_end < data_year_start:
+        data_year_start, data_year_end = data_year_end, data_year_start
     status = data.get("status", ITEM_STATUS_PUBLISHED).strip()
     if status not in (ITEM_STATUS_PUBLISHED, ITEM_STATUS_DRAFT):
         status = ITEM_STATUS_PUBLISHED
-    return title, item_type, format_type, description, data_format_level, organization_id, license_type, pdf_magnet_link, status
+    return title, item_type, format_type, description, data_format_level, organization_id, license_type, pdf_magnet_link, data_year_start, data_year_end, status
 
 
 def _process_tags(item, tags):
@@ -595,7 +613,7 @@ def upload_file():
 
 def _apply_item_payload(current_user, item, data, is_new=False):
     """Applique un payload item (création ou mise à jour) partagé entre create/update."""
-    title, item_type, format_type, description, data_format_level, organization_id, license_type, pdf_magnet_link, status = _parse_item_data(data)
+    title, item_type, format_type, description, data_format_level, organization_id, license_type, pdf_magnet_link, data_year_start, data_year_end, status = _parse_item_data(data)
     chunk_id = data.get("chunk_id")
 
     if not title:
@@ -621,6 +639,8 @@ def _apply_item_payload(current_user, item, data, is_new=False):
     item.data_format_level = data_format_level
     item.license_type = license_type or None
     item.pdf_magnet_link = pdf_magnet_link if validate_magnet_link(pdf_magnet_link) else None
+    item.data_year_start = data_year_start
+    item.data_year_end = data_year_end
     item.status = status
 
     _link_chunk(current_user, chunk_id, item.id)

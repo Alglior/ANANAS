@@ -168,21 +168,31 @@
 /* Filters nav */
 .filters {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     gap: 0.5rem;
     margin-bottom: 2rem;
     font-size: 0.9rem;
 }
 
-.filter-left,
-.filter-right {
+.filters-row {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
-.filter-right {
-    margin-left: auto;
+.filter-verification,
+.filter-format {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-format {
+    margin-left: 0;
+    flex-wrap: wrap;
 }
 
 .filters a {
@@ -207,7 +217,6 @@
 /* Category dropdown filter */
 .filter-category-dropdown {
     position: relative;
-    margin-left: 0.5rem;
 }
 
 .filter-category-btn {
@@ -315,6 +324,120 @@
 
 .filter-category-option.hidden {
     display: none;
+}
+
+/* Year dropdown filter */
+.filter-year-dropdown {
+    position: relative;
+}
+
+.filter-year-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 4px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--white);
+    color: var(--charcoal);
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+}
+
+.filter-year-btn:hover,
+.filter-year-btn[aria-expanded="true"] {
+    background: var(--mustard);
+    border-color: var(--mustard);
+    color: var(--charcoal);
+}
+
+.filter-year-arrow {
+    font-size: 0.7rem;
+    transition: transform 0.2s ease;
+}
+
+.filter-year-btn[aria-expanded="true"] .filter-year-arrow {
+    transform: rotate(180deg);
+}
+
+.filter-year-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 220px;
+    max-width: 280px;
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: 0 4px 16px var(--shadow-black-12);
+    z-index: 100;
+    overflow: hidden;
+}
+
+.filter-year-form {
+    padding: 0.75rem;
+}
+
+.filter-year-form .filter-year-label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--charcoal);
+}
+
+.filter-year-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font: inherit;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.filter-year-input:focus {
+    border-color: var(--mustard);
+}
+
+.filter-year-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+}
+
+.filter-year-apply {
+    padding: 0.35rem 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--white);
+    color: var(--charcoal);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.filter-year-apply:hover {
+    background: var(--mustard);
+    border-color: var(--mustard);
+    color: var(--charcoal);
+}
+
+.filter-year-clear {
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--color-muted);
+    text-decoration: none;
+}
+
+.filter-year-clear:hover {
+    color: var(--color-danger);
 }
 
 /* Report section */

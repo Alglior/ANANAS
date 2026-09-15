@@ -514,6 +514,10 @@
               <dt>Date de publication</dt>
               <dd>{{ item.created_at }}</dd>
             </div>
+            <div class="attribution-item">
+              <dt>Date des données</dt>
+              <dd>{% if item.data_year_start or item.data_year_end %}{% if item.data_year_start and item.data_year_end and item.data_year_start != item.data_year_end %}{{ item.data_year_start }}–{{ item.data_year_end }}{% else %}{{ item.data_year_start or item.data_year_end }}{% endif %}{% else %}Non précisée{% endif %}</dd>
+            </div>
           </dl>
           <p class="attribution-note">Cette donnée publiée par {% if item.owner_user_id %}<a href="/profile/{{ item.owner_user_id }}">{{ item.author|e }}</a>{% else %}{{ item.author|e }}{% endif %}{% if item.organization_name|e %} — <a href="/organizations/{{ item.organization_slug|e }}">{{ item.organization_name|e }}</a>{% endif %} peut être réutilisée librement dans vos propres projets SIG, analyses ou visualisations cartographiques. La mention « Source : A.N.A.N.A.S » est recommandée.</p>
         </div>

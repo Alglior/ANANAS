@@ -30,6 +30,10 @@
   {%- if filter_category %} — Filtre par catégorie : <strong>{{ filter_category }}</strong>
     <a href="?{{ filter_qs_no_category }}" class="filter-clear">&times; effacer</a>
   {%- endif %}
+
+  {%- if filter_year %} — Filtre par année : <strong>{{ filter_year }}</strong>
+    <a href="?{{ filter_qs_no_year }}" class="filter-clear">&times; effacer</a>
+  {%- endif %}
 </p>
     </div>
   </section>
@@ -43,34 +47,56 @@
       </nav>
 
 <nav class="filters" aria-label="Filtres de vérification">
-          <div class="filter-left">
-            <a href="{{ url_all }}"{% if not filter_verified and not filter_unofficial %} class="active"{% endif %}>Toutes les données</a>
-            <span class="separator">|</span>
-            <a href="{{ url_verified }}"{% if filter_verified %} class="active"{% endif %}>Données vérifiées</a>
-            <span class="separator">|</span>
-            <a href="{{ url_unofficial }}"{% if filter_unofficial %} class="active"{% endif %}>Données non officielles</a>
+          <div class="filters-row">
+            <div class="filter-verification">
+              <a href="{{ url_all }}"{% if not filter_verified and not filter_unofficial %} class="active"{% endif %}>Toutes les données</a>
+              <span class="separator">|</span>
+              <a href="{{ url_verified }}"{% if filter_verified %} class="active"{% endif %}>Données vérifiées</a>
+              <span class="separator">|</span>
+              <a href="{{ url_unofficial }}"{% if filter_unofficial %} class="active"{% endif %}>Données non officielles</a>
+            </div>
           </div>
-          <div class="filter-category-dropdown">
-            <button class="filter-category-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
-              <span class="filter-category-label">{% if filter_category %}{{ filter_category }}{% else %}Catégorie{% endif %}</span>
-              <span class="filter-category-arrow">&#9662;</span>
-            </button>
-            <div class="filter-category-menu" role="listbox" hidden>
-              <div class="filter-category-search-wrap">
-                <input class="filter-category-search" type="text" placeholder="Rechercher une catégorie..." autocomplete="off">
+          <div class="filters-row filter-dropdowns">
+            <div class="filter-category-dropdown">
+              <button class="filter-category-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span class="filter-category-label">{% if filter_category %}{{ filter_category }}{% else %}Catégorie{% endif %}</span>
+                <span class="filter-category-arrow">&#9662;</span>
+              </button>
+              <div class="filter-category-menu" role="listbox" hidden>
+                <div class="filter-category-search-wrap">
+                  <input class="filter-category-search" type="text" placeholder="Rechercher une catégorie..." autocomplete="off">
+                </div>
+                <ul class="filter-category-list">
+                  {% if filter_category %}
+                  <li role="option" class="filter-category-option filter-category-clear" data-value="">— Effacer le filtre —</li>
+                  {% endif %}
+                  {% for cat in all_categories %}
+                  <li role="option" class="filter-category-option{% if filter_category == cat %} active{% endif %}" data-value="{{ cat|e }}">{{ cat }}</li>
+                  {% endfor %}
+                </ul>
               </div>
-              <ul class="filter-category-list">
-                {% if filter_category %}
-                <li role="option" class="filter-category-option filter-category-clear" data-value="">— Effacer le filtre —</li>
-                {% endif %}
-                {% for cat in all_categories %}
-                <li role="option" class="filter-category-option{% if filter_category == cat %} active{% endif %}" data-value="{{ cat|e }}">{{ cat }}</li>
-                {% endfor %}
-              </ul>
+            </div>
+            <div class="filter-year-dropdown">
+              <button class="filter-year-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span class="filter-year-label">{% if filter_year %}Année : {{ filter_year }}{% else %}Année{% endif %}</span>
+                <span class="filter-year-arrow">&#9662;</span>
+              </button>
+              <div class="filter-year-menu" role="dialog" hidden>
+                <div class="filter-year-form">
+                  <label class="filter-year-label" for="filterYearInput">Année ou plage d'années</label>
+                  <input type="text" id="filterYearInput" class="filter-year-input" placeholder="Ex : 2015 ou 2010-2020" value="{{ filter_year }}" autocomplete="off">
+                  <div class="filter-year-actions">
+                    <button type="button" class="filter-year-apply">Filtrer</button>
+                    {% if filter_year %}
+                    <a href="?{{ filter_qs_no_year }}" class="filter-year-clear">Effacer</a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           {% if catalogue_type == "donnees" %}
-          <div class="filter-right">
+          <div class="filter-format">
             <a{% if filter_format == 'simple' %} class="active"{% endif %} href="{{ url_simple }}">Simples</a>
             <span class="separator">|</span>
             <a{% if filter_format == 'pack' %} class="active"{% endif %} href="{{ url_pack }}">Packs</a>

@@ -1,5 +1,5 @@
 (function() {
-  const TUTO_KEY = 'upload_tuto_done_v7';
+  const TUTO_KEY = 'upload_tuto_done_v8';
 
   function currentTab() {
     var active = document.querySelector('.upload-tab.active');
@@ -67,6 +67,12 @@
       target: '#license_type',
       position: 'bottom',
       text: '<strong>Licence</strong> — Choisissez les conditions d\'utilisation de vos données (CC-BY, Licence Ouverte, Domaine Public, etc.).',
+    },
+    {
+      tab: 'publish',
+      target: '#dataYearGroup',
+      position: 'bottom',
+      text: '<strong>Date des données</strong> — Indiquez l\'année de référence de vos données. Choisissez <strong>Année unique</strong> pour une seule année (ex : 2015) ou <strong>Plage d\'années</strong> pour une période allant d\'une année à une autre (ex : 2015 à 2020).',
     },
     {
       tab: 'publish',

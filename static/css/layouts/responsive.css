@@ -160,13 +160,13 @@
     font-size: 0.85rem;
   }
 
-  .filter-left,
-  .filter-right {
+  .filter-verification,
+  .filter-format {
     flex-wrap: wrap;
     gap: 0.35rem;
   }
 
-  .filter-right {
+  .filter-format {
     margin-left: 0;
   }
 
@@ -811,6 +811,11 @@
   }
 
   .filter-category-btn {
+    padding: 3px 8px;
+    font-size: 0.8rem;
+  }
+
+  .filter-year-btn {
     padding: 3px 8px;
     font-size: 0.8rem;
   }

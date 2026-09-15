@@ -37,7 +37,7 @@ class CatalogueTypeConverter(BaseConverter):
         return value
 
 
-def _build_filtered_query(catalogue_type, filter_verified=False, filter_unofficial=False, filter_format="", org_slug=None, filter_imod="", filter_tag=None, filter_category=None, search_query=None, exclude_tags=None):
+def _build_filtered_query(catalogue_type, filter_verified=False, filter_unofficial=False, filter_format="", org_slug=None, filter_imod="", filter_tag=None, filter_category=None, search_query=None, exclude_tags=None, filter_year=None):
 
     item_type = type_map.get(catalogue_type)
     if not item_type:
@@ -90,6 +90,25 @@ def _build_filtered_query(catalogue_type, filter_verified=False, filter_unoffici
         ).filter(PredefinedTagCategory.name == filter_category).subquery()
         query = query.filter(Item.id.in_(sub))
 
+    if filter_year:
+        import re
+        m = re.fullmatch(r"\s*(\d{4})\s*(?:[-\u2013]\s*(\d{4})\s*)?", str(filter_year))
+        if m:
+            year_start = int(m.group(1))
+            year_end = int(m.group(2)) if m.group(2) else year_start
+            if year_end < year_start:
+                year_start, year_end = year_end, year_start
+            query = query.filter(
+                db.and_(
+                    db.or_(Item.data_year_start.isnot(None), Item.data_year_end.isnot(None)),
+                    db.or_(Item.data_year_start.is_(None), Item.data_year_start <= year_end),
+                    db.or_(
+                        db.and_(Item.data_year_end.isnot(None), Item.data_year_end >= year_start),
+                        db.and_(Item.data_year_end.is_(None), Item.data_year_start >= year_start),
+                    ),
+                )
+            )
+
     query = query.options(
         subqueryload(Item.tags),
         subqueryload(Item.gallery_items),
@@ -103,7 +122,7 @@ def _build_filtered_query(catalogue_type, filter_verified=False, filter_unoffici
     return query
 
 
-def _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, _filter_imod=""):
+def _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, _filter_imod="", filter_year=None):
     base = f"/catalogue/{catalogue}"
 
     def _build_url(include_verif=False, include_unofficial=False, include_format=None):
@@ -114,6 +133,8 @@ def _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_
             parts.append("unofficial=1")
         if include_format:
             parts.append(f"format_level={include_format}")
+        if filter_year:
+            parts.append(f"year={filter_year}")
         if org_slug:
             parts.append(f"org={org_slug}")
         return base + ("?" + "&".join(parts) if parts else "")
@@ -130,7 +151,7 @@ def _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_
     }
 
 
-def _build_filter_qs(filter_tag="", exclude_tags=None, filter_category="", filter_verified=False, filter_unofficial=False, filter_format="", filter_imod="", org_slug=""):
+def _build_filter_qs(filter_tag="", exclude_tags=None, filter_category="", filter_verified=False, filter_unofficial=False, filter_format="", filter_imod="", org_slug="", filter_year=""):
     parts = []
     if filter_tag:
         for t in filter_tag.split(",") if isinstance(filter_tag, str) else [filter_tag]:
@@ -153,6 +174,8 @@ def _build_filter_qs(filter_tag="", exclude_tags=None, filter_category="", filte
         parts.append(f"format_level={filter_format}")
     if filter_imod:
         parts.append(f"imod={filter_imod}")
+    if filter_year:
+        parts.append(f"year={filter_year}")
     if org_slug:
         parts.append(f"org={org_slug}")
     return "&".join(parts)
@@ -180,12 +203,13 @@ def _do_catalogue(catalogue_type, page, per_page=None):
     filter_tags = request.args.getlist("tag")
     filter_tag = ",".join(filter_tags) if filter_tags else request.args.get("tag", "")
     filter_category = request.args.get("category", "")
+    filter_year = request.args.get("year", "")
     format_param = request.args.get("format", "")
     search_query = request.args.get("q", "").strip()
     exclude_tags = request.args.getlist("exclude_tag")
     exclude_tag_display = ",".join(exclude_tags) if exclude_tags else ""
 
-    query = _build_filtered_query(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod, filter_tags or filter_tag, filter_category, search_query, exclude_tags)
+    query = _build_filtered_query(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod, filter_tags or filter_tag, filter_category, search_query, exclude_tags, filter_year)
 
     # Le score IMOD est persisté (colonne imod_score) : le tri et la pagination
     # sont réalisés en SQL, évitant de charger et trier toute la collection en mémoire.
@@ -227,7 +251,7 @@ def _do_catalogue(catalogue_type, page, per_page=None):
     )
     all_category_names = [c.name for c in all_categories]
 
-    urls = _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod)
+    urls = _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod, filter_year)
     meta = _CATALOGUE_META[catalogue]
 
     data = {
@@ -237,30 +261,42 @@ def _do_catalogue(catalogue_type, page, per_page=None):
         "filter_verified": filter_verified, "filter_unofficial": filter_unofficial,
         "filter_format": filter_format, "filter_imod": filter_imod, "org_slug": org_slug,
         "filter_tag": filter_tag, "filter_category": filter_category,
+        "filter_year": filter_year,
         "exclude_tags": exclude_tag_display,
         "filter_qs_all": _build_filter_qs(
             filter_tag="", exclude_tags="",
             filter_category=filter_category,
             filter_verified=filter_verified, filter_unofficial=filter_unofficial,
-            filter_format=filter_format, filter_imod=filter_imod, org_slug=org_slug
+            filter_format=filter_format, filter_imod=filter_imod, org_slug=org_slug,
+            filter_year=filter_year
         ),
         "filter_qs_no_exclude": _build_filter_qs(
             filter_tag=filter_tag, exclude_tags="",
             filter_category=filter_category,
             filter_verified=filter_verified, filter_unofficial=filter_unofficial,
-            filter_format=filter_format, filter_imod=filter_imod, org_slug=org_slug
+            filter_format=filter_format, filter_imod=filter_imod, org_slug=org_slug,
+            filter_year=filter_year
         ),
         "filter_qs_no_tag": _build_filter_qs(
             filter_tag="", exclude_tags=exclude_tag_display,
             filter_category=filter_category,
             filter_verified=filter_verified, filter_unofficial=filter_unofficial,
-            filter_format=filter_format, filter_imod=filter_imod, org_slug=org_slug
+            filter_format=filter_format, filter_imod=filter_imod, org_slug=org_slug,
+            filter_year=filter_year
         ),
         "filter_qs_no_category": _build_filter_qs(
             filter_tag=filter_tag, exclude_tags=exclude_tag_display,
             filter_category="",
             filter_verified=filter_verified, filter_unofficial=filter_unofficial,
-            filter_format=filter_format, filter_imod=filter_imod, org_slug=org_slug
+            filter_format=filter_format, filter_imod=filter_imod, org_slug=org_slug,
+            filter_year=filter_year
+        ),
+        "filter_qs_no_year": _build_filter_qs(
+            filter_tag=filter_tag, exclude_tags=exclude_tag_display,
+            filter_category=filter_category,
+            filter_verified=filter_verified, filter_unofficial=filter_unofficial,
+            filter_format=filter_format, filter_imod=filter_imod, org_slug=org_slug,
+            filter_year=""
         ),
         "search_query": search_query,
         "all_categories": all_category_names,
@@ -358,8 +394,9 @@ def catalogue_json_view(catalogue_type, page):
     org_slug = request.args.get("org")
     filter_tag = request.args.getlist("tag") or request.args.get("tag", "")
     filter_category = request.args.get("category", "")
+    filter_year = request.args.get("year", "")
 
-    query = _build_filtered_query(catalogue_type, filter_verified, filter_unofficial, filter_format, org_slug, filter_tag=filter_tag, filter_category=filter_category)
+    query = _build_filtered_query(catalogue_type, filter_verified, filter_unofficial, filter_format, org_slug, filter_tag=filter_tag, filter_category=filter_category, filter_year=filter_year)
     items, page, total_items, total_pages, page_numbers = _paginate(query, page, per_page)
     result_items = [item.to_dict() for item in items]
 

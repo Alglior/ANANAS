@@ -66,6 +66,8 @@ class Item(db.Model, TimestampMixin):
     status: Mapped[str] = mapped_column(default="published")
     deleted_at: Mapped[datetime.datetime | None]
     license_type: Mapped[str | None] = mapped_column(default=None)
+    data_year_start: Mapped[int | None] = mapped_column(default=None)
+    data_year_end: Mapped[int | None] = mapped_column(default=None)
     image_magnets_pending: Mapped[bool] = mapped_column(default=False)
     image_magnets_total: Mapped[int] = mapped_column(default=0)
     image_magnet_links: Mapped[list | None] = mapped_column(JSON, server_default="[]", nullable=True)
@@ -232,6 +234,8 @@ class Item(db.Model, TimestampMixin):
             "review_count": len(self.ratings),
             "license_type": self.license_type,
             "data_format_level": self.data_format_level,
+            "data_year_start": self.data_year_start,
+            "data_year_end": self.data_year_end,
             "status": self.status,
             "download_levels": self._get_download_levels(),
             "image_magnets_pending": self.image_magnets_pending,

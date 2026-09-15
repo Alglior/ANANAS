@@ -56,6 +56,22 @@ UploadModule.formControls = (function () {
       });
     }
 
+    var yearModeInputs = document.querySelectorAll('input[name="data_year_mode"]');
+    var yearFieldsSingle = document.getElementById('yearFieldsSingle');
+    var yearFieldsRange = document.getElementById('yearFieldsRange');
+    if (yearModeInputs.length && yearFieldsSingle && yearFieldsRange) {
+      function syncYearMode() {
+        var mode = document.querySelector('input[name="data_year_mode"]:checked');
+        var isRange = mode && mode.value === 'range';
+        yearFieldsSingle.classList.toggle('hidden-section', isRange);
+        yearFieldsRange.classList.toggle('hidden-section', !isRange);
+      }
+      yearModeInputs.forEach(function(input) {
+        input.addEventListener('change', syncYearMode);
+      });
+      syncYearMode();
+    }
+
     var typeSelect = document.getElementById('type');
     var formatTypeSelect = document.getElementById('format_type');
     var dataTextInputGroup = document.getElementById('dataTextInputGroup');

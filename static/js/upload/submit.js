@@ -281,6 +281,26 @@ UploadModule.submit = (function () {
       }
     }
 
+    // Restore data year (single or range)
+    if (d.data_year_start || d.data_year_end) {
+      var hasRange = d.data_year_start && d.data_year_end && d.data_year_start !== d.data_year_end;
+      var yearMode = document.querySelector('input[name="data_year_mode"][value="' + (hasRange ? 'range' : 'single') + '"]');
+      if (yearMode) yearMode.checked = true;
+      var fieldsSingle = document.getElementById('yearFieldsSingle');
+      var fieldsRange = document.getElementById('yearFieldsRange');
+      if (fieldsRange) fieldsRange.classList.toggle('hidden-section', !hasRange);
+      if (fieldsSingle) fieldsSingle.classList.toggle('hidden-section', hasRange);
+      if (hasRange) {
+        var sr = document.getElementById('data_year_start_range');
+        var er = document.getElementById('data_year_end_range');
+        if (sr) sr.value = d.data_year_start;
+        if (er) er.value = d.data_year_end;
+      } else {
+        var ys = document.getElementById('data_year_start');
+        if (ys) ys.value = d.data_year_start;
+      }
+    }
+
     // Restore data format level
     if (d.data_format_level) {
       var radio = document.querySelector('input[name="data_format_level"][value="' + d.data_format_level + '"]');
@@ -426,6 +446,8 @@ UploadModule.submit = (function () {
               pdf_magnet_link: data.pdf_magnet_link || '',
               status: 'draft'
             };
+            if (data.data_year_start) payload.data_year_start = String(data.data_year_start);
+            if (data.data_year_end) payload.data_year_end = String(data.data_year_end);
             if (data.tags && data.tags.length > 0) {
               payload.tags = data.tags;
             }

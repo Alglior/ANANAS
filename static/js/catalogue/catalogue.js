@@ -1,8 +1,46 @@
 /* A.N.A.N.A.S — Catalogue */
 var CatalogueModule = (function () {
+  var openDropdowns = [];
+
+  function registerDropdown(container) {
+    var btn = container.querySelector("button[aria-haspopup]");
+    var menu = container.querySelector("[hidden]");
+    if (!btn || !menu) return null;
+    var handle = { btn: btn, menu: menu, container: container };
+    openDropdowns.push(handle);
+    return handle;
+  }
+
+  function closeDropdown(handle) {
+    if (!handle) return;
+    handle.btn.setAttribute("aria-expanded", "false");
+    handle.menu.hidden = true;
+  }
+
+  function closeOtherDropdowns(handle) {
+    openDropdowns.forEach(function (d) {
+      if (d !== handle) closeDropdown(d);
+    });
+  }
+
+  function isOpen(handle) {
+    return handle.btn.getAttribute("aria-expanded") === "true";
+  }
+
+  function toggleDropdown(handle) {
+    if (isOpen(handle)) {
+      closeDropdown(handle);
+    } else {
+      closeOtherDropdowns(handle);
+      handle.btn.setAttribute("aria-expanded", "true");
+      handle.menu.hidden = false;
+    }
+  }
+
   function init() {
     initExpandButtons();
     initCategoryFilter();
+    initYearFilter();
   }
 
   function initExpandButtons() {
@@ -30,21 +68,21 @@ var CatalogueModule = (function () {
     const container = document.querySelector(".filter-category-dropdown");
     if (!container) return;
 
-    const btn = container.querySelector(".filter-category-btn");
-    const menu = container.querySelector(".filter-category-menu");
+    const handle = registerDropdown(container);
+    if (!handle) return;
+
+    const btn = handle.btn;
+    const menu = handle.menu;
     const search = container.querySelector(".filter-category-search");
     const list = container.querySelector(".filter-category-list");
     const options = list ? list.querySelectorAll(".filter-category-option") : [];
 
-    if (!btn || !menu || !list) return;
-
     /* Toggle dropdown */
     btn.addEventListener("click", function (e) {
       e.stopPropagation();
-      const expanded = btn.getAttribute("aria-expanded") === "true";
-      btn.setAttribute("aria-expanded", String(!expanded));
-      menu.hidden = expanded;
-      if (!expanded && search) {
+      const wasOpen = isOpen(handle);
+      toggleDropdown(handle);
+      if (!wasOpen && search) {
         search.value = "";
         search.focus();
         filterOptions(search, options);
@@ -59,7 +97,7 @@ var CatalogueModule = (function () {
 
       search.addEventListener("keydown", function (e) {
         if (e.key === "Escape") {
-          closeDropdown(btn, menu);
+          closeDropdown(handle);
         }
         if (e.key === "Enter") {
           const visible = list.querySelector(
@@ -83,14 +121,75 @@ var CatalogueModule = (function () {
     /* Close on outside click */
     document.addEventListener("click", function (e) {
       if (!container.contains(e.target)) {
-        closeDropdown(btn, menu);
+        closeDropdown(handle);
       }
     });
 
     /* Close on Escape */
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && btn.getAttribute("aria-expanded") === "true") {
-        closeDropdown(btn, menu);
+      if (e.key === "Escape" && isOpen(handle)) {
+        closeDropdown(handle);
+      }
+    });
+  }
+
+  function initYearFilter() {
+    const container = document.querySelector(".filter-year-dropdown");
+    if (!container) return;
+
+    const handle = registerDropdown(container);
+    if (!handle) return;
+
+    const btn = handle.btn;
+    const input = container.querySelector(".filter-year-input");
+    const applyBtn = container.querySelector(".filter-year-apply");
+    const clearLink = container.querySelector(".filter-year-clear");
+
+    /* Toggle dropdown */
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      toggleDropdown(handle);
+      if (isOpen(handle) && input) input.focus();
+    });
+
+    function applyYear() {
+      if (!input) return;
+      var value = input.value.trim();
+      var url = new URL(window.location.href);
+      if (value) {
+        url.searchParams.set("year", value);
+      } else {
+        url.searchParams.delete("year");
+      }
+      url.searchParams.delete("page");
+      window.location.href = url.toString();
+    }
+
+    if (applyBtn) {
+      applyBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        applyYear();
+      });
+    }
+
+    if (input) {
+      input.addEventListener("keydown", function (e) {
+        e.stopPropagation();
+        if (e.key === "Enter") applyYear();
+      });
+    }
+
+    /* Close on outside click */
+    document.addEventListener("click", function (e) {
+      if (!container.contains(e.target)) {
+        closeDropdown(handle);
+      }
+    });
+
+    /* Close on Escape */
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && isOpen(handle)) {
+        closeDropdown(handle);
       }
     });
   }
@@ -113,11 +212,6 @@ var CatalogueModule = (function () {
     }
     url.searchParams.delete("page");
     window.location.href = url.toString();
-  }
-
-  function closeDropdown(btn, menu) {
-    btn.setAttribute("aria-expanded", "false");
-    menu.hidden = true;
   }
 
   return { init: init };

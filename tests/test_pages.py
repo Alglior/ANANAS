@@ -111,6 +111,33 @@ class TestCatalogueJSON:
         resp = client.get("/catalogue/donnees?tag=filtre-tag&format=json")
         assert resp.get_json()["total_items"] >= 1
 
+    def test_catalogue_year_filter(self, client, seeded):
+        from app import db
+        from models import Item
+        item = db.session.get(Item, 1)
+        item.data_year_start = 2015
+        item.data_year_end = 2020
+        db.session.add(item)
+        db.session.commit()
+        resp = client.get("/catalogue/donnees?year=2017&format=json")
+        assert resp.get_json()["total_items"] >= 1
+        resp = client.get("/catalogue/donnees?year=2025&format=json")
+        assert resp.get_json()["total_items"] == 0
+        resp = client.get("/catalogue/donnees?year=2010-2016&format=json")
+        assert resp.get_json()["total_items"] >= 1
+        # item 2 (single year, end None) should only match its own year
+        item2 = db.session.get(Item, 2)
+        item2.data_year_start = 2018
+        item2.data_year_end = None
+        db.session.add(item2)
+        db.session.commit()
+        resp = client.get("/catalogue/donnees?year=2018&format=json")
+        assert resp.get_json()["total_items"] >= 1
+        # range excluding item2's year
+        resp = client.get("/catalogue/donnees?year=2019-2025&format=json")
+        data = resp.get_json()
+        assert all(it["data_year_start"] != 2018 for it in data["items"])
+
 
 class TestDownloads:
     def test_magnets_download(self, client, seeded):

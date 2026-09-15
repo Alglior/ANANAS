@@ -40,6 +40,34 @@ class TestUploadItem:
         resp = self._create(user_client, data_format_level="simple", magnet_link="javascript:alert(1)")
         assert resp.status_code == 400
 
+    def test_create_item_with_single_year(self, user_client):
+        resp = self._create(user_client, data_year_start="2015")
+        assert resp.status_code == 200
+        item = Item.query.get(resp.get_json()["id"])
+        assert item.data_year_start == 2015
+        assert item.data_year_end is None
+
+    def test_create_item_with_year_range(self, user_client):
+        resp = self._create(user_client, data_year_start="2015", data_year_end="2020")
+        assert resp.status_code == 200
+        item = Item.query.get(resp.get_json()["id"])
+        assert item.data_year_start == 2015
+        assert item.data_year_end == 2020
+
+    def test_create_item_with_reversed_year_range(self, user_client):
+        resp = self._create(user_client, data_year_start="2020", data_year_end="2015")
+        assert resp.status_code == 200
+        item = Item.query.get(resp.get_json()["id"])
+        assert item.data_year_start == 2015
+        assert item.data_year_end == 2020
+
+    def test_create_item_with_invalid_years_ignored(self, user_client):
+        resp = self._create(user_client, data_year_start="abc", data_year_end="")
+        assert resp.status_code == 200
+        item = Item.query.get(resp.get_json()["id"])
+        assert item.data_year_start is None
+        assert item.data_year_end is None
+
     def test_create_item_pack_with_zoom(self, user_client):
         resp = self._create(
             user_client,

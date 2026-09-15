@@ -18,6 +18,17 @@ UploadModule.payload = (function () {
       pdf_magnet_link: (document.getElementById('pdf_magnet_link') || {}).value || '',
     };
 
+    var yearMode = document.querySelector('input[name="data_year_mode"]:checked');
+    if (yearMode && yearMode.value === 'range') {
+      var startRange = document.getElementById('data_year_start_range');
+      var endRange = document.getElementById('data_year_end_range');
+      if (startRange && startRange.value) payload.data_year_start = startRange.value;
+      if (endRange && endRange.value) payload.data_year_end = endRange.value;
+    } else {
+      var yearSingle = document.getElementById('data_year_start');
+      if (yearSingle && yearSingle.value) payload.data_year_start = yearSingle.value;
+    }
+
     if (isDraft) {
       payload.status = 'draft';
     }

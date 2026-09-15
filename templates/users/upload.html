@@ -99,6 +99,12 @@ for fname in json_files:
         "tags": data.get("tags", []),
     }
 
+    # ── Date des données (année unique ou plage d'années) ──
+    if data.get("data_year_start"):
+        payload["data_year_start"] = str(data.get("data_year_start"))
+    if data.get("data_year_end"):
+        payload["data_year_end"] = str(data.get("data_year_end"))
+
     # ── data_format_level + Magnet links ──
     dfl = data.get("data_format_level", "simple")
     payload["data_format_level"] = dfl
@@ -259,6 +265,30 @@ print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
               <option value="public-domain">Domaine Public</option>
               <option value="other">Autre (préciser)</option>
             </select>
+          </div>
+
+          <div class="form-group" id="dataYearGroup">
+            <label class="label-with-help">Date des données <span class="help-icon" data-tooltip="Indiquez l'année de référence de vos données, ou une plage d'années (ex : 2015, ou 2015-2020).">?</span></label>
+            <div class="year-picker">
+              <div class="year-picker-mode">
+                <label class="radio-label">
+                  <input type="radio" name="data_year_mode" value="single" checked>
+                  <span class="radio-text">Année unique</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="data_year_mode" value="range">
+                  <span class="radio-text">Plage d'années</span>
+                </label>
+              </div>
+              <div class="year-picker-fields" id="yearFieldsSingle">
+                <input type="number" id="data_year_start" name="data_year_start" min="1000" max="2100" inputmode="numeric" placeholder="Ex : 2015" />
+              </div>
+              <div class="year-picker-fields hidden-section" id="yearFieldsRange">
+                <input type="number" id="data_year_start_range" name="data_year_start_range" min="1000" max="2100" inputmode="numeric" placeholder="Année de début" />
+                <span class="year-picker-sep">à</span>
+                <input type="number" id="data_year_end_range" name="data_year_end_range" min="1000" max="2100" inputmode="numeric" placeholder="Année de fin" />
+              </div>
+            </div>
           </div>
 
           <div class="form-group hidden-section" id="licenseOtherGroup">
@@ -683,7 +713,7 @@ print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
 {{ edit_data | tojson | safe }}
 </script>
 {% endif %}
-<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/upload_tuto.js') }}?v=7"></script>
+<script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/upload_tuto.js') }}?v=8"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/upload.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/tabs.js') }}"></script>
 <script nonce="{{ csp_nonce }}" src="{{ url_for('static', filename='js/upload/data-input.js') }}"></script>
