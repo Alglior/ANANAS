@@ -123,6 +123,7 @@
 
 .search-bar input {
   flex: 1;
+  min-width: 0;
   border: none;
   border-radius: 0;
   padding: 1rem 1.5rem 1rem 1rem;
