@@ -245,10 +245,43 @@ def download_image_from_magnet(magnet_link, on_progress=None):
     return data, ext
 
 
+def _cache_file_in_use(cache_path, exclude_item_id):
+    """Vérifie si un fichier de cache image est encore référencé par un autre item."""
+    stem = cache_path.name
+    prefix = "/static/cache/img/" + stem + "."
+    if Item.query.filter(
+        Item.id != exclude_item_id,
+        Item.image_path.like(prefix + "%"),
+    ).first():
+        return True
+    if ItemGallery.query.filter(
+        ItemGallery.item_id != exclude_item_id,
+        ItemGallery.src.like(prefix + "%"),
+    ).first():
+        return True
+    return False
+
+
+def _magnet_cache_in_use(magnet, cache_path, exclude_item_id):
+    """Vérifie si un magnet (et son fichier de cache) est encore utilisé par un autre item."""
+    if _cache_file_in_use(cache_path, exclude_item_id):
+        return True
+    if ItemImageJob.query.filter(
+        ItemImageJob.item_id != exclude_item_id,
+        ItemImageJob.magnet_link == magnet,
+    ).first():
+        return True
+    return False
+
+
 def delete_item_cached_images(item):
-    """Supprime les fichiers images en cache pour un item (gallerie + image principale)."""
-    from pathlib import Path
+    """Supprime les fichiers images en cache pour un item (gallerie + image principale).
+
+    Le cache étant partagé entre les items qui utilisent le même lien Magnet, un
+    fichier n'est supprimé que si aucun autre item ne le référence encore.
+    """
     deleted = 0
+    skipped = 0
     magnets = set()
 
     for gallery in item.gallery_items:
@@ -264,6 +297,9 @@ def delete_item_cached_images(item):
     for magnet in magnets:
         p = _cache_path(magnet)
         if p.exists():
+            if _magnet_cache_in_use(magnet, p, item.id):
+                skipped += 1
+                continue
             p.unlink()
             deleted += 1
 
@@ -271,11 +307,16 @@ def delete_item_cached_images(item):
         stem = Path(item.image_path).stem
         fp = CACHE_DIR / stem
         if fp.exists():
-            fp.unlink()
-            deleted += 1
+            if _cache_file_in_use(fp, item.id):
+                skipped += 1
+            else:
+                fp.unlink()
+                deleted += 1
 
     if deleted:
         logger.info("delete_item_cached_images: removed %d file(s) for item %s", deleted, item.id)
+    if skipped:
+        logger.info("delete_item_cached_images: kept %d shared cache file(s) for item %s", skipped, item.id)
     return deleted
 
 
