@@ -975,3 +975,36 @@ def list_publications():
         "total_items": total,
         "page_numbers": page_numbers,
     })
+
+
+@bp.route("/api/upload/publications/verify", methods=["POST"])
+@login_required
+def verify_all_publications():
+    current_user = get_current_user()
+    if not current_user.is_admin:
+        return jsonify({"error": "Non autorisé"}), 403
+
+    publications = Item.query.filter_by(
+        owner_user_id=current_user.id,
+        status=ITEM_STATUS_PUBLISHED,
+    ).all()
+
+    if not publications:
+        return jsonify({"error": "Aucune publication à vérifier"}), 400
+
+    try:
+        now = datetime.datetime.now()
+        updated = 0
+        for item in publications:
+            if item.verification_status != "verified":
+                item.verification_status = "verified"
+                item.verifier_user_id = current_user.id
+                item.verified_at = now
+                item.refresh_imod_cache()
+                updated += 1
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Failed to verify all publications")
+        return jsonify({"error": "Erreur lors de la vérification"}), 500
+    return jsonify({"status": "verified", "count": updated})

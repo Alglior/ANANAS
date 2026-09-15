@@ -264,6 +264,34 @@ UploadModule.history = (function () {
         return;
       }
 
+      var verifyAllBtn = e.target.closest('.verify-all-publications-btn');
+      if (verifyAllBtn) {
+        e.preventDefault();
+        showConfirm(
+          'V\u00e9rifier toutes vos publications ?<br><small>Toutes vos publications seront marqu\u00e9es comme \u00ab v\u00e9rifi\u00e9es \u00bb dans le catalogue.</small>',
+          function() {
+            fetch('/api/upload/publications/verify', {
+              method: 'POST',
+              headers: { 'X-CSRF-Token': CsrfModule.getCsrfToken() },
+            }).then(function(resp) {
+              return resp.json().then(function(data) {
+                return { ok: resp.ok, status: resp.status, data: data };
+              });
+            }).then(function(result) {
+              if (result.ok) {
+                window.location.reload();
+              } else {
+                alert(result.data.error || 'Erreur ' + result.status);
+              }
+            }).catch(function() {
+              alert('Erreur de communication');
+            });
+          },
+          'V\u00e9rifier'
+        );
+        return;
+      }
+
       var delBtn = e.target.closest('.draft-delete-btn');
       if (delBtn) {
         e.preventDefault();
