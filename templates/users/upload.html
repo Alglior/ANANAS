@@ -448,6 +448,7 @@ print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
         </div>
         {% if drafts %}
         <div class="drafts-toolbar">
+          <button type="button" class="btn btn-sm publish-all-drafts-btn">Publier tous les brouillons</button>
           <button type="button" class="btn btn-sm btn-outline delete-all-drafts-btn">Supprimer tous les brouillons</button>
         </div>
         <ul class="upload-history-list" id="drafts-list">
@@ -458,6 +459,7 @@ print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
               <span class="badge badge-draft">Brouillon</span>
               {{ draft.created_at.strftime('%d/%m/%Y %H:%M') }}
               <a href="/upload?edit={{ draft.id }}" class="btn btn-sm">Modifier</a>
+              <button type="button" class="btn btn-sm draft-publish-btn" data-id="{{ draft.id }}">Publier</button>
               <button type="button" class="btn btn-sm btn-outline draft-delete-btn" data-id="{{ draft.id }}">Supprimer</button>
             </span>
           </li>

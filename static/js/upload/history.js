@@ -12,7 +12,7 @@ UploadModule.history = (function () {
     return div.innerHTML;
   }
 
-  function showConfirm(message, onConfirm) {
+  function showConfirm(message, onConfirm, confirmLabel) {
     var overlay = document.createElement('div');
     overlay.className = 'confirm-overlay';
     overlay.innerHTML = [
@@ -20,7 +20,7 @@ UploadModule.history = (function () {
       '<p>' + message + '</p>',
       '<div class="confirm-actions">',
       '<button class="btn-cancel">Annuler</button>',
-      '<button class="btn-danger">Supprimer</button>',
+      '<button class="btn-danger">' + (confirmLabel || 'Supprimer') + '</button>',
       '</div>',
       '</div>'
     ].join('');
@@ -71,6 +71,7 @@ UploadModule.history = (function () {
         '<span class="badge badge-draft">Brouillon</span>' +
         ' ' + d.created_at +
         ' <a href="/upload?edit=' + d.id + '" class="btn btn-sm">Modifier</a>' +
+        ' <button type="button" class="btn btn-sm draft-publish-btn" data-id="' + d.id + '">Publier</button>' +
         ' <button type="button" class="btn btn-sm btn-outline draft-delete-btn" data-id="' + d.id + '">Supprimer</button>' +
       '</span>' +
     '</li>';
@@ -235,6 +236,34 @@ UploadModule.history = (function () {
         return;
       }
 
+      var publishAllBtn = e.target.closest('.publish-all-drafts-btn');
+      if (publishAllBtn) {
+        e.preventDefault();
+        showConfirm(
+          'Publier tous les brouillons ?<br><small>Tous vos brouillons seront rendus visibles dans le catalogue public.</small>',
+          function() {
+            fetch('/api/upload/drafts/publish', {
+              method: 'POST',
+              headers: { 'X-CSRF-Token': CsrfModule.getCsrfToken() },
+            }).then(function(resp) {
+              return resp.json().then(function(data) {
+                return { ok: resp.ok, status: resp.status, data: data };
+              });
+            }).then(function(result) {
+              if (result.ok) {
+                window.location.reload();
+              } else {
+                alert(result.data.error || 'Erreur ' + result.status);
+              }
+            }).catch(function() {
+              alert('Erreur de communication');
+            });
+          },
+          'Publier'
+        );
+        return;
+      }
+
       var delBtn = e.target.closest('.draft-delete-btn');
       if (delBtn) {
         e.preventDefault();
@@ -242,6 +271,35 @@ UploadModule.history = (function () {
         showConfirm(
           'Mettre ce brouillon \u00e0 la corbeille ?<br><small>Il restera r\u00e9cup\u00e9rable pendant 7 jours.</small>',
           function() { sendDelete('/api/upload/item/' + draftId); }
+        );
+        return;
+      }
+
+      var pubBtn = e.target.closest('.draft-publish-btn');
+      if (pubBtn) {
+        e.preventDefault();
+        var pubId = pubBtn.getAttribute('data-id');
+        showConfirm(
+          'Publier ce brouillon ?<br><small>Il sera rendu visible dans le catalogue public.</small>',
+          function() {
+            fetch('/api/upload/item/' + pubId + '/publish', {
+              method: 'POST',
+              headers: { 'X-CSRF-Token': CsrfModule.getCsrfToken() },
+            }).then(function(resp) {
+              return resp.json().then(function(data) {
+                return { ok: resp.ok, status: resp.status, data: data };
+              });
+            }).then(function(result) {
+              if (result.ok) {
+                window.location.reload();
+              } else {
+                alert(result.data.error || 'Erreur ' + result.status);
+              }
+            }).catch(function() {
+              alert('Erreur de communication');
+            });
+          },
+          'Publier'
         );
         return;
       }

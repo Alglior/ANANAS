@@ -733,6 +733,34 @@ def delete_all_drafts():
     return jsonify({"status": "trashed"})
 
 
+@bp.route("/api/upload/drafts/publish", methods=["POST"])
+@login_required
+def publish_all_drafts():
+    current_user = get_current_user()
+    drafts = Item.query.filter_by(
+        owner_user_id=current_user.id,
+        status=ITEM_STATUS_DRAFT,
+    ).all()
+
+    if not drafts:
+        return jsonify({"error": "Aucun brouillon à publier"}), 400
+
+    try:
+        published_ids = []
+        for item in drafts:
+            item.status = ITEM_STATUS_PUBLISHED
+            item.refresh_imod_cache()
+            published_ids.append(item.id)
+            if item.image_magnets_pending and item.image_magnet_links:
+                _process_image_magnets_async(item.id, item.image_magnet_links)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Failed to publish all drafts")
+        return jsonify({"error": "Erreur lors de la publication"}), 500
+    return jsonify({"status": "published", "count": len(published_ids)})
+
+
 @bp.route("/api/upload/item/<int:item_id>", methods=["DELETE"])
 @login_required
 def delete_draft_item(item_id):
@@ -749,6 +777,26 @@ def delete_draft_item(item_id):
     item.deleted_at = datetime.datetime.now()
     db.session.commit()
     return jsonify({"status": "trashed"})
+
+
+@bp.route("/api/upload/item/<int:item_id>/publish", methods=["POST"])
+@login_required
+def publish_draft_item(item_id):
+    current_user = get_current_user()
+    item = Item.query.get_or_404(item_id)
+
+    if not user_owns_item_or_admin(current_user, item):
+        return jsonify({"error": "Non autorisé"}), 403
+
+    if item.status != ITEM_STATUS_DRAFT:
+        return jsonify({"error": "Seuls les brouillons peuvent être publiés"}), 400
+
+    item.status = ITEM_STATUS_PUBLISHED
+    item.refresh_imod_cache()
+    if item.image_magnets_pending and item.image_magnet_links:
+        _process_image_magnets_async(item.id, item.image_magnet_links)
+    db.session.commit()
+    return jsonify({"status": "published", "id": item.id})
 
 
 @bp.route("/api/upload/item/<int:item_id>/restore", methods=["POST"])
