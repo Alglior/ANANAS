@@ -506,11 +506,12 @@ print(f"\nTerminé : {created}/{len(json_files)} items créés")</pre>
           </button>
         </div>
         {% if publications %}
-        {% if current_user.is_admin %}
         <div class="drafts-toolbar">
+          <button type="button" class="btn btn-sm btn-outline delete-all-publications-btn">Supprimer toutes les publications</button>
+          {% if current_user.is_admin %}
           <button type="button" class="btn btn-sm verify-all-publications-btn">Tout vérifier (verified)</button>
+          {% endif %}
         </div>
-        {% endif %}
         <ul class="upload-history-list" id="publications-list">
           {% for item in publications %}
           <li class="upload-history-item">

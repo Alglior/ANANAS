@@ -236,6 +236,16 @@ UploadModule.history = (function () {
         return;
       }
 
+      var delAllPubsBtn = e.target.closest('.delete-all-publications-btn');
+      if (delAllPubsBtn) {
+        e.preventDefault();
+        showConfirm(
+          'Supprimer toutes vos publications ?<br><small>Elles ne seront plus visibles dans le catalogue et resteront r\u00e9cup\u00e9rables dans la corbeille pendant 7 jours.</small>',
+          function() { sendDelete('/api/upload/publications/all'); }
+        );
+        return;
+      }
+
       var publishAllBtn = e.target.closest('.publish-all-drafts-btn');
       if (publishAllBtn) {
         e.preventDefault();

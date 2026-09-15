@@ -733,6 +733,24 @@ def delete_all_drafts():
     return jsonify({"status": "trashed"})
 
 
+@bp.route("/api/upload/publications/all", methods=["DELETE"])
+@login_required
+def delete_all_publications():
+    current_user = get_current_user()
+    now = datetime.datetime.now()
+    try:
+        Item.query.filter_by(
+            owner_user_id=current_user.id,
+            status=ITEM_STATUS_PUBLISHED,
+        ).update({"status": ITEM_STATUS_TRASHED, "deleted_at": now})
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.exception("Failed to bulk-delete publications")
+        return jsonify({"error": "Erreur lors de la suppression"}), 500
+    return jsonify({"status": "trashed"})
+
+
 @bp.route("/api/upload/drafts/publish", methods=["POST"])
 @login_required
 def publish_all_drafts():
