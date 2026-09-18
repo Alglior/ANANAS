@@ -64,6 +64,16 @@ def _parse_int_year(value):
     return None
 
 
+_VERIFICATION_STATUSES = {"verified", "unofficial", "rejected"}
+
+
+def _parse_verification_status(value):
+    """Réplique le statut de vérification distant en le bornant aux valeurs connues."""
+    if isinstance(value, str) and value in _VERIFICATION_STATUSES:
+        return value
+    return "unofficial"
+
+
 def _is_unsafe_host(hostname):
     """Rejette les hôtes résolvant vers des adresses privées/réservées (anti-SSRF)."""
     import socket
@@ -223,7 +233,10 @@ def replication_fetch():
                     data_year_start=_parse_int_year(item_data.get("data_year_start")),
                     data_year_end=_parse_int_year(item_data.get("data_year_end")),
                     created_at=_parse_date(item_data.get("created_at")),
-                    verification_status="unofficial", status="published",
+                    verification_status=_parse_verification_status(item_data.get("verification_status")),
+                    verified_at=_parse_date(item_data.get("verified_at")),
+                    verification_notes=_plain_text(item_data.get("verification_notes")) if item_data.get("verification_notes") else None,
+                    status="published",
                 )
                 db.session.add(new_item)
                 db.session.flush()
