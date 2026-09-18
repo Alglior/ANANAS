@@ -93,21 +93,28 @@ def _is_unsafe_host(hostname):
 
 
 def _normalize_image_magnets(item_data):
-    """Reconstruit une liste normalisée {magnet_link, label} depuis l'export distant."""
+    """Reconstruit une liste normalisée {magnet_link, label} depuis l'export distant.
+
+    Déduplique par lien magnet : un même aimant ne doit produire qu'une seule
+    image en galerie (évite les doublons hérités d'un item distant déjà pollué).
+    """
     raw = item_data.get("image_magnets")
     magnets = []
+    seen = set()
     if isinstance(raw, list):
         for entry in raw:
             if isinstance(entry, dict):
                 magnet = (entry.get("magnet_link") or "").strip()
-                if magnet:
+                if magnet and magnet not in seen:
+                    seen.add(magnet)
                     magnets.append({
                         "magnet_link": magnet,
                         "label": (entry.get("label") or "").strip() or "Image",
                     })
             elif isinstance(entry, str):
                 magnet = entry.strip()
-                if magnet:
+                if magnet and magnet not in seen:
+                    seen.add(magnet)
                     magnets.append({"magnet_link": magnet, "label": "Image"})
     return magnets
 

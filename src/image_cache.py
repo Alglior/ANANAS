@@ -332,13 +332,16 @@ def process_image_magnets(item_id, image_magnets):
 
     try:
         ItemImageJob.query.filter_by(item_id=item_id).delete()
+        ItemGallery.query.filter_by(item_id=item_id, media_type="image").delete()
         jobs = []
+        seen_magnets = set()
         for i, img in enumerate(image_magnets):
             if not isinstance(img, dict):
                 continue
             magnet = (img.get("magnet_link") or "").strip()
-            if not magnet:
+            if not magnet or magnet in seen_magnets:
                 continue
+            seen_magnets.add(magnet)
             jobs.append(ItemImageJob(
                 item_id=item_id, idx=i, magnet_link=magnet,
                 label=(img.get("label") or "").strip() or "Image",
