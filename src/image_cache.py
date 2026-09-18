@@ -320,6 +320,35 @@ def delete_item_cached_images(item):
     return deleted
 
 
+def normalize_image_magnets(image_magnets):
+    """Normalise une liste d'aimants d'image et la déduplique par lien magnet.
+
+    Un même lien magnet ne peut produire qu'une seule image : une entrée en
+    double dans la liste ne doit jamais générer de doublon de galerie.
+    """
+    if not isinstance(image_magnets, list):
+        return []
+    magnets = []
+    seen = set()
+    for entry in image_magnets:
+        if isinstance(entry, dict):
+            magnet = (entry.get("magnet_link") or "").strip()
+            if not magnet or magnet in seen:
+                continue
+            seen.add(magnet)
+            magnets.append({
+                "magnet_link": magnet,
+                "label": (entry.get("label") or "").strip() or "Image",
+            })
+        elif isinstance(entry, str):
+            magnet = entry.strip()
+            if not magnet or magnet in seen:
+                continue
+            seen.add(magnet)
+            magnets.append({"magnet_link": magnet, "label": "Image"})
+    return magnets
+
+
 def process_image_magnets(item_id, image_magnets):
     lock = _acquire_item_processing_lock(item_id)
     if lock is None:
@@ -334,17 +363,11 @@ def process_image_magnets(item_id, image_magnets):
         ItemImageJob.query.filter_by(item_id=item_id).delete()
         ItemGallery.query.filter_by(item_id=item_id, media_type="image").delete()
         jobs = []
-        seen_magnets = set()
-        for i, img in enumerate(image_magnets):
-            if not isinstance(img, dict):
-                continue
-            magnet = (img.get("magnet_link") or "").strip()
-            if not magnet or magnet in seen_magnets:
-                continue
-            seen_magnets.add(magnet)
+        for i, img in enumerate(normalize_image_magnets(image_magnets)):
+            magnet = img.get("magnet_link", "")
             jobs.append(ItemImageJob(
                 item_id=item_id, idx=i, magnet_link=magnet,
-                label=(img.get("label") or "").strip() or "Image",
+                label=img.get("label") or "Image",
                 status="pending", progress=0.0,
             ))
         for j in jobs:

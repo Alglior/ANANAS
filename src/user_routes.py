@@ -15,7 +15,7 @@ from app import db, limiter
 from src.shared import login_required, get_current_user, user_owns_item_or_admin, ITEMS_PER_PAGE, validate_password_strength, _paginate, ALLOWED_ITEM_TYPES, ITEM_TYPE_LABELS, user_belongs_to_org, ITEM_STATUS_DRAFT, ITEM_STATUS_PUBLISHED, ITEM_STATUS_TRASHED
 from src.admin import is_catalogue_enabled
 from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, ItemGallery, ItemTag, PredefinedTag, PredefinedTagCategory, Report
-from src.image_cache import delete_item_cached_images
+from src.image_cache import delete_item_cached_images, normalize_image_magnets
 from utils.security import sanitize_html, validate_magnet_link, validate_external_url
 
 logger = logging.getLogger(__name__)
@@ -672,11 +672,12 @@ def _apply_item_payload(current_user, item, data, is_new=False):
         return err
     image_magnets = data.get("image_magnets", [])
     if image_magnets:
-        item.image_magnet_links = image_magnets
+        unique_magnets = normalize_image_magnets(image_magnets)
+        item.image_magnet_links = unique_magnets
         if not is_new:
             ItemGallery.query.filter_by(item_id=item.id, media_type="image").delete()
         item.image_magnets_pending = True
-        item.image_magnets_total = len(image_magnets)
+        item.image_magnets_total = len(unique_magnets)
     elif not is_new:
         item.image_magnets_pending = False
         item.image_magnets_total = 0

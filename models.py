@@ -277,7 +277,15 @@ class Item(db.Model, TimestampMixin):
 
     def _build_gallery_dict(self):
         result = []
+        seen_image_magnets = set()
         for g in self.gallery_items:
+            magnet = None
+            if g.media_type == "image" and isinstance(g.data_json, dict):
+                magnet = (g.data_json.get("magnet_link") or "").strip()
+                if magnet:
+                    if magnet in seen_image_magnets:
+                        continue
+                    seen_image_magnets.add(magnet)
             entry = {"type": g.media_type, "label": sanitize_value(g.label) if isinstance(g.label, str) else g.label}
             if g.src:
                 entry["src"] = sanitize_value(g.src) if isinstance(g.src, str) else g.src
@@ -287,14 +295,27 @@ class Item(db.Model, TimestampMixin):
         return result
 
     def _get_image_magnets(self):
+        seen = set()
         magnets = []
         for g in self.gallery_items:
             if g.media_type == "image" and isinstance(g.data_json, dict):
-                magnet = g.data_json.get("magnet_link", "")
-                if magnet:
+                magnet = (g.data_json.get("magnet_link") or "").strip()
+                if magnet and magnet not in seen:
+                    seen.add(magnet)
                     magnets.append({"magnet_link": magnet, "label": g.label or ""})
         if not magnets and isinstance(self.image_magnet_links, list):
-            magnets = list(self.image_magnet_links)
+            for entry in self.image_magnet_links:
+                if isinstance(entry, dict):
+                    magnet = (entry.get("magnet_link") or "").strip()
+                    label = (entry.get("label") or "").strip()
+                elif isinstance(entry, str):
+                    magnet = entry.strip()
+                    label = ""
+                else:
+                    magnet, label = "", ""
+                if magnet and magnet not in seen:
+                    seen.add(magnet)
+                    magnets.append({"magnet_link": magnet, "label": label})
         return magnets
 
     @staticmethod

@@ -98,25 +98,10 @@ def _normalize_image_magnets(item_data):
     Déduplique par lien magnet : un même aimant ne doit produire qu'une seule
     image en galerie (évite les doublons hérités d'un item distant déjà pollué).
     """
-    raw = item_data.get("image_magnets")
-    magnets = []
-    seen = set()
-    if isinstance(raw, list):
-        for entry in raw:
-            if isinstance(entry, dict):
-                magnet = (entry.get("magnet_link") or "").strip()
-                if magnet and magnet not in seen:
-                    seen.add(magnet)
-                    magnets.append({
-                        "magnet_link": magnet,
-                        "label": (entry.get("label") or "").strip() or "Image",
-                    })
-            elif isinstance(entry, str):
-                magnet = entry.strip()
-                if magnet and magnet not in seen:
-                    seen.add(magnet)
-                    magnets.append({"magnet_link": magnet, "label": "Image"})
-    return magnets
+    from src.image_cache import normalize_image_magnets
+    if not isinstance(item_data.get("image_magnets"), list):
+        return []
+    return normalize_image_magnets(item_data.get("image_magnets"))
 
 
 def _fetch_json(url):
