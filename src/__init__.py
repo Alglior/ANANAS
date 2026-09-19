@@ -24,9 +24,10 @@ def register_all_blueprints(app):
     from src.apropos_routes import bp as apropos_bp
     from src.changelog_routes import bp as changelog_bp
     from src.rapport_routes import bp as rapport_bp
+    from src.sitemap_routes import bp as sitemap_bp
 
     for bp in (auth_bp, items_bp, interactions_bp, org_bp, admin_bp, user_bp,
-               contact_bp, privacy_bp, legal_bp, tos_bp, doc_bp, api_docs_bp, index_bp, apropos_bp, changelog_bp, rapport_bp):
+               contact_bp, privacy_bp, legal_bp, tos_bp, doc_bp, api_docs_bp, index_bp, apropos_bp, changelog_bp, rapport_bp, sitemap_bp):
         app.register_blueprint(bp)
 
 

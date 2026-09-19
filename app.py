@@ -7,7 +7,7 @@ from pathlib import Path
 
 from src.shared import Config, login_required, get_current_user
 
-from flask import Flask, render_template, redirect, url_for, request, session, jsonify, g, current_app
+from flask import Flask, render_template, redirect, url_for, request, session, jsonify, g, current_app, Response
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_wtf import CSRFProtect
 from flask_wtf.csrf import generate_csrf
@@ -160,6 +160,16 @@ def create_app(app_name="ANANAS"):
     @limiter.exempt
     def health_check():
         return {"status": "ok"}
+
+    @app.route("/robots.txt")
+    @limiter.exempt
+    def robots_txt():
+        return Response(
+            "User-agent: *\n"
+            "Allow: /\n"
+            f"Sitemap: {request.host_url.rstrip('/')}/sitemap.xml\n",
+            mimetype="text/plain",
+        )
 
     @app.route("/static/cache/img/<filename>")
     def serve_cached_image(filename):

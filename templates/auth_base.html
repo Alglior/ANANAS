@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 
+{% block extra_head %}
+<meta name="robots" content="noindex, nofollow" />
+{% endblock %}
+
 {% block content %}
 <main>
   <section class="auth-section" id="{{ section_id | default('auth') }}">

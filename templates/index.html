@@ -3,6 +3,19 @@
 {% block title %}{{ title }}{% endblock %}
 {% block meta_description %}{{ meta_description }}{% endblock %}
 
+{% block extra_head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": {{ get_setting('site_name') | tojson }},
+  "url": {{ request.url_root.rstrip('/') | tojson }},
+  "logo": {{ (request.url_root.rstrip('/') ~ get_setting('site_logo')) | tojson }},
+  "sameAs": [{% for m in mirrors %}{{ m.url | tojson }}{% if not loop.last %},{% endif %}{% endfor %}]
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <main>
 

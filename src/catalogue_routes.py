@@ -257,6 +257,7 @@ def _do_catalogue(catalogue_type, page, per_page=None):
     data = {
         "title": f"A.N.A.N.A.S | {meta['title_prefix']} — Page {page}",
         "meta_description": meta["meta"],
+        "canonical_url": request.url_root.rstrip("/") + f"/catalogue/{catalogue}",
         "catalogue_type": catalogue,
         "filter_verified": filter_verified, "filter_unofficial": filter_unofficial,
         "filter_format": filter_format, "filter_imod": filter_imod, "org_slug": org_slug,

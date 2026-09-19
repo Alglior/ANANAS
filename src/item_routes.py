@@ -232,6 +232,8 @@ def item_detail_view(item_id):
         "item_detail.html",
         title=f"A.N.A.N.A.S | {item.title}",
         meta_description=item.description[:160],
+        canonical_url=request.url_root.rstrip("/") + f"/catalogue/item/{item_id}",
+        og_image=item.image_path,
         current_user=current_user,
         related_items=[ri.to_dict() for ri in related_items],
         image_gallery=get_image_gallery(item),
@@ -294,6 +296,8 @@ def item_data_view(item_id):
         "item_detail.html",
         title=f"A.N.A.N.A.S | Données — {item.title}",
         meta_description=item.description[:160],
+        canonical_url=request.url_root.rstrip("/") + f"/catalogue/item/{item_id}",
+        og_image=item.image_path,
         current_user=current_user,
         related_items=[ri.to_dict() for ri in Item.query.filter(
             Item.format_type == item.format_type, Item.id != item_id
@@ -319,6 +323,8 @@ def item_gallery_view(item_id):
         "item_detail.html",
         title=f"A.N.A.N.A.S | Réutilisation — {item.title}",
         meta_description=item.description[:160],
+        canonical_url=request.url_root.rstrip("/") + f"/catalogue/item/{item_id}",
+        og_image=item.image_path,
         current_user=current_user,
         related_items=[ri.to_dict() for ri in Item.query.filter(
             Item.format_type == item.format_type, Item.id != item_id

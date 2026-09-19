@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 
+{% block extra_head %}
+<meta name="robots" content="noindex, nofollow" />
+{% endblock %}
+
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}

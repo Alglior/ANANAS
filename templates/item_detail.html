@@ -5,6 +5,38 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/features/upload/video-modal.css') }}" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": {{ item.title | tojson }},
+  "description": {{ item.description | tojson }},
+  "url": {{ canonical_url | default(request.url_root.rstrip('/') + request.path) | tojson }},
+  "identifier": {{ ('/catalogue/item/' ~ item.id) | tojson }},
+  "datePublished": {{ item.created_at | tojson }},
+  "inLanguage": "fr",
+  {% if item.license_type %}"license": {{ item.license_type | tojson }},{% endif %}
+  {% if item.author %}"author": {{ item.author | tojson }},{% endif %}
+  {% if item.organization_name %}"creator": {"@type": "Organization", "name": {{ item.organization_name | tojson }}},{% endif %}
+  "publisher": {
+    "@type": "Organization",
+    "name": {{ get_setting('site_name') | tojson }},
+    "url": {{ request.url_root.rstrip('/') | tojson }}
+  }
+  {% if item.tags %},"keywords": {{ item.tags | tojson }}{% endif %}
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Accueil", "item": {{ request.url_root.rstrip('/') | tojson }}},
+    {"@type": "ListItem", "position": 2, "name": "Catalogue", "item": {{ (request.url_root.rstrip('/') ~ item.catalogue_link) | tojson }}},
+    {"@type": "ListItem", "position": 3, "name": {{ item.title | tojson }}, "item": {{ canonical_url | default(request.url_root.rstrip('/') + request.path) | tojson }}}
+  ]
+}
+</script>
 {% endblock %}
 
 

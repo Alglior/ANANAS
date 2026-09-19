@@ -4,6 +4,7 @@
 {% block meta_description %}{{ meta_description }}{% endblock %}
 
 {% block extra_head %}
+<meta name="robots" content="noindex, nofollow" />
 <link rel="stylesheet" href="{{ url_for('static', filename='css/features/upload-page.css') }}" />
 {% endblock %}
 
