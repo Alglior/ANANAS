@@ -3,14 +3,28 @@
   <head>
     {% set _site_base = request.url_root.rstrip('/') %}
     {% set _og_image = og_image | default(get_setting('site_logo')) %}
+    {% set _site_name = get_setting('site_name') %}
+    {% set _site_subtitle = get_setting('site_subtitle') %}
+    {% if not _site_subtitle or _site_subtitle == _site_name %}{% set _site_subtitle = 'Atlas Numérique d\'Archives de Nœuds et d\'Accès Synchronisés' %}{% endif %}
+    {% set _brand = _site_name ~ ' — ' ~ _site_subtitle %}
+    {% set title = title | default('', true) | string %}
+    {% if title.startswith(_site_name ~ ' | ') %}
+      {% set title = title[(_site_name ~ ' | ') | length:] %}
+    {% endif %}
+    {% set title = title | replace(' — ' ~ _site_name ~ ' | ', ' | ') | replace(' — ' ~ _site_name, '') %}
+    {% if title == _site_name %}{% set title = '' %}{% endif %}
+    {% set title = (_brand ~ ' | ' ~ title) if title else _brand %}
+    {% set meta_description = meta_description | default('', true) | string %}
+    {% set _page_meta = meta_description | replace('de la plateforme ' ~ _site_name ~ ' — ', 'de la plateforme — ') | replace('de la plateforme ' ~ _site_name ~ '.', 'de la plateforme.') | replace('de la plateforme ' ~ _site_name, 'de la plateforme') | replace('de l\'API REST d\'' ~ _site_name, 'de l\'API REST') | replace('du projet ' ~ _site_name ~ ' :', 'du projet :') | replace('sur ' ~ _site_name, 'sur la plateforme') | replace('Gérez votre compte ' ~ _site_name, 'Gérez votre compte') | replace(' ' ~ _site_name, '') %}
+    {% set meta_description = (_brand ~ '. ' ~ _page_meta) if _page_meta else _brand %}
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="canonical" href="{{ canonical_url | default(_site_base + request.path) }}" />
-    <title>{% block title %}{{ title|default('A.N.A.N.A.S') }}{% endblock %}</title>
+    <title>{% block title %}{{ title }}{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="{{ get_setting('site_favicon') }}" />
     <meta
       name="description"
-      content="{% block meta_description %}{{ meta_description|default('Portail géoservices basé sur des liens magnet et torrents.') }}{% endblock %}"
+      content="{% block meta_description %}{{ meta_description }}{% endblock %}"
     />
     <meta name="theme-color" content="#28a745" />
     <meta property="og:site_name" content="{{ get_setting('site_name') }}" />
@@ -28,7 +42,8 @@
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": {{ get_setting('site_name') | tojson }},
+      "name": {{ _site_name | tojson }},
+      "alternateName": {{ _site_subtitle | tojson }},
       "url": {{ _site_base | tojson }},
       "inLanguage": "fr",
       "potentialAction": {
