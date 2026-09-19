@@ -7,7 +7,7 @@
 ## Fonctionnalités
 
 - **Catalogue de données** — Géodonnées, cartes et applications géospatiales avec filtrage (vérifié/non-officiel, par organisation)
-- **Authentification** — Inscription, connexion, sessions sécurisées (30min, HTTP-only, SameSite=Lax) et authentification à deux facteurs (2FA/TOTP)
+- **Authentification** — Inscription, connexion, sessions sécurisées (30min, HTTP-only, SameSite=Strict) et authentification à deux facteurs (2FA/TOTP)
 - **Organisations** — Création, adhésion, gestion des membres (member/editor/admin/owner) avec rôles personnalisés
 - **Interactions** — Ratings étoiles (1-5), commentaires threadés, signalements, vérification d'items
 - **Upload de fichiers** — Upload par chunks avec validation magic bytes (csv, shp, geojson, gpkg, json, xml)
@@ -76,29 +76,32 @@ Accessible sur `http://localhost:5000`
 
 ```text
 app.py                   - Point d'entrée Flask (factory create_app(), route /health)
-models.py                - Modèles SQLAlchemy (20 modèles : User, Organization, Item, Rating, Comment, etc.)
-src/                     - Blueprints modulaires des routes (14 blueprints)
+models.py                - Modèles SQLAlchemy (27 modèles : User, Organization, Item, Rating, Comment, etc.)
+src/                     - Blueprints modulaires des routes (17 blueprints)
 │   ├── __init__.py      - register_all_blueprints(), _register_view() helper
-│   ├── auth_routes.py   - Connexion, inscription, logout + validation mot de passe
+│   ├── auth_routes.py   - Connexion, inscription, logout, 2FA + validation mot de passe
 │   ├── catalogue_routes.py - Catalogues (donnees/cartes/applications), JSON API
 │   ├── item_routes.py    - Détail item, galerie inline
-│   ├── organization_routes.py - CRUD orgs, membres, rejoindre/quitter
+│   ├── organization_routes.py - CRUD orgs, membres, demandes d'accès, rôles
 │   ├── user_routes.py   - Profil, compte, upload, 2FA, avatars, brouillons
 │   ├── contact_routes.py - Formulaire de contact
 │   ├── privacy_routes.py - Politique de confidentialité
 │   ├── legal_routes.py   - Mentions légales
 │   ├── tos_routes.py     - Conditions d'utilisation
+│   ├── apropos_routes.py - Page À propos
+│   ├── changelog_routes.py - Journal des mises à jour + feuille de route
+│   ├── rapport_routes.py - Rapports PDF
 │   ├── doc_routes.py     - Documentation intégrée (rendu Markdown)
 │   ├── index_routes.py   - Route d'accueil dynamique
 │   ├── api_docs.py       - Documentation interactive de l'API REST
 │   ├── interactions.py   - Ratings, commentaires threadés, vérification d'items
 │   ├── shared.py         - login_required, get_current_user, pagination, Config
 │   ├── image_cache.py    - Téléchargement asynchrone d'images via magnet/qBittorrent
-│   └── admin/            - Package admin modulaire (14 sous-modules)
+│   └── admin/            - Package admin modulaire (16 sous-modules)
 │       ├── __init__.py   - Helpers, serializers, catalogue config
 │       ├── users.py      - Ban/unban/mute/warn/kick
 │       ├── reports.py    - Signalements
-│       ├── pages.py      - Routes pages admin
+│       ├── pages.py      - Routes pages admin (incl. qBittorrent)
 │       ├── content.py    - Modération commentaires/items
 │       ├── audit.py      - Journal d'audit
 │       ├── contact.py    - Messages de contact
@@ -110,13 +113,14 @@ src/                     - Blueprints modulaires des routes (14 blueprints)
 │       ├── backup.py     - Sauvegarde/restauration DB
 │       ├── tags.py       - Tags prédéfinis
 │       ├── simple_files.py - Fichiers simples
-│       └── settings.py   - Paramètres globaux du site
+│       ├── settings.py   - Paramètres globaux du site
+│       └── changelog.py  - Édition de la page des mises à jour
 utils/
 │   ├── security.py       - sanitize_html(), validate_external_url(), validate_magnet_link(), sanitize_value(), sanitize_gallery_data(), validate_filename()
 │   └── email.py          - Envoi d'emails SMTP
-templates/                - Templates Jinja2 avec héritage de base.html (46 templates)
-static/                   - CSS modulaire (primitives/features), JS (49 fichiers en modules IIFE)
-alembic/                  - Migrations (32 versions)
+templates/                - Templates Jinja2 avec héritage de base.html (54 templates)
+static/                   - CSS modulaire (primitives/features), JS (54 fichiers en modules IIFE)
+alembic/                  - Migrations (38 versions)
 tests/                    - pytest (test_routes.py, test_models.py, conftest.py)
 scripts/seed_data.py      - Seed data pour l'environnement de développement
 Dockerfile                - Image Python 3.12-slim multi-stage (base/test/production), Gunicorn prod
@@ -185,7 +189,7 @@ docker compose exec postgres psql -U $POSTGRES_USER -d $POSTGRES_DB  # accéder 
 |----------------|--------|
 | **CSRF** | Protection globale via Flask-WTF (`CSRFProtect(app)`), exemptée sur `/api/*` et `/health` |
 | **Headers sécurité** | X-Frame-Options: DENY, X-Content-Type-Options: nosniff, CSP dynamique (nonce-based), HSTS (31536000s) |
-| **Cookies de session** | HTTP-only, SameSite=Lax, Secure flag en production uniquement |
+| **Cookies de session** | HTTP-only, SameSite=Strict, Secure flag en production uniquement |
 | **Durée de session** | 30 minutes (`PERMANENT_SESSION_LIFETIME = 1800`) |
 | **Clé secrète** | Minimum 32 caractères ; auto-générée si absente ; erreur fatale en production |
 | **Rate limiting** | 5 req/heure sur `/connexion`, 100/heure par défaut (Flask-Limiter + Redis) |

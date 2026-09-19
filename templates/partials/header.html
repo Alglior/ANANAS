@@ -124,7 +124,15 @@
 
       <a href="/rapport">Rapports</a>
 
-      <a href="/changelog">Mise à jour</a>
+      <div class="catalogue-dropdown-wrapper">
+        <button class="dropdown-toggle update-dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false">
+          Mise à jour &#9662;
+        </button>
+        <div class="catalogue-dropdown update-dropdown" id="updateDropdown">
+          <a href="/changelog" class="dropdown-item dropdown-item-bold">Mise à jour</a>
+          <a href="/feuille-de-route" class="dropdown-item">Feuille de route</a>
+        </div>
+      </div>
 
       {% if current_user %}
       {% endif %}

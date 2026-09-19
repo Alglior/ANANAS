@@ -39,43 +39,46 @@ L'application utilise le pattern **Factory** via `create_app()` dans `app.py` :
 - Crée l'instance Flask, charge la configuration depuis `.secret` + variables d'environnement
 - Configure SQLAlchemy et Alembic Migrate
 - Applique les headers de sécurité (`after_request`) avec CSP nonce-based dynamique
-- Configure les cookies de session (HTTP-only, SameSite=Lax)
+- Configure les cookies de session (HTTP-only, SameSite=Strict)
 - Initialise CSRFProtect avec exemptions pour `/api/*` et `/health`
 - Installe le rate limiter (Flask-Limiter + Redis)
 - Enregistre dynamiquement les routes statiques via `_register_view()` helper
-- Enregistre tous les blueprints modulaires (14 blueprints)
+- Enregistre tous les blueprints modulaires (17 blueprints)
 
 ### Structure Modulaire (Blueprints)
 
-Le code est organisé en **14 blueprints** répartis dans `src/` :
+Le code est organisé en **17 blueprints** répartis dans `src/` :
 
 | Blueprint | Fichier | Routes principales | Responsable |
 |-----------|---------|--------------------|-------------|
-| `auth` | `src/auth_routes.py` | `/connexion`, `/inscription`, `/logout` | Authentification, validation mot de passe |
+| `auth` | `src/auth_routes.py` | `/connexion`, `/inscription`, `/logout`, `/connexion/2fa` | Authentification, validation mot de passe, 2FA |
 | `catalogue` | `src/catalogue_routes.py` | `/catalogue/{donnees\|cartes\|applications}`, JSON API | Filtrage paginé avec convertisseur `CatalogueTypeConverter` |
 | `items` | `src/item_routes.py` | `/catalogue/item/<id>`, galerie, téléchargement magnets | Détail d'item, galerie inline, zoom magnets, favicon |
-| `organizations` | `src/organization_routes.py` | `/api/organizations`, `/organizations/<slug>` | CRUD orgs, membres, API |
+| `organizations` | `src/organization_routes.py` | `/api/organizations`, `/organizations/<slug>` | CRUD orgs, membres, demandes d'accès, rôles, API |
 | `interactions` | `src/interactions.py` | `/catalogue/item/<id>/rate`, `/comment`, vérification | Ratings (1-5), commentaires threadés, verification d'items |
-| `users` | `src/user_routes.py` | `/compte`, `/upload`, `/api/users/2fa/*` | Profil, compte, upload, 2FA, avatars, brouillons |
-| `admin` | `src/admin/` (package) | `/admin/*`, `/api/admin/*` | Package modulaire (14 sous-modules) |
-| `contact` | `src/contact_routes.py` | `/contact` | Formulaire de contact |
+| `users` | `src/user_routes.py` | `/compte`, `/upload`, `/brouillons`, `/api/users/2fa/*` | Profil, compte, upload, 2FA, avatars, brouillons |
+| `admin` | `src/admin/` (package) | `/admin/*`, `/api/admin/*` | Package modulaire (16 sous-modules) |
+| `contact` | `src/contact_routes.py` | `/contact`, `/api/contact` | Formulaire de contact |
 | `privacy` | `src/privacy_routes.py` | `/confidentialite` | Politique de confidentialité |
 | `legal` | `src/legal_routes.py` | `/mentions-legales` | Mentions légales |
-| `tos` | `src/tos_routes.py` | `/cgu` | Conditions d'utilisation |
-| `doc` | `src/doc_routes.py` | `/doc/*` | Documentation intégrée (rendu Markdown) |
+| `tos` | `src/tos_routes.py` | `/conditions-utilisation` | Conditions d'utilisation |
+| `apropos` | `src/apropos_routes.py` | `/apropos` | Page À propos |
+| `changelog` | `src/changelog_routes.py` | `/changelog`, `/feuille-de-route` | Journal des mises à jour, feuille de route |
+| `rapport` | `src/rapport_routes.py` | `/rapport`, `/rapport/pdf/<filename>` | Rapports PDF |
+| `doc` | `src/doc_routes.py` | `/docs`, `/docs/<slug>` | Documentation intégrée (rendu Markdown) |
 | `api_docs` | `src/api_docs.py` | `/api` | Documentation interactive de l'API REST |
 | `index` | `src/index_routes.py` | `/` | Route d'accueil dynamique (mirrors, featured, geopackages) |
 
 ### Package Admin (`src/admin/`)
 
-L'administration est un package modulaire composé de **14 sous-fichiers** :
+L'administration est un package modulaire composé de **16 sous-fichiers** :
 
 | Module | Fichier | Responsable |
 |--------|---------|-------------|
 | Init | `src/admin/__init__.py` | Helpers, serializers, catalogue config |
 | Users | `src/admin/users.py` | Ban/unban/mute/warn/kick |
 | Reports | `src/admin/reports.py` | Signalements |
-| Pages | `src/admin/pages.py` | Routes pages admin |
+| Pages | `src/admin/pages.py` | Routes pages admin (incl. qBittorrent) |
 | Content | `src/admin/content.py` | Modération commentaires/items |
 | Audit | `src/admin/audit.py` | Journal d'audit |
 | Contact | `src/admin/contact.py` | Messages de contact |
@@ -88,6 +91,7 @@ L'administration est un package modulaire composé de **14 sous-fichiers** :
 | Tags | `src/admin/tags.py` | Tags prédéfinis |
 | Simple Files | `src/admin/simple_files.py` | Fichiers simples |
 | Settings | `src/admin/settings.py` | Paramètres globaux du site |
+| Changelog | `src/admin/changelog.py` | Édition de la page des mises à jour |
 
 ### Fichiers Partagés
 
@@ -106,25 +110,39 @@ L'administration est un package modulaire composé de **14 sous-fichiers** :
 |---------|-----|----------|-------------|-------------|
 | GET | `/` | `home` | `index.html` | Page d'accueil dynamique |
 | GET | `/contact` | `contact` | `contact.html` | Page contact |
+| GET | `/apropos` | `apropos` | `apropos.html` | Page À propos |
 | GET | `/mentions-legales` | `legal` | `legal.html` | Mentions légales |
-| GET | `/cgu` | `tos` | `tos.html` | Conditions d'utilisation |
+| GET | `/conditions-utilisation` | `tos` | `tos.html` | Conditions d'utilisation |
 | GET | `/confidentialite` | `privacy` | `privacy.html` | Politique de confidentialité |
-| GET | `/doc` | `doc.index` | `doc_index.html` | Documentation |
-| GET | `/doc/<slug>` | `doc.page` | `doc.html` | Page de documentation |
+| GET | `/changelog` | `changelog.changelog_page` | `changelog.html` | Journal des mises à jour |
+| GET | `/feuille-de-route` | `changelog.roadmap_page` | `roadmap.html` | Feuille de route |
+| GET | `/rapport` | `rapport.rapport_page` | `rapport.html` | Rapports PDF |
+| GET | `/rapport/pdf/<filename>` | `rapport.serve_pdf` | PDF | Téléchargement d'un rapport |
+| GET | `/docs` | `doc.doc_index` | `doc_index.html` | Index de la documentation |
+| GET | `/docs/<slug>` | `doc.doc_view` | `doc.html` | Page de documentation |
 | GET | `/catalogue` | `catalogue` | `catalogue.html` | Vue par défaut (donnees) |
-| GET | `/catalogue/{type}` | `catalogue_view` | `catalogue.html` | {donnees\|cartes\|applications} |
-| GET | `/catalogue/{type}/{page}` | — | `catalogue.html` | Pagination |
-| GET | `/catalogue/{type}/{page}/json` | — | JSON API | Liste paginée au format JSON |
+| GET | `/catalogue/{type}` | `catalogue.catalogue_view` | `catalogue.html` | {donnees\|cartes\|applications} |
+| GET | `/catalogue/{type}/{page}` | `catalogue.catalogue_view` | `catalogue.html` | Pagination |
+| GET | `/catalogue/{type}/{page}/json` | `catalogue.catalogue_json` | JSON API | Liste paginée au format JSON |
+| GET | `/catalogue/{type}/recherche-avancee` | `catalogue.advanced_search` | `catalogue.html` | Recherche avancée par étiquettes |
 | GET | `/connexion` | `auth.connexion_page` | `connexion.html` | Formulaire de connexion |
+| GET | `/connexion/2fa` | `auth.connexion_2fa_page` | `connexion_2fa.html` | Formulaire 2FA |
 | GET | `/inscription` | `auth.inscription_page` | `inscription.html` | Formulaire d'inscription |
 | GET | `/logout` | `auth.logout` | — | Déconnexion (clear session) |
 | GET | `/catalogue/item/<id>` | `items.item_detail_view` | `item_detail.html` | Détail item avec galerie, ratings, magnets par échelle et IMOD |
-| GET | `/catalogue/item/<id>/magnets/download` | `items.download_item_magnets` | `.magnet` file | Téléchargement de tous les liens magnet groupés par échelle |
+| GET | `/catalogue/item/<id>/data` | `items.item_data_view` | `item_detail.html` | Onglet données (géodonnées) |
 | GET | `/catalogue/item/<id>/gallery` | `items.item_gallery_view` | `gallery.html` | Galerie plein écran (Leaflet, CSV viewer) |
+| GET | `/catalogue/item/<id>/magnets/download` | `items.download_item_magnets` | `.magnet` file | Téléchargement de tous les liens magnet groupés par échelle |
+| GET | `/catalogue/item/<id>/comments/json` | `items.item_comments_api` | JSON API | Commentaires paginés |
+| GET | `/catalogue/item/<id>/details/json` | `items.item_details_api` | JSON API | Détails complets (visualisation, chunks) |
+| GET | `/api/items/<id>/image-status` | `items.item_image_status` | JSON API | Statut du téléchargement des images |
 | GET | `/organizations` | `org.organization_list_view` | `organization_list.html` | Liste des organisations |
-| GET | `/organizations/<slug>` | — | `organization_detail.html` | Page d'une organisation |
+| GET | `/organizations/{page}` | `org.organization_list_view` | `organization_list.html` | Pagination organisations |
+| GET | `/organizations/<slug>` | `org.organization_detail_view` | `organization_detail.html` | Page d'une organisation |
 | GET | `/organizations/<slug>/items` | `org.organization_items_view` | `organization_detail.html` | Items d'une organisation |
 | GET | `/compte` | `users.account_page` | `users/compte.html` | Page compte utilisateur |
+| GET | `/upload` | `users.upload_page` | `users/upload.html` | Formulaire d'upload |
+| GET | `/brouillons` | `users.brouillons_page` | `users/brouillons.html` | Gestion des brouillons |
 | GET | `/health` | `health_check` | JSON | Health check |
 
 ### Auth POST
@@ -132,17 +150,20 @@ L'administration est un package modulaire composé de **14 sous-fichiers** :
 | Méthode | URL | Description |
 |---------|-----|-------------|
 | POST | `/connexion` | Login (5 req/heure rate limit) |
-| POST | `/connexion/2fa` | Vérification code 2FA |
-| POST | `/inscription` | Inscription avec validation mot de passe complexe |
+| POST | `/connexion/2fa` | Vérification code 2FA (5 req/heure) |
+| POST | `/inscription` | Inscription avec validation mot de passe complexe (3 req/heure) |
 
 ### API Utilisateurs
 
 | Méthode | URL | Description |
 |---------|-----|-------------|
-| POST | `/api/users/2fa/setup` | Initialiser le setup TOTP |
+| PUT | `/api/users/profile` | Modifier son prénom / nom |
+| POST | `/api/users/change-password` | Changer son mot de passe (invalide les sessions) |
+| POST | `/api/users/2fa/setup` | Initialiser le setup TOTP (secret + QR code) |
 | POST | `/api/users/2fa/enable` | Activer la 2FA |
 | POST | `/api/users/2fa/disable` | Désactiver la 2FA |
 | POST | `/api/users/generate-recovery-codes` | Générer des codes de récupération |
+| POST | `/api/users/avatar` | Uploader un avatar (png/jpg/webp) |
 
 ### API Interactions
 
@@ -150,7 +171,10 @@ L'administration est un package modulaire composé de **14 sous-fichiers** :
 |---------|-----|-------------|
 | POST | `/catalogue/item/<id>/rate` | Note 1-5 sur un item |
 | POST | `/catalogue/item/<id>/comment` | Ajouter un commentaire (sanitisation HTML) |
-| POST | `/api/items/<id>/verify` | Vérifier/rejeter un item (admin) |
+| POST | `/api/catalogue/item/<id>/reply` | Répondre à un commentaire |
+| POST | `/api/items/<id>/viz-links` | Ajouter un lien de visualisation |
+| POST | `/api/items/<id>/verify` | Modifier le statut de vérification d'un item |
+| POST | `/api/items/<id>/unpublish` | Retirer une publication (remet en brouillon) |
 
 ### API Organisations
 
@@ -158,15 +182,38 @@ L'administration est un package modulaire composé de **14 sous-fichiers** :
 |---------|-----|-------------|
 | POST | `/api/organizations` | Créer une organisation |
 | POST | `/api/organizations/<slug>/join` | Rejoindre une organisation |
+| GET | `/api/organizations/<slug>/requests` | Lister les demandes d'accès |
+| POST | `/api/organizations/<slug>/requests/<id>/approve` | Accepter une demande d'accès |
+| POST | `/api/organizations/<slug>/requests/<id>/reject` | Refuser une demande d'accès |
 | POST | `/api/organizations/<slug>/leave` | Quitter une organisation |
 | POST | `/api/organizations/<slug>/members/<id>/role` | Modifier le rôle d'un membre (admin/owner) |
+| DELETE | `/api/organizations/<slug>/members/<id>` | Retirer un membre |
+| POST | `/api/organizations/<slug>/invite` | Inviter un membre par pseudo |
+| GET | `/api/organizations/<slug>/roles` | Lister les rôles personnalisés |
+| POST | `/api/organizations/<slug>/roles` | Créer un rôle personnalisé |
+| PUT | `/api/organizations/<slug>/roles/<id>` | Modifier un rôle |
+| DELETE | `/api/organizations/<slug>/roles/<id>` | Supprimer un rôle |
+| DELETE | `/api/organizations/<slug>` | Supprimer l'organisation |
 
 ### Upload
 
 | Méthode | URL | Description |
 |---------|-----|-------------|
-| POST | `/api/upload/chunk` | Upload de fichier chunké (csv, shp, geojson, gpkg, json, xml) |
-| POST | `/api/items/<id>/viz-links` | Ajouter un lien de visualisation |
+| POST | `/api/upload/file` | Upload de fichier chunké (csv, shp, geojson, gpkg, json, xml) |
+| POST | `/api/upload/item` | Créer un élément |
+| PUT | `/api/upload/item/<id>` | Modifier un brouillon |
+| DELETE | `/api/upload/item/<id>` | Mettre à la corbeille |
+| POST | `/api/upload/item/<id>/publish` | Publier un brouillon |
+| POST | `/api/upload/item/<id>/restore` | Restaurer depuis la corbeille |
+| DELETE | `/api/upload/item/<id>/purge` | Supprimer définitivement |
+| GET | `/api/upload/drafts` | Brouillons (paginé) |
+| DELETE | `/api/upload/drafts/all` | Tout mettre à la corbeille |
+| POST | `/api/upload/drafts/publish` | Publier tous les brouillons |
+| GET | `/api/upload/trash` | Corbeille (paginé) |
+| DELETE | `/api/upload/trash/all` | Vider la corbeille |
+| GET | `/api/upload/publications` | Publications (paginé) |
+| DELETE | `/api/upload/publications/all` | Retirer toutes les publications |
+| POST | `/api/upload/publications/verify` | Vérifier toutes ses publications (admin) |
 
 ### Admin (login_required + is_admin)
 
@@ -185,30 +232,42 @@ L'administration est un package modulaire composé de **14 sous-fichiers** :
 | GET | `/admin/replication` | Réplication de catalogue |
 | GET | `/admin/backup` | Sauvegarde/restauration |
 | GET | `/admin/contact-messages` | Messages de contact |
+| GET | `/admin/qbittorrent` | Statut du client BitTorrent |
+| GET | `/admin/changelog` | Édition page des mises à jour |
 | GET | `/api/admin/reports` | API signalements (filtrage) |
 | POST | `/api/admin/reports/<id>/resolve` | Résoudre un signalement |
 | POST | `/api/users/<id>/ban` | Bannir/unban un utilisateur |
 | GET | `/api/users/banned` | Liste des utilisateurs bannis |
 | POST | `/api/admin/settings/update` | Mettre à jour les paramètres |
 | POST | `/api/admin/settings/logo-upload` | Upload logo du site |
-| POST | `/api/admin/comments/<id>` | Modérer un commentaire |
-| POST | `/api/admin/mirrors` | CRUD miroirs |
-| POST | `/api/admin/featured` | CRUD featured items |
-| POST | `/api/admin/geopackages` | CRUD geopackages |
+| DELETE | `/api/admin/comments/<id>` | Supprimer un commentaire |
+| DELETE | `/api/admin/items/<id>` | Supprimer un élément |
+| POST | `/api/admin/items/<id>/verify` | Vérifier un élément |
+| POST | `/api/admin/items/<id>/unverify` | Dévérifier un élément |
+| GET | `/api/admin/items` | Éléments avec filtres (modération) |
+| GET | `/api/admin/items/search` | Recherche d'éléments |
+| GET | `/api/admin/comments` | Commentaires avec filtres |
 | POST | `/api/admin/catalogues/<type>/toggle` | Activer/désactiver un catalogue |
-| POST | `/api/admin/tags` | CRUD tags |
-| POST | `/api/admin/replication/fetch` | Récupérer un catalogue distant |
-| POST | `/api/admin/backup/download` | Télécharger une sauvegarde |
-| POST | `/api/admin/backup/restore` | Restaurer une sauvegarde |
-| POST | `/api/admin/home-sections` | CRUD sections d'accueil |
-| POST | `/api/admin/simple-files` | CRUD fichiers simples |
+| GET | `/api/admin/qbittorrent/status` | Statut qBittorrent (transfert + torrents) |
+| POST | `/api/admin/qbittorrent/cleanup` | Nettoyer les torrents orphelins |
+| GET/POST/PUT/DELETE | `/api/admin/simple-files` | CRUD fichiers simples |
+| GET/POST/PUT/DELETE | `/api/admin/mirrors` | CRUD miroirs |
+| GET/POST/PUT/DELETE | `/api/admin/featured` | CRUD featured items |
+| GET/POST/PUT/DELETE | `/api/admin/geopackages` | CRUD geopackages |
+| GET/POST/PUT/DELETE | `/api/admin/contact-messages` | CRUD messages de contact |
 | POST | `/api/admin/contact-messages/<id>/read` | Marquer un message comme lu |
+| GET | `/api/admin/audit` | Données du journal d'audit |
+| GET/POST/PUT/DELETE | `/api/admin/tags` | CRUD catégories et tags prédéfinis |
+| POST | `/api/admin/replication/fetch` | Récupérer un catalogue distant |
+| POST | `/api/admin/replication/preview` | Aperçu de la réplication distante |
+| GET | `/api/admin/backup/download` | Télécharger une sauvegarde |
+| POST | `/api/admin/backup/restore` | Restaurer une sauvegarde |
 
 ---
 
 ## Modèles de Données (SQLAlchemy)
 
-20 modèles relationnels dans `models.py` :
+27 modèles relationnels dans `models.py` :
 
 | Modèle | Table | Champs Clés | Description |
 |--------|-------|-------------|-------------|
@@ -216,9 +275,11 @@ L'administration est un package modulaire composé de **14 sous-fichiers** :
 | **Organization** | `organizations` | id, name, slug(unique), description, logo_url, website_url, created_by, is_active, created_at | Structures qui publient des données |
 | **OrganizationMember** | `organization_members` | id, user_id(FK), organization_id(FK), role(member\|moderator\|editor\|admin\|owner), custom_role_id(FK), joined_at, is_active | Appartenance utilisateur → organisation |
 | **OrganizationRole** | `organization_roles` | id, organization_id(FK), name, permissions(JSON), created_at | Rôles personnalisés par organisation |
-| **Item** | `items` | id, type(geodonnee\|carte\|application), title, description, format_type, magnet_link, image_path, owner_user_id(FK), author_name, organization_id(FK), verification_status, data_format_level(individual\|simple\|pack), pdf_magnet_link, status(published\|draft\|trashed), deleted_at, license_type, image_magnets_pending, image_magnets_total, image_magnet_links(JSON), metadata_json(JSON), verifier_user_id(FK), verified_at, verification_notes, created_at | Données géospatiales du catalogue |
+| **OrganizationJoinRequest** | `organization_join_requests` | id, user_id(FK), organization_id(FK), status, created_at | Demandes d'accès aux organisations |
+| **Item** | `items` | id, type(geodonnee\|carte\|application), title, description, format_type, magnet_link, image_path, owner_user_id(FK), author_name, organization_id(FK), verification_status, data_format_level(individual\|simple\|pack), pdf_magnet_link, status(published\|draft\|trashed), deleted_at, license_type, size, data_year_start, data_year_end, image_magnets_pending, image_magnets_total, image_magnet_links(JSON), metadata_json(JSON), verifier_user_id(FK), verified_at, verification_notes, created_at | Données géospatiales du catalogue |
 | **ItemTag** | `item_tags` | id, item_id(FK), tag | Tags associés aux items |
 | **ItemGallery** | `item_gallery` | id, item_id(FK), media_type(image\|csv\|dashboard\|interactive_map), src, data_json(JSON), label | Galerie inline des items |
+| **ItemImageJob** | `item_image_jobs` | id, item_id(FK), magnet_link, status, progress, created_at | Téléchargement asynchrone des images via magnet |
 | **Rating** | `ratings` | id, item_id(FK), user_id(FK), rating(float 1-5) | Notes utilisateurs sur les items |
 | **Comment** | `comments` | id, item_id(FK), user_id(FK), parent_id(FK), author_name, content, created_at | Commentaires threadés sur les items |
 | **DataChunk** | `data_chunks` | id, parent_item_id(FK), name, owner_user_id(FK), description, format_type, magnet_link, organization_id(FK), data_url, metadata_json(JSON), upload_status, published_at, created_at | Chunks de données uploadées |
@@ -235,6 +296,8 @@ L'administration est un package modulaire composé de **14 sous-fichiers** :
 | **CatalogueConfig** | `catalogue_config` | id, catalogue_type(unique), enabled | Activation/désactivation des catalogues |
 | **SiteSetting** | `site_settings` | id, key(unique), value | Paramètres globaux du site (clé/valeur) |
 | **GeoPackage** | `geo_packages` | id, title, description, format_info, link_url, display_order, is_active, created_at | Packs GeoPackage |
+| **ChangelogVersion** | `changelog_versions` | id, version, date, is_published, created_at | Versions publiées (journal des mises à jour) |
+| **ChangelogSection** | `changelog_sections` | id, version_id(FK), title, items(JSON), display_order | Sections d'une version (loi publiée via /admin/changelog) |
 
 ### Score IMOD
 
@@ -261,10 +324,12 @@ User ────→ OrganizationMember ←──── Organization
   ├──→ Report (reporter / reported_user)
   ├──→ DataChunk (owner)
   ├──→ UserUpload (owner)
+  ├──→ OrganizationJoinRequest (demandes d'accès)
   └──→ comments (backref)
 
 Item ────→ ItemTag (n-m via junction)
         ───→ ItemGallery (1-n)
+        ───→ ItemImageJob (téléchargement images asynchrone)
         ───→ Rating (1-n)
         ───→ Comment (1-n, threadés)
         ───→ VisualizationLink (1-n)
@@ -275,6 +340,7 @@ Item ────→ ItemTag (n-m via junction)
 
 Organization ───→ OrganizationMember (1-n)
              ───→ OrganizationRole (1-n)
+             ───→ OrganizationJoinRequest (1-n)
 
 AdminAudit ───→ User (admin_user_id)
 ContactMessage ──── (standalone)
@@ -285,6 +351,7 @@ PredefinedTagCategory ───→ PredefinedTag (1-n)
 CatalogueConfig ──── (standalone)
 SiteSetting ──── (standalone)
 GeoPackage ──── (standalone)
+ChangelogVersion ───→ ChangelogSection (1-n)
 ```
 
 ---
@@ -309,6 +376,11 @@ templates/
 ├── legal.html                   # Mentions légales
 ├── tos.html                     # Conditions d'utilisation
 ├── privacy.html                 # Politique de confidentialité
+├── apropos.html                 # Page À propos
+├── changelog.html               # Journal des mises à jour (rendu CHANGELOG.md)
+├── roadmap.html                 # Feuille de route (rendu ROADMAP.md)
+├── rapport.html                 # Rapports PDF
+├── maintenance.html             # Page de maintenance (mode maintenance)
 ├── doc_index.html               # Index de la documentation
 ├── doc.html                     # Page de documentation (rendu Markdown)
 ├── base_admin.html              # Template de base pour les pages admin
@@ -339,7 +411,10 @@ templates/
     ├── replication.html         # Réplication de catalogue
     ├── backup.html              # Sauvegarde/restauration
     ├── tags.html                # Tags prédéfinis
-    ├── home_section_blocks.html # Sections d'accueil
+    ├── qbittorrent.html         # Statut qBittorrent
+    ├── changelog.html           # Édition page des mises à jour
+    ├── home.html                # Accueil admin
+    ├── home_section_blocks.html # Sections d'accueil (templates HTML réutilisables)
     └── contact_messages.html    # Messages de contact
 ```
 
@@ -430,7 +505,7 @@ Modules Vanilla JS encapsulés en IIFE (49 fichiers) :
 | **CSRF** | Activé globalement via Flask-WTF, exempté sur `/api/*` et `/health` |
 | **Rate limiting** | 5 req/heure sur `/connexion` (brute-force), 100/heure par défaut (Flask-Limiter + Redis) |
 | **Headers** | X-Frame-Options: DENY, X-Content-Type-Options: nosniff, HSTS max-age=31536000; includeSubDomains, CSP dynamique (nonce-based) |
-| **Cookies** | HTTP-only, SameSite=Lax, Secure flag en production uniquement |
+| **Cookies** | HTTP-only, SameSite=Strict, Secure flag en production uniquement |
 | **Session** | 30 minutes max (PERMANENT_SESSION_LIFETIME = 1800) |
 | **Clé secrète** | Minimum 32 caractères ; auto-générée via `secrets.token_hex(32)` en dev si absente ; erreur fatale en production |
 | **2FA/TOTP** | Authentification à deux facteurs optionnelle avec pyotp, QR codes, codes de récupération |
@@ -479,10 +554,10 @@ volumes:
 
 ## Migrations
 
-Alembic avec les versions actuelles (32 migrations) :
-1. `initial_schema` — Création des tables de base (users, organizations, items, tags)
-2. `auth_interactions` — Ajout de ratings, commentaires, reports, et champs d'authentification
-3. ... (30 migrations supplémentaires couvrant l'ajout de 2FA, score IMOD, admin audit, etc.)
+Alembic avec les versions actuelles (38 migrations) :
+1. `fa99e124f96c_initial_schema` — Création des tables de base (users, organizations, items, tags)
+2. `a1b2c3d4e5f6_auth_interactions` — Ajout de ratings, commentaires, reports, et champs d'authentification
+3. ... (36 migrations supplémentaires couvrant l'ajout de 2FA, score IMOD, admin audit, home sections, changelog, etc.)
 
 ---
 

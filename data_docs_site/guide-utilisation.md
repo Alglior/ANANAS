@@ -47,9 +47,19 @@ La visibilité de cette section peut être activée/désactivée depuis le panne
 | Détail d'un élément | `/catalogue/item/<id>` | Fiche complète avec galerie, notes, commentaires |
 | Organisations | `/organizations` | Liste des organisations collaboratives |
 | Contact | `/contact` | Formulaire de contact |
+| Rapports | `/rapport` | Rapports et documents PDF |
+| Mise à jour | `/changelog` | Historique des évolutions de la plateforme |
+| Feuille de route | `/feuille-de-route` | Fonctionnalités prévues et visions à long terme |
 | Connexion | `/connexion` | Page de connexion |
 | Inscription | `/inscription` | Création de compte |
 | Documentation | `/docs` | Pages de documentation |
+
+### Mise à jour et feuille de route
+
+Le menu **Mise à jour** de la barre de navigation donne accès à deux pages :
+
+- **Mise à jour** (`/changelog`) — l'historique des versions et des évolutions de la plateforme (nouveautés, améliorations, changements techniques)
+- **Feuille de route** (`/feuille-de-route`) — les fonctionnalités en cours de développement, celles planifiées et les visions à long terme du projet
 
 ### Compte utilisateur
 
@@ -142,4 +152,6 @@ Chaque utilisateur dispose d'un profil public accessible via `/profile/<id>`, af
 
 - `/mentions-legales` — Mentions légales
 - `/confidentialite` — Politique de confidentialité
-- `/cgu` — Conditions d'utilisation
+- `/conditions-utilisation` — Conditions d'utilisation
+- `/apropos` — À propos du projet
+- `/rapport` — Rapports et documents PDF

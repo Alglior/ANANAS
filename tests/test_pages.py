@@ -24,6 +24,10 @@ class TestStaticPages:
         resp = client.get("/changelog")
         assert resp.status_code == 200
 
+    def test_roadmap_page(self, client):
+        resp = client.get("/feuille-de-route")
+        assert resp.status_code == 200
+
     def test_api_docs(self, client):
         resp = client.get("/api")
         assert resp.status_code == 200

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<main class="changelog-page">
+  <div class="container">
+    <div class="changelog-content">
+      {{ roadmap_html | safe }}
+    </div>
+  </div>
+</main>
+{% endblock %}

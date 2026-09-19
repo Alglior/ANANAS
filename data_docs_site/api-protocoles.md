@@ -18,3 +18,6 @@ Différence entre les packs GeoPackage multi-couches, les fichiers simples et le
 
 ### [Organisation des données](/docs/organisation-donnees)
 Structure hiérarchique des données, modèle Item, organisations et rôles, types de catalogue, formats supportés, intégrité et sécurité.
+
+### [Feuille de route](/feuille-de-route)
+Fonctionnalités en cours de développement, planifiées et visions à long terme du projet A.N.A.N.A.S.

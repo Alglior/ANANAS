@@ -116,8 +116,8 @@ Si vous rencontrez un contenu inapproprié :
 
 ```bash
 git clone <url-du-depot>
-cd sitev2
-./setup.sh
+cd ANANAS
+./setup.sh local
 ```
 
 ### Tests
@@ -130,7 +130,7 @@ pytest tests/
 
 Le projet suit une architecture Flask classique avec blueprints :
 
-- `src/auth_routes.py` — Authentification
+- `src/auth_routes.py` — Authentification, 2FA
 - `src/catalogue_routes.py` — Catalogue
 - `src/item_routes.py` — Détail des éléments
 - `src/interactions.py` — Notes, commentaires, signalements
@@ -140,8 +140,12 @@ Le projet suit une architecture Flask classique avec blueprints :
 - `src/privacy_routes.py` — Politique de confidentialité
 - `src/legal_routes.py` — Mentions légales
 - `src/tos_routes.py` — Conditions d'utilisation
+- `src/apropos_routes.py` — Page À propos
+- `src/changelog_routes.py` — Journal des mises à jour + feuille de route
+- `src/rapport_routes.py` — Rapports PDF
 - `src/doc_routes.py` — Documentation (Markdown)
+- `src/api_docs.py` — Documentation de l'API
 - `src/index_routes.py` — Route d'accueil dynamique
-- `src/admin/` — Panneau d'administration (14 sous-modules)
+- `src/admin/` — Panneau d'administration (16 sous-modules)
 - `src/image_cache.py` — Cache d'images depuis magnet links
-- `models.py` — 20 modèles SQLAlchemy
+- `models.py` — 27 modèles SQLAlchemy
