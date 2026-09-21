@@ -1,6 +1,7 @@
 <nav class="pagination" aria-label="{{ label | default('Pagination') }}">
+  {% set qs = ('?' + page_filter_qs) if (page_filter_qs is defined and page_filter_qs) else '' %}
   {% if page > 1 %}
-    <a class="btn btn-outline transition-hover pagination-prev" href="{{ base_url }}/{{ page - 1 }}">&#9664;&nbsp;Précédent</a>
+    <a class="btn btn-outline transition-hover pagination-prev" href="{{ base_url }}/{{ page - 1 }}{{ qs }}">&#9664;&nbsp;Précédent</a>
   {% else %}
     <span class="btn btn-outline pagination-prev disabled">&#9664;&nbsp;Précédent</span>
   {% endif %}
@@ -12,13 +13,13 @@
       {% elif p == page %}
         <span class="pagination-link active">{{ p }}</span>
       {% else %}
-        <a class="pagination-link" href="{{ base_url }}/{{ p }}">{{ p }}</a>
+        <a class="pagination-link" href="{{ base_url }}/{{ p }}{{ qs }}">{{ p }}</a>
       {% endif %}
     {% endfor %}
   </div>
 
   {% if page < total_pages %}
-    <a class="btn btn-outline transition-hover pagination-next" href="{{ base_url }}/{{ page + 1 }}">Suivant&nbsp;&#9658;</a>
+    <a class="btn btn-outline transition-hover pagination-next" href="{{ base_url }}/{{ page + 1 }}{{ qs }}">Suivant&nbsp;&#9658;</a>
   {% else %}
     <span class="btn btn-outline pagination-next disabled">Suivant&nbsp;&#9658;</span>
   {% endif %}

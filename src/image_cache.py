@@ -16,6 +16,11 @@ logger = logging.getLogger(__name__)
 CACHE_DIR = Path(os.path.dirname(os.path.dirname(__file__))) / "instance" / "image_cache"
 CACHE_TTL = 86400 * 30
 
+# Délai maximal d'un téléchargement d'image (2 h). Au-delà, le job est marqué
+# en échec et un nouveau téléchargement est retenté.
+DOWNLOAD_TIMEOUT = 2 * 60 * 60
+MAX_DOWNLOAD_ATTEMPTS = 10
+
 QBITTORRENT_URL = os.environ.get("QBITTORRENT_URL", "http://qbittorrent:8081")
 QBITTORRENT_USERNAME = os.environ.get("QBITTORRENT_USERNAME") or ""
 QBITTORRENT_PASSWORD = os.environ.get("QBITTORRENT_PASSWORD") or ""
@@ -72,6 +77,47 @@ def cache_image(magnet_link, data, ext=".png"):
     return "/static/cache/img/" + p.name + ext
 
 
+def purge_expired_cache(cache_dir=None, max_age=None):
+    """Supprime les fichiers de cache plus vieux que le TTL et plus référencés.
+
+    Le TTL n'est jusqu'ici vérifié qu'à la réutilisation d'un magnet : sans purge,
+    les fichiers non réutilisés restent sur le disque indéfiniment. Cette fonction
+    nettoie les entrées expirées qui ne sont plus référencées par aucun item
+    (image principale ou galerie), afin de borner la taille du cache.
+    """
+    cache_dir = Path(cache_dir or CACHE_DIR)
+    max_age = max_age if max_age is not None else CACHE_TTL
+    if not cache_dir.is_dir():
+        return 0
+    cutoff = time.time() - max_age
+    deleted = 0
+    skipped = 0
+    for p in sorted(cache_dir.iterdir()):
+        if not p.is_file():
+            continue
+        try:
+            if os.path.getmtime(p) >= cutoff:
+                continue
+        except OSError:
+            continue
+        # Ne jamais supprimer un fichier encore référencé par un item (image
+        # cassée sinon) : il sera purgé une fois qu'il ne sera plus utilisé.
+        if _cache_file_in_use(p, exclude_item_id=None):
+            skipped += 1
+            continue
+        try:
+            p.unlink()
+            deleted += 1
+        except OSError:
+            pass
+    if deleted:
+        logger.info(
+            "purge_expired_cache: %d fichier(s) expiré(s) supprimé(s), %d conservé(s) (référencé(s))",
+            deleted, skipped,
+        )
+    return deleted
+
+
 def _qb_login():
     session = requests.Session()
     session.headers.update({"Referer": QBITTORRENT_URL + "/"})
@@ -95,9 +141,16 @@ def _extract_info_hashes(magnet_link):
     return hashes
 
 
-def _qb_await_complete(session, info_hash, on_progress=None):
+def _qb_await_complete(session, info_hash, on_progress=None, timeout=DOWNLOAD_TIMEOUT):
     last_reported = -1
+    deadline = time.time() + timeout
     while True:
+        if time.time() >= deadline:
+            logger.warning(
+                "Torrent %s: délai de %ss dépassé, téléchargement abandonné",
+                info_hash, timeout,
+            )
+            return None
 
         resp = session.get(
             f"{QBITTORRENT_URL}/api/v2/torrents/info",
@@ -150,6 +203,32 @@ def _qb_get_torrent(session, info_hash):
     resp.raise_for_status()
     torrents = resp.json()
     return torrents[0] if torrents else None
+
+
+def remove_magnet_from_qbittorrent(magnet_link):
+    """Supprime tout torrent qBittorrent correspondant au magnet.
+
+    Utilisé avant un nouvel essai afin de repartir d'un ajout propre au lieu de
+    ré-attendre un torrent bloqué.
+    """
+    info_hashes = _extract_info_hashes(magnet_link)
+    if not info_hashes:
+        return
+    try:
+        session = _qb_login()
+    except Exception as e:
+        logger.error("qBittorrent login failed during retry cleanup: %s", e)
+        return
+    for h in info_hashes:
+        try:
+            torrent = _qb_get_torrent(session, h)
+        except Exception:
+            continue
+        if torrent:
+            try:
+                _qb_delete_torrent(session, torrent["hash"])
+            except Exception:
+                pass
 
 
 def download_image_from_magnet(magnet_link, on_progress=None):
@@ -386,19 +465,40 @@ def process_image_magnets(item_id, image_magnets):
                 data = get_cached_image(magnet)
                 ext = ".png"
                 if data is None:
-                    job.status = "downloading"
-                    job.progress = 0.0
-                    job.details = "Téléchargement du torrent en cours..."
-                    db.session.commit()
-
-                    def _on_progress(p, _job=job):
-                        _job.progress = p
-                        if _job.status != "downloading":
-                            _job.status = "downloading"
-                        _job.details = f"Téléchargement en cours ({round(p * 100)} %)"
+                    for attempt in range(1, MAX_DOWNLOAD_ATTEMPTS + 1):
+                        job.status = "downloading"
+                        job.progress = 0.0
+                        job.details = (
+                            f"Téléchargement du torrent en cours "
+                            f"(essai {attempt}/{MAX_DOWNLOAD_ATTEMPTS})..."
+                        )
                         db.session.commit()
 
-                    data, ext = download_image_from_magnet(magnet, on_progress=_on_progress)
+                        def _on_progress(p, _job=job):
+                            _job.progress = p
+                            if _job.status != "downloading":
+                                _job.status = "downloading"
+                            _job.details = f"Téléchargement en cours ({round(p * 100)} %)"
+                            db.session.commit()
+
+                        data, ext = download_image_from_magnet(magnet, on_progress=_on_progress)
+                        if data is not None:
+                            break
+
+                        # Échec ou délai de 2 h dépassé : on marque le job en échec
+                        # puis on retente un téléchargement propre.
+                        if attempt < MAX_DOWNLOAD_ATTEMPTS:
+                            job.status = "failed"
+                            job.progress = 0.0
+                            job.details = (
+                                f"Échec de l'essai {attempt} (délai dépassé), "
+                                f"nouvel essai en cours..."
+                            )
+                            db.session.commit()
+                            remove_magnet_from_qbittorrent(magnet)
+                    else:
+                        data = None
+
                     if data is None:
                         failed += 1
                         job.status = "failed"

@@ -14,7 +14,7 @@ from sqlalchemy import func
 from app import db, limiter
 from src.shared import login_required, get_current_user, user_owns_item_or_admin, ITEMS_PER_PAGE, validate_password_strength, _paginate, ALLOWED_ITEM_TYPES, ITEM_TYPE_LABELS, user_belongs_to_org, ITEM_STATUS_DRAFT, ITEM_STATUS_PUBLISHED, ITEM_STATUS_TRASHED
 from src.admin import is_catalogue_enabled
-from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, ItemGallery, ItemTag, PredefinedTag, PredefinedTagCategory, Report
+from models import User, Rating, Comment, Item, DataChunk, UserUpload, VisualizationLink, ItemGallery, ItemTag, PredefinedTag, PredefinedTagCategory, Report, ItemImageJob
 from src.image_cache import delete_item_cached_images, normalize_image_magnets
 from utils.security import sanitize_html, validate_magnet_link, validate_external_url
 
@@ -501,6 +501,76 @@ def _process_magnets(item, data_format_level, data):
                 for ml in magnet_links if validate_magnet_link(ml.get("magnet_link", ""))
             ]
     return None
+
+
+def list_unfinished_image_items():
+    """Retourne [(item_id, magnets)] pour les items dont les images ne sont pas terminées.
+
+    Candidats :
+    - items avec des jobs d'images non terminés (statuts en cours/échec/enregistrement) ;
+    - items affichés "en cours" (flag image_magnets_pending) sans jobs non terminés
+      (crash avant la création des jobs ou pendant l'enregistrement), magnets
+      récupérés depuis item.image_magnet_links.
+    """
+    unfinished = ("pending", "downloading", "saving", "failed", "skipped")
+    result = {}
+
+    rows = (
+        db.session.query(ItemImageJob.item_id)
+        .filter(ItemImageJob.status.in_(unfinished))
+        .distinct()
+        .all()
+    )
+    for (item_id,) in rows:
+        jobs = (
+            ItemImageJob.query.filter_by(item_id=item_id)
+            .filter(ItemImageJob.status.in_(unfinished))
+            .order_by(ItemImageJob.idx)
+            .all()
+        )
+        magnets = [j.magnet_link for j in jobs if j.magnet_link]
+        if magnets:
+            result.setdefault(item_id, magnets)
+
+    for item in Item.query.filter_by(image_magnets_pending=True).all():
+        if item.id in result:
+            continue
+        magnets = []
+        for link in (item.image_magnet_links or []):
+            m = (link.get("magnet_link", "") if isinstance(link, dict) else str(link or "")).strip()
+            if m and m not in magnets:
+                magnets.append(m)
+        if magnets:
+            result[item.id] = magnets
+    return list(result.items())
+
+
+def relaunch_unfinished_image_jobs():
+    """Relance le traitement des images non terminées (arrêt brutal inclus).
+
+    Re-soumet chaque item concerné dans le pool de téléchargement. Les items
+    affichés "en cours" mais sans aucun magnet récupérable voient leur flag
+    image_magnets_pending levé (sinon ils resteraient bloqués à jamais).
+
+    Retourne (relancés, flags nettoyés).
+    """
+    relaunched = 0
+    cleaned = 0
+    candidates = list_unfinished_image_items()
+    for item_id, magnets in candidates:
+        _process_image_magnets_async(item_id, magnets)
+        relaunched += 1
+
+    handled = {item_id for item_id, _ in candidates}
+    for item in Item.query.filter_by(image_magnets_pending=True).all():
+        if item.id in handled:
+            continue
+        item.image_magnets_pending = False
+        item.image_magnets_total = 0
+        cleaned += 1
+    if cleaned:
+        db.session.commit()
+    return relaunched, cleaned
 
 
 def _process_image_magnets_async(item_id, image_magnets):

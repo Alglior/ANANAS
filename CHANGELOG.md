@@ -2,6 +2,21 @@
 
 > **Note** : la version **1.0 (Septembre 2026)** est la **première version bêta** de la plateforme A.N.A.N.A.S. L'ensemble des fonctionnalités ci-dessous a été développé et affiné depuis le début du projet (avril 2026).
 
+## v1.0.2 — Septembre 2026
+
+### Améliorations
+- **Catalogue** : les filtres actifs (étiquettes, catégorie, année, niveau de format, vérification, organisation, recherche) sont désormais conservés lors du changement de page — pagination et redirections hors bornes incluses
+
+### P2P & images
+- **Téléchargements d'images** : délai maximal de **2 h par essai** (au lieu d'une attente infinie), le job passe en échec puis relance un téléchargement propre, jusqu'à **10 essais**
+- **Reprise automatique** des téléchargements interrompus au démarrage du conteneur (arrêt brutal, redémarrage Docker) : items relancés et statuts « en cours » bloqués corrigés
+- **Purge du cache d'images** (TTL 30 jours) par un balayeur périodique — fini le stockage illimité des fichiers expirés non référencés
+
+### Administration
+- **Interface qBittorrent** : bouton « Relancer les téléchargements en cours » — reprend les torrents en cours, pausés ou arrêtés (ex. après un stop Docker) et relance le pipeline applicatif de téléchargement/enregistrement des images
+
+---
+
 ## v1.0.1 — Septembre 2026
 
 ### Nouvelles fonctionnalités

@@ -1,4 +1,9 @@
+import os
+import time
+
 import pytest
+
+from app import db
 
 
 class TestRoutes:
@@ -124,6 +129,137 @@ class TestFilters:
         data = resp.get_json()
         for item in data["items"]:
             assert item["organization_name"] == "Org Test"
+
+    def test_pagination_preserves_filters(self, client, seeded):
+        resp = client.get("/catalogue/donnees?verified=1&format_level=simple")
+        html = resp.get_data(as_text=True)
+        expected = 'href="/catalogue/donnees/2?verified=1&amp;format_level=simple"'
+        assert expected in html
+        assert 'href="/catalogue/donnees/3?verified=1&amp;format_level=simple"' in html
+
+    def test_page_overflow_redirect_preserves_filters(self, client, seeded):
+        resp = client.get("/catalogue/donnees?page=999&verified=1&format_level=simple")
+        assert resp.status_code == 302
+        assert "/catalogue/donnees?page=3&verified=1&format_level=simple" in resp.headers["Location"]
+
+
+class TestResumeImageDownloads:
+    """Vérifie la reprise des téléchargements d'images interrompus."""
+
+    def test_list_unfinished_items(self, client, seeded):
+        from models import Item, ItemImageJob
+        from src.user_routes import list_unfinished_image_items
+
+        item = Item.query.filter_by(title="Item 1").first()
+        for i, st in enumerate(("done", "downloading", "saving", "pending", "failed")):
+            db.session.add(ItemImageJob(
+                item_id=item.id, idx=i,
+                magnet_link=f"magnet:?xt=urn:btih:{i:040x}",
+                label="Image", status=st,
+            ))
+        db.session.commit()
+
+        result = dict(list_unfinished_image_items())
+        assert item.id in result
+        magnets = result[item.id]
+        assert len(magnets) == 4  # downloading + saving + pending + failed
+        assert "magnet:?xt=urn:btih:0" not in magnets
+
+    def test_list_skips_items_without_magnets(self, client, seeded):
+        from models import Item, ItemImageJob
+        from src.user_routes import list_unfinished_image_items
+
+        item = Item.query.filter_by(title="Item 1").first()
+        db.session.add(ItemImageJob(item_id=item.id, idx=0, magnet_link="", label="Image", status="downloading"))
+        other = Item.query.filter_by(title="Item 2").first()
+        db.session.add(ItemImageJob(item_id=other.id, idx=0, magnet_link="magnet:?xt=urn:btih:aabbccddeeff00112233445566778899aabbccdd", label="Image", status="failed"))
+        db.session.commit()
+
+        result = dict(list_unfinished_image_items())
+        assert item.id not in result
+        assert other.id in result
+
+    def test_list_recovers_from_item_when_flag_stuck(self, client, seeded):
+        from models import Item, ItemGallery
+        from src.user_routes import list_unfinished_image_items
+
+        item = Item.query.filter_by(title="Item 1").first()
+        # Item affiché "en cours" (flag) mais sans jobs non terminés
+        # (crash avant création des jobs) : magnets récupérés depuis l'item.
+        item.image_magnets_pending = True
+        item.image_magnets_total = 2
+        item.image_magnet_links = [
+            {"magnet_link": "magnet:?xt=urn:btih:aabbccddeeff00112233445566778899aabbccdd", "label": "Image"},
+            {"magnet_link": "magnet:?xt=urn:btih:aabbccddeeff00112233445566778899aabbccee", "label": "Image"},
+        ]
+        db.session.commit()
+
+        result = dict(list_unfinished_image_items())
+        assert item.id in result
+        assert len(result[item.id]) == 2
+
+    def test_relaunch_cleans_stuck_flag(self, client, seeded):
+        from models import Item, ItemImageJob
+        from src.user_routes import relaunch_unfinished_image_jobs
+
+        stuck = Item.query.filter_by(title="Item 1").first()
+        # Aucun magnet récupérable (ni jobs ni image_magnet_links) : le flag
+        # "en cours" ne peut plus aboutir, il doit être levé.
+        stuck.image_magnets_pending = True
+        stuck.image_magnets_total = 0
+        stuck.image_magnet_links = []
+        ItemImageJob.query.filter_by(item_id=stuck.id).delete()
+        ok = Item.query.filter_by(title="Item 2").first()
+        db.session.add(ItemImageJob(
+            item_id=ok.id, idx=0,
+            magnet_link="magnet:?xt=urn:btih:aabbccddeeff00112233445566778899aabbccdd",
+            label="Image", status="downloading",
+        ))
+        db.session.commit()
+
+        relaunched, cleaned = relaunch_unfinished_image_jobs()
+        assert relaunched >= 1
+        assert cleaned == 1
+        db.session.refresh(stuck)
+        assert stuck.image_magnets_pending is False
+
+
+class TestImageCachePurge:
+    """Vérifie la purge du cache d'images expiré (TTL 30 jours)."""
+
+    def _touch(self, path, age_seconds):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"\x89PNG\r\n\x1a\nfake")
+        os.utime(path, (time.time() - age_seconds, time.time() - age_seconds))
+
+    def test_purges_expired_unreferenced(self, client, seeded, tmp_path, monkeypatch):
+        from src import image_cache
+
+        monkeypatch.setattr(image_cache, "CACHE_DIR", tmp_path)
+
+        old = tmp_path / "deadbeef"
+        self._touch(old, 40 * 86400)
+        recent = tmp_path / "cafebabe"
+        self._touch(recent, 5 * 86400)
+
+        assert image_cache.purge_expired_cache() == 1
+        assert not old.exists()
+        assert recent.exists()
+
+    def test_keeps_expired_referenced(self, client, seeded, tmp_path, monkeypatch):
+        from src import image_cache
+        from models import Item
+
+        monkeypatch.setattr(image_cache, "CACHE_DIR", tmp_path)
+
+        entry = tmp_path / "baadf00d"
+        self._touch(entry, 40 * 86400)
+        item = Item.query.filter_by(title="Item 1").first()
+        item.image_path = "/static/cache/img/baadf00d.png"
+        db.session.commit()
+
+        assert image_cache.purge_expired_cache() == 0
+        assert entry.exists()
 
 
 class TestAuthRoutes:

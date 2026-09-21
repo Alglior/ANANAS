@@ -82,6 +82,42 @@
   loadStatus();
   setInterval(loadStatus, 5000);
 
+  document.getElementById('qb-restart-btn').addEventListener('click', function () {
+    if (!confirm('Supprimer puis relancer tous les téléchargements magnet en cours dans qBittorrent ?')) return;
+    var btn = document.getElementById('qb-restart-btn');
+    var msg = document.getElementById('qb-restart-msg');
+    btn.disabled = true;
+    btn.textContent = 'Relance en cours…';
+    msg.textContent = '';
+    msg.className = 'qb-cleanup-msg';
+
+    fetch('/api/admin/qbittorrent/restart', {
+      method: 'POST',
+      headers: { 'X-CSRF-Token': CsrfModule.getCsrfToken() }
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.error) {
+          msg.textContent = 'Erreur : ' + data.error;
+          msg.className = 'qb-cleanup-msg qb-cleanup-error';
+        } else {
+          var txt = data.message;
+          if (data.qb_error) txt += ' — ' + data.qb_error;
+          msg.textContent = txt;
+          msg.className = data.errors ? 'qb-cleanup-msg qb-cleanup-error' : 'qb-cleanup-msg qb-cleanup-success';
+          loadStatus();
+        }
+      })
+      .catch(function () {
+        msg.textContent = 'Erreur réseau';
+        msg.className = 'qb-cleanup-msg qb-cleanup-error';
+      })
+      .finally(function () {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="btn-icon">&#128260;</span> Relancer les téléchargements en cours';
+      });
+  });
+
   document.getElementById('qb-cleanup-btn').addEventListener('click', function () {
     if (!confirm('Supprimer tous les torrents dans qBittorrent qui ne sont liés à aucun Aimant sur le site ?')) return;
     var btn = document.getElementById('qb-cleanup-btn');

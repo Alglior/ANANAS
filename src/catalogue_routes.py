@@ -122,36 +122,39 @@ def _build_filtered_query(catalogue_type, filter_verified=False, filter_unoffici
     return query
 
 
-def _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, _filter_imod="", filter_year=None):
+def _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod="", filter_year=None, filter_tag="", filter_category="", exclude_tags="", search_query=""):
     base = f"/catalogue/{catalogue}"
 
-    def _build_url(include_verif=False, include_unofficial=False, include_format=None):
-        parts = []
-        if include_verif:
-            parts.append("verified=1")
-        elif include_unofficial:
-            parts.append("unofficial=1")
-        if include_format:
-            parts.append(f"format_level={include_format}")
-        if filter_year:
-            parts.append(f"year={filter_year}")
-        if org_slug:
-            parts.append(f"org={org_slug}")
-        return base + ("?" + "&".join(parts) if parts else "")
+    def _url(**override):
+        params = dict(
+            filter_tag=filter_tag,
+            exclude_tags=exclude_tags,
+            filter_category=filter_category,
+            filter_verified=filter_verified,
+            filter_unofficial=filter_unofficial,
+            filter_format=filter_format,
+            filter_imod=filter_imod,
+            org_slug=org_slug,
+            filter_year=filter_year,
+            search_query=search_query,
+        )
+        params.update(override)
+        qs = _build_filter_qs(**params)
+        return base + ("?" + qs if qs else "")
 
     return {
-        "url_all": base,
-        "url_verified": _build_url(include_verif=True, include_format=filter_format or None),
-        "url_unofficial": _build_url(include_unofficial=True, include_format=filter_format or None),
-        "url_pack": _build_url(include_verif=filter_verified, include_unofficial=filter_unofficial, include_format="pack"),
-        "url_simple": _build_url(include_verif=filter_verified, include_unofficial=filter_unofficial, include_format="simple"),
-        "url_ind": _build_url(include_verif=filter_verified, include_unofficial=filter_unofficial, include_format="individual"),
-        "url_imod_high": _build_url(include_verif=filter_verified, include_unofficial=filter_unofficial, include_format=filter_format or None) + ("&" if filter_verified or filter_unofficial or filter_format or org_slug else "?") + "imod=high",
-        "url_imod_low": _build_url(include_verif=filter_verified, include_unofficial=filter_unofficial, include_format=filter_format or None) + ("&" if filter_verified or filter_unofficial or filter_format or org_slug else "?") + "imod=low",
+        "url_all": _url(filter_verified=False, filter_unofficial=False),
+        "url_verified": _url(filter_verified=True, filter_unofficial=False),
+        "url_unofficial": _url(filter_verified=False, filter_unofficial=True),
+        "url_pack": _url(filter_format="pack"),
+        "url_simple": _url(filter_format="simple"),
+        "url_ind": _url(filter_format="individual"),
+        "url_imod_high": _url(filter_imod="high"),
+        "url_imod_low": _url(filter_imod="low"),
     }
 
 
-def _build_filter_qs(filter_tag="", exclude_tags=None, filter_category="", filter_verified=False, filter_unofficial=False, filter_format="", filter_imod="", org_slug="", filter_year=""):
+def _build_filter_qs(filter_tag="", exclude_tags=None, filter_category="", filter_verified=False, filter_unofficial=False, filter_format="", filter_imod="", org_slug="", filter_year="", search_query=""):
     parts = []
     if filter_tag:
         for t in filter_tag.split(",") if isinstance(filter_tag, str) else [filter_tag]:
@@ -166,6 +169,9 @@ def _build_filter_qs(filter_tag="", exclude_tags=None, filter_category="", filte
     if filter_category:
         from urllib.parse import quote
         parts.append(f"category={quote(filter_category)}")
+    if search_query:
+        from urllib.parse import quote
+        parts.append(f"q={quote(search_query)}")
     if filter_verified:
         parts.append("verified=1")
     if filter_unofficial:
@@ -211,6 +217,14 @@ def _do_catalogue(catalogue_type, page, per_page=None):
 
     query = _build_filtered_query(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod, filter_tags or filter_tag, filter_category, search_query, exclude_tags, filter_year)
 
+    filter_qs = _build_filter_qs(
+        filter_tag=filter_tag, exclude_tags=exclude_tag_display,
+        filter_category=filter_category,
+        filter_verified=filter_verified, filter_unofficial=filter_unofficial,
+        filter_format=filter_format, filter_imod=filter_imod, org_slug=org_slug,
+        filter_year=filter_year, search_query=search_query,
+    )
+
     # Le score IMOD est persisté (colonne imod_score) : le tri et la pagination
     # sont réalisés en SQL, évitant de charger et trier toute la collection en mémoire.
     score_col = func.coalesce(Item.imod_score, 0)
@@ -224,11 +238,12 @@ def _do_catalogue(catalogue_type, page, per_page=None):
 
     if page < 1:
         if format_param != "json":
-            return redirect(f"/catalogue/{catalogue}")
+            return redirect(f"/catalogue/{catalogue}" + ("?" + filter_qs if filter_qs else ""))
         page = 1
     elif page > total_pages:
         if format_param != "json":
-            return redirect(f"/catalogue/{catalogue}?page={total_pages}")
+            url = f"/catalogue/{catalogue}?page={total_pages}"
+            return redirect(url + ("&" + filter_qs if filter_qs else ""))
         page = total_pages
 
     items_page = query.offset((page - 1) * per_page).limit(per_page).all()
@@ -251,7 +266,7 @@ def _do_catalogue(catalogue_type, page, per_page=None):
     )
     all_category_names = [c.name for c in all_categories]
 
-    urls = _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod, filter_year)
+    urls = _build_catalogue_urls(catalogue, filter_verified, filter_unofficial, filter_format, org_slug, filter_imod, filter_year, filter_tag, filter_category, exclude_tag_display, search_query)
     meta = _CATALOGUE_META[catalogue]
 
     data = {
@@ -299,6 +314,7 @@ def _do_catalogue(catalogue_type, page, per_page=None):
             filter_format=filter_format, filter_imod=filter_imod, org_slug=org_slug,
             filter_year=""
         ),
+        "filter_qs": filter_qs,
         "search_query": search_query,
         "all_categories": all_category_names,
         **urls,

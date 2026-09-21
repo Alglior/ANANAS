@@ -184,5 +184,11 @@ else:
 "
 fi
 
+echo "[entrypoint] Relaunching interrupted image magnet downloads..."
+nohup python3 -u scripts/resume_image_downloads.py >> /app/instance/resume_image_downloads.log 2>&1 &
+
+echo "[entrypoint] Starting image cache sweeper (TTL 30 days)..."
+nohup python3 -u scripts/cache_sweeper.py >> /app/instance/cache_sweeper.log 2>&1 &
+
 echo "[entrypoint] Starting Gunicorn..."
 exec gunicorn -b 0.0.0.0:5000 --workers 3 --timeout 30 'app:create_app()'
